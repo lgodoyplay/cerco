@@ -1,0 +1,6 @@
+{
+  "name": "cerco-policia-civil-root",
+  "dependencies": {
+    "jspdf": "^4.0.0"
+  }
+}

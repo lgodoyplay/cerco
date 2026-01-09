@@ -1,0 +1,11 @@
+"use strict";
+const express = require("express");
+const arrestController = require("../controllers/arrest.controller");
+const authMiddleware = require("../middlewares/auth.middleware");
+const uploadMiddleware = require("../middlewares/upload.middleware");
+const router = express.Router();
+router.use(authMiddleware.authenticateToken);
+router.post('/', uploadMiddleware.upload.fields([{ name: 'fotoRosto', maxCount: 1 }]), arrestController.createArrest);
+router.get('/', arrestController.listArrests);
+router.get('/:id', arrestController.getArrest);
+module.exports = router;

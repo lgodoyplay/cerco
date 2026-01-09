@@ -1,0 +1,122 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  nome      String
+  login     String   @unique
+  senhaHash String
+  cargo     String
+  patente   String
+  permissoes String  // Stored as JSON string or comma-separated
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  arrests        Arrest[]
+  bos            BO[]
+  investigations Investigation[]
+  logs           Log[]
+}
+
+model Arrest {
+  id          String   @id @default(uuid())
+  nomePreso   String
+  documento   String
+  motivo      String
+  artigos     String
+  policialId  String
+  data        DateTime
+  status      String   @default("Preso") // Preso, Aguardando, Liberado
+  descricao   String?
+  
+  // Photos stored as paths
+  fotoRosto   String?
+  fotoBolsa   String?
+  fotoTablet  String?
+  fotoAbordagem String?
+
+  policial    User     @relation(fields: [policialId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Wanted {
+  id            String   @id @default(uuid())
+  nome          String
+  documento     String?
+  motivo        String
+  periculosidade String // Baixa, Media, Alta, Extrema
+  recompensa    String?
+  status        String   @default("Procurado") // Procurado, Capturado, Morto
+  
+  // Proofs/Images
+  fotoPrincipal String?
+  outrasFotos   String? // JSON string of paths
+
+  observacoes   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model BO {
+  id          String   @id @default(uuid())
+  comunicante String
+  descricao   String
+  local       String
+  data        DateTime
+  policialId  String
+  status      String   @default("Aberto")
+
+  policial    User     @relation(fields: [policialId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Investigation {
+  id             String   @id @default(uuid())
+  titulo         String
+  descricao      String
+  envolvidos     String?
+  prioridade     String?  @default("Média")
+  status         String   @default("Em Andamento") // Em Andamento, Finalizada, Arquivada
+  investigadorId String
+  dataInicio     DateTime @default(now())
+  dataFim        DateTime?
+
+  investigador   User     @relation(fields: [investigadorId], references: [id])
+  evidences      Evidence[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Evidence {
+  id              String   @id @default(uuid())
+  investigacaoId  String
+  tipo            String   // Imagem, Video, Documento, Audio
+  conteudo        String   // Path to file
+  descricao       String?
+  data            DateTime @default(now())
+
+  investigation   Investigation @relation(fields: [investigacaoId], references: [id], onDelete: Cascade)
+}
+
+model Log {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  details   String?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id])
+}
