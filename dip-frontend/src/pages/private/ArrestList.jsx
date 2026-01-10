@@ -17,7 +17,7 @@ const ArrestList = () => {
       try {
         const { data, error } = await supabase
           .from('prisoes')
-          .select('*, created_by_user:profiles(full_name)')
+          .select('*')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -28,7 +28,7 @@ const ArrestList = () => {
           passport: item.documento,
           reason: item.observacoes, // Mapping observacoes to reason/description context
           articles: item.artigo,
-          officer: item.created_by_user?.full_name || item.conduzido_por || 'N/A',
+          officer: item.conduzido_por || 'N/A',
           description: item.observacoes,
           images: { 
             face: item.foto_principal 
@@ -45,9 +45,9 @@ const ArrestList = () => {
   }, []);
 
   const filteredArrests = arrests.filter(arrest => 
-    arrest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    arrest.passport.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    arrest.reason.toLowerCase().includes(searchTerm.toLowerCase())
+    (arrest.name && arrest.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (arrest.passport && arrest.passport.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (arrest.reason && arrest.reason.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Pagination

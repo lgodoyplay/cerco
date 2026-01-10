@@ -79,7 +79,7 @@ export const useSettings = () => {
     try {
       const { data, error } = await supabase
         .from('system_logs')
-        .select('*, profiles(full_name)')
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -89,7 +89,7 @@ export const useSettings = () => {
         id: l.id,
         action: l.action,
         timestamp: l.created_at,
-        user: l.profiles?.full_name || 'Sistema'
+        user: 'Sistema'
       }));
       setLogs(mappedLogs);
     } catch (error) {
