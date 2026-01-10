@@ -9,7 +9,7 @@ export const useInvestigations = () => {
     id: inv.id,
     title: inv.titulo,
     description: inv.descricao,
-    involved: [], // Supabase doesn't support arrays of text easily without config, assume simple for now or jsonb
+    involved: inv.envolvidos || 'Não informado',
     priority: inv.prioridade || 'Média',
     status: inv.status,
     createdAt: inv.created_at,
@@ -55,7 +55,7 @@ export const useInvestigations = () => {
       const payload = {
         titulo: data.title,
         descricao: data.description,
-        // envolvidos: data.involved, // Need to handle array or relation
+        envolvidos: data.involved,
         prioridade: data.priority,
         status: 'Em Andamento'
       };

@@ -64,8 +64,9 @@ export const generateInvestigationPDF = (investigation, user) => {
   doc.text('RELATÓRIO FINAL DE INQUÉRITO POLICIAL', pageWidth / 2, yPos, { align: 'center' });
   yPos += 10;
   
+  const formattedId = `PF - ${investigation.id.toString().padStart(3, '0')}`;
   doc.setFontSize(12);
-  doc.text(`INQUÉRITO Nº: ${investigation.id.toString().padStart(6, '0')}/${new Date().getFullYear()}`, pageWidth / 2, yPos, { align: 'center' });
+  doc.text(`INQUÉRITO Nº: ${formattedId}/${new Date().getFullYear()}`, pageWidth / 2, yPos, { align: 'center' });
   yPos += 20;
 
   // --- DADOS DA INVESTIGAÇÃO (TABELA SIMULADA) ---
@@ -112,7 +113,22 @@ export const generateInvestigationPDF = (investigation, user) => {
   doc.setFont(fontBold, 'bold');
   doc.text('AUTORIDADE RESPONSÁVEL:', col1, dataY);
   doc.setFont(fontNormal, 'normal');
-  const officerName = user?.username ? `${user.username.toUpperCase()}` : 'AGENTE RESPONSÁVEL';
+  
+  // Tenta usar o nome do investigador vindo do objeto (se implementado join) ou do usuário logado
+  let officerName = 'AGENTE RESPONSÁVEL';
+  if (investigation.investigator?.nome) {
+      officerName = investigation.investigator.nome.toUpperCase();
+  } else if (user?.username) {
+      officerName = user.username.toUpperCase();
+  } else if (user?.nome) {
+      officerName = user.nome.toUpperCase();
+  }
+  
+  // Se tiver matrícula/badge
+  if (user?.badge) {
+      officerName += ` - MATRÍCULA: ${user.badge}`;
+  }
+  
   doc.text(officerName, col1 + 55, dataY);
 
   yPos += 45;
@@ -125,7 +141,15 @@ export const generateInvestigationPDF = (investigation, user) => {
   
   doc.setFont(fontNormal, 'normal');
   doc.setFontSize(11);
-  const involvedLines = doc.splitTextToSize(investigation.involved || 'Não informado.', pageWidth - (margin * 2));
+  
+  let involvedText = 'Não informado.';
+  if (Array.isArray(investigation.involved) && investigation.involved.length > 0) {
+      involvedText = investigation.involved.join(', ');
+  } else if (typeof investigation.involved === 'string' && investigation.involved.trim() !== '') {
+      involvedText = investigation.involved;
+  }
+  
+  const involvedLines = doc.splitTextToSize(involvedText, pageWidth - (margin * 2));
   doc.text(involvedLines, margin, yPos);
   yPos += (involvedLines.length * 6) + 10;
 
