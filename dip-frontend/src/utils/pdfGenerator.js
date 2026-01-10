@@ -33,8 +33,8 @@ export const generateInvestigationPDF = (investigation, user) => {
     doc.setTextColor(0, 0, 0);
     doc.text('REPÚBLICA FEDERATIVA DO BRASIL', pageWidth / 2, 20, { align: 'center' });
     doc.text('MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA', pageWidth / 2, 25, { align: 'center' });
-    doc.text('POLÍCIA FEDERAL', pageWidth / 2, 30, { align: 'center' });
-    doc.text('DIRETORIA DE INVESTIGAÇÃO E COMBATE AO CRIME ORGANIZADO - DICOR', pageWidth / 2, 35, { align: 'center' });
+    doc.text('POLÍCIA CIVIL', pageWidth / 2, 30, { align: 'center' });
+    doc.text('CERCO - POLÍCIA CIVIL', pageWidth / 2, 35, { align: 'center' });
     
     // Linha separadora
     doc.setLineWidth(0.5);
@@ -125,7 +125,7 @@ export const generateInvestigationPDF = (investigation, user) => {
   // Tenta usar o nome do investigador vindo do objeto (se implementado join) ou do usuário logado
   let officerName = 'AGENTE RESPONSÁVEL';
   let officerBadge = '000.000';
-  let officerRole = 'Agente de Polícia Federal';
+  let officerRole = 'Agente de Polícia Civil';
 
   if (investigation.investigator) {
       officerName = investigation.investigator.nome.toUpperCase();

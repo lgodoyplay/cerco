@@ -178,8 +178,8 @@ export const generateProfessionalPDF = async (investigation, user) => {
                 return {
                     stack: [
                         { text: 'REPÚBLICA FEDERATIVA DO BRASIL', alignment: 'center', fontSize: 10, bold: true, margin: [0, 15, 0, 0] },
-                        { text: 'MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA', alignment: 'center', fontSize: 10, bold: true },
-                        { text: 'POLÍCIA FEDERAL - DIP', alignment: 'center', fontSize: 10, bold: true },
+                        { text: 'SECRETARIA DE ESTADO DE JUSTIÇA E SEGURANÇA PÚBLICA', alignment: 'center', fontSize: 10, bold: true },
+                        { text: 'POLÍCIA CIVIL - CERCO', alignment: 'center', fontSize: 10, bold: true },
                         { canvas: [{ type: 'line', x1: 85, y1: 5, x2: 538, y2: 5, lineWidth: 1 }] } // Linha ajustada às margens
                     ]
                 };
@@ -206,7 +206,7 @@ export const generateProfessionalPDF = async (investigation, user) => {
                 } : { text: '[BRASÃO]', alignment: 'center', margin: [0, 20, 0, 10] },
 
                 { text: 'INQUÉRITO POLICIAL', style: 'title' },
-                { text: `PROCEDIMENTO Nº: PF - ${investigation.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`, style: 'subHeader' },
+                { text: `PROCEDIMENTO Nº: PC - ${investigation.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`, style: 'subHeader' },
                 { text: `DATA DE INSTAURAÇÃO: ${formatDate(investigation.createdAt)}`, style: 'subHeader', fontSize: 12 },
                 
                 { text: '\n\n\n\n', fontSize: 1 }, // Espaço
@@ -226,7 +226,7 @@ export const generateProfessionalPDF = async (investigation, user) => {
                     table: {
                         widths: ['30%', '70%'],
                         body: [
-                            [{ text: 'UNIDADE POLICIAL', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES - DIP', style: 'tableCell' }],
+                            [{ text: 'UNIDADE POLICIAL', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES - DICOR', style: 'tableCell' }],
                             [{ text: 'NATUREZA', style: 'tableHeader' }, { text: 'Inquérito Policial (Investigação Criminal)', style: 'tableCell' }],
                             [{ text: 'STATUS', style: 'tableHeader' }, { text: investigation.status.toUpperCase(), style: 'tableCell', bold: true }],
                             [{ text: 'PRIORIDADE', style: 'tableHeader' }, { text: investigation.priority.toUpperCase(), style: 'tableCell' }],
@@ -267,19 +267,37 @@ export const generateProfessionalPDF = async (investigation, user) => {
                 processedProofs.length > 0 ? {
                     layout: 'headerLineOnly', // or 'noBorders'
                     table: {
-                        widths: ['10%', '20%', '50%', '20%'],
+                        widths: ['5%', '15%', '60%', '20%'],
                         headerRows: 1,
                         body: [
                             [
                                 { text: '#', style: 'tableHeader' },
                                 { text: 'TIPO', style: 'tableHeader' },
-                                { text: 'DESCRIÇÃO', style: 'tableHeader' },
+                                { text: 'DESCRIÇÃO E CONTEÚDO', style: 'tableHeader' },
                                 { text: 'DATA', style: 'tableHeader' }
                             ],
                             ...processedProofs.map((proof, index) => [
                                 { text: (index + 1).toString(), style: 'tableCell', alignment: 'center' },
                                 { text: (proof.type || 'DOC').toUpperCase(), style: 'tableCell' },
-                                { text: proof.title ? `${proof.title} - ${proof.description}` : proof.description, style: 'tableCell' },
+                                { 
+                                    stack: [
+                                        { text: proof.title || 'Sem título', bold: true, fontSize: 10 },
+                                        { text: proof.description || '', fontSize: 10, margin: [0, 2, 0, 2] },
+                                        // Renderização condicional do conteúdo
+                                        (proof.type === 'image') ? 
+                                            { text: '(Visualizar na seção de Anexos)', fontSize: 9, italics: true, color: '#666666' } : null,
+                                        
+                                        (proof.type === 'link' || proof.type === 'video') ? 
+                                            { text: proof.content || '', link: proof.content, color: '#2563eb', decoration: 'underline', fontSize: 9, margin: [0, 2, 0, 0] } : null,
+                                        
+                                        (proof.type === 'file') ? 
+                                            { text: `Arquivo/Ref: ${proof.content || 'Não informado'}`, fontSize: 9, italics: true, color: '#4b5563', margin: [0, 2, 0, 0] } : null,
+                                        
+                                        (proof.type === 'text') ? 
+                                            { text: `"${proof.content || ''}"`, fontSize: 9, italics: true, background: '#f3f4f6', margin: [0, 2, 0, 0] } : null
+                                    ].filter(Boolean),
+                                    style: 'tableCell' 
+                                },
                                 { text: formatDate(proof.createdAt), style: 'tableCell', alignment: 'center' }
                             ])
                         ]
@@ -338,12 +356,12 @@ export const generateProfessionalPDF = async (investigation, user) => {
                     fontSize: 12
                 },
                 {
-                    text: 'AGENTE DE POLÍCIA FEDERAL',
+                    text: 'AGENTE DE POLÍCIA CIVIL',
                     alignment: 'center',
                     fontSize: 10
                 },
                 {
-                    text: `MATRÍCULA: ${user?.badge || 'PF-000'}`,
+                    text: `MATRÍCULA: ${user?.badge || 'PC-000'}`,
                     alignment: 'center',
                     fontSize: 10
                 }

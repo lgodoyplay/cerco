@@ -19,7 +19,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
   const quizQuestions = [
     {
       id: 1,
-      question: "Qual é a principal função do DIP (Departamento de Inteligência Policial)?",
+      question: "Qual é a principal função do CERCO (Comando de Operações Especiais e Repressão ao Crime Organizado)?",
       options: [
         { id: 'a', text: "Patrulhamento ostensivo e multas de trânsito" },
         { id: 'b', text: "Investigação de crimes complexos e combate ao crime organizado" },
@@ -59,7 +59,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
     },
     {
       id: 5,
-      question: "O que significa 'Hierarquia e Disciplina' para o DIP?",
+      question: "O que significa 'Hierarquia e Disciplina' para a DICOR?",
       options: [
         { id: 'a', text: "Conceitos ultrapassados que não se aplicam" },
         { id: 'b', text: "Pilares fundamentais para o funcionamento e ordem da instituição" },
@@ -180,7 +180,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte do DIP?</label>
+                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte da DICOR?</label>
                   <textarea 
                     required
                     value={candidateForm.mensagem}
