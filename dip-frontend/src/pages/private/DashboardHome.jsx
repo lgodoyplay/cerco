@@ -88,11 +88,12 @@ const DashboardHome = () => {
     return `${Math.floor(diffInSeconds / 86400)}d atrás`;
   };
 
-  const getIconForActivity = (action) => {
+    const getIconForActivity = (action) => {
     const lower = (action || '').toLowerCase();
     if (lower.includes('prisão')) return { icon: Users, color: 'blue' };
     if (lower.includes('procurado')) return { icon: ShieldAlert, color: 'red' };
     if (lower.includes('investigação')) return { icon: FileText, color: 'amber' };
+    if (lower.includes('b.o.') || lower.includes('boletim')) return { icon: FileText, color: 'emerald' };
     return { icon: AlertTriangle, color: 'slate' };
   };
 

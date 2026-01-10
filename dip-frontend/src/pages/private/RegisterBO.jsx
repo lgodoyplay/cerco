@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Save, Eraser, FileText, CheckCircle, AlertCircle, Shield, MapPin, Calendar, User } from 'lucide-react';
 import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
+import { useSettings } from '../../hooks/useSettings';
 
 const RegisterBO = () => {
+  const { logAction } = useSettings();
   const [formData, setFormData] = useState({
     complainant: '',
     description: '',
@@ -42,6 +44,9 @@ const RegisterBO = () => {
         }]);
 
       if (error) throw error;
+
+      // Log action
+      logAction(`B.O. Registrado: ${formData.complainant} - ${formData.description.substring(0, 30)}...`);
 
       // Success
       setNotification({
