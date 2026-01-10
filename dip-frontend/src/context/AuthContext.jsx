@@ -10,12 +10,26 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
+      if (session?.user) {
+        // Fetch profile to get role and username
+        supabase.from('profiles').select('*').eq('id', session.user.id).single()
+          .then(({ data: profile }) => {
+            setUser({ ...session.user, ...profile, username: profile?.full_name || session.user.email });
+            setLoading(false);
+          });
+      } else {
+        setUser(null);
+        setLoading(false);
+      }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+       if (session?.user) {
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        setUser({ ...session.user, ...profile, username: profile?.full_name || session.user.email });
+      } else {
+        setUser(null);
+      }
     });
 
     return () => subscription.unsubscribe();
