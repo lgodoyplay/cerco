@@ -96,7 +96,7 @@ export const useInvestigations = () => {
 
   const addProof = useCallback(async (investigationId, proofData) => {
     try {
-      let publicUrl = null;
+      let finalContent = proofData.content;
 
       if (proofData.file) {
         const fileExt = proofData.file.name.split('.').pop();
@@ -109,16 +109,18 @@ export const useInvestigations = () => {
         if (uploadError) throw uploadError;
 
         const { data: urlData } = supabase.storage.from('provas').getPublicUrl(fileName);
-        publicUrl = urlData.publicUrl;
+        finalContent = urlData.publicUrl;
       }
 
       const { error } = await supabase
         .from('provas')
         .insert([{
           investigacao_id: investigationId,
+          titulo: proofData.title,
           tipo: proofData.type,
           descricao: proofData.description,
-          arquivo_url: publicUrl
+          arquivo_url: finalContent,
+          autor: proofData.author
         }]);
 
       if (error) throw error;

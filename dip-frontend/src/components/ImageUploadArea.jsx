@@ -28,7 +28,7 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
   const handleFile = (file) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      onUpload(id, reader.result);
+      onUpload(id, reader.result, file);
     };
     reader.readAsDataURL(file);
   };

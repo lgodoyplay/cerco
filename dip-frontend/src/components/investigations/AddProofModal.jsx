@@ -19,8 +19,8 @@ const AddProofModal = ({ isOpen, onClose, onSave }) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleImageUpload = (id, dataUrl) => {
-    setFormData(prev => ({ ...prev, content: dataUrl }));
+  const handleImageUpload = (id, dataUrl, file) => {
+    setFormData(prev => ({ ...prev, content: dataUrl, file: file }));
   };
 
   const handleImageRemove = () => {
