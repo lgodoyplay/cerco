@@ -1,21 +1,30 @@
 import pdfMake from "pdfmake/build/pdfmake";
-import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+import pdfFonts from "pdfmake/build/vfs_fonts";
 
-// Tentar registrar as fontes de várias maneiras para garantir compatibilidade com Vite
+// Configuração segura das fontes para o PDFMake (compatível com Vite/Webpack)
 try {
-  if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
-    pdfMake.vfs = pdfFonts.pdfMake.vfs;
-  } else if (pdfFonts && pdfFonts.vfs) {
-    pdfMake.vfs = pdfFonts.vfs;
-  } else if (window.pdfMake && window.pdfMake.vfs) {
-     // Fallback global
-  } else {
-     // Última tentativa: atribuir diretamente se for o objeto esperado
-     // @ts-ignore
-     pdfMake.vfs = pdfFonts.default ? pdfFonts.default.pdfMake.vfs : pdfFonts;
-  }
+    if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
+        pdfMake.vfs = pdfFonts.pdfMake.vfs;
+    } else if (pdfFonts && pdfFonts.vfs) {
+        pdfMake.vfs = pdfFonts.vfs;
+    } else if (window && window.pdfMake && window.pdfMake.vfs) {
+        pdfMake.vfs = window.pdfMake.vfs;
+    } else {
+        console.warn("Estrutura de fontes do PDFMake não reconhecida. Tentando fallback seguro.");
+        // Fallback final: verificar propriedades aninhadas com segurança
+        const defaultExport = pdfFonts?.default;
+        if (defaultExport?.pdfMake?.vfs) {
+            pdfMake.vfs = defaultExport.pdfMake.vfs;
+        } else if (defaultExport?.vfs) {
+            pdfMake.vfs = defaultExport.vfs;
+        }
+    }
+    
+    if (!pdfMake.vfs) {
+        console.error("ATENÇÃO: VFS Fonts não puderam ser carregadas. O PDF pode falhar ao ser gerado.");
+    }
 } catch (e) {
-  console.warn("Erro ao configurar VFS fonts:", e);
+    console.error("Erro fatal ao configurar fontes do PDFMake:", e);
 }
 
 // --- CONFIGURAÇÃO DE ESTILOS ---
