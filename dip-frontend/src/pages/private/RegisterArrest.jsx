@@ -92,14 +92,16 @@ const RegisterArrest = () => {
       if (insertError) throw insertError;
 
       // 3. Log Action
-      await supabase.from('system_logs').insert([{
-        user_id: user?.id,
-        action: 'Nova Prisão',
-        details: `Prisão registrada: ${formData.name} (Art. ${formData.articles})`
-      }]);
+      if (user) {
+        await supabase.from('system_logs').insert([{
+          user_id: user.id,
+          action: 'Nova Prisão',
+          details: `Prisão registrada: ${formData.name} (Art. ${formData.articles})`
+        }]);
+      }
 
       setNotification({ type: 'success', message: 'Prisão registrada com sucesso!' });
-      setTimeout(() => navigate('/dashboard/arrest-list'), 2000);
+      setTimeout(() => navigate('/dashboard/arrests'), 2000); // Fixed redirect path
 
     } catch (error) {
       console.error('Erro ao registrar prisão:', error);

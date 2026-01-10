@@ -54,7 +54,7 @@ const PrivateLayout = () => {
     { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados' },
     { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados' },
     { to: '/dashboard/investigations', icon: Search, label: 'Investigações' },
-    { to: '/dashboard/settings', icon: Settings, label: 'Configurações' },
+    { to: '/dashboard/settings/users', icon: Settings, label: 'Configurações' },
   ];
 
   return (
@@ -81,8 +81,8 @@ const PrivateLayout = () => {
               <Shield className="text-white" size={24} />
             </div>
             <div>
-              <h1 className="font-bold text-lg tracking-tight text-white leading-none">CERCO</h1>
-              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mt-1">Intranet</p>
+              <h1 className="font-bold text-lg tracking-tight text-white leading-none">DIP</h1>
+              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mt-1">Investigação Federal</p>
             </div>
           </div>
           <button 
