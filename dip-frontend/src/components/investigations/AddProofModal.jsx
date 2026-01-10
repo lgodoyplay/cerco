@@ -29,12 +29,7 @@ const AddProofModal = ({ isOpen, onClose, onSave }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({
-      ...formData,
-      type,
-      author: user?.username || 'Agente Civil',
-      authorId: user?.id
-    });
+    onSave({ ...formData, type, author: user?.username || 'Agente Federal', authorId: user?.id });
     // Reset
     setFormData({ title: '', description: '', content: '' });
     setType('image');

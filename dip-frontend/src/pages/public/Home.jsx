@@ -157,11 +157,11 @@ const Home = () => {
           
           <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
             DIP <br/>
-            <span className="text-federal-500">Polícia Civil</span>
+            <span className="text-federal-500">Polícia Federal</span>
           </h1>
           
           <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Unidade de elite da Polícia Civil dedicada ao combate ao crime organizado, 
+            Unidade de elite da Polícia Federal dedicada ao combate ao crime organizado, 
             corrupção e crimes de alta complexidade.
           </p>
           

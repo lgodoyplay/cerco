@@ -125,7 +125,7 @@ export const generateInvestigationPDF = (investigation, user) => {
   // Tenta usar o nome do investigador vindo do objeto (se implementado join) ou do usuário logado
   let officerName = 'AGENTE RESPONSÁVEL';
   let officerBadge = '000.000';
-  let officerRole = 'Agente de Polícia Civil';
+  let officerRole = 'Agente de Polícia Federal';
 
   if (investigation.investigator) {
       officerName = investigation.investigator.nome.toUpperCase();

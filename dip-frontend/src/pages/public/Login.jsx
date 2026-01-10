@@ -48,7 +48,7 @@ const Login = () => {
           </div>
           <h1 className="text-4xl font-bold text-white tracking-tight mb-2">DIP</h1>
           <div className="h-1 w-20 bg-federal-600 mx-auto mb-4 rounded-full" />
-          <p className="text-federal-400 font-medium tracking-[0.2em] uppercase text-sm">Polícia Civil</p>
+          <p className="text-federal-400 font-medium tracking-[0.2em] uppercase text-sm">Polícia Federal</p>
           <p className="text-slate-500 text-xs mt-2 uppercase tracking-widest">Acesso Restrito</p>
         </div>
 

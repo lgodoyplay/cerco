@@ -2,7 +2,7 @@
 create table public.profiles (
   id uuid references auth.users not null primary key,
   full_name text,
-  role text default 'Agente DICOR', -- Agente DICOR, Escrivão DICOR, Coordenador DICOR, Diretor DICOR
+  role text default 'Agente DIP', -- Agente DIP, Escrivão DIP, Coordenador DIP, Diretor DIP
   avatar_url text,
   updated_at timestamp with time zone,
   created_at timestamp with time zone default now()

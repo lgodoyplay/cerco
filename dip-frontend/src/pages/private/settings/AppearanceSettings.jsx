@@ -22,7 +22,7 @@ const AppearanceSettings = () => {
   }, [settings]);
 
   const colors = [
-    { id: 'blue', name: 'Azul Civil', class: 'bg-blue-600' },
+    { id: 'blue', name: 'Azul Federal', class: 'bg-blue-600' },
     { id: 'slate', name: 'Cinza Tático', class: 'bg-slate-600' },
     { id: 'emerald', name: 'Verde Floresta', class: 'bg-emerald-600' },
     { id: 'indigo', name: 'Indigo', class: 'bg-indigo-600' },

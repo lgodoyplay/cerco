@@ -49,7 +49,7 @@ const HowToJoin = () => {
       <div className="text-center mb-16">
         <h1 className="text-4xl font-bold text-white mb-4">Recrutamento e Seleção</h1>
         <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-16 leading-relaxed">
-          Junte-se à elite. O processo seletivo da DIP Polícia Civil é rigoroso e busca apenas os melhores.
+          Junte-se à elite. O processo seletivo da DIP Polícia Federal é rigoroso e busca apenas os melhores.
           Veja abaixo como se preparar.
         </p>
       </div>

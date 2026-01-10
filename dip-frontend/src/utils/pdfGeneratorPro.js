@@ -206,7 +206,7 @@ export const generateProfessionalPDF = async (investigation, user) => {
                 } : { text: '[BRASÃO]', alignment: 'center', margin: [0, 20, 0, 10] },
 
                 { text: 'INQUÉRITO POLICIAL', style: 'title' },
-                { text: `PROCEDIMENTO Nº: PC - ${investigation.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`, style: 'subHeader' },
+                { text: `PROCEDIMENTO Nº: PF - ${investigation.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`, style: 'subHeader' },
                 { text: `DATA DE INSTAURAÇÃO: ${formatDate(investigation.createdAt)}`, style: 'subHeader', fontSize: 12 },
                 
                 { text: '\n\n\n\n', fontSize: 1 }, // Espaço
