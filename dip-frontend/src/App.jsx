@@ -91,6 +91,7 @@ function App() {
               <Route index element={<Navigate to="courses" replace />} />
               <Route path="users" element={<UsersSettings />} />
               <Route path="courses" element={<CoursesSettings />} />
+              <Route path="forms" element={<FormsSettings />} />
               <Route path="corporation" element={<CorporationSettings />} />
               <Route path="roles" element={<RolesSettings />} />
               <Route path="crimes" element={<CrimesSettings />} />
