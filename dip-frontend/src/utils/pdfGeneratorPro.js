@@ -117,6 +117,7 @@ const coatOfArmsBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAy
 
 // Gerar Documento
 export const generateProfessionalPDF = async (investigation, user) => {
+    console.log("Iniciando geração de PDF Profissional (ABNT)...", investigation);
     try {
         // Preparar dados de imagens (assíncrono)
         let processedProofs = [];
@@ -134,7 +135,9 @@ export const generateProfessionalPDF = async (investigation, user) => {
         // Definir Conteúdo
         const docDefinition = {
             pageSize: 'A4',
-            pageMargins: [40, 60, 40, 60], // Margens oficiais (Esq/Dir maiores que Sup/Inf geralmente, mas aqui equilibrado)
+            // Margens ABNT: Superior/Esquerda 3cm (approx 85pt), Inferior/Direita 2cm (approx 57pt)
+            // [left, top, right, bottom]
+            pageMargins: [85, 85, 57, 57], 
             
             // Cabeçalho em todas as páginas
             header: (currentPage, pageCount) => {
@@ -143,7 +146,7 @@ export const generateProfessionalPDF = async (investigation, user) => {
                         { text: 'REPÚBLICA FEDERATIVA DO BRASIL', alignment: 'center', fontSize: 10, bold: true, margin: [0, 15, 0, 0] },
                         { text: 'MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA', alignment: 'center', fontSize: 10, bold: true },
                         { text: 'POLÍCIA FEDERAL - DIP', alignment: 'center', fontSize: 10, bold: true },
-                        { canvas: [{ type: 'line', x1: 40, y1: 5, x2: 555, y2: 5, lineWidth: 1 }] }
+                        { canvas: [{ type: 'line', x1: 85, y1: 5, x2: 538, y2: 5, lineWidth: 1 }] } // Linha ajustada às margens
                     ]
                 };
             },
@@ -152,8 +155,8 @@ export const generateProfessionalPDF = async (investigation, user) => {
             footer: (currentPage, pageCount) => {
                 return {
                     columns: [
-                        { text: `Inquérito Nº ${investigation.id} - Confidencial`, alignment: 'left', fontSize: 8, margin: [40, 0, 0, 0] },
-                        { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8, margin: [0, 0, 40, 0] }
+                        { text: `Inquérito Nº ${investigation.id} - Confidencial`, alignment: 'left', fontSize: 10, margin: [85, 0, 0, 0] },
+                        { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 10, margin: [0, 0, 57, 0] }
                     ]
                 };
             },
