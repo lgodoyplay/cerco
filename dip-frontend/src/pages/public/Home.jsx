@@ -316,6 +316,97 @@ const Home = () => {
         </div>
       </section>
 
+      {/* 📝 FORMULÁRIO FAÇA PARTE */}
+      <section id="join-form" className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-12 bg-federal-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+          
+          <div className="relative z-10">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-white mb-4">Junte-se ao DIP</h2>
+              <p className="text-slate-400">
+                Preencha o formulário abaixo para demonstrar seu interesse em fazer parte da 
+                nossa equipe de elite. Entraremos em contato.
+              </p>
+            </div>
+
+            <form onSubmit={handleCandidateSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Nome Completo</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={candidateForm.nome}
+                    onChange={(e) => setCandidateForm({...candidateForm, nome: e.target.value})}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
+                    placeholder="Seu nome"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Email</label>
+                  <input 
+                    type="email" 
+                    required
+                    value={candidateForm.email}
+                    onChange={(e) => setCandidateForm({...candidateForm, email: e.target.value})}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
+                    placeholder="seu@email.com"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Telefone / WhatsApp</label>
+                <input 
+                  type="tel" 
+                  required
+                  value={candidateForm.telefone}
+                  onChange={(e) => setCandidateForm({...candidateForm, telefone: e.target.value})}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
+                  placeholder="(00) 00000-0000"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte?</label>
+                <textarea 
+                  required
+                  value={candidateForm.mensagem}
+                  onChange={(e) => setCandidateForm({...candidateForm, mensagem: e.target.value})}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors h-32 resize-none"
+                  placeholder="Conte-nos sobre sua motivação e experiência..."
+                />
+              </div>
+
+              <div className="pt-4">
+                <button 
+                  type="submit"
+                  disabled={formStatus === 'submitting' || formStatus === 'success'}
+                  className={`w-full py-4 rounded-xl font-bold text-white transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 ${
+                    formStatus === 'success' 
+                      ? 'bg-green-600 hover:bg-green-500 cursor-default'
+                      : formStatus === 'error'
+                      ? 'bg-red-600 hover:bg-red-500'
+                      : 'bg-federal-600 hover:bg-federal-500 shadow-lg shadow-federal-900/20'
+                  }`}
+                >
+                  {formStatus === 'submitting' ? (
+                    <span className="animate-pulse">Enviando...</span>
+                  ) : formStatus === 'success' ? (
+                    <>Candidatura Enviada! <Shield size={20} /></>
+                  ) : formStatus === 'error' ? (
+                    <>Erro ao Enviar. Tente Novamente.</>
+                  ) : (
+                    <>Enviar Candidatura <ChevronRight size={20} /></>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
       {/* MODAL: PROCURADO */}
       {selectedWanted && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedWanted(null)}>

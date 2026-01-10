@@ -95,9 +95,9 @@ const HowToJoin = () => {
                 <div className="inline-block px-6 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full font-bold mb-6">
                   INSCRIÇÕES ABERTAS
                 </div>
-                <button className="w-full py-3 bg-white text-federal-900 font-bold rounded-xl hover:bg-slate-200 transition-colors shadow-lg shadow-white/5">
+                <Link to="/#join-form" className="block w-full py-3 bg-white text-federal-900 font-bold rounded-xl hover:bg-slate-200 transition-colors shadow-lg shadow-white/5 text-center">
                   Preencher Formulário
-                </button>
+                </Link>
               </div>
             </div>
           </div>

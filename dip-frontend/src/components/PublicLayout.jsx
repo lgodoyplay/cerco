@@ -105,10 +105,10 @@ const PublicLayout = () => {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Shield className="w-6 h-6 text-federal-600" />
-                <span className="font-bold text-lg text-white">CERCO - PC</span>
+                <span className="font-bold text-lg text-white">DIP - PF</span>
               </div>
               <p className="text-slate-500 text-sm leading-relaxed">
-                Cerco Polícia Civil.<br/>
+                DIP Polícia Federal.<br/>
                 Compromisso com a verdade e a justiça.
               </p>
             </div>
@@ -127,7 +127,7 @@ const PublicLayout = () => {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-slate-900 text-center text-slate-600 text-xs">
-            &copy; {new Date().getFullYear()} Cerco Polícia Civil. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} DIP Polícia Federal. Todos os direitos reservados.
           </div>
         </div>
       </footer>
