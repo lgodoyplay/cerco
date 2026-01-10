@@ -8,8 +8,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const timeoutRef = useRef(null);
   const isMounted = useRef(true);
+  // Flag para evitar que eventos do Supabase interfiram durante o processo de login manual
+  const isLoggingIn = useRef(false);
 
-  // Define loadUserSession outside useEffect so it can be used by login
   const loadUserSession = async (session) => {
     // Se estamos carregando uma sessão, cancelamos o timeout de segurança
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -23,8 +24,8 @@ export const AuthProvider = ({ children }) => {
           .eq('id', session.user.id)
           .single();
 
-        if (profileError) {
-           console.warn("Auth: Perfil de usuário não encontrado ou erro ao carregar.", profileError);
+        if (profileError && profileError.code !== 'PGRST116') {
+           console.warn("Auth: Erro ao carregar perfil.", profileError);
         }
 
         if (isMounted.current) {
@@ -32,22 +33,25 @@ export const AuthProvider = ({ children }) => {
             ...session.user, 
             ...(profile || {}), 
             username: profile?.full_name || session.user.email,
-            role: profile?.role || 'Agente' // Fallback seguro
+            role: profile?.role || 'Agente'
           });
         }
       } else {
-        if (isMounted.current) setUser(null);
+        // Só limpamos o usuário se NÃO estivermos no meio de um login manual
+        if (isMounted.current && !isLoggingIn.current) {
+            setUser(null);
+        }
       }
     } catch (err) {
       console.error("Erro crítico ao carregar sessão:", err);
-      if (isMounted.current) setUser(null);
+      if (isMounted.current && !isLoggingIn.current) setUser(null);
       
       // Tenta limpar sessão inválida para evitar loop de erro
       try {
         await supabase.auth.signOut();
         localStorage.removeItem('sb-' + import.meta.env.VITE_SUPABASE_URL?.split('.')[0]?.split('//')[1] + '-auth-token');
       } catch (e) {
-        console.warn("Erro ao limpar sessão inválida:", e);
+        // Ignora erro de logout
       }
     } finally {
       if (isMounted.current) setLoading(false);
@@ -72,31 +76,29 @@ export const AuthProvider = ({ children }) => {
     // 2. Listener para mudanças de estado (Login, Logout, Refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       
-      // Qualquer sinal de vida do Supabase deve cancelar o timeout de erro
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
       if (event === 'SIGNED_OUT') {
-        if (isMounted.current) {
+        if (isMounted.current && !isLoggingIn.current) {
             setUser(null);
             setLoading(false);
         }
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        // Recarrega dados apenas se necessário para evitar loops
-        // Mas para garantir atualização de perfil, chamamos a função segura
-        loadUserSession(session);
+        // Se estivermos logando manualmente, deixamos o fluxo manual cuidar disso
+        if (!isLoggingIn.current) {
+            loadUserSession(session);
+        }
       } else if (event === 'INITIAL_SESSION') {
-         // Já tratado pelo getSession, mas se o getSession falhar/demorar, isso garante
          if (session) loadUserSession(session); 
       }
     });
 
-    // Timeout de segurança absoluto (caso Supabase trave completamente)
-    // Aumentado para 10s para acomodar conexões lentas, já que temos "Loading" visual
+    // Timeout de segurança
     timeoutRef.current = setTimeout(() => {
         if (isMounted.current && loading) {
-            console.warn("Auth timeout forçado. Supabase não respondeu a tempo.");
+            console.warn("Auth timeout forçado.");
             setLoading(false);
-            setUser(null); // Força estado deslogado para permitir nova tentativa
+            if (!isLoggingIn.current) setUser(null);
         }
     }, 10000); 
 
@@ -110,7 +112,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      setLoading(true); // Bloqueia a UI e previne redirecionamentos prematuros
+      isLoggingIn.current = true;
+      setLoading(true); 
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -118,8 +122,6 @@ export const AuthProvider = ({ children }) => {
 
       if (error) throw error;
       
-      // FIX: Force state update immediately before returning true
-      // This ensures the UI has the user object before navigating
       if (data.session) {
         await loadUserSession(data.session);
       }
@@ -127,19 +129,25 @@ export const AuthProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error('Login error:', error.message);
-      setLoading(false); // Garante que o loading pare em caso de erro
+      if (isMounted.current) setLoading(false);
       return false;
+    } finally {
+      // Pequeno delay para garantir que estados se estabilizem antes de liberar a flag
+      setTimeout(() => {
+          isLoggingIn.current = false;
+      }, 500);
     }
   };
 
   const logout = async () => {
     try {
+        isLoggingIn.current = false; // Garante que flags sejam resetadas
         await supabase.auth.signOut();
     } catch (e) {
         console.warn("Erro ao fazer logout:", e);
     } finally {
         setUser(null);
-        localStorage.clear(); // Limpeza completa
+        localStorage.clear();
         window.location.href = '/login';
     }
   };
@@ -153,7 +161,6 @@ export const AuthProvider = ({ children }) => {
             <span className="text-slate-400 text-sm font-medium animate-pulse">Iniciando sistema...</span>
           </div>
           
-          {/* Botão de Emergência após 2s se ainda estiver carregando (via CSS animation delay seria ideal, mas aqui vai fixo) */}
           <button 
             onClick={() => {
                 setLoading(false);
