@@ -8,53 +8,90 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        // Fetch profile to get role and username
-        supabase.from('profiles').select('*').eq('id', session.user.id).single()
-          .then(({ data: profile }) => {
-            setUser({ ...session.user, ...profile, username: profile?.full_name || session.user.email });
-          })
-          .catch(err => {
-            console.error("Error loading profile:", err);
-            // Even if profile fails, we might still want to let them in as basic user, or just finish loading
-          })
-          .finally(() => {
-            setLoading(false);
-          });
-      } else {
-        setUser(null);
-        setLoading(false);
-      }
-    });
+    let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-       if (session?.user) {
-        // Tenta buscar perfil, mas não bloqueia se falhar
-        supabase.from('profiles').select('*').eq('id', session.user.id).single()
-          .then(({ data: profile }) => {
-             setUser({ ...session.user, ...profile, username: profile?.full_name || session.user.email });
-          })
-          .catch(err => console.error("Erro ao atualizar perfil no auth change:", err));
-          
-        // Se já tínhamos usuário, mantemos. Se não, definimos o básico da sessão
-        if (!user) {
-             setUser(session.user);
+    // Função unificada para carregar usuário e perfil
+    const loadUserSession = async (session) => {
+      try {
+        if (session?.user) {
+          // Busca perfil para obter role e username
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profileError) {
+             console.warn("Aviso: Não foi possível carregar o perfil do usuário.", profileError);
+          }
+
+          if (mounted) {
+            setUser({ 
+              ...session.user, 
+              ...(profile || {}), 
+              username: profile?.full_name || session.user.email,
+              role: profile?.role || 'Agente' // Fallback seguro
+            });
+          }
+        } else {
+          if (mounted) setUser(null);
         }
-      } else {
-        setUser(null);
+      } catch (err) {
+        console.error("Erro crítico ao carregar sessão:", err);
+        if (mounted) setUser(null);
+        
+        // Tenta limpar sessão inválida para evitar loop de erro
+        try {
+          await supabase.auth.signOut();
+          localStorage.removeItem('sb-' + import.meta.env.VITE_SUPABASE_URL?.split('.')[0]?.split('//')[1] + '-auth-token');
+        } catch (e) {
+          console.warn("Erro ao limpar sessão inválida:", e);
+        }
+      } finally {
+        if (mounted) setLoading(false);
       }
-      // Sempre garante que o loading termina
-      setLoading(false);
+    };
+
+    // 1. Inicialização: Verifica sessão atual
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      loadUserSession(session);
+    }).catch(err => {
+      console.error("Erro no getSession:", err);
+      if (mounted) {
+          setUser(null);
+          setLoading(false);
+      }
     });
 
-    // Timeout de segurança para não travar na tela de loading
+    // 2. Listener para mudanças de estado (Login, Logout, Refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth State Change:", event);
+      
+      if (event === 'SIGNED_OUT') {
+        if (mounted) {
+            setUser(null);
+            setLoading(false);
+        }
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        // Recarrega dados apenas se necessário para evitar loops
+        // Mas para garantir atualização de perfil, chamamos a função segura
+        loadUserSession(session);
+      } else if (event === 'INITIAL_SESSION') {
+         // Já tratado pelo getSession, mas garante redundância segura
+         // loadUserSession(session); 
+      }
+    });
+
+    // Timeout de segurança absoluto (caso Supabase trave)
     const timeout = setTimeout(() => {
-        setLoading(false);
-    }, 5000);
+        if (mounted && loading) {
+            console.warn("Auth timeout forçado.");
+            setLoading(false);
+        }
+    }, 6000);
 
     return () => {
+        mounted = false;
         subscription.unsubscribe();
         clearTimeout(timeout);
     };
