@@ -2,16 +2,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
 const DEFAULT_CORPORATION = {
-  departments: ['CERCO', 'DRE', 'DELEFAZ'],
+  departments: ['DIP', 'DRE', 'DELEFAZ'],
   divisions: ['Narcóticos', 'Homicídios', 'Crimes Cibernéticos'],
   sectors: ['Inteligência', 'Operacional', 'Administrativo']
 };
 
 const DEFAULT_ROLES = [
-  { id: 1, title: 'Diretor CERCO', hierarchy: 1 },
-  { id: 2, title: 'Coordenador CERCO', hierarchy: 2 },
-  { id: 3, title: 'Escrivão CERCO', hierarchy: 3 },
-  { id: 4, title: 'Agente CERCO', hierarchy: 4 },
+  { id: 1, title: 'Diretor DIP', hierarchy: 1 },
+  { id: 2, title: 'Coordenador DIP', hierarchy: 2 },
+  { id: 3, title: 'Escrivão DIP', hierarchy: 3 },
+  { id: 4, title: 'Agente DIP', hierarchy: 4 },
 ];
 
 export const useSettings = () => {

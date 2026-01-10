@@ -179,7 +179,7 @@ export const generateProfessionalPDF = async (investigation, user) => {
                     stack: [
                         { text: 'REPÚBLICA FEDERATIVA DO BRASIL', alignment: 'center', fontSize: 10, bold: true, margin: [0, 15, 0, 0] },
                         { text: 'SECRETARIA DE ESTADO DE JUSTIÇA E SEGURANÇA PÚBLICA', alignment: 'center', fontSize: 10, bold: true },
-                        { text: 'POLÍCIA CIVIL - CERCO', alignment: 'center', fontSize: 10, bold: true },
+                        { text: 'POLÍCIA CIVIL - DIP', alignment: 'center', fontSize: 10, bold: true },
                         { canvas: [{ type: 'line', x1: 85, y1: 5, x2: 538, y2: 5, lineWidth: 1 }] } // Linha ajustada às margens
                     ]
                 };
@@ -226,7 +226,7 @@ export const generateProfessionalPDF = async (investigation, user) => {
                     table: {
                         widths: ['30%', '70%'],
                         body: [
-                            [{ text: 'UNIDADE POLICIAL', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES - CERCO', style: 'tableCell' }],
+                            [{ text: 'UNIDADE POLICIAL', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES - DIP', style: 'tableCell' }],
                             [{ text: 'NATUREZA', style: 'tableHeader' }, { text: 'Inquérito Policial (Investigação Criminal)', style: 'tableCell' }],
                             [{ text: 'STATUS', style: 'tableHeader' }, { text: investigation.status.toUpperCase(), style: 'tableCell', bold: true }],
                             [{ text: 'PRIORIDADE', style: 'tableHeader' }, { text: investigation.priority.toUpperCase(), style: 'tableCell' }],

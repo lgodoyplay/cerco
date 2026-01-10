@@ -6,7 +6,7 @@ const AppearanceSettings = () => {
   const { logAction } = useSettings();
 
   const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem('cerco_settings_appearance');
+    const saved = localStorage.getItem('dip_settings_appearance');
     return saved ? JSON.parse(saved) : {
       theme: 'dark',
       primaryColor: 'blue',
@@ -16,7 +16,7 @@ const AppearanceSettings = () => {
   });
 
   useEffect(() => {
-    localStorage.setItem('cerco_settings_appearance', JSON.stringify(settings));
+    localStorage.setItem('dip_settings_appearance', JSON.stringify(settings));
     // Apply changes (mock effect)
     document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
   }, [settings]);

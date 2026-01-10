@@ -33,7 +33,7 @@ app.use('/public', publicRoutes);
 app.use('/dashboard', dashboardRoutes);
 
 app.get('/', (req, res) => {
-  res.send('API Cerco Polícia Civil Backend is running');
+  res.send('API DIP Polícia Civil Backend is running');
 });
 
 // Seed Admin User
