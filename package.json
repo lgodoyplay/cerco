@@ -1,7 +1,7 @@
 {
   "name": "cerco-policia-civil-root",
   "scripts": {
-    "build": "cd dip-frontend && npm install && npm run build && cd .. && mkdir -p dist && cp -r dip-frontend/dist/* dist"
+    "build": "cd dip-frontend && npm install && npm run build && cd .. && rm -rf dist && mv dip-frontend/dist dist"
   },
   "dependencies": {
     "jspdf": "^4.0.0"
