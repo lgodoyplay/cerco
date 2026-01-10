@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
             .single();
 
           if (profileError) {
-             console.warn("Aviso: Não foi possível carregar o perfil do usuário.", profileError);
+             console.warn("Auth: Perfil de usuário não encontrado ou erro ao carregar.", profileError);
           }
 
           if (mounted) {
