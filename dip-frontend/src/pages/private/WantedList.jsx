@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, AlertTriangle, MoreVertical, ShieldAlert, Eye, FileText, Printer, X, Siren } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Filter, AlertTriangle, MoreVertical, ShieldAlert, Eye, FileText, Printer, X, Siren, Lock } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
 
 const WantedList = () => {
+  const navigate = useNavigate();
   const [wantedList, setWantedList] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPerson, setSelectedPerson] = useState(null);
