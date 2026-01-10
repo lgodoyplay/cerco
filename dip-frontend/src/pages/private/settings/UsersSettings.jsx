@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase';
 import { Plus, Edit2, Trash2, Shield, User, Users, Power, Search, Check, X, BookOpen, GraduationCap } from 'lucide-react';
 import clsx from 'clsx';
 import AvatarUpload from '../../../components/AvatarUpload';
+import { getInitials } from '../../../utils/stringUtils';
 
 const UsersSettings = () => {
   const { users, addUser, updateUser, toggleUserStatus, deleteUser, roles } = useSettings();

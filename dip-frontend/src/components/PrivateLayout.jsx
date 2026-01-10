@@ -15,6 +15,7 @@ import {
   Search
 } from 'lucide-react';
 import clsx from 'clsx';
+import { getInitials } from '../utils/stringUtils';
 
 const SidebarItem = ({ to, icon: Icon, label, active, onClick }) => (
   <Link

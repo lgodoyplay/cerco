@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   GraduationCap
 } from 'lucide-react';
+import { getInitials } from '../../../utils/stringUtils';
 
 const CoursesSettings = () => {
   const { user } = useAuth();
