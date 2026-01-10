@@ -65,8 +65,8 @@ const UsersSettings = () => {
   };
 
   const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.username.toLowerCase().includes(searchTerm.toLowerCase())
+    (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) || 
+    (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
