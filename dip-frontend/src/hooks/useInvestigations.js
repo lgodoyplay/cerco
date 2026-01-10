@@ -131,6 +131,7 @@ export const useInvestigations = () => {
 
     } catch (error) {
       console.error('Erro ao adicionar prova:', error);
+      console.error('Detalhes do erro:', JSON.stringify(error, null, 2));
       throw error;
     }
   }, [fetchInvestigations]);
