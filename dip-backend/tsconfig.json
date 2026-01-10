@@ -7,6 +7,9 @@
     "strict": true,
     "skipLibCheck": true,
     "verbatimModuleSyntax": false,
-    "moduleResolution": "node"
-  }
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"]
 }
