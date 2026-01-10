@@ -146,7 +146,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
           {!showQuiz ? (
             <>
               <div className="text-center mb-10">
-                <h2 className="text-3xl font-bold text-white mb-4">Candidatura ao DIP</h2>
+                <h2 className="text-3xl font-bold text-white mb-4">Candidatura ao CERCO</h2>
                 <p className="text-slate-400">
                   Preencha o formulário e faça o teste de admissão para demonstrar seu interesse em fazer parte da 
                   nossa equipe de elite.
@@ -180,7 +180,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte da DICOR?</label>
+                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte da CERCO?</label>
                   <textarea 
                     required
                     value={candidateForm.mensagem}

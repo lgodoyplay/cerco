@@ -226,7 +226,7 @@ export const generateProfessionalPDF = async (investigation, user) => {
                     table: {
                         widths: ['30%', '70%'],
                         body: [
-                            [{ text: 'UNIDADE POLICIAL', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES - DICOR', style: 'tableCell' }],
+                            [{ text: 'UNIDADE POLICIAL', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES - CERCO', style: 'tableCell' }],
                             [{ text: 'NATUREZA', style: 'tableHeader' }, { text: 'Inquérito Policial (Investigação Criminal)', style: 'tableCell' }],
                             [{ text: 'STATUS', style: 'tableHeader' }, { text: investigation.status.toUpperCase(), style: 'tableCell', bold: true }],
                             [{ text: 'PRIORIDADE', style: 'tableHeader' }, { text: investigation.priority.toUpperCase(), style: 'tableCell' }],

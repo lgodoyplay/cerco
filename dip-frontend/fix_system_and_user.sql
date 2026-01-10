@@ -31,14 +31,14 @@ ALTER TABLE public.provas ADD COLUMN IF NOT EXISTS url TEXT;
 ALTER TABLE public.provas ADD COLUMN IF NOT EXISTS uploaded_by UUID REFERENCES auth.users(id);
 
 -- 3. Criar um Usuário Admin de Recuperação (caso você não consiga logar)
--- Email: admin@dip.policia
+-- Email: admin@cerco.policia
 -- Senha: admin
 DO $$
 DECLARE
   new_user_id UUID := gen_random_uuid();
 BEGIN
   -- Verificar se o usuário já existe
-  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'admin@dip.policia') THEN
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'admin@cerco.policia') THEN
     -- Inserir usuário na tabela de autenticação
     INSERT INTO auth.users (
       id,
@@ -63,7 +63,7 @@ BEGIN
       '00000000-0000-0000-0000-000000000000',
       'authenticated',
       'authenticated',
-      'admin@dip.policia',
+      'admin@cerco.policia',
       crypt('admin', gen_salt('bf')), -- Senha: admin
       now(),
       now(),
@@ -88,10 +88,10 @@ BEGIN
       created_at
     ) VALUES (
       new_user_id,
-      'admin@dip.policia',
+      'admin@cerco.policia',
       'Administrador do Sistema',
       'Diretor',
-      'PF-000',
+      'PC-000',
       now()
     );
   END IF;

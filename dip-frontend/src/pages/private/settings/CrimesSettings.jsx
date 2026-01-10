@@ -16,7 +16,7 @@ const CrimesSettings = () => {
   const [formData, setFormData] = useState({ name: '', article: '', penalty: '' });
 
   useEffect(() => {
-    localStorage.setItem('dip_settings_crimes', JSON.stringify(crimes));
+    localStorage.setItem('cerco_settings_crimes', JSON.stringify(crimes));
   }, [crimes]);
 
   const handleOpenModal = (crime = null) => {

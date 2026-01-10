@@ -11,8 +11,8 @@
   "investigator": {
     "id": "user-123",
     "nome": "Carlos Mendes",
-    "badge": "APF-4592",
-    "cargo": "Agente de Polícia Federal"
+    "badge": "APC-4592",
+    "cargo": "Agente de Polícia Civil"
   },
   "proofs": [
     {

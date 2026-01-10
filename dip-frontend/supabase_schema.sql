@@ -13,7 +13,7 @@ create or replace function public.handle_new_user()
 returns trigger as $$
 begin
   insert into public.profiles (id, full_name, role)
-  values (new.id, new.raw_user_meta_data->>'name', 'Agente DICOR');
+  values (new.id, new.raw_user_meta_data->>'name', 'Agente CERCO');
   return new;
 end;
 $$ language plpgsql security definer;
@@ -195,7 +195,7 @@ create policy "Apenas Diretor e Coordenador podem criar cursos" on public.cursos
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-      and role in ('Diretor DICOR', 'Coordenador DICOR')
+      and role in ('Diretor CERCO', 'Coordenador CERCO')
     )
   );
 
@@ -204,7 +204,7 @@ create policy "Apenas Diretor e Coordenador podem editar cursos" on public.curso
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-      and role in ('Diretor DICOR', 'Coordenador DICOR')
+      and role in ('Diretor CERCO', 'Coordenador CERCO')
     )
   );
   
@@ -213,7 +213,7 @@ create policy "Apenas Diretor e Coordenador podem deletar cursos" on public.curs
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-      and role in ('Diretor DICOR', 'Coordenador DICOR')
+      and role in ('Diretor CERCO', 'Coordenador CERCO')
     )
   );
 
@@ -226,7 +226,7 @@ create policy "Apenas Diretor e Coordenador podem atribuir cursos" on public.cur
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-      and role in ('Diretor DICOR', 'Coordenador DICOR')
+      and role in ('Diretor CERCO', 'Coordenador CERCO')
     )
   );
 
@@ -235,7 +235,7 @@ create policy "Apenas Diretor e Coordenador podem remover atribuições" on publ
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-      and role in ('Diretor DICOR', 'Coordenador DICOR')
+      and role in ('Diretor CERCO', 'Coordenador CERCO')
     )
   );
 
