@@ -51,6 +51,7 @@ const PrivateLayout = () => {
     { to: '/dashboard/arrest', icon: UserX, label: 'Registrar Prisão' },
     { to: '/dashboard/arrests', icon: Shield, label: 'Registro de Prisões' },
     { to: '/dashboard/bo', icon: FileText, label: 'Registrar BO' },
+    { to: '/dashboard/bo-list', icon: FileText, label: 'Consultar BOs' },
     { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados' },
     { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados' },
     { to: '/dashboard/investigations', icon: Search, label: 'Investigações' },

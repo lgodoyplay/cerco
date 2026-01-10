@@ -73,6 +73,7 @@ function App() {
             <Route path="arrest" element={<RegisterArrest />} />
             <Route path="arrests" element={<ArrestList />} />
             <Route path="bo" element={<RegisterBO />} />
+            <Route path="bo-list" element={<BOList />} />
             <Route path="register-wanted" element={<RegisterWanted />} />
             <Route path="wanted" element={<WantedList />} />
             

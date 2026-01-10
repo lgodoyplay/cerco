@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Save, Eraser, FileText, CheckCircle, AlertCircle, Shield, MapPin, Calendar, User } from 'lucide-react';
 import clsx from 'clsx';
+import { supabase } from '../../lib/supabase';
 
 const RegisterBO = () => {
   const [formData, setFormData] = useState({
@@ -22,15 +23,44 @@ const RegisterBO = () => {
     return formData.complainant && formData.description && formData.location && formData.date && formData.officer;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Success
-    console.log(formData);
-    setNotification({
-      type: 'success',
-      message: 'Boletim de ocorrência registrado com sucesso (simulação)'
-    });
+    try {
+      const { error } = await supabase
+        .from('boletins')
+        .insert([{
+          comunicante: formData.complainant,
+          descricao: formData.description,
+          localizacao: formData.location,
+          data_fato: formData.date,
+          policial_responsavel: formData.officer,
+          status: 'Registrado'
+        }]);
+
+      if (error) throw error;
+
+      // Success
+      setNotification({
+        type: 'success',
+        message: 'Boletim de ocorrência registrado com sucesso'
+      });
+      
+      // Clear form
+      setFormData({
+        complainant: '',
+        description: '',
+        location: '',
+        date: '',
+        officer: '',
+      });
+    } catch (error) {
+      console.error('Erro ao registrar BO:', error);
+      setNotification({
+        type: 'error',
+        message: 'Erro ao registrar boletim: ' + error.message
+      });
+    }
     
     // Clear notification after 3s
     setTimeout(() => setNotification(null), 3000);
