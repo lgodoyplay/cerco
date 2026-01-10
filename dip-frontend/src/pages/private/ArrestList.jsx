@@ -45,9 +45,9 @@ const ArrestList = () => {
   }, []);
 
   const filteredArrests = arrests.filter(arrest => 
-    (arrest.name && typeof arrest.name === 'string' && arrest.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (arrest.passport && typeof arrest.passport === 'string' && arrest.passport.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (arrest.reason && typeof arrest.reason === 'string' && arrest.reason.toLowerCase().includes(searchTerm.toLowerCase()))
+    (arrest.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (arrest.passport || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (arrest.reason || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Pagination
