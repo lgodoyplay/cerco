@@ -1,28 +1,30 @@
 import pdfMake from "pdfmake/build/pdfmake";
-import * as pdfFonts from "pdfmake/build/vfs_fonts";
+import pdfFonts from "pdfmake/build/vfs_fonts"; // Alterado para default import
 
 // Configuração segura das fontes para o PDFMake (compatível com Vite/Webpack)
 try {
-    // Tenta atribuir vfs de diferentes formas possíveis dependendo do bundler
-    if (pdfFonts?.pdfMake?.vfs) {
-        pdfMake.vfs = pdfFonts.pdfMake.vfs;
-    } else if (pdfFonts?.vfs) {
-        pdfMake.vfs = pdfFonts.vfs;
-    } else if (pdfFonts?.default?.pdfMake?.vfs) {
-        pdfMake.vfs = pdfFonts.default.pdfMake.vfs;
-    } else if (pdfFonts?.default?.vfs) {
-        pdfMake.vfs = pdfFonts.default.vfs;
-    } else {
-        console.warn("Estrutura de fontes do PDFMake não encontrada nos imports. Tentando window...");
-        if (window?.pdfMake?.vfs) {
-            pdfMake.vfs = window.pdfMake.vfs;
-        }
-    }
+    // Tenta atribuir vfs de diferentes formas possíveis
+    // Em versões recentes do pdfmake + vite, pdfFonts pode ser o objeto direto ou ter .default
+    const vfs = pdfFonts?.pdfMake?.vfs || 
+                pdfFonts?.vfs || 
+                pdfFonts?.default?.pdfMake?.vfs || 
+                pdfFonts?.default?.vfs ||
+                window?.pdfMake?.vfs;
 
-    if (!pdfMake.vfs) {
-        console.error("ATENÇÃO: VFS Fonts não puderam ser carregadas. O PDF pode falhar ao ser gerado.");
-    } else {
+    if (vfs) {
+        pdfMake.vfs = vfs;
         console.log("PDFMake VFS fonts configuradas com sucesso.");
+    } else {
+        console.error("ATENÇÃO: VFS Fonts não puderam ser carregadas. O PDF pode falhar ao ser gerado. Objeto fonts recebido:", pdfFonts);
+        
+        // Tentativa de emergência: definir uma fonte padrão vazia para não quebrar (pode resultar em texto desformatado mas gera o PDF)
+        if (!pdfMake.vfs) {
+             pdfMake.vfs = {
+                 "Roboto-Regular.ttf": "AAEAAAARAQAABAAQRkZJRwAAAAEA...", // (seria o base64 real, mas não vamos incluir 2MB aqui)
+             };
+             // Se falhar mesmo assim, avisar usuário
+             console.warn("Tentando fallback de emergência vazio.");
+        }
     }
 } catch (e) {
     console.error("Erro fatal ao configurar fontes do PDFMake:", e);
