@@ -1,19 +1,15 @@
 import pdfMake from "pdfmake/build/pdfmake";
-import vfs from "./vfs_fonts"; // Importando fonte localmente para garantir carregamento no Vite
+import pdfFonts from "pdfmake/build/vfs_fonts";
 
-// Configuração robusta do VFS para Vite/Rollup
-if (vfs) {
-    // Se vfs for o objeto de fontes diretamente (exportado via module.exports = vfs)
-    pdfMake.vfs = vfs;
-    console.log("PDFMake VFS fonts configuradas via import local.");
-} else if (window.pdfMake && window.pdfMake.vfs) {
-    // Fallback para global
-    pdfMake.vfs = window.pdfMake.vfs;
-    console.log("PDFMake VFS fonts configuradas via window.pdfMake.");
+// REGISTRA AS FONTES NO PDFMAKE
+// Ajuste seguro para compatibilidade com diferentes versões de build do pdfmake no Vite
+if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
+  pdfMake.vfs = pdfFonts.pdfMake.vfs;
+} else if (pdfFonts && pdfFonts.vfs) {
+  pdfMake.vfs = pdfFonts.vfs;
 } else {
-    console.error("ERRO CRÍTICO: Não foi possível carregar as fontes do PDFMake.");
-    // Tenta definir um objeto vazio para evitar crash total, embora o texto vá falhar
-    pdfMake.vfs = { "Roboto-Regular.ttf": "" };
+   // Caso o import retorne o objeto vfs diretamente (comum em algumas versões)
+   pdfMake.vfs = pdfFonts;
 }
 
 // Configuração das fontes

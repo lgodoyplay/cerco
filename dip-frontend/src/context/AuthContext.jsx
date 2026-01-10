@@ -87,8 +87,9 @@ export const AuthProvider = ({ children }) => {
         if (mounted && loading) {
             console.warn("Auth timeout forçado.");
             setLoading(false);
+            setUser(null); // Força estado deslogado para permitir nova tentativa
         }
-    }, 6000);
+    }, 3000); // Reduzido para 3s para feedback mais rápido
 
     return () => {
         mounted = false;
@@ -113,17 +114,36 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    try {
+        await supabase.auth.signOut();
+    } catch (e) {
+        console.warn("Erro ao fazer logout:", e);
+    } finally {
+        setUser(null);
+        localStorage.clear(); // Limpeza completa
+        window.location.href = '/login';
+    }
   };
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, loading }}>
       {loading ? (
-        <div className="fixed inset-0 bg-slate-950 z-[9999] flex items-center justify-center">
+        <div className="fixed inset-0 bg-slate-950 z-[9999] flex items-center justify-center flex-col gap-6">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-slate-800 border-t-yellow-500 rounded-full animate-spin"></div>
             <span className="text-slate-400 text-sm font-medium animate-pulse">Iniciando sistema...</span>
           </div>
+          
+          {/* Botão de Emergência após 2s se ainda estiver carregando (via CSS animation delay seria ideal, mas aqui vai fixo) */}
+          <button 
+            onClick={() => {
+                setLoading(false);
+                logout();
+            }}
+            className="mt-4 px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded hover:bg-slate-700 transition-colors border border-slate-700"
+          >
+            Demorando muito? Clique aqui para reiniciar
+          </button>
         </div>
       ) : (
         children
