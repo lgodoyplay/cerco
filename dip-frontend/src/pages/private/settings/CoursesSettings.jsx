@@ -216,6 +216,9 @@ const CoursesSettings = () => {
             Gestão de Cursos
           </h1>
           <p className="text-slate-400 text-sm mt-1">Gerencie os cursos e especializações da corporação</p>
+          <div className="text-xs text-slate-500 mt-1 bg-slate-800 p-1 rounded inline-block">
+            Debug Role: {userRole || 'Carregando...'} | Manager: {isManager ? 'Sim' : 'Não'}
+          </div>
         </div>
 
         {isManager && (
