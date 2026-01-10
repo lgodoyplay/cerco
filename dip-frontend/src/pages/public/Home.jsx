@@ -145,7 +145,6 @@ const Home = () => {
         .from('candidatos')
         .insert([{
           nome: candidateForm.nome,
-          email: candidateForm.email,
           telefone: candidateForm.telefone,
           mensagem: candidateForm.mensagem
         }]);
@@ -153,7 +152,7 @@ const Home = () => {
       if (error) throw error;
 
       setFormStatus('success');
-      setCandidateForm({ nome: '', email: '', telefone: '', mensagem: '' });
+      setCandidateForm({ nome: '', telefone: '', mensagem: '' });
       setTimeout(() => {
         setFormStatus('idle');
         setShowQuiz(false);
