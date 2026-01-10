@@ -4,12 +4,21 @@ export const generateInvestigationPDF = (investigation, user) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 25; // Margem padrão A4 (2.5cm)
-  let yPos = 30;
+  const marginTop = 30; // Margem Superior 3cm
+  const marginLeft = 30; // Margem Esquerda 3cm
+  const marginRight = 20; // Margem Direita 2cm
+  const marginBottom = 20; // Margem Inferior 2cm
+  let yPos = marginTop;
 
-  // Configurações de Fonte
-  const fontNormal = 'helvetica';
-  const fontBold = 'helvetica'; // jsPDF padrão suporta bold como estilo
+  // Configurações de Fonte ABNT (Times New Roman ou Arial)
+  // jsPDF padrão usa Helvetica (similar a Arial).
+  // Tamanho padrão 12, espaçamento 1.5
+  const fontNormal = 'times'; // Usando Times para ficar mais formal/ABNT
+  const fontBold = 'times'; 
+  const fontSizeBody = 12;
+  const fontSizeTitle = 14;
+  const fontSizeSmall = 10;
+  const lineHeight = 1.5; // Espaçamento entre linhas (fator aproximado)
   
   // --- FUNÇÕES AUXILIARES ---
 
@@ -20,7 +29,7 @@ export const generateInvestigationPDF = (investigation, user) => {
 
     // Cabeçalho Oficial
     doc.setFont(fontBold, 'bold');
-    doc.setFontSize(10);
+    doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     doc.text('REPÚBLICA FEDERATIVA DO BRASIL', pageWidth / 2, 20, { align: 'center' });
     doc.text('MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA', pageWidth / 2, 25, { align: 'center' });
@@ -29,25 +38,26 @@ export const generateInvestigationPDF = (investigation, user) => {
     
     // Linha separadora
     doc.setLineWidth(0.5);
-    doc.line(margin, 40, pageWidth - margin, 40);
+    doc.line(marginLeft, 40, pageWidth - marginRight, 40);
   };
 
   const drawFooter = (pageNumber, totalPages) => {
     doc.setFont(fontNormal, 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100);
+    doc.setFontSize(10); // ABNT: tamanho 10 para notas de rodapé/paginação
+    doc.setTextColor(0, 0, 0);
     
+    // ABNT: Paginação no canto superior direito é comum, mas rodapé centralizado também é aceito em documentos oficiais internos.
+    // Vamos manter no rodapé conforme padrão anterior, mas com fonte correta.
     const footerText = `Inquérito Policial Nº ${investigation.id} - Confidencial`;
-    doc.text(footerText, margin, pageHeight - 15);
-    doc.text(`Página ${pageNumber} de ${totalPages}`, pageWidth - margin, pageHeight - 15, { align: 'right' });
-    doc.text('Sistema de Inteligência Policial - Gerado eletronicamente', pageWidth / 2, pageHeight - 10, { align: 'center' });
+    doc.text(footerText, marginLeft, pageHeight - 15);
+    doc.text(`Página ${pageNumber} de ${totalPages}`, pageWidth - marginRight, pageHeight - 15, { align: 'right' });
   };
 
   const checkPageBreak = (heightNeeded) => {
-    if (yPos + heightNeeded > pageHeight - margin) {
+    if (yPos + heightNeeded > pageHeight - marginBottom) {
       doc.addPage();
       drawHeader();
-      yPos = 50; // Reinicia posição Y após cabeçalho
+      yPos = marginTop + 20; // Reinicia posição Y após cabeçalho com margem
       return true;
     }
     return false;
@@ -56,30 +66,30 @@ export const generateInvestigationPDF = (investigation, user) => {
   // --- INÍCIO DO DOCUMENTO ---
 
   drawHeader();
-  yPos = 55;
+  yPos = marginTop + 30; // Ajuste inicial
 
   // Título do Documento
   doc.setFont(fontBold, 'bold');
-  doc.setFontSize(16);
+  doc.setFontSize(fontSizeTitle);
   doc.text('RELATÓRIO FINAL DE INQUÉRITO POLICIAL', pageWidth / 2, yPos, { align: 'center' });
   yPos += 10;
   
   const formattedId = `PF - ${investigation.id.toString().padStart(3, '0')}`;
-  doc.setFontSize(12);
+  doc.setFontSize(fontSizeBody);
   doc.text(`INQUÉRITO Nº: ${formattedId}/${new Date().getFullYear()}`, pageWidth / 2, yPos, { align: 'center' });
   yPos += 20;
 
   // --- DADOS DA INVESTIGAÇÃO (TABELA SIMULADA) ---
   
-  doc.setFontSize(10);
+  doc.setFontSize(fontSizeSmall);
   doc.setFillColor(240, 240, 240);
-  doc.rect(margin, yPos, pageWidth - (margin * 2), 35, 'F');
-  doc.setDrawColor(200, 200, 200);
-  doc.rect(margin, yPos, pageWidth - (margin * 2), 35);
+  doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 35, 'F');
+  doc.setDrawColor(0, 0, 0); // Preto para ficar mais sóbrio
+  doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 35);
 
   let dataY = yPos + 8;
-  const col1 = margin + 5;
-  const col2 = margin + 100;
+  const col1 = marginLeft + 5;
+  const col2 = marginLeft + 100;
 
   // Linha 1
   doc.setFont(fontBold, 'bold');
@@ -90,9 +100,7 @@ export const generateInvestigationPDF = (investigation, user) => {
   doc.setFont(fontBold, 'bold');
   doc.text('STATUS ATUAL:', col2, dataY);
   doc.setFont(fontNormal, 'normal');
-  doc.setTextColor(investigation.status === 'Encerrada' ? 200 : 0, 0, 0);
   doc.text(investigation.status.toUpperCase(), col2 + 30, dataY);
-  doc.setTextColor(0, 0, 0);
 
   dataY += 8;
 
@@ -135,12 +143,12 @@ export const generateInvestigationPDF = (investigation, user) => {
 
   // --- ENVOLVIDOS ---
   doc.setFont(fontBold, 'bold');
-  doc.setFontSize(11);
-  doc.text('1. DOS ENVOLVIDOS', margin, yPos);
+  doc.setFontSize(fontSizeBody);
+  doc.text('1. DOS ENVOLVIDOS', marginLeft, yPos);
   yPos += 8;
   
   doc.setFont(fontNormal, 'normal');
-  doc.setFontSize(11);
+  doc.setFontSize(fontSizeBody);
   
   let involvedText = 'Não informado.';
   if (Array.isArray(investigation.involved) && investigation.involved.length > 0) {
@@ -149,25 +157,28 @@ export const generateInvestigationPDF = (investigation, user) => {
       involvedText = investigation.involved;
   }
   
-  const involvedLines = doc.splitTextToSize(involvedText, pageWidth - (margin * 2));
-  doc.text(involvedLines, margin, yPos);
+  // Parágrafo com recuo (1.25cm ~ 12.5mm aprox 13) na primeira linha seria o ideal ABNT
+  // jsPDF splitTextToSize não suporta indentação de primeira linha nativamente fácil
+  // Vamos manter justificado simples por enquanto
+  const involvedLines = doc.splitTextToSize(involvedText, pageWidth - (marginLeft + marginRight));
+  doc.text(involvedLines, marginLeft, yPos);
   yPos += (involvedLines.length * 6) + 10;
 
   // --- FATOS / DESCRIÇÃO ---
   checkPageBreak(30);
   doc.setFont(fontBold, 'bold');
-  doc.text('2. DOS FATOS APURADOS', margin, yPos);
+  doc.text('2. DOS FATOS APURADOS', marginLeft, yPos);
   yPos += 8;
 
   doc.setFont(fontNormal, 'normal');
-  const descLines = doc.splitTextToSize(investigation.description || 'Sem descrição.', pageWidth - (margin * 2));
-  doc.text(descLines, margin, yPos);
+  const descLines = doc.splitTextToSize(investigation.description || 'Sem descrição.', pageWidth - (marginLeft + marginRight));
+  doc.text(descLines, marginLeft, yPos);
   yPos += (descLines.length * 6) + 15;
 
   // --- PROVAS E EVIDÊNCIAS ---
   checkPageBreak(30);
   doc.setFont(fontBold, 'bold');
-  doc.text('3. DAS PROVAS E EVIDÊNCIAS COLETADAS', margin, yPos);
+  doc.text('3. DAS PROVAS E EVIDÊNCIAS COLETADAS', marginLeft, yPos);
   yPos += 10;
 
   if (investigation.proofs && investigation.proofs.length > 0) {
@@ -175,27 +186,27 @@ export const generateInvestigationPDF = (investigation, user) => {
       checkPageBreak(50); // Verifica se cabe pelo menos o cabeçalho da prova
 
       // Caixa da prova
-      doc.setDrawColor(220, 220, 220);
-      doc.setFillColor(250, 250, 250); // Fundo cinza claro
-      doc.rect(margin, yPos, pageWidth - (margin * 2), 8, 'F'); // Cabeçalho da prova
+      doc.setDrawColor(0, 0, 0);
+      doc.setFillColor(240, 240, 240); // Fundo cinza claro
+      doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 8, 'F'); // Cabeçalho da prova
       
       doc.setFont(fontBold, 'bold');
-      doc.setFontSize(10);
+      doc.setFontSize(fontSizeSmall);
       doc.setTextColor(0, 0, 0);
-      doc.text(`EVIDÊNCIA #${index + 1} - ${proof.type ? proof.type.toUpperCase() : 'DOCUMENTO'}`, margin + 2, yPos + 6);
+      doc.text(`EVIDÊNCIA #${index + 1} - ${proof.type ? proof.type.toUpperCase() : 'DOCUMENTO'}`, marginLeft + 2, yPos + 6);
       
       yPos += 12;
 
       // Descrição da prova
       doc.setFont(fontNormal, 'normal');
-      doc.setFontSize(10);
+      doc.setFontSize(fontSizeBody);
       
       const proofTitle = proof.title ? `${proof.title} - ` : '';
       const proofDescText = `${proofTitle}${proof.description || 'Sem descrição adicional.'}`;
-      const proofLines = doc.splitTextToSize(proofDescText, pageWidth - (margin * 2));
+      const proofLines = doc.splitTextToSize(proofDescText, pageWidth - (marginLeft + marginRight));
       
-      doc.text(proofLines, margin, yPos);
-      yPos += (proofLines.length * 5) + 5;
+      doc.text(proofLines, marginLeft, yPos);
+      yPos += (proofLines.length * 6) + 5;
 
       // Conteúdo da prova (Imagem ou Link)
       if (proof.type === 'image' && proof.content) {
@@ -210,19 +221,19 @@ export const generateInvestigationPDF = (investigation, user) => {
             const xImg = (pageWidth - imgWidth) / 2;
             
             doc.addImage(proof.content, 'JPEG', xImg, yPos, imgWidth, imgHeight);
-            doc.setFontSize(8);
+            doc.setFontSize(8); // Legenda menor
             doc.text('Figura: Representação visual da evidência.', xImg, yPos + imgHeight + 5);
             yPos += imgHeight + 15;
         } catch (e) {
             doc.setTextColor(200, 0, 0);
-            doc.text('[Imagem não pôde ser carregada no relatório]', margin, yPos);
+            doc.text('[Imagem não pôde ser carregada no relatório]', marginLeft, yPos);
             doc.setTextColor(0, 0, 0);
             yPos += 10;
         }
       } else if (proof.type === 'link') {
         doc.setTextColor(0, 0, 255);
-        doc.setFontSize(9);
-        doc.textWithLink(`Acesse o conteúdo externo: ${proof.content}`, margin, yPos, { url: proof.content });
+        doc.setFontSize(fontSizeSmall);
+        doc.textWithLink(`Acesse o conteúdo externo: ${proof.content}`, marginLeft, yPos, { url: proof.content });
         doc.setTextColor(0, 0, 0);
         yPos += 10;
       }
@@ -231,7 +242,7 @@ export const generateInvestigationPDF = (investigation, user) => {
     });
   } else {
     doc.setFont(fontNormal, 'italic');
-    doc.text('Nenhuma prova digital anexada a este relatório.', margin, yPos);
+    doc.text('Nenhuma prova digital anexada a este relatório.', marginLeft, yPos);
     yPos += 10;
   }
 
@@ -239,14 +250,14 @@ export const generateInvestigationPDF = (investigation, user) => {
   checkPageBreak(40);
   yPos += 10;
   doc.setFont(fontBold, 'bold');
-  doc.setFontSize(11);
-  doc.text('4. CONCLUSÃO', margin, yPos);
+  doc.setFontSize(fontSizeBody);
+  doc.text('4. CONCLUSÃO', marginLeft, yPos);
   yPos += 8;
   
   doc.setFont(fontNormal, 'normal');
   const conclusionText = "Diante do exposto, encaminha-se o presente Inquérito Policial para apreciação da autoridade competente, contendo o relato detalhado das diligências realizadas e evidências coletadas, dando-se por encerradas as atividades investigativas desta fase.";
-  const conclusionLines = doc.splitTextToSize(conclusionText, pageWidth - (margin * 2));
-  doc.text(conclusionLines, margin, yPos);
+  const conclusionLines = doc.splitTextToSize(conclusionText, pageWidth - (marginLeft + marginRight));
+  doc.text(conclusionLines, marginLeft, yPos);
   yPos += (conclusionLines.length * 6) + 30;
 
   // --- ASSINATURA ---
