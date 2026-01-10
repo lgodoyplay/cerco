@@ -1,17 +1,21 @@
 import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 
-// Registrar fontes (necessário para pdfmake no browser)
-// Em um ambiente de build real, isso pode variar, mas para Vite/React padrão funciona assim
-// Se der erro de vfs, usaremos o CDN ou outra abordagem
-if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
+// Tentar registrar as fontes de várias maneiras para garantir compatibilidade com Vite
+try {
+  if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
     pdfMake.vfs = pdfFonts.pdfMake.vfs;
-} else if (pdfFonts && pdfFonts.vfs) {
+  } else if (pdfFonts && pdfFonts.vfs) {
     pdfMake.vfs = pdfFonts.vfs;
-} else {
-    // Fallback se a importação falhar de alguma forma estranha
-    // Geralmente não é necessário se instalado via npm
-    console.warn("VFS fonts not found automatically. Check pdfmake import.");
+  } else if (window.pdfMake && window.pdfMake.vfs) {
+     // Fallback global
+  } else {
+     // Última tentativa: atribuir diretamente se for o objeto esperado
+     // @ts-ignore
+     pdfMake.vfs = pdfFonts.default ? pdfFonts.default.pdfMake.vfs : pdfFonts;
+  }
+} catch (e) {
+  console.warn("Erro ao configurar VFS fonts:", e);
 }
 
 // --- CONFIGURAÇÃO DE ESTILOS ---
@@ -111,9 +115,9 @@ const formatDate = (dateStr) => {
     });
 };
 
-// Gerar Brasão (Placeholder Base64 - Escudo Simplificado Dourado/Preto)
-// Isso evita dependência externa de imagem.
-const coatOfArmsBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5wQJCg0s1j2a4wAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAADxUlEQVRoM+2az0tUQRTHPzO7rq65a5q5aVqWmJZZWJCNkvoDCoKCiCLoT7CbdO9f0KVDh6IOReBFEQRFQRRk9YOkFq5pWm7+2MztYt6bmXbzXtbdfW931wcG5s28N/P9zJlz58w8sI022mijTf5RzJ5e+H1f07b19nZtX18kFAr5AoGAr60t4u/sDIfa2iK+YDDk8/l8UiwW5ePjYzk3Nyc///xTzszMyPHxcbmysrJp2/r7+0uWlpaKk5OTxUAg4J+cnCx1dHSU+vv7S93d3aXu7u5SR0dHqaurq9TU1OTL5XKyv7+/uLi4WJyfn5eHh4fl/Py8PDk52bRtW62RkZHizMyM3NvbK+fni2W/3y+NjY1SU1MjdXV1Ul9fLw0NDdLY2CgTiYTc29sr5+bm5MTEhDw6OiqXlpZKExMTe2qNjo7Kx8fHcrFYlIeHh+Xy8rJcW1srl5aW5OrqarlQKMjV1dVyeXm5PDw8LB8eHspHR0fyb9s2Hh4eysfHx/Lw8LBcKpXk6upqubq6Wi4UCnJ1dbVcWlqSq6ur5fLycllV649t22gYhmEYhmEYhmEYhmEYhmEYhmEYhmGY/9O2beP19bV8enq6aV1dXc261t/fL5eWluT+/n55eHhYnp2d3bRt27aN4+Pj8sDAgJydnS1vbGzIra2t8szMjDwzMyO3trbKGxsbcnZ2tjw4OCgfHx9v2rZt28bZ2Vl5ZGREbm9vl9vb2+XExIQ8OTkpt7e3y+3t7fLIyIicnZ3dtG3btvHq6qq8srIit7a2yqOjI3J/f7/c398vj46Oyq2trfLKyor8+vXrpm3btvH5+blcKBTkzs5OOTExIff398v9/f1yYmJC7uzslAuFgnx+fr5p27Zt48HBQXlqakpubW2V+/v75cHBQfnr1y95cHBQ7u/vl1tbW+WpqSn54OBg07Zt28bLly/Li4uLcnNzsxwKhWQsFpOxWEwOh8NyY2OjPD8/Ly9fvrxp27ZtYyqVkpubm+XW1la5t7dXDgQCciAQkHt7e+XW1la5ublZplKpTdu2bRsvXrwod3Z2yv39/XI0GpXD4bAcDoflaDQq9/f3y52dnfLFixebtm3bNp6fn5cnJibk1tZWuVgsyqVSSdbV1cmlUkkul8tya2urPDExIZ+fn2/atm3bODMzIw8PD8utrKzI9fX1cl1dnVxfXy+zs7Nyf3+/PDMz89e2/Vd+AGa+t7e3a/v6IqFQyBcIBHxtbRF/Z2c41NYW8QWDIV8ul5Nzc3Py06dPcnh4+D+97w/3/lD05wAAAABJRU5ErkJggg==";
+// Gerar Brasão (Placeholder Base64 - Imagem Transparente de 1x1 pixel para evitar erro)
+// O anterior estava corrompido
+const coatOfArmsBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 // Gerar Documento
 export const generateProfessionalPDF = async (investigation, user) => {
@@ -126,7 +130,14 @@ export const generateProfessionalPDF = async (investigation, user) => {
             processedProofs = await Promise.all(investigation.proofs.map(async (proof) => {
                 let imgData = null;
                 if (proof.type === 'image' && proof.content) {
-                    imgData = await getBase64ImageFromURL(proof.content);
+                    try {
+                        imgData = await getBase64ImageFromURL(proof.content);
+                        // Validação extra: se não for string válida ou vazia, anula
+                        if (!imgData || imgData.length < 100) imgData = null;
+                    } catch (e) {
+                        console.warn(`Falha ao carregar imagem da prova ${proof.id}:`, e);
+                        imgData = null;
+                    }
                 }
                 return { ...proof, imgData };
             }));
