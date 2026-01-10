@@ -42,7 +42,7 @@ const DashboardHome = () => {
           supabase.from('prisoes').select('*', { count: 'exact', head: true }),
           supabase.from('procurados').select('*', { count: 'exact', head: true }),
           supabase.from('investigacoes').select('*', { count: 'exact', head: true }),
-          supabase.from('system_logs').select('*, profiles(full_name, role)').order('created_at', { ascending: false }).limit(5)
+          supabase.from('system_logs').select('*').order('created_at', { ascending: false }).limit(5)
         ]);
 
         setStats({

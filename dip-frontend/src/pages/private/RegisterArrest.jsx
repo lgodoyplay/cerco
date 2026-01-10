@@ -16,7 +16,12 @@ const RegisterArrest = () => {
     description: '',
   });
 
-  const [image, setImage] = useState(null); // Changed to single image state to match usage
+  const [images, setImages] = useState({
+    face: null,
+    bag: null,
+    tablet: null,
+    approach: null
+  });
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
 
@@ -26,15 +31,15 @@ const RegisterArrest = () => {
   };
 
   const handleImageUpload = (id, dataUrl) => {
-    setImage(dataUrl);
+    setImages(prev => ({ ...prev, [id]: dataUrl }));
   };
 
   const handleImageRemove = (id) => {
-    setImage(null);
+    setImages(prev => ({ ...prev, [id]: null }));
   };
 
   const isFormValid = () => {
-    return formData.name && formData.passport && formData.articles && formData.officer;
+    return formData.name && formData.passport && formData.articles && formData.officer && images.face;
   };
 
   const dataURLtoBlob = (dataurl) => {
@@ -50,8 +55,8 @@ const RegisterArrest = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!image) {
-      setNotification({ type: 'error', message: 'A foto do preso é obrigatória.' });
+    if (!images.face) {
+      setNotification({ type: 'error', message: 'A foto do rosto é obrigatória.' });
       return;
     }
 
@@ -61,10 +66,10 @@ const RegisterArrest = () => {
       // 0. Get User
       const { data: { user } } = await supabase.auth.getUser();
 
-      // 1. Upload Image to Supabase Storage
-      const fileBlob = dataURLtoBlob(image);
+      // 1. Upload Image to Supabase Storage (Face is mandatory)
+      const fileBlob = dataURLtoBlob(images.face);
       const sanitizedDoc = formData.passport.replace(/[^a-zA-Z0-9]/g, '_');
-      const fileName = `arrests/${Date.now()}_${sanitizedDoc}.jpg`;
+      const fileName = `arrests/${Date.now()}_${sanitizedDoc}_face.jpg`;
       
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('prisoes')
