@@ -162,6 +162,11 @@ const coatOfArmsBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB
 export const generateProfessionalPDF = async (investigation, user) => {
     console.log("Iniciando geração de PDF Profissional (ABNT)...", investigation);
     try {
+        // Garantir configuração de VFS
+        if (!pdfMake.vfs && window.pdfMake && window.pdfMake.vfs) {
+             pdfMake.vfs = window.pdfMake.vfs;
+        }
+
         // Preparar dados de imagens (assíncrono)
         let processedProofs = [];
         if (investigation.proofs && investigation.proofs.length > 0) {
@@ -172,7 +177,10 @@ export const generateProfessionalPDF = async (investigation, user) => {
                     try {
                         imgData = await getBase64ImageFromURL(proof.content);
                         // Validação extra: se não for string válida ou vazia, anula
-                        if (!imgData || imgData.length < 100) imgData = null;
+                        if (!imgData || typeof imgData !== 'string' || !imgData.startsWith('data:image')) {
+                             console.warn(`Imagem inválida descartada para prova ${proof.id}`);
+                             imgData = null;
+                        }
                     } catch (e) {
                         console.warn(`Falha ao carregar imagem da prova ${proof.id}:`, e);
                         imgData = null;
@@ -181,6 +189,9 @@ export const generateProfessionalPDF = async (investigation, user) => {
                 return { ...proof, imgData };
             }));
         }
+        
+        // Filtra imagens válidas para evitar erro do pdfmake
+        const validImages = processedProofs.filter(p => p.imgData);
 
         // Definir Conteúdo
         const docDefinition = {
@@ -213,12 +224,14 @@ export const generateProfessionalPDF = async (investigation, user) => {
 
             content: [
                 // --- CAPA ---
-                {
+                // Uso seguro da imagem do brasão
+                (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
                     image: coatOfArmsBase64,
                     width: 60,
                     alignment: 'center',
                     margin: [0, 20, 0, 10]
-                },
+                } : { text: '[BRASÃO]', alignment: 'center', margin: [0, 20, 0, 10] },
+
                 { text: 'INQUÉRITO POLICIAL', style: 'title' },
                 { text: `PROCEDIMENTO Nº: PF - ${investigation.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`, style: 'subHeader' },
                 { text: `DATA DE INSTAURAÇÃO: ${formatDate(investigation.createdAt)}`, style: 'subHeader', fontSize: 12 },
@@ -301,8 +314,11 @@ export const generateProfessionalPDF = async (investigation, user) => {
                 } : { text: 'Nenhuma prova anexada.', style: 'normalText', italics: true },
 
                 // --- ANEXOS (IMAGENS) ---
-                processedProofs.some(p => p.imgData) ? { text: '6. ANEXOS FOTOGRÁFICOS', style: 'sectionTitle', pageBreak: 'before', tocItem: true } : null,
-                ...processedProofs.filter(p => p.imgData).map((proof, index) => {
+                validImages.length > 0 ? { text: '6. ANEXOS FOTOGRÁFICOS', style: 'sectionTitle', pageBreak: 'before', tocItem: true } : null,
+                ...validImages.map((proof, index) => {
+                    // Garantia final de que temos uma imagem válida antes de renderizar
+                    if (!proof.imgData) return null;
+                    
                     return [
                         {
                             text: `ANEXO ${index + 1} - ${proof.title || 'EVIDÊNCIA VISUAL'}`,
@@ -310,7 +326,7 @@ export const generateProfessionalPDF = async (investigation, user) => {
                             margin: [0, 20, 0, 10]
                         },
                         {
-                            image: proof.imgData,
+                            image: proof.imgData, // Aqui garantimos que é válido
                             fit: [450, 350], // Tamanho máximo
                             alignment: 'center',
                             margin: [0, 0, 0, 10]

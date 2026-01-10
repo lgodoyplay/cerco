@@ -5,14 +5,6 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    chunkSizeWarningLimit: 1000, // Aumenta o limite de aviso para 1MB
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          pdfmake: ['pdfmake/build/pdfmake', 'pdfmake/build/vfs_fonts'], // Separa pdfmake em um chunk isolado
-          vendor: ['react', 'react-dom', 'react-router-dom'], // Separa libs principais
-        },
-      },
-    },
+    chunkSizeWarningLimit: 1500, // Aumenta limite para evitar avisos, mas mantém bundle único para segurança
   },
 })
