@@ -84,6 +84,7 @@ const Home = () => {
 
         setWantedList((wantedData || []).map(item => ({
           ...item,
+          name: item.nome,
           image: item.foto_principal,
           dangerLevel: item.periculosidade,
           crime: item.motivo
@@ -105,8 +106,11 @@ const Home = () => {
 
   // Filter Wanted List
   const filteredWanted = wantedList.filter(person => {
-    const matchesSearch = person.name.toLowerCase().includes(wantedSearch.toLowerCase()) || 
-                          (person.crime || '').toLowerCase().includes(wantedSearch.toLowerCase());
+    const personName = person.name || '';
+    const personCrime = person.crime || '';
+    
+    const matchesSearch = personName.toLowerCase().includes(wantedSearch.toLowerCase()) || 
+                          personCrime.toLowerCase().includes(wantedSearch.toLowerCase());
     const matchesFilter = wantedFilter === 'all' || (person.dangerLevel || person.status) === wantedFilter;
     return matchesSearch && matchesFilter;
   });

@@ -204,8 +204,8 @@ const CoursesSettings = () => {
   const isManager = ['diretor', 'coordenador', 'escrivão', 'agente'].some(role => userRoleLower.includes(role));
 
   const filteredCourses = courses.filter(course => 
-    course.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.descricao?.toLowerCase().includes(searchTerm.toLowerCase())
+    (course.nome || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (course.descricao || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

@@ -38,7 +38,7 @@ const WantedList = () => {
   }, []);
 
   const filteredList = wantedList.filter(person => 
-    person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (person.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (person.crime || person.reason || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
