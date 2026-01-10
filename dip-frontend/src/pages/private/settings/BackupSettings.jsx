@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from '../../../lib/supabase';
 import { Database, Download, Upload, RefreshCw, AlertOctagon, CheckCircle, Loader } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 
@@ -24,9 +25,20 @@ const BackupSettings = () => {
   const handleExport = () => handleAction('Exportação de Dados', 'Backup realizado com sucesso. O download iniciará em breve.');
   const handleImport = () => handleAction('Importação de Dados', 'Dados importados com sucesso. O sistema foi atualizado.');
   
-  const handleReset = () => {
+  const handleReset = async () => {
     if (window.confirm('ATENÇÃO: Esta ação apagará TODOS os dados do sistema e restaurará as configurações de fábrica. Tem certeza?')) {
-      handleAction('Reset de Sistema', 'Sistema restaurado para os padrões de fábrica.');
+      try {
+        setIsLoading(true);
+        const { error } = await supabase.rpc('reset_system_data');
+        
+        if (error) throw error;
+        
+        handleAction('Reset de Sistema', 'Sistema restaurado para os padrões de fábrica.');
+      } catch (error) {
+        console.error('Erro ao resetar sistema:', error);
+        setStatus({ type: 'error', message: 'Erro ao resetar sistema: ' + error.message });
+        setIsLoading(false);
+      }
     }
   };
 
