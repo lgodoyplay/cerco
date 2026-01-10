@@ -38,6 +38,39 @@ const Home = () => {
   const [selectedWanted, setSelectedWanted] = useState(null);
   const [selectedArrest, setSelectedArrest] = useState(null);
 
+  // Candidate Form
+  const [candidateForm, setCandidateForm] = useState({
+    nome: '',
+    email: '',
+    telefone: '',
+    mensagem: ''
+  });
+  const [formStatus, setFormStatus] = useState('idle'); // idle, submitting, success, error
+
+  const handleCandidateSubmit = async (e) => {
+    e.preventDefault();
+    setFormStatus('submitting');
+    try {
+      const { error } = await supabase
+        .from('candidatos')
+        .insert([{
+          nome: candidateForm.nome,
+          email: candidateForm.email,
+          telefone: candidateForm.telefone,
+          mensagem: candidateForm.mensagem
+        }]);
+
+      if (error) throw error;
+
+      setFormStatus('success');
+      setCandidateForm({ nome: '', email: '', telefone: '', mensagem: '' });
+      setTimeout(() => setFormStatus('idle'), 5000);
+    } catch (error) {
+      console.error('Erro ao enviar candidatura:', error);
+      setFormStatus('error');
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
