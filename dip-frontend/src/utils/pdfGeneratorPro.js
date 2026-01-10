@@ -1,26 +1,4 @@
-import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
-
-// REGISTRA AS FONTES NO PDFMAKE
-// Ajuste seguro para compatibilidade com diferentes versões de build do pdfmake no Vite
-if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
-  pdfMake.vfs = pdfFonts.pdfMake.vfs;
-} else if (pdfFonts && pdfFonts.vfs) {
-  pdfMake.vfs = pdfFonts.vfs;
-} else {
-   // Caso o import retorne o objeto vfs diretamente (comum em algumas versões)
-   pdfMake.vfs = pdfFonts;
-}
-
-// Configuração das fontes
-pdfMake.fonts = {
-    Roboto: {
-        normal: 'Roboto-Regular.ttf',
-        bold: 'Roboto-Medium.ttf',
-        italics: 'Roboto-Italic.ttf',
-        bolditalics: 'Roboto-MediumItalic.ttf'
-    }
-};
+import pdfMake from "./pdf";
 
 // Função para garantir que as fontes estejam carregadas antes de gerar (Mantido para compatibilidade)
 const ensureFontsConfigured = () => true;
