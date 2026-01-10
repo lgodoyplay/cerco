@@ -320,7 +320,9 @@ const Home = () => {
                     <td className="p-4">
                       <div className="flex items-center gap-2 text-sm text-slate-300">
                         <Calendar size={14} className="text-slate-500" />
-                        {format(new Date(arrest.date), 'dd/MM/yyyy', { locale: ptBR })}
+                        {arrest.date && !isNaN(new Date(arrest.date).getTime()) 
+                          ? format(new Date(arrest.date), 'dd/MM/yyyy', { locale: ptBR })
+                          : 'Data desconhecida'}
                       </div>
                     </td>
                     <td className="p-4 text-center">

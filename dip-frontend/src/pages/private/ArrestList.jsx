@@ -137,7 +137,9 @@ const ArrestList = () => {
                   <td className="p-4">
                     <div className="flex items-center gap-2 text-sm text-slate-300">
                       <Calendar size={14} className="text-slate-500" />
-                      {format(new Date(arrest.date), 'dd/MM/yyyy', { locale: ptBR })}
+                      {arrest.date && !isNaN(new Date(arrest.date).getTime()) 
+                        ? format(new Date(arrest.date), 'dd/MM/yyyy', { locale: ptBR })
+                        : 'Data desconhecida'}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
                       <Shield size={12} />
