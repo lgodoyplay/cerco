@@ -181,6 +181,8 @@ export const useSettings = () => {
     saveSetting('corporation', newCorporation);
   };
 
+  const updateRoles = (newRoles) => saveSetting('roles', newRoles);
+
   return {
     users,
     corporation,
@@ -190,6 +192,8 @@ export const useSettings = () => {
     updateUser,
     toggleUserStatus,
     deleteUser,
-    updateCorporation
+    updateCorporation,
+    updateRoles,
+    logAction
   };
 };

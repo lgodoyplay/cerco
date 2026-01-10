@@ -38,22 +38,44 @@ const Home = () => {
   const [selectedWanted, setSelectedWanted] = useState(null);
   const [selectedArrest, setSelectedArrest] = useState(null);
 
+  const [stats, setStats] = useState({
+    arrests: 0,
+    wanted: 0,
+    cases: 0,
+    agents: 0
+  });
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [
           { data: wantedData },
-          { data: arrestData }
+          { data: arrestData },
+          { count: totalWanted },
+          { count: totalArrests },
+          { count: totalCases },
+          { count: totalAgents }
         ] = await Promise.all([
           supabase.from('procurados').select('*').order('created_at', { ascending: false }).limit(6),
-          supabase.from('prisoes').select('*').order('created_at', { ascending: false }).limit(6)
+          supabase.from('prisoes').select('*').order('created_at', { ascending: false }).limit(6),
+          supabase.from('procurados').select('*', { count: 'exact', head: true }),
+          supabase.from('prisoes').select('*', { count: 'exact', head: true }),
+          supabase.from('investigacoes').select('*', { count: 'exact', head: true }).eq('status', 'Concluída'),
+          supabase.from('profiles').select('*', { count: 'exact', head: true })
         ]);
+
+        setStats({
+          arrests: totalArrests || 0,
+          wanted: totalWanted || 0,
+          cases: totalCases || 0,
+          agents: totalAgents || 0
+        });
 
         setWantedList((wantedData || []).map(item => ({
           ...item,
           name: item.nome,
           image: item.foto_principal,
-          dangerLevel: item.periculosidade,
+          dangerLevel: item.periculosidade, // Adjust if column name is different
           crime: item.motivo
         })));
 
@@ -61,7 +83,7 @@ const Home = () => {
           ...item,
           name: item.nome,
           image: item.foto_principal,
-          reason: item.observacoes // using observacoes as reason since we don't have 'motivo' in arrests table, or 'artigo'
+          reason: item.observacoes
         })));
       } catch (error) {
         console.error('Erro ao carregar dados públicos:', error);
@@ -127,10 +149,10 @@ const Home = () => {
       {/* Stats Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard icon={Users} value={arrestList.length || "1,240"} label="Presos Detidos" color="blue" />
-          <StatCard icon={Siren} value={wantedList.length || "42"} label="Procurados" color="red" />
-          <StatCard icon={FileText} value="156" label="Casos Encerrados" color="emerald" />
-          <StatCard icon={Shield} value="89" label="Agentes Ativos" color="amber" />
+          <StatCard icon={Users} value={stats.arrests} label="Presos Detidos" color="blue" />
+          <StatCard icon={Siren} value={stats.wanted} label="Procurados" color="red" />
+          <StatCard icon={FileText} value={stats.cases} label="Casos Encerrados" color="emerald" />
+          <StatCard icon={Shield} value={stats.agents} label="Agentes Ativos" color="amber" />
         </div>
       </section>
 
