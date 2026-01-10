@@ -37,19 +37,21 @@ const DashboardHome = () => {
           { count: presosCount },
           { count: procuradosCount },
           { count: investigacoesCount },
+          { count: bosCount },
           { data: logs }
         ] = await Promise.all([
           supabase.from('prisoes').select('*', { count: 'exact', head: true }),
           supabase.from('procurados').select('*', { count: 'exact', head: true }),
           supabase.from('investigacoes').select('*', { count: 'exact', head: true }),
-          supabase.from('system_logs').select('*').order('created_at', { ascending: false }).limit(5)
+          supabase.from('boletins').select('*', { count: 'exact', head: true }),
+          supabase.from('system_logs').select('*, profiles(full_name, role)').order('created_at', { ascending: false }).limit(5)
         ]);
 
         setStats({
           totalPresos: presosCount || 0,
           totalProcurados: procuradosCount || 0,
           totalInvestigacoes: investigacoesCount || 0,
-          totalBos: 0 // Implementar tabela de BOs se necessário
+          totalBos: bosCount || 0
         });
         
         // Map logs to match recentActivities structure if needed
