@@ -4,17 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
 const DashboardStat = ({ title, value, subtext, icon: Icon, color }) => (
-  <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 relative overflow-hidden">
-    <div className={`absolute top-0 right-0 p-4 opacity-5 text-${color}-500 transform scale-150`}>
-      <Icon size={100} />
+  <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 relative overflow-hidden">
+    <div className={`absolute top-0 right-0 p-2 md:p-4 opacity-5 text-${color}-500 transform scale-125 md:scale-150`}>
+      <Icon size={60} className="md:w-24 md:h-24" />
     </div>
     <div className="relative z-10">
-      <div className={`inline-flex p-2.5 rounded-lg bg-${color}-500/10 text-${color}-500 mb-4`}>
-        <Icon size={24} />
+      <div className={`inline-flex p-2 rounded-lg bg-${color}-500/10 text-${color}-500 mb-3 md:mb-4`}>
+        <Icon size={20} className="md:w-6 md:h-6" />
       </div>
-      <h3 className="text-3xl font-bold text-white mb-1 tracking-tight">{value}</h3>
-      <p className="text-slate-400 text-sm font-medium">{title}</p>
-      {subtext && <p className="text-slate-600 text-xs mt-2">{subtext}</p>}
+      <h3 className="text-2xl md:text-3xl font-bold text-white mb-1 tracking-tight">{value}</h3>
+      <p className="text-slate-400 text-xs md:text-sm font-medium truncate">{title}</p>
+      {subtext && <p className="text-slate-600 text-[10px] md:text-xs mt-1 md:mt-2 hidden sm:block">{subtext}</p>}
     </div>
   </div>
 );
@@ -98,30 +98,30 @@ const DashboardHome = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 md:pb-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white">Painel Geral</h2>
-          <p className="text-slate-400 text-sm">Visão geral das operações e estatísticas (Tempo Real).</p>
+          <h2 className="text-xl md:text-2xl font-bold text-white">Painel Geral</h2>
+          <p className="text-slate-400 text-xs md:text-sm">Visão geral das operações e estatísticas (Tempo Real).</p>
         </div>
         <div className="flex gap-2">
           <span className="px-3 py-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-lg text-xs font-bold flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            STATUS: ONLINE
+            ONLINE
           </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         <DashboardStat 
-          title="Presos Registrados" 
+          title="Presos" 
           value={loading ? '...' : stats.totalPresos} 
           subtext="Total no sistema" 
           icon={Users} 
           color="blue" 
         />
         <DashboardStat 
-          title="Procurados Ativos" 
+          title="Procurados" 
           value={loading ? '...' : stats.totalProcurados} 
           subtext="Em busca ativa" 
           icon={AlertTriangle} 
@@ -135,7 +135,7 @@ const DashboardHome = () => {
           color="amber" 
         />
         <DashboardStat 
-          title="B.O.s Registrados" 
+          title="B.O.s" 
           value={loading ? '...' : stats.totalBos} 
           subtext="Ocorrências" 
           icon={FileText} 
@@ -145,11 +145,11 @@ const DashboardHome = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Activity Feed */}
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-lg text-white flex items-center gap-2">
+            <h3 className="font-bold text-base md:text-lg text-white flex items-center gap-2">
               <Clock size={20} className="text-slate-400" />
-              Atividade Recente (Logs)
+              Atividade Recente
             </h3>
             <button className="text-xs text-federal-400 hover:text-federal-300 font-medium">Ver Histórico</button>
           </div>
@@ -161,16 +161,16 @@ const DashboardHome = () => {
               recentActivities.map((item, i) => {
                 const { icon: Icon, color } = getIconForActivity(item.action);
                 return (
-                  <div key={i} className="flex items-start gap-4 p-4 rounded-lg bg-slate-950/50 border border-slate-800/50 hover:border-slate-700 transition-colors">
+                  <div key={i} className="flex items-start gap-4 p-3 md:p-4 rounded-lg bg-slate-950/50 border border-slate-800/50 hover:border-slate-700 transition-colors">
                     <div className={`mt-1 p-2 rounded-lg flex-shrink-0 bg-${color}-500/10 text-${color}-500`}>
                       <Icon size={16} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
-                        <h4 className="text-sm font-bold text-slate-200">{item.action}</h4>
-                        <span className="text-xs text-slate-500">{formatTimeAgo(item.createdAt)}</span>
+                        <h4 className="text-sm font-bold text-slate-200 truncate pr-2">{item.action}</h4>
+                        <span className="text-xs text-slate-500 whitespace-nowrap">{formatTimeAgo(item.createdAt)}</span>
                       </div>
-                      <p className="text-xs text-slate-400 mt-0.5">{item.details}</p>
+                      <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{item.details}</p>
                       <p className="text-[10px] text-slate-600 mt-2 font-medium uppercase tracking-wider">
                         Por: {item.user?.nome || 'Sistema'} ({item.user?.patente || 'N/A'})
                       </p>

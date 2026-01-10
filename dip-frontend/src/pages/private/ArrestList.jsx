@@ -103,7 +103,7 @@ const ArrestList = () => {
       {/* Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-slate-950 border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
                 <th className="p-4 font-bold">Detento</th>
@@ -119,7 +119,7 @@ const ArrestList = () => {
                 <tr key={arrest.id} className="hover:bg-slate-800/50 transition-colors group">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700">
+                      <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700 flex-shrink-0">
                         {arrest.images?.face ? (
                           <img src={arrest.images.face} alt={arrest.name} className="w-full h-full object-cover" />
                         ) : (

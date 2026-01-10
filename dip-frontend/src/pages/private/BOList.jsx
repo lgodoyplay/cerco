@@ -88,7 +88,7 @@ const BOList = () => {
       {/* Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-slate-950 border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
                 <th className="p-4 font-bold">ID / Data</th>
