@@ -27,6 +27,8 @@ const RegisterBO = () => {
     e.preventDefault();
     
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+
       const { error } = await supabase
         .from('boletins')
         .insert([{
