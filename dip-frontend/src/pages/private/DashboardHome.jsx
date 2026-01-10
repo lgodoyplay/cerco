@@ -14,7 +14,7 @@ const DashboardStat = ({ title, value, subtext, icon: Icon, color }) => (
       </div>
       <h3 className="text-2xl md:text-3xl font-bold text-white mb-1 tracking-tight">{value}</h3>
       <p className="text-slate-400 text-xs md:text-sm font-medium truncate">{title}</p>
-      {subtext && <p className="text-slate-600 text-[10px] md:text-xs mt-1 md:mt-2 hidden sm:block">{subtext}</p>}
+      {subtext && <p className="text-slate-600 text-[10px] md:text-xs mt-1 md:mt-2 block">{subtext}</p>}
     </div>
   </div>
 );
