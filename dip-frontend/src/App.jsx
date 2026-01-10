@@ -81,8 +81,9 @@ function App() {
             
             {/* Settings Routes */}
             <Route path="settings" element={<SettingsLayout />}>
-              <Route index element={<Navigate to="users" replace />} />
+              <Route index element={<Navigate to="courses" replace />} />
               <Route path="users" element={<UsersSettings />} />
+              <Route path="courses" element={<CoursesSettings />} />
               <Route path="corporation" element={<CorporationSettings />} />
               <Route path="roles" element={<RolesSettings />} />
               <Route path="crimes" element={<CrimesSettings />} />

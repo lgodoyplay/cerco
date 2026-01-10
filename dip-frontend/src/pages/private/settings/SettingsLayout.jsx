@@ -10,13 +10,14 @@ import {
   Shield, 
   Database, 
   ScrollText,
-  Settings
+  Settings,
+  BookOpen
 } from 'lucide-react';
-import clsx from 'clsx';
 
 const SettingsLayout = () => {
   const menuItems = [
     { to: '/dashboard/settings/users', icon: Users, label: 'Usuários & Permissões' },
+    { to: '/dashboard/settings/courses', icon: BookOpen, label: 'Gestão de Cursos' },
     { to: '/dashboard/settings/corporation', icon: Building, label: 'Estrutura da Corporação' },
     { to: '/dashboard/settings/roles', icon: BadgeCheck, label: 'Cargos & Patentes' },
     { to: '/dashboard/settings/crimes', icon: Gavel, label: 'Tipos de Crimes' },
