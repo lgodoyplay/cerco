@@ -37,13 +37,43 @@ export const useInvestigations = () => {
         .from('investigacoes')
         .select(`
           *,
-          investigator:created_by(full_name, badge, role),
           provas(*)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setInvestigations(data.map(mapInvestigation));
+
+      // Buscar perfis separadamente para evitar erro 400 se FK não existir
+      const userIds = [...new Set(data.map(inv => inv.created_by).filter(Boolean))];
+      let profilesMap = {};
+      
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, full_name, badge, role')
+          .in('id', userIds);
+          
+        if (profiles) {
+          profilesMap = profiles.reduce((acc, profile) => {
+            acc[profile.id] = profile;
+            return acc;
+          }, {});
+        }
+      }
+
+      const investigationsWithProfiles = data.map(inv => {
+        const profile = profilesMap[inv.created_by];
+        return {
+          ...inv,
+          investigator: profile ? {
+            full_name: profile.full_name,
+            badge: profile.badge,
+            role: profile.role
+          } : null
+        };
+      });
+
+      setInvestigations(investigationsWithProfiles.map(mapInvestigation));
     } catch (error) {
       console.error('Erro ao buscar investigações:', error);
     } finally {
@@ -88,14 +118,31 @@ export const useInvestigations = () => {
         .from('investigacoes')
         .select(`
           *,
-          investigator:created_by(full_name, badge, role),
           provas(*)
         `)
         .eq('id', id)
         .single();
 
       if (error) throw error;
-      return mapInvestigation(data);
+
+      // Buscar perfil do criador manualmente
+      let investigatorProfile = null;
+      if (data.created_by) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, badge, role')
+          .eq('id', data.created_by)
+          .single();
+        
+        if (profile) investigatorProfile = profile;
+      }
+
+      const dataWithProfile = {
+        ...data,
+        investigator: investigatorProfile
+      };
+
+      return mapInvestigation(dataWithProfile);
     } catch (error) {
       console.error('Erro ao buscar detalhe da investigação:', error);
       return null;
