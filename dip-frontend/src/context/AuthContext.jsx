@@ -69,7 +69,6 @@ export const AuthProvider = ({ children }) => {
 
     // 2. Listener para mudanças de estado (Login, Logout, Refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // console.log("Auth State Change:", event); // Logs removidos para limpar console
       
       // Qualquer sinal de vida do Supabase deve cancelar o timeout de erro
       if (timeoutRef.current) clearTimeout(timeoutRef.current);

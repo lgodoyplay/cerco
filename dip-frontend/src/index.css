@@ -8,6 +8,8 @@
 
 body {
   @apply bg-slate-950 text-slate-100 antialiased;
+  background-color: #020617 !important; /* Força bg-slate-950 */
+  color: #f1f5f9 !important; /* Força text-slate-100 */
 }
 
 /* Custom Scrollbar */
