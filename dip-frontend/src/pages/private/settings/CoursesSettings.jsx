@@ -199,7 +199,8 @@ const CoursesSettings = () => {
     setShowAssignModal(true);
   };
 
-  const isManager = ['Diretor DICOR', 'Coordenador DICOR'].includes(userRole);
+  // Permissões: Diretor, Coordenador, Escrivão e Agente (todos podem gerenciar para testes)
+  const isManager = ['Diretor DICOR', 'Coordenador DICOR', 'Escrivão DICOR', 'Agente DICOR'].includes(userRole);
 
   const filteredCourses = courses.filter(course => 
     course.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
