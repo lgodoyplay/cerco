@@ -7,7 +7,7 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -17,13 +17,20 @@ const Login = () => {
     e.preventDefault();
     setError('');
     
+    // Login agora gerencia o estado de loading e user internamente
+    // A navegação será tratada pelo useEffect abaixo
     const success = await login(username, password);
-    if (success) {
-      navigate(from, { replace: true });
-    } else {
+    if (!success) {
       setError('Credenciais inválidas. Acesso negado.');
     }
   };
+
+  // Efeito de segurança para garantir que só redirecionamos quando o usuário estiver carregado
+  React.useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, from]);
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center relative overflow-hidden font-sans">

@@ -110,6 +110,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      setLoading(true); // Bloqueia a UI e previne redirecionamentos prematuros
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -126,6 +127,7 @@ export const AuthProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error('Login error:', error.message);
+      setLoading(false); // Garante que o loading pare em caso de erro
       return false;
     }
   };
