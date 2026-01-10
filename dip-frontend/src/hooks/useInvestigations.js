@@ -18,8 +18,10 @@ export const useInvestigations = () => {
     proofs: inv.provas?.map(ev => ({
       id: ev.id,
       type: ev.tipo,
-      description: ev.descricao,
-      url: ev.arquivo_url,
+      title: ev.descricao ? ev.descricao.split(' - ')[0] : 'Evidência',
+      description: ev.descricao ? (ev.descricao.includes(' - ') ? ev.descricao.split(' - ').slice(1).join(' - ') : ev.descricao) : '',
+      content: ev.url,
+      author: 'Agente',
       createdAt: ev.created_at
     })) || []
   });
@@ -116,11 +118,10 @@ export const useInvestigations = () => {
         .from('provas')
         .insert([{
           investigacao_id: investigationId,
-          titulo: proofData.title,
           tipo: proofData.type,
-          descricao: proofData.description,
-          arquivo_url: finalContent,
-          autor: proofData.author
+          descricao: proofData.title ? `${proofData.title} - ${proofData.description}` : proofData.description,
+          url: finalContent,
+          uploaded_by: proofData.authorId
         }]);
 
       if (error) throw error;

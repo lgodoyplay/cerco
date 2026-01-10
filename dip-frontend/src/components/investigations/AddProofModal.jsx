@@ -32,7 +32,8 @@ const AddProofModal = ({ isOpen, onClose, onSave }) => {
     onSave({
       ...formData,
       type,
-      author: user?.username || 'Agente Federal'
+      author: user?.username || 'Agente Federal',
+      authorId: user?.id
     });
     // Reset
     setFormData({ title: '', description: '', content: '' });
