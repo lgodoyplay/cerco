@@ -25,9 +25,9 @@ export const generateInvestigationPDF = (investigation, user) => {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
-  doc.text('POLÍCIA CIVIL', margin, 20);
+  doc.text('POLÍCIA FEDERAL', margin, 20);
   doc.setFontSize(10);
-  doc.text('CERCO POLICIAL', margin, 28);
+  doc.text('DICOR', margin, 28);
   
   doc.setFontSize(10);
   doc.text('RELATÓRIO DE INVESTIGAÇÃO CRIMINAL', pageWidth - margin, 20, { align: 'right' });

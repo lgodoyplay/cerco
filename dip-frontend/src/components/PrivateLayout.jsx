@@ -81,8 +81,8 @@ const PrivateLayout = () => {
               <Shield className="text-white" size={24} />
             </div>
             <div>
-              <h1 className="font-bold text-lg tracking-tight text-white leading-none">DIP</h1>
-              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mt-1">Investigação Federal</p>
+              <h1 className="font-bold text-lg tracking-tight text-white leading-none">DICOR</h1>
+              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mt-1">Polícia Federal</p>
             </div>
           </div>
           <button 
