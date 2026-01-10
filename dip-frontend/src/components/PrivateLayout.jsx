@@ -54,7 +54,7 @@ const PrivateLayout = () => {
     { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados' },
     { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados' },
     { to: '/dashboard/investigations', icon: Search, label: 'Investigações' },
-    { to: '/dashboard/settings/users', icon: Settings, label: 'Configurações' },
+    { to: '/dashboard/settings', icon: Settings, label: 'Configurações' },
   ];
 
   return (
