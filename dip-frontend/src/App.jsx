@@ -36,6 +36,7 @@ import AppearanceSettings from './pages/private/settings/AppearanceSettings';
 import SecuritySettings from './pages/private/settings/SecuritySettings';
 import BackupSettings from './pages/private/settings/BackupSettings';
 import SystemLogs from './pages/private/settings/SystemLogs';
+import FormsSettings from './pages/private/settings/FormsSettings';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
