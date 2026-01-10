@@ -13,6 +13,7 @@ import Login from './pages/public/Login';
 
 // Private Pages
 import DashboardHome from './pages/private/DashboardHome';
+import ProfilePage from './pages/private/ProfilePage';
 import RegisterArrest from './pages/private/RegisterArrest';
 import RegisterBO from './pages/private/RegisterBO';
 import RegisterWanted from './pages/private/RegisterWanted';

@@ -38,6 +38,40 @@ create policy "Managers can update settings" on public.system_settings
     )
   );
 
+-- Atualizar Policies para Cursos (Courses Settings)
+alter table if exists public.cursos enable row level security;
+
+drop policy if exists "Courses visible to all" on public.cursos;
+create policy "Courses visible to all" on public.cursos
+  for select using (auth.role() = 'authenticated');
+
+drop policy if exists "Managers can manage courses" on public.cursos;
+create policy "Managers can manage courses" on public.cursos
+  for all using (
+    exists (
+      select 1 from public.profiles
+      where id = auth.uid()
+      and (lower(role) like '%diretor%' or lower(role) like '%coordenador%')
+    )
+  );
+
+-- Atualizar Policies para Cursos Policiais (Atribuições de Cursos)
+alter table if exists public.cursos_policiais enable row level security;
+
+drop policy if exists "Courses assignments visible to all" on public.cursos_policiais;
+create policy "Courses assignments visible to all" on public.cursos_policiais
+  for select using (auth.role() = 'authenticated');
+
+drop policy if exists "Managers can manage course assignments" on public.cursos_policiais;
+create policy "Managers can manage course assignments" on public.cursos_policiais
+  for all using (
+    exists (
+      select 1 from public.profiles
+      where id = auth.uid()
+      and (lower(role) like '%diretor%' or lower(role) like '%coordenador%')
+    )
+  );
+
 -- Garantir que System Logs permita inserção por todos (para logs de ação)
 alter table if exists public.system_logs enable row level security;
 
