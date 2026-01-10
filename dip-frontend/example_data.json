@@ -1,0 +1,35 @@
+{
+  "id": "INV-2026-001",
+  "title": "Operação Fênix",
+  "description": "Investigação sobre suposto esquema de desvio de verbas públicas envolvendo a empresa fictícia AlphaTech e servidores locais. O esquema envolvia superfaturamento de contratos de TI.",
+  "status": "Em Andamento",
+  "priority": "Alta",
+  "createdAt": "2026-01-10T08:00:00Z",
+  "updatedAt": "2026-01-15T14:30:00Z",
+  "closedAt": null,
+  "involved": ["João da Silva (Empresário)", "Maria Souza (Servidora)", "Empresa AlphaTech Ltda"],
+  "investigator": {
+    "id": "user-123",
+    "nome": "Carlos Mendes",
+    "badge": "APF-4592",
+    "cargo": "Agente de Polícia Federal"
+  },
+  "proofs": [
+    {
+      "id": "proof-1",
+      "type": "image",
+      "title": "Foto do Local",
+      "description": "Fachada da empresa fantasma localizada no endereço suspeito. Nota-se ausência de identificação comercial.",
+      "content": "https://example.com/evidence1.jpg",
+      "createdAt": "2026-01-11T10:00:00Z"
+    },
+    {
+      "id": "proof-2",
+      "type": "document",
+      "title": "Contrato Social",
+      "description": "Cópia do contrato social da empresa mostrando sócios laranjas.",
+      "content": "https://example.com/contract.pdf",
+      "createdAt": "2026-01-12T15:20:00Z"
+    }
+  ]
+}

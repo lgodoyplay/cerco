@@ -4,6 +4,7 @@
     "build": "cd dip-frontend && npm install && npm run build && cd .. && rm -rf dist && mv dip-frontend/dist dist"
   },
   "dependencies": {
-    "jspdf": "^4.0.0"
+    "jspdf": "^4.0.0",
+    "pdfmake": "^0.3.1"
   }
 }
