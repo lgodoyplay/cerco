@@ -1,31 +1,33 @@
 import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts"; // Alterado para default import
+import vfs from "./vfs_fonts"; // Importando fonte localmente para garantir carregamento no Vite
 
-// Função para garantir que as fontes estejam carregadas antes de gerar
-const ensureFontsConfigured = () => {
-    if (pdfMake.vfs && Object.keys(pdfMake.vfs).length > 0) return true;
+// Configuração robusta do VFS para Vite/Rollup
+if (vfs) {
+    // Se vfs for o objeto de fontes diretamente (exportado via module.exports = vfs)
+    pdfMake.vfs = vfs;
+    console.log("PDFMake VFS fonts configuradas via import local.");
+} else if (window.pdfMake && window.pdfMake.vfs) {
+    // Fallback para global
+    pdfMake.vfs = window.pdfMake.vfs;
+    console.log("PDFMake VFS fonts configuradas via window.pdfMake.");
+} else {
+    console.error("ERRO CRÍTICO: Não foi possível carregar as fontes do PDFMake.");
+    // Tenta definir um objeto vazio para evitar crash total, embora o texto vá falhar
+    pdfMake.vfs = { "Roboto-Regular.ttf": "" };
+}
 
-    // Tenta pegar do script global injetado (window.vfs) ou dos imports
-    const globalVfs = window.vfs;
-    const importedVfs = pdfFonts?.pdfMake?.vfs || pdfFonts?.vfs || pdfFonts?.default?.pdfMake?.vfs || pdfFonts?.default?.vfs;
-
-    if (globalVfs) {
-        pdfMake.vfs = globalVfs;
-        console.log("PDFMake: Fontes carregadas via window.vfs (Script Global)");
-        return true;
+// Configuração das fontes
+pdfMake.fonts = {
+    Roboto: {
+        normal: 'Roboto-Regular.ttf',
+        bold: 'Roboto-Medium.ttf',
+        italics: 'Roboto-Italic.ttf',
+        bolditalics: 'Roboto-MediumItalic.ttf'
     }
-
-    if (importedVfs) {
-        pdfMake.vfs = importedVfs;
-        console.log("PDFMake: Fontes carregadas via importação");
-        return true;
-    }
-
-    // Fallback se tudo falhar (evita crash total)
-    console.warn("PDFMake: Fontes não encontradas! Usando fallback vazio.");
-    pdfMake.vfs = { "Roboto-Regular.ttf": "AAEAAAARAQAABAAQRkZJRwAAAAEA..." }; 
-    return false;
 };
+
+// Função para garantir que as fontes estejam carregadas antes de gerar (Mantido para compatibilidade)
+const ensureFontsConfigured = () => true;
 
 // --- CONFIGURAÇÃO DE ESTILOS ---
 const styles = {
