@@ -60,8 +60,8 @@ const FormsSettings = () => {
   };
 
   const filteredCandidates = candidates.filter(candidate => 
-    candidate.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    candidate.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    (candidate.nome || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (candidate.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

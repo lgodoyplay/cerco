@@ -334,7 +334,7 @@ const CoursesSettings = () => {
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
-                            {assignment.profiles?.full_name?.substring(0, 2).toUpperCase()}
+                            {(assignment.profiles?.full_name || '??').substring(0, 2).toUpperCase()}
                           </div>
                           <div>
                             <p className="text-sm font-medium text-slate-200">
