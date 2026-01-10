@@ -4,7 +4,33 @@
 -- 1. Habilitar extensão para criptografia de senhas
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- 2. Criar um Usuário Admin de Recuperação (caso você não consiga logar)
+-- 2. Corrigir Tabelas (Adicionar colunas e constraints)
+-- Tabela Profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS badge TEXT;
+
+-- Tabela Investigações
+ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS envolvidos TEXT;
+ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS data_fim TIMESTAMP WITH TIME ZONE;
+
+-- Tentar adicionar FK para profiles se não existir (para permitir join)
+DO $$
+BEGIN
+    -- Verifica se a constraint já existe para evitar erro
+    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'fk_investigacoes_profiles') THEN
+        -- Tenta adicionar a FK. Pode falhar se houver dados inconsistentes (created_by sem profile), mas vale tentar.
+        BEGIN
+            ALTER TABLE public.investigacoes ADD CONSTRAINT fk_investigacoes_profiles FOREIGN KEY (created_by) REFERENCES public.profiles(id);
+        EXCEPTION WHEN OTHERS THEN
+            RAISE NOTICE 'Não foi possível criar FK fk_investigacoes_profiles. Verifique integridade dos dados.';
+        END;
+    END IF;
+END $$;
+
+-- Tabela Provas
+ALTER TABLE public.provas ADD COLUMN IF NOT EXISTS url TEXT;
+ALTER TABLE public.provas ADD COLUMN IF NOT EXISTS uploaded_by UUID REFERENCES auth.users(id);
+
+-- 3. Criar um Usuário Admin de Recuperação (caso você não consiga logar)
 -- Email: admin@dip.policia
 -- Senha: admin
 DO $$
@@ -17,7 +43,6 @@ BEGIN
     INSERT INTO auth.users (
       id,
       instance_id,
-      id,
       aud,
       role,
       email,
@@ -36,7 +61,6 @@ BEGIN
     ) VALUES (
       new_user_id,
       '00000000-0000-0000-0000-000000000000',
-      new_user_id,
       'authenticated',
       'authenticated',
       'admin@dip.policia',
@@ -73,17 +97,7 @@ BEGIN
   END IF;
 END $$;
 
--- 3. Corrigir Tabela de Investigações (Erro PGRST204)
-ALTER TABLE public.investigacoes 
-ADD COLUMN IF NOT EXISTS envolvidos TEXT,
-ADD COLUMN IF NOT EXISTS data_fim TIMESTAMP WITH TIME ZONE;
-
--- 4. Corrigir Tabela de Provas
-ALTER TABLE public.provas 
-ADD COLUMN IF NOT EXISTS url TEXT,
-ADD COLUMN IF NOT EXISTS uploaded_by UUID REFERENCES auth.users(id);
-
--- 5. Garantir Permissões
+-- 4. Garantir Permissões
 GRANT ALL ON public.investigacoes TO authenticated;
 GRANT ALL ON public.investigacoes TO service_role;
 GRANT ALL ON public.provas TO authenticated;

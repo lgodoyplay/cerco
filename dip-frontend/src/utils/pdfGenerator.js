@@ -116,20 +116,20 @@ export const generateInvestigationPDF = (investigation, user) => {
   
   // Tenta usar o nome do investigador vindo do objeto (se implementado join) ou do usuário logado
   let officerName = 'AGENTE RESPONSÁVEL';
-  if (investigation.investigator?.nome) {
+  let officerBadge = '000.000';
+  let officerRole = 'Agente de Polícia Federal';
+
+  if (investigation.investigator) {
       officerName = investigation.investigator.nome.toUpperCase();
-  } else if (user?.username) {
-      officerName = user.username.toUpperCase();
-  } else if (user?.nome) {
-      officerName = user.nome.toUpperCase();
+      officerBadge = investigation.investigator.badge || 'Não informado';
+      if (investigation.investigator.role) officerRole = investigation.investigator.role;
+  } else if (user) {
+      officerName = (user.username || user.nome || 'Usuário').toUpperCase();
+      officerBadge = user.badge || '000.000';
+      if (user.role) officerRole = user.role;
   }
   
-  // Se tiver matrícula/badge
-  if (user?.badge) {
-      officerName += ` - MATRÍCULA: ${user.badge}`;
-  }
-  
-  doc.text(officerName, col1 + 55, dataY);
+  doc.text(`${officerName} - MATRÍCULA: ${officerBadge}`, col1 + 55, dataY);
 
   yPos += 45;
 
@@ -265,8 +265,8 @@ export const generateInvestigationPDF = (investigation, user) => {
   yPos += 5;
   doc.setFont(fontNormal, 'normal');
   doc.setFontSize(9);
-  doc.text('Agente de Polícia Federal', pageWidth / 2, yPos, { align: 'center' });
-  doc.text(`Matrícula: ${user?.badge || '000.000'}`, pageWidth / 2, yPos + 4, { align: 'center' });
+  doc.text(officerRole, pageWidth / 2, yPos, { align: 'center' });
+  doc.text(`Matrícula: ${officerBadge}`, pageWidth / 2, yPos + 4, { align: 'center' });
 
   // Numeração de páginas
   const totalPages = doc.internal.getNumberOfPages();

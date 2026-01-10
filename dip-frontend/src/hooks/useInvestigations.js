@@ -14,7 +14,11 @@ export const useInvestigations = () => {
     status: inv.status,
     createdAt: inv.created_at,
     closedAt: inv.data_fim, // Assuming column name change or keep consistency
-    investigator: inv.responsavel_id, // temporarily removed profile join until relation is fixed
+    investigator: inv.investigator ? {
+      nome: inv.investigator.full_name,
+      badge: inv.investigator.badge,
+      role: inv.investigator.role
+    } : null,
     proofs: inv.provas?.map(ev => ({
       id: ev.id,
       type: ev.tipo,
@@ -33,6 +37,7 @@ export const useInvestigations = () => {
         .from('investigacoes')
         .select(`
           *,
+          investigator:created_by(full_name, badge, role),
           provas(*)
         `)
         .order('created_at', { ascending: false });
@@ -83,6 +88,7 @@ export const useInvestigations = () => {
         .from('investigacoes')
         .select(`
           *,
+          investigator:created_by(full_name, badge, role),
           provas(*)
         `)
         .eq('id', id)
