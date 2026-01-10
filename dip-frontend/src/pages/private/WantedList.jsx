@@ -26,7 +26,8 @@ const WantedList = () => {
           dangerLevel: item.periculosidade,
           reward: item.recompensa,
           date: item.created_at,
-          image: item.foto_principal
+          image: item.foto_principal,
+          document: item.documento
         }));
         setWantedList(formattedWanted);
       } catch (error) {
