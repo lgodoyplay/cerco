@@ -37,6 +37,44 @@ const Home = () => {
   // Modals
   const [selectedWanted, setSelectedWanted] = useState(null);
   const [selectedArrest, setSelectedArrest] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportForm, setReportForm] = useState({
+    description: '',
+    location: '',
+    isAnonymous: true,
+    contact: ''
+  });
+  const [reportStatus, setReportStatus] = useState(null); // 'submitting', 'success', 'error'
+
+  const handleReportSubmit = async (e) => {
+    e.preventDefault();
+    setReportStatus('submitting');
+    
+    try {
+      const { error } = await supabase
+        .from('denuncias')
+        .insert([{
+          descricao: reportForm.description,
+          localizacao: reportForm.location,
+          contato: reportForm.isAnonymous ? 'Anônimo' : reportForm.contact,
+          status: 'Pendente',
+          created_at: new Date()
+        }]);
+
+      if (error) throw error;
+      
+      setReportStatus('success');
+      setReportForm({ description: '', location: '', isAnonymous: true, contact: '' });
+      setTimeout(() => {
+        setShowReportModal(false);
+        setReportStatus(null);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Erro ao enviar denúncia:', error);
+      setReportStatus('error');
+    }
+  };
 
   const [stats, setStats] = useState({
     arrests: 0,
@@ -260,7 +298,10 @@ const Home = () => {
               <p className="text-slate-300">Se você viu algum desses indivíduos ou tem informações sobre seu paradeiro, denuncie anonimamente.</p>
             </div>
           </div>
-          <button className="relative z-10 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg shadow-lg shadow-red-900/20 transition-all hover:-translate-y-0.5 whitespace-nowrap">
+          <button 
+            onClick={() => setShowReportModal(true)}
+            className="relative z-10 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg shadow-lg shadow-red-900/20 transition-all hover:-translate-y-0.5 whitespace-nowrap"
+          >
             Denunciar Agora
           </button>
         </div>
@@ -345,6 +386,98 @@ const Home = () => {
       </section>
 
 
+
+      {/* MODAL: DENÚNCIA */}
+      {showReportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setShowReportModal(false)}>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl animate-fade-in-up" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950 rounded-t-2xl">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <AlertTriangle className="text-red-500" size={24} />
+                Denúncia Anônima
+              </h3>
+              <button onClick={() => setShowReportModal(false)} className="text-slate-400 hover:text-white transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              {reportStatus === 'success' ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Check size={32} className="text-green-500" />
+                  </div>
+                  <h4 className="text-xl font-bold text-white mb-2">Denúncia Enviada!</h4>
+                  <p className="text-slate-400">Sua denúncia foi registrada com sucesso e será analisada pela equipe. Obrigado pela colaboração.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleReportSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-1">Localização / Endereço *</label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-3 text-slate-500" size={18} />
+                      <input 
+                        required
+                        type="text" 
+                        value={reportForm.location}
+                        onChange={e => setReportForm({...reportForm, location: e.target.value})}
+                        placeholder="Ex: Rua das Flores, 123 - Centro"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-red-500 transition-colors"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-1">Descrição do Fato *</label>
+                    <textarea 
+                      required
+                      value={reportForm.description}
+                      onChange={e => setReportForm({...reportForm, description: e.target.value})}
+                      placeholder="Descreva o que você viu com o máximo de detalhes possível..."
+                      rows="4"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-4 text-white focus:outline-none focus:border-red-500 transition-colors resize-none"
+                    ></textarea>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="checkbox" 
+                      id="anonymous"
+                      checked={reportForm.isAnonymous}
+                      onChange={e => setReportForm({...reportForm, isAnonymous: e.target.checked})}
+                      className="rounded border-slate-700 bg-slate-800 text-red-600 focus:ring-red-500"
+                    />
+                    <label htmlFor="anonymous" className="text-sm text-slate-300">Desejo permanecer anônimo</label>
+                  </div>
+
+                  {!reportForm.isAnonymous && (
+                    <div className="animate-fade-in-up">
+                      <label className="block text-sm font-medium text-slate-400 mb-1">Seu Contato (Opcional)</label>
+                      <input 
+                        type="text" 
+                        value={reportForm.contact}
+                        onChange={e => setReportForm({...reportForm, contact: e.target.value})}
+                        placeholder="Email ou Telefone"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-red-500 transition-colors"
+                      />
+                    </div>
+                  )}
+
+                  <div className="pt-4">
+                    <button 
+                      type="submit" 
+                      disabled={reportStatus === 'submitting'}
+                      className="w-full py-3 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg shadow-lg shadow-red-900/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                    >
+                      {reportStatus === 'submitting' ? 'Enviando...' : 'Enviar Denúncia'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MODAL: PROCURADO */}
       {selectedWanted && (
