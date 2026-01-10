@@ -153,7 +153,8 @@ export const useSettings = () => {
         .from('profiles')
         .update({
             full_name: userData.name,
-            role: userData.role
+            role: userData.role,
+            permissions: userData.permissions // Salva as permissões
         })
         .eq('id', id);
 

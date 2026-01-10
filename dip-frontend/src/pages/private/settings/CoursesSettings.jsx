@@ -199,9 +199,9 @@ const CoursesSettings = () => {
     setShowAssignModal(true);
   };
 
-  // Permissões: Flexível para aceitar variações de nomes de cargos
+  // Permissões: Diretor, Coordenador, Escrivão e Agente (todos podem gerenciar para testes)
   const userRoleLower = (userRole || '').toLowerCase();
-  const isManager = userRoleLower.includes('diretor') || userRoleLower.includes('coordenador');
+  const isManager = ['diretor', 'coordenador', 'escrivão', 'agente'].some(role => userRoleLower.includes(role));
 
   const filteredCourses = courses.filter(course => 
     course.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
