@@ -1,27 +1,28 @@
 import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
+import * as pdfFonts from "pdfmake/build/vfs_fonts";
 
 // Configuração segura das fontes para o PDFMake (compatível com Vite/Webpack)
 try {
-    if (pdfFonts && pdfFonts.pdfMake && pdfFonts.pdfMake.vfs) {
+    // Tenta atribuir vfs de diferentes formas possíveis dependendo do bundler
+    if (pdfFonts?.pdfMake?.vfs) {
         pdfMake.vfs = pdfFonts.pdfMake.vfs;
-    } else if (pdfFonts && pdfFonts.vfs) {
+    } else if (pdfFonts?.vfs) {
         pdfMake.vfs = pdfFonts.vfs;
-    } else if (window && window.pdfMake && window.pdfMake.vfs) {
-        pdfMake.vfs = window.pdfMake.vfs;
+    } else if (pdfFonts?.default?.pdfMake?.vfs) {
+        pdfMake.vfs = pdfFonts.default.pdfMake.vfs;
+    } else if (pdfFonts?.default?.vfs) {
+        pdfMake.vfs = pdfFonts.default.vfs;
     } else {
-        console.warn("Estrutura de fontes do PDFMake não reconhecida. Tentando fallback seguro.");
-        // Fallback final: verificar propriedades aninhadas com segurança
-        const defaultExport = pdfFonts?.default;
-        if (defaultExport?.pdfMake?.vfs) {
-            pdfMake.vfs = defaultExport.pdfMake.vfs;
-        } else if (defaultExport?.vfs) {
-            pdfMake.vfs = defaultExport.vfs;
+        console.warn("Estrutura de fontes do PDFMake não encontrada nos imports. Tentando window...");
+        if (window?.pdfMake?.vfs) {
+            pdfMake.vfs = window.pdfMake.vfs;
         }
     }
-    
+
     if (!pdfMake.vfs) {
         console.error("ATENÇÃO: VFS Fonts não puderam ser carregadas. O PDF pode falhar ao ser gerado.");
+    } else {
+        console.log("PDFMake VFS fonts configuradas com sucesso.");
     }
 } catch (e) {
     console.error("Erro fatal ao configurar fontes do PDFMake:", e);
@@ -94,25 +95,54 @@ const styles = {
 
 // --- FUNÇÕES AUXILIARES ---
 
-// Converter URL de imagem para Base64
+// Converter URL de imagem para Base64 com timeout e validação
 const getBase64ImageFromURL = (url) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
+        // Timeout de 5 segundos para evitar travamento
+        const timer = setTimeout(() => {
+            console.warn("Timeout ao carregar imagem:", url);
+            resolve(null);
+        }, 5000);
+
         const img = new Image();
         img.setAttribute("crossOrigin", "anonymous");
+        
         img.onload = () => {
-            const canvas = document.createElement("canvas");
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0);
-            const dataURL = canvas.toDataURL("image/jpeg"); // Convert to JPEG to save space
-            resolve(dataURL);
+            clearTimeout(timer);
+            try {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+                const dataURL = canvas.toDataURL("image/jpeg", 0.7); // Compressão leve (0.7) para reduzir tamanho
+                
+                // Validação básica do dataURL
+                if (dataURL && dataURL.startsWith('data:image')) {
+                    resolve(dataURL);
+                } else {
+                    console.warn("Imagem gerou base64 inválido:", url);
+                    resolve(null);
+                }
+            } catch (e) {
+                console.warn("Erro ao processar imagem no canvas (possível taint):", url, e);
+                resolve(null);
+            }
         };
+
         img.onerror = error => {
-            console.warn("Erro ao carregar imagem para PDF:", url, error);
-            resolve(null); // Resolve null to not break PDF generation
+            clearTimeout(timer);
+            console.warn("Erro de rede/carregamento da imagem:", url); // Não loga o objeto erro completo para evitar ruído
+            resolve(null);
         };
-        img.src = url;
+
+        try {
+            img.src = url;
+        } catch (e) {
+            clearTimeout(timer);
+            console.warn("URL de imagem inválida:", url);
+            resolve(null);
+        }
     });
 };
 
