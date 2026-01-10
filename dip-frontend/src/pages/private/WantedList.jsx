@@ -200,6 +200,19 @@ const WantedList = () => {
                     </div>
                   </div>
 
+                  <div className="pt-4 border-t border-slate-800 mt-auto">
+                    <button 
+                      onClick={handleArrest}
+                      className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-red-900/20 flex items-center justify-center gap-2"
+                    >
+                      <Lock size={20} />
+                      CONFIRMAR PRISÃO
+                    </button>
+                    <p className="text-center text-xs text-slate-500 mt-2">
+                      Esta ação moverá o registro para a lista de prisões e removerá dos procurados.
+                    </p>
+                  </div>
+
                   <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
                     <h4 className="text-xs text-slate-500 uppercase font-bold mb-2">Crimes / Motivo</h4>
                     <p className="text-slate-300 text-sm leading-relaxed">
