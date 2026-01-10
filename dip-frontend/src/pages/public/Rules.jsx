@@ -45,7 +45,7 @@ const Rules = () => {
       <div className="text-center mb-16">
         <h1 className="text-4xl font-bold text-white mb-4">Regulamento Interno</h1>
         <p className="text-slate-400 max-w-2xl mx-auto">
-          Normas e diretrizes que regem a conduta dos agentes da DICOR Polícia Civil.
+          Normas e diretrizes que regem a conduta dos agentes da CERCO Polícia Civil.
           O desconhecimento da lei não isenta o agente de culpa.
         </p>
       </div>

@@ -8,10 +8,10 @@ const DEFAULT_CORPORATION = {
 };
 
 const DEFAULT_ROLES = [
-  { id: 1, title: 'Diretor DICOR', hierarchy: 1 },
-  { id: 2, title: 'Coordenador DICOR', hierarchy: 2 },
-  { id: 3, title: 'Escrivão DICOR', hierarchy: 3 },
-  { id: 4, title: 'Agente DICOR', hierarchy: 4 },
+  { id: 1, title: 'Diretor CERCO', hierarchy: 1 },
+  { id: 2, title: 'Coordenador CERCO', hierarchy: 2 },
+  { id: 3, title: 'Escrivão CERCO', hierarchy: 3 },
+  { id: 4, title: 'Agente CERCO', hierarchy: 4 },
 ];
 
 export const useSettings = () => {
