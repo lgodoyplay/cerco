@@ -15,6 +15,12 @@ export const AuthProvider = ({ children }) => {
         supabase.from('profiles').select('*').eq('id', session.user.id).single()
           .then(({ data: profile }) => {
             setUser({ ...session.user, ...profile, username: profile?.full_name || session.user.email });
+          })
+          .catch(err => {
+            console.error("Error loading profile:", err);
+            // Even if profile fails, we might still want to let them in as basic user, or just finish loading
+          })
+          .finally(() => {
             setLoading(false);
           });
       } else {
@@ -56,7 +62,16 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, loading }}>
-      {!loading && children}
+      {loading ? (
+        <div className="fixed inset-0 bg-slate-950 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-8 h-8 border-4 border-slate-700 border-t-yellow-500 rounded-full animate-spin"></div>
+            <span className="text-slate-400 text-sm font-medium">Carregando sistema...</span>
+          </div>
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };

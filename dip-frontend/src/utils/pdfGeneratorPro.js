@@ -1,34 +1,31 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts"; // Alterado para default import
 
-// Configuração segura das fontes para o PDFMake (compatível com Vite/Webpack)
-try {
-    // Tenta atribuir vfs de diferentes formas possíveis
-    // Em versões recentes do pdfmake + vite, pdfFonts pode ser o objeto direto ou ter .default
-    const vfs = pdfFonts?.pdfMake?.vfs || 
-                pdfFonts?.vfs || 
-                pdfFonts?.default?.pdfMake?.vfs || 
-                pdfFonts?.default?.vfs ||
-                window?.pdfMake?.vfs;
+// Função para garantir que as fontes estejam carregadas antes de gerar
+const ensureFontsConfigured = () => {
+    if (pdfMake.vfs && Object.keys(pdfMake.vfs).length > 0) return true;
 
-    if (vfs) {
-        pdfMake.vfs = vfs;
-        console.log("PDFMake VFS fonts configuradas com sucesso.");
-    } else {
-        console.error("ATENÇÃO: VFS Fonts não puderam ser carregadas. O PDF pode falhar ao ser gerado. Objeto fonts recebido:", pdfFonts);
-        
-        // Tentativa de emergência: definir uma fonte padrão vazia para não quebrar (pode resultar em texto desformatado mas gera o PDF)
-        if (!pdfMake.vfs) {
-             pdfMake.vfs = {
-                 "Roboto-Regular.ttf": "AAEAAAARAQAABAAQRkZJRwAAAAEA...", // (seria o base64 real, mas não vamos incluir 2MB aqui)
-             };
-             // Se falhar mesmo assim, avisar usuário
-             console.warn("Tentando fallback de emergência vazio.");
-        }
+    // Tenta pegar do script global injetado (window.vfs) ou dos imports
+    const globalVfs = window.vfs;
+    const importedVfs = pdfFonts?.pdfMake?.vfs || pdfFonts?.vfs || pdfFonts?.default?.pdfMake?.vfs || pdfFonts?.default?.vfs;
+
+    if (globalVfs) {
+        pdfMake.vfs = globalVfs;
+        console.log("PDFMake: Fontes carregadas via window.vfs (Script Global)");
+        return true;
     }
-} catch (e) {
-    console.error("Erro fatal ao configurar fontes do PDFMake:", e);
-}
+
+    if (importedVfs) {
+        pdfMake.vfs = importedVfs;
+        console.log("PDFMake: Fontes carregadas via importação");
+        return true;
+    }
+
+    // Fallback se tudo falhar (evita crash total)
+    console.warn("PDFMake: Fontes não encontradas! Usando fallback vazio.");
+    pdfMake.vfs = { "Roboto-Regular.ttf": "AAEAAAARAQAABAAQRkZJRwAAAAEA..." }; 
+    return false;
+};
 
 // --- CONFIGURAÇÃO DE ESTILOS ---
 const styles = {
@@ -165,9 +162,7 @@ export const generateProfessionalPDF = async (investigation, user) => {
     console.log("Iniciando geração de PDF Profissional (ABNT)...", investigation);
     try {
         // Garantir configuração de VFS
-        if (!pdfMake.vfs && window.pdfMake && window.pdfMake.vfs) {
-             pdfMake.vfs = window.pdfMake.vfs;
-        }
+        ensureFontsConfigured();
 
         // Preparar dados de imagens (assíncrono)
         let processedProofs = [];
