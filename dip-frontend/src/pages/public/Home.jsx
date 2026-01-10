@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Users, Siren, FileText, ChevronRight, AlertTriangle, Search, Filter, Eye, X, Calendar, MapPin, User } from 'lucide-react';
+import { Shield, Users, Siren, FileText, ChevronRight, AlertTriangle, Search, Filter, Eye, X, Calendar, MapPin, User, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
@@ -46,9 +46,99 @@ const Home = () => {
     mensagem: ''
   });
   const [formStatus, setFormStatus] = useState('idle'); // idle, submitting, success, error
+  
+  // Quiz State
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizAnswers, setQuizAnswers] = useState({});
+  const [quizStatus, setQuizStatus] = useState('idle'); // idle, success, failed
 
-  const handleCandidateSubmit = async (e) => {
+  const quizQuestions = [
+    {
+      id: 1,
+      question: "Qual é a principal função do DIP (Departamento de Inteligência Policial)?",
+      options: [
+        { id: 'a', text: "Patrulhamento ostensivo e multas de trânsito" },
+        { id: 'b', text: "Investigação de crimes complexos e combate ao crime organizado" },
+        { id: 'c', text: "Atendimento de ocorrências de baixa prioridade" }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 2,
+      question: "O que você deve fazer ao coletar uma evidência ilegal durante uma investigação?",
+      options: [
+        { id: 'a', text: "Esconder e usar apenas se necessário" },
+        { id: 'b', text: "Documentar, preservar a cadeia de custódia e reportar" },
+        { id: 'c', text: "Descartar para não ter problemas" }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 3,
+      question: "Qual é o procedimento correto ao identificar um oficial corrupto?",
+      options: [
+        { id: 'a', text: "Confrontar o oficial imediatamente" },
+        { id: 'b', text: "Reunir provas discretamente e reportar à Corregedoria" },
+        { id: 'c', text: "Espalhar o boato na corporação" }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 4,
+      question: "Em uma operação sigilosa, qual informação pode ser compartilhada com civis?",
+      options: [
+        { id: 'a', text: "Nenhuma informação operacional" },
+        { id: 'b', text: "Apenas o local da operação" },
+        { id: 'c', text: "O nome dos alvos" }
+      ],
+      correct: 'a'
+    },
+    {
+      id: 5,
+      question: "O que significa 'Hierarquia e Disciplina' para o DIP?",
+      options: [
+        { id: 'a', text: "Conceitos ultrapassados que não se aplicam" },
+        { id: 'b', text: "Pilares fundamentais para o funcionamento e ordem da instituição" },
+        { id: 'c', text: "Apenas formalidades sem importância prática" }
+      ],
+      correct: 'b'
+    }
+  ];
+
+  const handleStartQuiz = (e) => {
     e.preventDefault();
+    setShowQuiz(true);
+  };
+
+  const handleQuizAnswer = (questionId, optionId) => {
+    setQuizAnswers(prev => ({
+      ...prev,
+      [questionId]: optionId
+    }));
+  };
+
+  const handleQuizSubmit = async () => {
+    let score = 0;
+    quizQuestions.forEach(q => {
+      if (quizAnswers[q.id] === q.correct) {
+        score++;
+      }
+    });
+
+    if (score >= 4) {
+      setQuizStatus('success');
+      await submitApplication();
+    } else {
+      setQuizStatus('failed');
+    }
+  };
+
+  const handleRetryQuiz = () => {
+    setQuizStatus('idle');
+    setQuizAnswers({});
+  };
+
+  const submitApplication = async () => {
     setFormStatus('submitting');
     try {
       const { error } = await supabase
@@ -64,11 +154,21 @@ const Home = () => {
 
       setFormStatus('success');
       setCandidateForm({ nome: '', email: '', telefone: '', mensagem: '' });
-      setTimeout(() => setFormStatus('idle'), 5000);
+      setTimeout(() => {
+        setFormStatus('idle');
+        setShowQuiz(false);
+        setQuizStatus('idle');
+        setQuizAnswers({});
+      }, 5000);
     } catch (error) {
       console.error('Erro ao enviar candidatura:', error);
       setFormStatus('error');
     }
+  };
+
+  const handleCandidateSubmit = async (e) => {
+    // Legacy handler replaced by handleStartQuiz
+    e.preventDefault();
   };
 
   useEffect(() => {
@@ -361,87 +461,183 @@ const Home = () => {
           <div className="absolute top-0 right-0 p-12 bg-federal-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
           
           <div className="relative z-10">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-white mb-4">Junte-se ao DIP</h2>
-              <p className="text-slate-400">
-                Preencha o formulário abaixo para demonstrar seu interesse em fazer parte da 
-                nossa equipe de elite. Entraremos em contato.
-              </p>
-            </div>
-
-            <form onSubmit={handleCandidateSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Nome Completo</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={candidateForm.nome}
-                    onChange={(e) => setCandidateForm({...candidateForm, nome: e.target.value})}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
-                    placeholder="Seu nome"
-                  />
+            {!showQuiz ? (
+              <>
+                <div className="text-center mb-10">
+                  <h2 className="text-3xl font-bold text-white mb-4">Junte-se ao DIP</h2>
+                  <p className="text-slate-400">
+                    Preencha o formulário e faça o teste de admissão para demonstrar seu interesse em fazer parte da 
+                    nossa equipe de elite.
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Email</label>
-                  <input 
-                    type="email" 
-                    required
-                    value={candidateForm.email}
-                    onChange={(e) => setCandidateForm({...candidateForm, email: e.target.value})}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
-                    placeholder="seu@email.com"
-                  />
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Telefone / WhatsApp</label>
-                <input 
-                  type="tel" 
-                  required
-                  value={candidateForm.telefone}
-                  onChange={(e) => setCandidateForm({...candidateForm, telefone: e.target.value})}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
-                  placeholder="(00) 00000-0000"
-                />
-              </div>
+                <form onSubmit={handleStartQuiz} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Nome no Discord</label>
+                      <input 
+                        type="text" 
+                        required
+                        value={candidateForm.nome}
+                        onChange={(e) => setCandidateForm({...candidateForm, nome: e.target.value})}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
+                        placeholder="Ex: usuario#1234"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Email</label>
+                      <input 
+                        type="email" 
+                        required
+                        value={candidateForm.email}
+                        onChange={(e) => setCandidateForm({...candidateForm, email: e.target.value})}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
+                        placeholder="seu@email.com"
+                      />
+                    </div>
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte?</label>
-                <textarea 
-                  required
-                  value={candidateForm.mensagem}
-                  onChange={(e) => setCandidateForm({...candidateForm, mensagem: e.target.value})}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors h-32 resize-none"
-                  placeholder="Conte-nos sobre sua motivação e experiência..."
-                />
-              </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Telefone / WhatsApp (In-Game)</label>
+                    <input 
+                      type="tel" 
+                      required
+                      value={candidateForm.telefone}
+                      onChange={(e) => setCandidateForm({...candidateForm, telefone: e.target.value})}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
+                      placeholder="(00) 00000-0000"
+                    />
+                  </div>
 
-              <div className="pt-4">
-                <button 
-                  type="submit"
-                  disabled={formStatus === 'submitting' || formStatus === 'success'}
-                  className={`w-full py-4 rounded-xl font-bold text-white transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 ${
-                    formStatus === 'success' 
-                      ? 'bg-green-600 hover:bg-green-500 cursor-default'
-                      : formStatus === 'error'
-                      ? 'bg-red-600 hover:bg-red-500'
-                      : 'bg-federal-600 hover:bg-federal-500 shadow-lg shadow-federal-900/20'
-                  }`}
-                >
-                  {formStatus === 'submitting' ? (
-                    <span className="animate-pulse">Enviando...</span>
-                  ) : formStatus === 'success' ? (
-                    <>Candidatura Enviada! <Shield size={20} /></>
-                  ) : formStatus === 'error' ? (
-                    <>Erro ao Enviar. Tente Novamente.</>
-                  ) : (
-                    <>Enviar Candidatura <ChevronRight size={20} /></>
-                  )}
-                </button>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte do DIP?</label>
+                    <textarea 
+                      required
+                      value={candidateForm.mensagem}
+                      onChange={(e) => setCandidateForm({...candidateForm, mensagem: e.target.value})}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors h-32 resize-none"
+                      placeholder="Conte-nos sobre sua experiência e motivações..."
+                    />
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="w-full py-4 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-federal-900/20 flex items-center justify-center gap-2"
+                  >
+                    Iniciar Teste de Admissão
+                    <ChevronRight size={20} />
+                  </button>
+                </form>
+              </>
+            ) : (
+              <div className="space-y-8 animate-fade-in-up">
+                {quizStatus === 'idle' && (
+                  <>
+                    <div className="text-center mb-8">
+                      <h2 className="text-2xl font-bold text-white mb-2">Teste de Admissão</h2>
+                      <p className="text-slate-400">Responda corretamente a pelo menos 4 das 5 questões para enviar sua candidatura.</p>
+                    </div>
+
+                    <div className="space-y-6">
+                      {quizQuestions.map((q, index) => (
+                        <div key={q.id} className="bg-slate-950/50 p-6 rounded-xl border border-slate-800">
+                          <p className="text-white font-bold mb-4 flex gap-3">
+                            <span className="text-federal-500">#{index + 1}</span>
+                            {q.question}
+                          </p>
+                          <div className="space-y-3">
+                            {q.options.map((opt) => (
+                              <label 
+                                key={opt.id} 
+                                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors border ${
+                                  quizAnswers[q.id] === opt.id 
+                                    ? 'bg-federal-500/20 border-federal-500 text-white' 
+                                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800'
+                                }`}
+                              >
+                                <input 
+                                  type="radio" 
+                                  name={`question-${q.id}`} 
+                                  value={opt.id}
+                                  checked={quizAnswers[q.id] === opt.id}
+                                  onChange={() => handleQuizAnswer(q.id, opt.id)}
+                                  className="hidden"
+                                />
+                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                                  quizAnswers[q.id] === opt.id ? 'border-federal-500' : 'border-slate-600'
+                                }`}>
+                                  {quizAnswers[q.id] === opt.id && <div className="w-2 h-2 rounded-full bg-federal-500" />}
+                                </div>
+                                <span className="text-sm">{opt.text}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex gap-4">
+                      <button 
+                        type="button"
+                        onClick={() => setShowQuiz(false)}
+                        className="w-1/3 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all"
+                      >
+                        Voltar
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={handleQuizSubmit}
+                        disabled={Object.keys(quizAnswers).length < 5}
+                        className={`w-2/3 py-4 font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                          Object.keys(quizAnswers).length < 5
+                            ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                            : 'bg-federal-600 hover:bg-federal-500 text-white hover:-translate-y-1 shadow-lg shadow-federal-900/20'
+                        }`}
+                      >
+                        Enviar Respostas
+                        <ChevronRight size={20} />
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {quizStatus === 'failed' && (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500 animate-bounce">
+                      <X size={40} />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2">Reprovado no Teste</h3>
+                    <p className="text-slate-400 mb-8 max-w-md mx-auto">
+                      Você não atingiu a pontuação mínima necessária (4/5). Estude o regulamento e tente novamente.
+                    </p>
+                    <button 
+                      onClick={handleRetryQuiz}
+                      className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all hover:-translate-y-1"
+                    >
+                      Tentar Novamente
+                    </button>
+                  </div>
+                )}
+
+                {quizStatus === 'success' && (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500 animate-bounce">
+                      <Check size={40} />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2">Aprovado!</h3>
+                    <p className="text-slate-400 mb-8 max-w-md mx-auto">
+                      Parabéns! Sua candidatura foi enviada com sucesso para análise da corregedoria.
+                    </p>
+                    {formStatus === 'submitting' && (
+                      <div className="flex items-center justify-center gap-2 text-federal-500">
+                        <span className="w-2 h-2 rounded-full bg-federal-500 animate-pulse" />
+                        Enviando dados...
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </form>
+            )}
           </div>
         </div>
       </section>
