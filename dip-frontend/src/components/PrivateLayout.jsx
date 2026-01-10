@@ -95,21 +95,33 @@ const PrivateLayout = () => {
 
         {/* User Profile Snippet */}
         <div className="p-4">
-          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-federal-500 to-federal-700 flex items-center justify-center font-bold text-sm border-2 border-slate-800 shadow-md">
-                {user?.username?.substring(0, 2).toUpperCase() || 'AG'}
+          <Link to="/dashboard/profile" className="block group">
+            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50 group-hover:border-federal-500/50 group-hover:bg-slate-800 transition-all">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-federal-500 to-federal-700 flex items-center justify-center font-bold text-sm border-2 border-slate-800 shadow-md overflow-hidden">
+                   {user?.avatar_url ? (
+                      <img 
+                        src={`https://vtfpfevjoxbnyowrecyu.supabase.co/storage/v1/object/public/avatars/${user.avatar_url}`} 
+                        alt="Avatar" 
+                        className="w-full h-full object-cover"
+                      />
+                   ) : (
+                      user?.username?.substring(0, 2).toUpperCase() || 'AG'
+                   )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-white truncate group-hover:text-federal-400 transition-colors">
+                    {user?.full_name || user?.username || 'Agente'}
+                  </p>
+                  <p className="text-xs text-federal-400 truncate">{user?.role || 'Agente'}</p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{user?.username || 'Agente'}</p>
-                <p className="text-xs text-federal-400 truncate">{user?.badge || 'ID-0000'}</p>
+              <div className="text-[10px] text-slate-500 uppercase tracking-wider font-medium flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                Meu Perfil
               </div>
             </div>
-            <div className="text-[10px] text-slate-500 uppercase tracking-wider font-medium flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              Sistema Online
-            </div>
-          </div>
+          </Link>
         </div>
 
         {/* Navigation */}

@@ -80,6 +80,9 @@ function App() {
             <Route path="investigations/new" element={<InvestigationCreate />} />
             <Route path="investigations/:id" element={<InvestigationDetail />} />
             
+            {/* Profile Route */}
+            <Route path="profile" element={<ProfilePage />} />
+
             {/* Settings Routes */}
             <Route path="settings" element={<SettingsLayout />}>
               <Route index element={<Navigate to="courses" replace />} />
