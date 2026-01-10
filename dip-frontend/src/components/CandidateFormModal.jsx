@@ -59,7 +59,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
     },
     {
       id: 5,
-      question: "O que significa 'Hierarquia e Disciplina' para a DICOR?",
+      question: "O que significa 'Hierarquia e Disciplina' para a CERCO?",
       options: [
         { id: 'a', text: "Conceitos ultrapassados que não se aplicam" },
         { id: 'b', text: "Pilares fundamentais para o funcionamento e ordem da instituição" },
