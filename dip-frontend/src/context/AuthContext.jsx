@@ -113,7 +113,6 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       isLoggingIn.current = true;
-      setLoading(true); 
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -129,7 +128,6 @@ export const AuthProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error('Login error:', error.message);
-      if (isMounted.current) setLoading(false);
       return false;
     } finally {
       // Pequeno delay para garantir que estados se estabilizem antes de liberar a flag

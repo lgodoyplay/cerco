@@ -97,9 +97,17 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-federal-900/50 text-sm font-bold text-white bg-federal-600 hover:bg-federal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-federal-500 transition-all duration-200 uppercase tracking-wider mt-6 hover:-translate-y-0.5"
+              disabled={loading}
+              className={`w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-federal-900/50 text-sm font-bold text-white bg-federal-600 hover:bg-federal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-federal-500 transition-all duration-200 uppercase tracking-wider mt-6 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:-translate-y-0.5'}`}
             >
-              Autenticar
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>AUTENTICANDO...</span>
+                </div>
+              ) : (
+                'ENTRAR NO SISTEMA'
+              )}
             </button>
           </form>
         </div>
