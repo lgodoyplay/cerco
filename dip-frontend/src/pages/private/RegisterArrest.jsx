@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { Save, Eraser, User, FileText, Camera, CheckCircle, AlertCircle, Shield } from 'lucide-react';
 import clsx from 'clsx';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ImageUploadArea from '../../components/ImageUploadArea';
 import { supabase } from '../../lib/supabase';
 
 const RegisterArrest = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prefillData = location.state?.wantedPerson;
+
   const [formData, setFormData] = useState({
-    name: '',
-    passport: '',
-    reason: '',
+    name: prefillData?.name || '',
+    passport: prefillData?.document || '',
+    reason: prefillData?.reason || '',
     articles: '',
     officer: '',
-    description: '',
+    description: prefillData ? `Prisão realizada a partir de mandado de busca. Motivo original: ${prefillData.reason}` : '',
   });
 
   const [images, setImages] = useState({

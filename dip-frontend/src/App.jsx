@@ -19,6 +19,7 @@ import RegisterBO from './pages/private/RegisterBO';
 import RegisterWanted from './pages/private/RegisterWanted';
 import WantedList from './pages/private/WantedList';
 import ArrestList from './pages/private/ArrestList';
+import BOList from './pages/private/BOList';
 import InvestigationList from './pages/private/investigations/InvestigationList';
 import InvestigationCreate from './pages/private/investigations/InvestigationCreate';
 import InvestigationDetail from './pages/private/investigations/InvestigationDetail';

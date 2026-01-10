@@ -14,7 +14,7 @@ export const useInvestigations = () => {
     status: inv.status,
     createdAt: inv.created_at,
     closedAt: inv.data_fim, // Assuming column name change or keep consistency
-    investigator: inv.created_by_user?.full_name,
+    investigator: inv.responsavel_id, // temporarily removed profile join until relation is fixed
     proofs: inv.provas?.map(ev => ({
       id: ev.id,
       type: ev.tipo,
@@ -31,7 +31,6 @@ export const useInvestigations = () => {
         .from('investigacoes')
         .select(`
           *,
-          created_by_user:profiles(full_name),
           provas(*)
         `)
         .order('created_at', { ascending: false });
@@ -62,7 +61,7 @@ export const useInvestigations = () => {
       const { data: newInv, error } = await supabase
         .from('investigacoes')
         .insert([payload])
-        .select(`*, created_by_user:profiles(full_name)`)
+        .select(`*`)
         .single();
 
       if (error) throw error;
@@ -82,7 +81,6 @@ export const useInvestigations = () => {
         .from('investigacoes')
         .select(`
           *,
-          created_by_user:profiles(full_name),
           provas(*)
         `)
         .eq('id', id)

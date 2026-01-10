@@ -35,7 +35,8 @@ const RegisterBO = () => {
           localizacao: formData.location,
           data_fato: formData.date,
           policial_responsavel: formData.officer,
-          status: 'Registrado'
+          status: 'Registrado',
+          created_by: user?.id
         }]);
 
       if (error) throw error;

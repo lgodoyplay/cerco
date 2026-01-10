@@ -47,6 +47,21 @@ const WantedList = () => {
     alert(`Gerando ficha de: ${person.name}`);
   };
 
+  const handleArrest = () => {
+    if (!selectedPerson) return;
+    
+    navigate('/dashboard/arrest', { 
+      state: { 
+        wantedPerson: {
+          name: selectedPerson.name,
+          document: selectedPerson.document,
+          reason: selectedPerson.crime || selectedPerson.reason,
+          image: selectedPerson.image || selectedPerson.images?.proof1
+        }
+      } 
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
