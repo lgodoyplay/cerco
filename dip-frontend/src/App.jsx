@@ -42,7 +42,12 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) return null; // Or a spinner
+  // O AuthContext já exibe um loader global, mas por segurança mantemos um fallback
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-slate-950">
+      <div className="w-8 h-8 border-4 border-slate-800 border-t-yellow-500 rounded-full animate-spin"></div>
+    </div>
+  );
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;

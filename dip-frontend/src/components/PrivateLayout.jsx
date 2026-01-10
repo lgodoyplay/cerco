@@ -106,6 +106,11 @@ const PrivateLayout = () => {
                         src={`https://vtfpfevjoxbnyowrecyu.supabase.co/storage/v1/object/public/avatars/${user.avatar_url}`} 
                         alt="Avatar" 
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null; // Previne loop
+                          e.target.style.display = 'none'; // Esconde imagem quebrada
+                          e.target.parentElement.innerText = getInitials(user?.username || user?.full_name); // Mostra iniciais
+                        }}
                       />
                    ) : (
                       getInitials(user?.username || user?.full_name)
@@ -167,12 +172,12 @@ const PrivateLayout = () => {
             <Menu size={24} />
           </button>
           
-          <div className="flex items-center gap-4 ml-auto md:ml-0 md:w-full md:max-w-md">
-             <div className="relative w-full hidden md:block">
+          <div className="flex items-center gap-4 flex-1 px-4 md:px-0 md:w-full md:max-w-md">
+             <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
                 <input 
                   type="text" 
-                  placeholder="Pesquisar registros, códigos ou agentes..." 
+                  placeholder="Pesquisar..." 
                   className="w-full bg-slate-900/50 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all placeholder-slate-600"
                 />
              </div>
