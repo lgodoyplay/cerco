@@ -13,11 +13,12 @@ const Login = () => {
 
   const from = location.state?.from?.pathname || '/dashboard';
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
-    if (login(username, password)) {
+    const success = await login(username, password);
+    if (success) {
       navigate(from, { replace: true });
     } else {
       setError('Credenciais inválidas. Acesso negado.');

@@ -1,12 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import api from '../services/api';
-
-const STORAGE_KEYS = {
-  CORPORATION: 'dip_settings_corporation',
-  ROLES: 'dip_settings_roles',
-  LOGS: 'dip_settings_logs',
-  THEME: 'dip_settings_theme'
-};
+import { supabase } from '../lib/supabase';
 
 const DEFAULT_CORPORATION = {
   departments: ['CERCO', 'DRE', 'DELEFAZ'],
@@ -25,36 +18,55 @@ export const useSettings = () => {
   // Users State (from API)
   const [users, setUsers] = useState([]);
   
-  // Corporation Structure State (Local)
-  const [corporation, setCorporation] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.CORPORATION);
-    return saved ? JSON.parse(saved) : DEFAULT_CORPORATION;
-  });
+  // Corporation Structure State (Supabase)
+  const [corporation, setCorporation] = useState(DEFAULT_CORPORATION);
 
-  // Roles State (Local)
-  const [roles, setRoles] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.ROLES);
-    return saved ? JSON.parse(saved) : DEFAULT_ROLES;
-  });
+  // Roles State (Supabase)
+  const [roles, setRoles] = useState(DEFAULT_ROLES);
 
-  // System Logs (Local)
-  const [logs, setLogs] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.LOGS);
-    return saved ? JSON.parse(saved) : [];
-  });
+  // System Logs (Supabase)
+  const [logs, setLogs] = useState([]);
+
+  // Fetch Settings
+  const fetchSettings = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('*');
+
+      if (error && error.code !== 'PGRST116') { // Ignore if not found or other minor issue for now
+         console.error('Error fetching settings:', error);
+      }
+
+      if (data) {
+        const corpSetting = data.find(s => s.key === 'corporation');
+        if (corpSetting) setCorporation(corpSetting.value);
+
+        const rolesSetting = data.find(s => s.key === 'roles');
+        if (rolesSetting) setRoles(rolesSetting.value);
+      }
+    } catch (error) {
+       console.error('Error fetching settings:', error);
+    }
+  }, []);
 
   // Fetch Users
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await api.get('/users');
-      const mappedUsers = response.data.map(u => ({
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*');
+
+      if (error) throw error;
+
+      const mappedUsers = data.map(u => ({
         id: u.id,
-        name: u.nome,
-        username: u.login,
-        role: u.cargo,
-        permissions: u.permissoes,
-        active: u.ativo,
-        patente: u.patente
+        name: u.full_name,
+        username: u.email, // Using email as username/login
+        role: u.role,
+        permissions: [], // Not implemented in simple profile
+        active: true,
+        patente: u.role // Mapping role to patente for now
       }));
       setUsers(mappedUsers);
     } catch (error) {
@@ -62,91 +74,110 @@ export const useSettings = () => {
     }
   }, []);
 
+  // Fetch Logs
+  const fetchLogs = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('system_logs')
+        .select('*, profiles(full_name)')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      const mappedLogs = data.map(l => ({
+        id: l.id,
+        action: l.action,
+        timestamp: l.created_at,
+        user: l.profiles?.full_name || 'Sistema'
+      }));
+      setLogs(mappedLogs);
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+    fetchLogs();
+    fetchSettings();
+  }, [fetchUsers, fetchLogs, fetchSettings]);
 
-  // Effects to save local changes
-  useEffect(() => localStorage.setItem(STORAGE_KEYS.CORPORATION, JSON.stringify(corporation)), [corporation]);
-  useEffect(() => localStorage.setItem(STORAGE_KEYS.ROLES, JSON.stringify(roles)), [roles]);
-  useEffect(() => localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(logs)), [logs]);
+  // Remove local storage effects
+  // useEffect(() => localStorage.setItem(STORAGE_KEYS.CORPORATION, JSON.stringify(corporation)), [corporation]);
+  // useEffect(() => localStorage.setItem(STORAGE_KEYS.ROLES, JSON.stringify(roles)), [roles]);
 
   // --- Actions ---
 
-  const logAction = (action) => {
-    const newLog = {
-      id: Date.now(),
-      action,
-      timestamp: new Date().toISOString(),
-      user: 'Admin' // Mock current user
-    };
-    setLogs(prev => [newLog, ...prev]);
+  const logAction = async (action) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from('system_logs').insert([{
+        user_id: user?.id,
+        action: action,
+        details: action // Simple mapping
+      }]);
+      fetchLogs();
+    } catch (error) {
+      console.error('Error logging action:', error);
+    }
+  };
+
+  const saveSetting = async (key, value) => {
+    try {
+      const { error } = await supabase
+        .from('system_settings')
+        .upsert({ key, value });
+      
+      if (error) throw error;
+      
+      // Update local state based on key
+      if (key === 'corporation') setCorporation(value);
+      if (key === 'roles') setRoles(value);
+
+      logAction(`Configuração atualizada: ${key}`);
+    } catch (error) {
+      console.error(`Error saving setting ${key}:`, error);
+      alert('Erro ao salvar configuração.');
+    }
   };
 
   const addUser = async (userData) => {
-    try {
-      const payload = {
-        nome: userData.name,
-        login: userData.username,
-        senha: userData.password || '123456',
-        cargo: userData.role,
-        patente: 'Agente', // Default
-        permissoes: userData.permissions
-      };
-      await api.post('/users', payload);
-      await fetchUsers();
-      logAction(`Novo usuário criado: ${userData.username}`);
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
+    alert('Para adicionar usuários, utilize o painel de Autenticação do Supabase (Authentication -> Add User).');
   };
 
   const updateUser = async (id, userData) => {
     try {
-      const payload = {
-        nome: userData.name,
-        login: userData.username,
-        cargo: userData.role,
-        permissoes: userData.permissions,
-        ativo: userData.active,
-        senha: userData.password
-      };
-      await api.put(`/users/${id}`, payload);
+      // We can update the profile name/role
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+            full_name: userData.name,
+            role: userData.role
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
       await fetchUsers();
       logAction(`Usuário atualizado: ID ${id}`);
     } catch (error) {
       console.error(error);
-      throw error;
+      alert('Erro ao atualizar usuário. Verifique se você tem permissão.');
     }
   };
 
   const toggleUserStatus = async (id) => {
-    try {
-      const user = users.find(u => u.id === id);
-      if (user) {
-        await api.put(`/users/${id}`, { ativo: !user.active });
-        await fetchUsers();
-        logAction(`Status de usuário alterado: ${user.username}`);
-      }
-    } catch (error) {
-      console.error(error);
-    }
+    alert('Desativar usuários deve ser feito no painel do Supabase (Ban/Delete User).');
   };
 
   const deleteUser = async (id) => {
-    try {
-      await api.delete(`/users/${id}`);
-      await fetchUsers();
-      logAction(`Usuário removido: ID ${id}`);
-    } catch (error) {
-      console.error(error);
-    }
+    alert('Remover usuários deve ser feito no painel do Supabase.');
   };
 
   const updateCorporation = (type, list) => {
-    setCorporation(prev => ({ ...prev, [type]: list }));
-    logAction(`Estrutura corporativa atualizada: ${type}`);
+    const newCorporation = { ...corporation, [type]: list };
+    saveSetting('corporation', newCorporation);
   };
 
   return {

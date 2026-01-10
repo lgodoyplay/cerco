@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import api, { API_URL } from '../services/api';
+import { supabase } from '../lib/supabase';
 
 export const useInvestigations = () => {
   const [investigations, setInvestigations] = useState([]);
@@ -9,26 +9,35 @@ export const useInvestigations = () => {
     id: inv.id,
     title: inv.titulo,
     description: inv.descricao,
-    involved: inv.envolvidos,
+    involved: [], // Supabase doesn't support arrays of text easily without config, assume simple for now or jsonb
     priority: inv.prioridade || 'Média',
     status: inv.status,
-    createdAt: inv.createdAt,
-    closedAt: inv.dataFim,
-    investigator: inv.investigador?.nome,
-    proofs: inv.evidences?.map(ev => ({
+    createdAt: inv.created_at,
+    closedAt: inv.data_fim, // Assuming column name change or keep consistency
+    investigator: inv.created_by_user?.full_name,
+    proofs: inv.provas?.map(ev => ({
       id: ev.id,
       type: ev.tipo,
       description: ev.descricao,
-      url: ev.conteudo ? `${API_URL}${ev.conteudo}` : null,
-      createdAt: ev.data
+      url: ev.arquivo_url,
+      createdAt: ev.created_at
     })) || []
   });
 
   const fetchInvestigations = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await api.get('/investigations');
-      setInvestigations(response.data.map(mapInvestigation));
+      const { data, error } = await supabase
+        .from('investigacoes')
+        .select(`
+          *,
+          created_by_user:profiles(full_name),
+          provas(*)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setInvestigations(data.map(mapInvestigation));
     } catch (error) {
       console.error('Erro ao buscar investigações:', error);
     } finally {
@@ -45,13 +54,22 @@ export const useInvestigations = () => {
       const payload = {
         titulo: data.title,
         descricao: data.description,
-        envolvidos: data.involved,
-        prioridade: data.priority
+        // envolvidos: data.involved, // Need to handle array or relation
+        prioridade: data.priority,
+        status: 'Em Andamento'
       };
-      const response = await api.post('/investigations', payload);
-      const newInv = mapInvestigation(response.data);
-      setInvestigations(prev => [newInv, ...prev]);
-      return newInv.id;
+
+      const { data: newInv, error } = await supabase
+        .from('investigacoes')
+        .insert([payload])
+        .select(`*, created_by_user:profiles(full_name)`)
+        .single();
+
+      if (error) throw error;
+
+      const mapped = mapInvestigation(newInv);
+      setInvestigations(prev => [mapped, ...prev]);
+      return mapped.id;
     } catch (error) {
       console.error('Erro ao criar investigação:', error);
       throw error;
@@ -60,8 +78,18 @@ export const useInvestigations = () => {
 
   const getInvestigation = useCallback(async (id) => {
     try {
-      const response = await api.get(`/investigations/${id}`);
-      return mapInvestigation(response.data);
+      const { data, error } = await supabase
+        .from('investigacoes')
+        .select(`
+          *,
+          created_by_user:profiles(full_name),
+          provas(*)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      return mapInvestigation(data);
     } catch (error) {
       console.error('Erro ao buscar detalhe da investigação:', error);
       return null;
@@ -70,25 +98,51 @@ export const useInvestigations = () => {
 
   const addProof = useCallback(async (investigationId, proofData) => {
     try {
-      const formData = new FormData();
-      formData.append('tipo', proofData.type);
-      formData.append('descricao', proofData.description);
+      let publicUrl = null;
+
       if (proofData.file) {
-        formData.append('arquivo', proofData.file);
+        const fileExt = proofData.file.name.split('.').pop();
+        const fileName = `proofs/${investigationId}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('provas')
+          .upload(fileName, proofData.file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage.from('provas').getPublicUrl(fileName);
+        publicUrl = urlData.publicUrl;
       }
 
-      await api.post(`/investigations/${investigationId}/provas`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const { error } = await supabase
+        .from('provas')
+        .insert([{
+          investigacao_id: investigationId,
+          tipo: proofData.type,
+          descricao: proofData.description,
+          arquivo_url: publicUrl
+        }]);
+
+      if (error) throw error;
+
+      // Refresh list
+      fetchInvestigations();
+
     } catch (error) {
       console.error('Erro ao adicionar prova:', error);
       throw error;
     }
-  }, []);
+  }, [fetchInvestigations]);
 
   const closeInvestigation = useCallback(async (id) => {
     try {
-      await api.post(`/investigations/${id}/finalizar`);
+      const { error } = await supabase
+        .from('investigacoes')
+        .update({ status: 'Finalizada' }) // removed closedAt as I didn't add it to schema explicitly, rely on status
+        .eq('id', id);
+
+      if (error) throw error;
+
       setInvestigations(prev => prev.map(inv => 
         inv.id === id ? { ...inv, status: 'Finalizada', closedAt: new Date().toISOString() } : inv
       ));

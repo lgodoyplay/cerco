@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../services/api';
+import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext(null);
 
@@ -8,34 +8,36 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check local storage on load
-    const storedUser = localStorage.getItem('cerco_user');
-    const token = localStorage.getItem('token');
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (login, password) => {
+  const login = async (email, password) => {
     try {
-      const response = await api.post('/auth/login', { login, password });
-      const { token, user } = response.data;
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('dip_user', JSON.stringify(user));
-      setUser(user);
+      if (error) throw error;
       return true;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login error:', error.message);
       return false;
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('cerco_user');
-    localStorage.removeItem('token');
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   return (

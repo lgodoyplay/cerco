@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Shield, Users, Siren, FileText, ChevronRight, AlertTriangle, Search, Filter, Eye, X, Calendar, MapPin, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import api, { API_URL } from '../../services/api';
+import { supabase } from '../../lib/supabase';
 
 const StatCard = ({ icon: Icon, value, label, color = "blue" }) => (
   <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl flex items-center gap-4 hover:border-federal-600/50 transition-colors group">
@@ -41,23 +41,26 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [wantedRes, arrestRes] = await Promise.all([
-          api.get('/public/procurados'),
-          api.get('/public/presos')
+        const [
+          { data: wantedData },
+          { data: arrestData }
+        ] = await Promise.all([
+          supabase.from('procurados').select('*').order('created_at', { ascending: false }).limit(6),
+          supabase.from('prisoes').select('*').order('created_at', { ascending: false }).limit(6)
         ]);
 
-        setWantedList(wantedRes.data.map(item => ({
+        setWantedList((wantedData || []).map(item => ({
           ...item,
-          image: item.fotoPrincipal ? `${API_URL}${item.fotoPrincipal}` : null,
+          image: item.foto_principal,
           dangerLevel: item.periculosidade,
           crime: item.motivo
         })));
 
-        setArrestList(arrestRes.data.map(item => ({
+        setArrestList((arrestData || []).map(item => ({
           ...item,
-          name: item.nomePreso,
-          image: item.fotoRosto ? `${API_URL}${item.fotoRosto}` : null,
-          reason: item.motivo
+          name: item.nome,
+          image: item.foto_principal,
+          reason: item.observacoes // using observacoes as reason since we don't have 'motivo' in arrests table, or 'artigo'
         })));
       } catch (error) {
         console.error('Erro ao carregar dados públicos:', error);

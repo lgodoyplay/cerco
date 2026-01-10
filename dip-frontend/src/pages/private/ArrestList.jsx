@@ -3,7 +3,7 @@ import { Search, Filter, Eye, FileText, Download, Shield, User, Calendar, MapPin
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import clsx from 'clsx';
-import api, { API_URL } from '../../services/api';
+import { supabase } from '../../lib/supabase';
 
 const ArrestList = () => {
   const [arrests, setArrests] = useState([]);
@@ -15,18 +15,25 @@ const ArrestList = () => {
   useEffect(() => {
     const fetchArrests = async () => {
       try {
-        const response = await api.get('/arrests');
-        const formattedArrests = response.data.map(item => ({
+        const { data, error } = await supabase
+          .from('prisoes')
+          .select('*, created_by_user:profiles(full_name)')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const formattedArrests = data.map(item => ({
           ...item,
-          name: item.nomePreso,
+          name: item.nome,
           passport: item.documento,
-          reason: item.motivo,
-          articles: item.artigos,
-          officer: item.policial?.nome || 'N/A',
-          description: item.descricao,
+          reason: item.observacoes, // Mapping observacoes to reason/description context
+          articles: item.artigo,
+          officer: item.created_by_user?.full_name || item.conduzido_por || 'N/A',
+          description: item.observacoes,
           images: { 
-            face: item.fotoRosto ? `${API_URL}${item.fotoRosto}` : null 
-          }
+            face: item.foto_principal 
+          },
+          date: item.data_prisao // Assuming this field exists based on schema
         }));
         setArrests(formattedArrests);
       } catch (error) {

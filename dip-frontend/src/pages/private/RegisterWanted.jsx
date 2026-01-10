@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Save, Eraser, User, FileText, Camera, CheckCircle, AlertCircle, Shield, Siren, AlertTriangle } from 'lucide-react';
 import clsx from 'clsx';
 import ImageUploadArea from '../../components/ImageUploadArea';
-import api from '../../services/api';
+import { supabase } from '../../lib/supabase';
 
 const RegisterWanted = () => {
   const navigate = useNavigate();
@@ -58,7 +58,6 @@ const RegisterWanted = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate Required Photo
     if (!images.proof1) {
       setNotification({
         type: 'error',
@@ -70,23 +69,44 @@ const RegisterWanted = () => {
     setLoading(true);
 
     try {
-      const data = new FormData();
-      data.append('nome', formData.name);
-      data.append('documento', formData.document);
-      data.append('motivo', formData.reason);
-      data.append('periculosidade', formData.dangerLevel);
-      data.append('observacoes', formData.observations);
-      // officer is handled by backend token
+      // 0. Get User
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (images.proof1) {
-        data.append('fotoPrincipal', images.proof1);
-      }
+      // 1. Upload Photo to Supabase Storage
+      const fileBlob = dataURLtoBlob(images.proof1);
+      const sanitizedDoc = formData.document.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `wanted/${Date.now()}_${sanitizedDoc}.jpg`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('procurados')
+        .upload(fileName, fileBlob);
 
-      await api.post('/wanted', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('procurados').getPublicUrl(fileName);
+
+      // 2. Insert Data into Database
+      const { error: insertError } = await supabase
+        .from('procurados')
+        .insert([{
+          nome: formData.name,
+          documento: formData.document,
+          motivo: formData.reason,
+          periculosidade: formData.dangerLevel,
+          observacoes: formData.observations,
+          status: 'Procurado',
+          foto_principal: publicUrl,
+          created_by: user?.id
+        }]);
+
+      if (insertError) throw insertError;
+
+      // 3. Log Action
+      await supabase.from('system_logs').insert([{
+        user_id: user?.id,
+        action: 'Novo Procurado',
+        details: `Procurado cadastrado: ${formData.name} (Periculosidade: ${formData.dangerLevel})`
+      }]);
 
       setNotification({
         type: 'success',
@@ -99,10 +119,10 @@ const RegisterWanted = () => {
       }, 2000);
 
     } catch (error) {
-      console.error('Erro ao registrar:', error);
+      console.error('Erro ao registrar procurado:', error);
       setNotification({
         type: 'error',
-        message: 'Erro ao registrar procurado. Tente novamente.'
+        message: `Erro ao registrar: ${error.message}`
       });
     } finally {
       setLoading(false);

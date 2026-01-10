@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Filter, AlertTriangle, MoreVertical, ShieldAlert, Eye, FileText, Printer, X, Siren } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import api, { API_URL } from '../../services/api';
+import { supabase } from '../../lib/supabase';
 
 const WantedList = () => {
   const [wantedList, setWantedList] = useState([]);
@@ -12,15 +12,21 @@ const WantedList = () => {
   useEffect(() => {
     const fetchWanted = async () => {
       try {
-        const response = await api.get('/wanted');
-        const formattedWanted = response.data.map(item => ({
+        const { data, error } = await supabase
+          .from('procurados')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const formattedWanted = data.map(item => ({
           ...item,
           name: item.nome,
           crime: item.motivo,
           dangerLevel: item.periculosidade,
           reward: item.recompensa,
-          date: item.createdAt,
-          image: item.fotoPrincipal ? `${API_URL}${item.fotoPrincipal}` : null
+          date: item.created_at,
+          image: item.foto_principal
         }));
         setWantedList(formattedWanted);
       } catch (error) {

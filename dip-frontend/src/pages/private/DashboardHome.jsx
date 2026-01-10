@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, AlertTriangle, FileText, TrendingUp, Search, Clock, ShieldAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import { supabase } from '../../lib/supabase';
 
 const DashboardStat = ({ title, value, subtext, icon: Icon, color }) => (
   <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 relative overflow-hidden">
@@ -33,12 +33,38 @@ const DashboardHome = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsRes, activityRes] = await Promise.all([
-          api.get('/dashboard/stats'),
-          api.get('/dashboard/recent-activity')
+        const [
+          { count: presosCount },
+          { count: procuradosCount },
+          { count: investigacoesCount },
+          { data: logs }
+        ] = await Promise.all([
+          supabase.from('prisoes').select('*', { count: 'exact', head: true }),
+          supabase.from('procurados').select('*', { count: 'exact', head: true }),
+          supabase.from('investigacoes').select('*', { count: 'exact', head: true }),
+          supabase.from('system_logs').select('*, profiles(full_name, role)').order('created_at', { ascending: false }).limit(5)
         ]);
-        setStats(statsRes.data);
-        setRecentActivities(activityRes.data);
+
+        setStats({
+          totalPresos: presosCount || 0,
+          totalProcurados: procuradosCount || 0,
+          totalInvestigacoes: investigacoesCount || 0,
+          totalBos: 0 // Implementar tabela de BOs se necessário
+        });
+        
+        // Map logs to match recentActivities structure if needed
+        const activities = (logs || []).map(log => ({
+          action: log.action,
+          details: log.details,
+          createdAt: log.created_at,
+          user: {
+             nome: log.profiles?.full_name,
+             patente: log.profiles?.role
+          }
+        }));
+
+        setRecentActivities(activities);
+
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
       } finally {
@@ -61,7 +87,7 @@ const DashboardHome = () => {
   };
 
   const getIconForActivity = (action) => {
-    const lower = action.toLowerCase();
+    const lower = (action || '').toLowerCase();
     if (lower.includes('prisão')) return { icon: Users, color: 'blue' };
     if (lower.includes('procurado')) return { icon: ShieldAlert, color: 'red' };
     if (lower.includes('investigação')) return { icon: FileText, color: 'amber' };

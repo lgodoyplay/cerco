@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Save, Eraser, User, FileText, Camera, CheckCircle, AlertCircle, Shield } from 'lucide-react';
 import clsx from 'clsx';
+import { useNavigate } from 'react-router-dom';
 import ImageUploadArea from '../../components/ImageUploadArea';
-import api from '../../services/api';
+import { supabase } from '../../lib/supabase';
 
 const RegisterArrest = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     passport: '',
@@ -14,13 +16,8 @@ const RegisterArrest = () => {
     description: '',
   });
 
-  const [images, setImages] = useState({
-    face: null,
-    bag: null,
-    tablet: null,
-    approach: null
-  });
-
+  const [image, setImage] = useState(null); // Changed to single image state to match usage
+  const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
 
   const handleChange = (e) => {
@@ -28,8 +25,8 @@ const RegisterArrest = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageUpload = (id, file) => {
-    setImage(file);
+  const handleImageUpload = (id, dataUrl) => {
+    setImage(dataUrl);
   };
 
   const handleImageRemove = (id) => {
@@ -40,37 +37,73 @@ const RegisterArrest = () => {
     return formData.name && formData.passport && formData.articles && formData.officer;
   };
 
+  const dataURLtoBlob = (dataurl) => {
+    if (!dataurl) return null;
+    let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while(n--){
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], {type:mime});
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!image) {
-      alert('A foto do preso é obrigatória.');
+      setNotification({ type: 'error', message: 'A foto do preso é obrigatória.' });
       return;
     }
 
     setLoading(true);
 
     try {
-      const data = new FormData();
-      data.append('nomePreso', formData.name);
-      data.append('documento', formData.passport);
-      data.append('motivo', formData.description); // Using description as reason/motive
-      data.append('artigos', formData.articles);
-      data.append('descricao', formData.description);
-      data.append('data', new Date().toISOString());
-      data.append('fotoRosto', image);
+      // 0. Get User
+      const { data: { user } } = await supabase.auth.getUser();
 
-      await api.post('/arrests', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      // 1. Upload Image to Supabase Storage
+      const fileBlob = dataURLtoBlob(image);
+      const sanitizedDoc = formData.passport.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `arrests/${Date.now()}_${sanitizedDoc}.jpg`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('prisoes')
+        .upload(fileName, fileBlob);
 
-      alert('Prisão registrada com sucesso!');
-      navigate('/dashboard/arrest-list');
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('prisoes').getPublicUrl(fileName);
+
+      // 2. Insert Data into Database
+      const { error: insertError } = await supabase
+        .from('prisoes')
+        .insert([{
+          nome: formData.name,
+          documento: formData.passport,
+          artigo: formData.articles,
+          data_prisao: new Date().toISOString(),
+          status: 'Preso',
+          foto_principal: publicUrl,
+          conduzido_por: formData.officer,
+          observacoes: formData.description,
+          created_by: user?.id
+        }]);
+
+      if (insertError) throw insertError;
+
+      // 3. Log Action
+      await supabase.from('system_logs').insert([{
+        user_id: user?.id,
+        action: 'Nova Prisão',
+        details: `Prisão registrada: ${formData.name} (Art. ${formData.articles})`
+      }]);
+
+      setNotification({ type: 'success', message: 'Prisão registrada com sucesso!' });
+      setTimeout(() => navigate('/dashboard/arrest-list'), 2000);
+
     } catch (error) {
       console.error('Erro ao registrar prisão:', error);
-      alert('Erro ao registrar prisão. Verifique os dados.');
+      setNotification({ type: 'error', message: `Erro ao registrar: ${error.message}` });
     } finally {
       setLoading(false);
     }
