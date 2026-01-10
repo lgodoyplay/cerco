@@ -13,6 +13,7 @@ import {
   Settings,
   BookOpen
 } from 'lucide-react';
+import clsx from 'clsx';
 
 const SettingsLayout = () => {
   const menuItems = [

@@ -25,6 +25,7 @@ import InvestigationDetail from './pages/private/investigations/InvestigationDet
 // Settings Pages
 import SettingsLayout from './pages/private/settings/SettingsLayout';
 import UsersSettings from './pages/private/settings/UsersSettings';
+import CoursesSettings from './pages/private/settings/CoursesSettings';
 import CorporationSettings from './pages/private/settings/CorporationSettings';
 import RolesSettings from './pages/private/settings/RolesSettings';
 import CrimesSettings from './pages/private/settings/CrimesSettings';
