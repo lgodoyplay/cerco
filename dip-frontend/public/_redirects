@@ -1,1 +1,4 @@
-/* /index.html 200
+# Cloudflare Pages Redirect Rules
+# For SPA routing:
+/assets/*  /assets/:splat  200
+/*  /index.html  200
