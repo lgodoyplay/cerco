@@ -3,31 +3,37 @@ import { useSettings } from '../../../hooks/useSettings';
 import { BadgeCheck, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 
 const RolesSettings = () => {
-  const { roles, setRoles, logAction } = useSettings();
+  const { roles, updateRoles, logAction } = useSettings();
   const [newRole, setNewRole] = useState('');
 
-  const handleAddRole = (e) => {
+  const handleAddRole = async (e) => {
     e.preventDefault();
     if (!newRole.trim()) return;
+    
     const nextHierarchy = roles.length > 0 ? Math.max(...roles.map(r => r.hierarchy)) + 1 : 1;
     const newRoleObj = { id: Date.now(), title: newRole, hierarchy: nextHierarchy };
-    setRoles([...roles, newRoleObj]);
+    
+    const updatedRoles = [...roles, newRoleObj];
+    await updateRoles(updatedRoles);
+    
     logAction(`Novo cargo criado: ${newRole}`);
     setNewRole('');
   };
 
-  const handleRemoveRole = (id) => {
-    setRoles(roles.filter(r => r.id !== id));
+  const handleRemoveRole = async (id) => {
+    if (!window.confirm('Tem certeza que deseja remover este cargo?')) return;
+    const updatedRoles = roles.filter(r => r.id !== id);
+    await updateRoles(updatedRoles);
     logAction(`Cargo removido: ID ${id}`);
   };
 
-  const moveRole = (index, direction) => {
+  const moveRole = async (index, direction) => {
     const newRoles = [...roles];
     const [movedRole] = newRoles.splice(index, 1);
     newRoles.splice(index + direction, 0, movedRole);
     // Recalculate hierarchy based on order
     const updatedRoles = newRoles.map((role, idx) => ({ ...role, hierarchy: idx + 1 }));
-    setRoles(updatedRoles);
+    await updateRoles(updatedRoles);
   };
 
   return (

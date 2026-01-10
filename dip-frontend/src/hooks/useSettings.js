@@ -64,7 +64,7 @@ export const useSettings = () => {
         name: u.full_name,
         username: u.email, // Using email as username/login
         role: u.role,
-        permissions: [], // Not implemented in simple profile
+        permissions: u.permissions || [], // Carrega permissões do banco
         active: true,
         patente: u.role // Mapping role to patente for now
       }));
