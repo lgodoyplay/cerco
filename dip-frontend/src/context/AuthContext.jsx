@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext(null);
@@ -6,12 +6,16 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
     let mounted = true;
 
     // Função unificada para carregar usuário e perfil
     const loadUserSession = async (session) => {
+      // Se estamos carregando uma sessão, cancelamos o timeout de segurança
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
       try {
         if (session?.user) {
           // Busca perfil para obter role e username
@@ -67,6 +71,9 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth State Change:", event);
       
+      // Qualquer sinal de vida do Supabase deve cancelar o timeout de erro
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
       if (event === 'SIGNED_OUT') {
         if (mounted) {
             setUser(null);
@@ -77,24 +84,25 @@ export const AuthProvider = ({ children }) => {
         // Mas para garantir atualização de perfil, chamamos a função segura
         loadUserSession(session);
       } else if (event === 'INITIAL_SESSION') {
-         // Já tratado pelo getSession, mas garante redundância segura
-         // loadUserSession(session); 
+         // Já tratado pelo getSession, mas se o getSession falhar/demorar, isso garante
+         if (session) loadUserSession(session); 
       }
     });
 
-    // Timeout de segurança absoluto (caso Supabase trave)
-    const timeout = setTimeout(() => {
+    // Timeout de segurança absoluto (caso Supabase trave completamente)
+    // Aumentado para 10s para acomodar conexões lentas, já que temos "Loading" visual
+    timeoutRef.current = setTimeout(() => {
         if (mounted && loading) {
-            console.warn("Auth timeout forçado.");
+            console.warn("Auth timeout forçado. Supabase não respondeu a tempo.");
             setLoading(false);
             setUser(null); // Força estado deslogado para permitir nova tentativa
         }
-    }, 3000); // Reduzido para 3s para feedback mais rápido
+    }, 10000); 
 
     return () => {
         mounted = false;
         subscription.unsubscribe();
-        clearTimeout(timeout);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
 
