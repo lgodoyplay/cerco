@@ -213,7 +213,7 @@ const UsersSettings = () => {
                      onError={(e) => e.target.style.display = 'none'} // Fallback se falhar
                    />
                 ) : (
-                   <span className="font-bold text-lg text-slate-400">{(user.username || '??').substring(0,2).toUpperCase()}</span>
+                   <span className="font-bold text-lg text-slate-400">{(String(user.username || '??')).substring(0,2).toUpperCase()}</span>
                 )}
               </div>
               <div>

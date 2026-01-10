@@ -58,6 +58,13 @@ const BOList = () => {
           </h2>
           <p className="text-slate-400 mt-1">Consulta de ocorrências registradas no sistema.</p>
         </div>
+        <button 
+          onClick={() => navigate('/dashboard/bo')}
+          className="px-4 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-federal-900/20 flex items-center gap-2"
+        >
+          <FileText size={18} />
+          + Novo BO
+        </button>
       </div>
 
       {/* Filters */}

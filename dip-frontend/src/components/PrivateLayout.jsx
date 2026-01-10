@@ -107,7 +107,7 @@ const PrivateLayout = () => {
                         className="w-full h-full object-cover"
                       />
                    ) : (
-                      (user?.username || '').substring(0, 2).toUpperCase() || 'AG'
+                      (String(user?.username || '')).substring(0, 2).toUpperCase() || 'AG'
                    )}
                 </div>
                 <div className="min-w-0">
