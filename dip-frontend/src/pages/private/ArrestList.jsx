@@ -4,8 +4,13 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../hooks/useSettings';
+import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 
 const ArrestList = () => {
+  const { user } = useAuth();
+  const { templates } = useSettings();
   const [arrests, setArrests] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedArrest, setSelectedArrest] = useState(null);

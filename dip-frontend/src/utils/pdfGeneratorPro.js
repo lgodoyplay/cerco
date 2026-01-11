@@ -134,43 +134,245 @@ const formatDate = (dateStr) => {
 const coatOfArmsBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 // Gerar Documento
-export const generateProfessionalPDF = async (investigation, user) => {
-    console.log("Iniciando geração de PDF Profissional (ABNT)...", investigation);
+export const generateProfessionalPDF = async (data, user, templateStr = null, type = 'investigation') => {
+    console.log(`Iniciando geração de PDF Profissional (${type})...`, data);
     try {
         // Garantir configuração de VFS
         ensureFontsConfigured();
 
-        // Preparar dados de imagens (assíncrono)
+        // Preparar dados de imagens (assíncrono) - Apenas se houver provas (investigation) ou imagens (arrest/bo)
         let processedProofs = [];
-        if (investigation.proofs && investigation.proofs.length > 0) {
-            // Processar em paralelo para ser rápido
-            processedProofs = await Promise.all(investigation.proofs.map(async (proof) => {
+        let validImages = [];
+
+        // Lógica de imagens baseada no tipo
+        if (type === 'investigation' && data.proofs && data.proofs.length > 0) {
+            processedProofs = await Promise.all(data.proofs.map(async (proof) => {
                 let imgData = null;
                 if (proof.type === 'image' && proof.content) {
                     try {
                         imgData = await getBase64ImageFromURL(proof.content);
-                        // Validação extra: se não for string válida ou vazia, anula
                         if (!imgData || typeof imgData !== 'string' || !imgData.startsWith('data:image')) {
-                             console.warn(`Imagem inválida descartada para prova ${proof.id}`);
                              imgData = null;
                         }
                     } catch (e) {
-                        console.warn(`Falha ao carregar imagem da prova ${proof.id}:`, e);
                         imgData = null;
                     }
                 }
                 return { ...proof, imgData };
             }));
+            validImages = processedProofs.filter(p => p.imgData);
+        } else if (type === 'arrest' && data.images && data.images.face) {
+            // Processar imagem do preso
+             try {
+                const imgData = await getBase64ImageFromURL(data.images.face);
+                if (imgData && typeof imgData === 'string' && imgData.startsWith('data:image')) {
+                    validImages = [{ title: 'FOTO DO DETIDO', imgData, description: 'Registro fotográfico principal.' }];
+                }
+            } catch (e) {
+                console.warn("Erro ao carregar foto do preso:", e);
+            }
         }
-        
-        // Filtra imagens válidas para evitar erro do pdfmake
-        const validImages = processedProofs.filter(p => p.imgData);
 
-        // Definir Conteúdo
+        // Definição de Variáveis e Conteúdo Padrão baseada no Tipo
+        let variables = {};
+        let standardContent = [];
+        let docTitle = 'DOCUMENTO OFICIAL';
+        let docRef = `${new Date().getFullYear()}.${data.id || '000'}`;
+
+        if (type === 'investigation') {
+            docTitle = 'INQUÉRITO POLICIAL';
+            docRef = `PF - ${data.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`;
+            
+            variables = {
+                '{numero_inquerito}': data.id,
+                '{data_abertura}': formatDate(data.createdAt),
+                '{status}': data.status,
+                '{nome_investigado}': Array.isArray(data.involved) ? data.involved.join(', ') : (data.involved || 'Não informado'),
+                '{cpf_investigado}': 'Não informado',
+                '{nome_detido}': Array.isArray(data.involved) ? data.involved.join(', ') : 'Não informado',
+                '{data_atual}': new Date().toLocaleDateString('pt-BR'),
+                '{local_prisao}': 'Local da Ocorrência',
+                '{doc_detido}': 'RG/CPF não informado',
+                '{protocolo}': `${new Date().getFullYear()}.${data.id}`,
+                '{natureza_ocorrencia}': 'Investigação Criminal',
+                '{nome_comunicante}': user?.nome || 'Agente Responsável',
+                '{relato_fatos}': data.description || 'Ver seção de provas.',
+                '{conclusao}': 'Conforme relatório de provas em anexo.',
+                '{assinatura_agente}': user?.nome || 'Agente',
+                '{cargo_agente}': 'Agente de Polícia Civil'
+            };
+
+            standardContent = [
+                // --- CAPA ---
+                (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
+                    image: coatOfArmsBase64, width: 60, alignment: 'center', margin: [0, 20, 0, 10]
+                } : { text: '[BRASÃO]', alignment: 'center', margin: [0, 20, 0, 10] },
+
+                { text: docTitle, style: 'title' },
+                { text: `PROCEDIMENTO Nº: ${docRef}`, style: 'subHeader' },
+                { text: `DATA DE INSTAURAÇÃO: ${formatDate(data.createdAt)}`, style: 'subHeader', fontSize: 12 },
+                
+                { text: '\n\n\n\n', fontSize: 1 }, 
+
+                // --- SUMÁRIO ---
+                { toc: { title: { text: 'SUMÁRIO', style: 'header' }, numberStyle: { bold: true } }, pageBreak: 'after' },
+
+                // --- IDENTIFICAÇÃO ---
+                { text: '1. IDENTIFICAÇÃO', style: 'sectionTitle', tocItem: true },
+                {
+                    table: {
+                        widths: ['30%', '70%'],
+                        body: [
+                            [{ text: 'UNIDADE POLICIAL', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES - DIP', style: 'tableCell' }],
+                            [{ text: 'NATUREZA', style: 'tableHeader' }, { text: 'Inquérito Policial', style: 'tableCell' }],
+                            [{ text: 'STATUS', style: 'tableHeader' }, { text: data.status.toUpperCase(), style: 'tableCell', bold: true }],
+                            [{ text: 'PRIORIDADE', style: 'tableHeader' }, { text: data.priority.toUpperCase(), style: 'tableCell' }],
+                            [{ text: 'RESPONSÁVEL', style: 'tableHeader' }, { text: data.investigator ? data.investigator.nome.toUpperCase() : (user?.nome || 'NÃO ATRIBUÍDO').toUpperCase(), style: 'tableCell' }]
+                        ]
+                    },
+                    layout: 'lightHorizontalLines'
+                },
+
+                // --- ENVOLVIDOS ---
+                { text: '2. PARTES ENVOLVIDAS', style: 'sectionTitle', tocItem: true },
+                { text: Array.isArray(data.involved) ? data.involved.join(', ') : (data.involved || 'Não informado.'), style: 'normalText', margin: [0, 0, 0, 15] },
+
+                // --- RELATO ---
+                { text: '3. RELATO DOS FATOS', style: 'sectionTitle', tocItem: true },
+                { text: data.description || 'Nenhuma descrição fornecida.', style: 'normalText' },
+
+                // --- DILIGÊNCIAS ---
+                { text: '4. DILIGÊNCIAS REALIZADAS', style: 'sectionTitle', tocItem: true },
+                { ul: [`Abertura do inquérito em ${formatDate(data.createdAt)}.`, `Análise inicial das evidências.`, data.status === 'Finalizada' ? `Encerramento e conclusão em ${formatDate(data.closedAt)}.` : 'Investigação em andamento.'], style: 'normalText' }
+            ];
+
+        } else if (type === 'bo') {
+            docTitle = 'BOLETIM DE OCORRÊNCIA';
+            docRef = `BO - ${data.id}/${new Date().getFullYear()}`;
+            
+            variables = {
+                '{numero_inquerito}': data.id,
+                '{data_abertura}': formatDate(data.created_at),
+                '{status}': data.status || 'Registrado',
+                '{nome_investigado}': 'N/A',
+                '{cpf_investigado}': 'N/A',
+                '{nome_detido}': 'N/A',
+                '{data_atual}': new Date().toLocaleDateString('pt-BR'),
+                '{local_prisao}': data.localizacao || 'Não informado',
+                '{doc_detido}': 'N/A',
+                '{protocolo}': docRef,
+                '{natureza_ocorrencia}': 'Ocorrência Policial',
+                '{nome_comunicante}': data.comunicante || 'Anônimo',
+                '{relato_fatos}': data.descricao || 'Sem descrição.',
+                '{conclusao}': 'Registro realizado para fins legais.',
+                '{assinatura_agente}': user?.nome || 'Agente de Plantão',
+                '{cargo_agente}': 'Agente de Polícia Civil'
+            };
+
+            standardContent = [
+                (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
+                    image: coatOfArmsBase64, width: 60, alignment: 'center', margin: [0, 20, 0, 10]
+                } : { text: '[BRASÃO]', alignment: 'center', margin: [0, 20, 0, 10] },
+
+                { text: docTitle, style: 'title' },
+                { text: `PROTOCOLO: ${docRef}`, style: 'subHeader' },
+                { text: `DATA DO REGISTRO: ${formatDate(data.created_at)}`, style: 'subHeader', fontSize: 12 },
+                
+                { text: '\n\n', fontSize: 1 }, 
+
+                { text: '1. DADOS DA OCORRÊNCIA', style: 'sectionTitle' },
+                {
+                    table: {
+                        widths: ['30%', '70%'],
+                        body: [
+                            [{ text: 'LOCAL', style: 'tableHeader' }, { text: data.localizacao || 'Não informado', style: 'tableCell' }],
+                            [{ text: 'COMUNICANTE', style: 'tableHeader' }, { text: data.comunicante || 'Anônimo', style: 'tableCell' }],
+                            [{ text: 'DATA/HORA', style: 'tableHeader' }, { text: formatDate(data.created_at), style: 'tableCell' }],
+                        ]
+                    },
+                    layout: 'lightHorizontalLines'
+                },
+
+                { text: '2. DESCRIÇÃO DOS FATOS', style: 'sectionTitle' },
+                { text: data.descricao || 'Nenhuma descrição fornecida.', style: 'normalText', alignment: 'justify' }
+            ];
+
+        } else if (type === 'arrest') {
+            docTitle = 'AUTO DE PRISÃO';
+            docRef = `AP - ${data.id}/${new Date().getFullYear()}`;
+            
+            variables = {
+                '{numero_inquerito}': data.id,
+                '{data_abertura}': formatDate(data.date || data.created_at),
+                '{status}': 'Detido',
+                '{nome_investigado}': data.name,
+                '{cpf_investigado}': data.passport || 'Não informado',
+                '{nome_detido}': data.name,
+                '{data_atual}': new Date().toLocaleDateString('pt-BR'),
+                '{local_prisao}': 'Delegacia Central',
+                '{doc_detido}': data.passport || 'Não informado',
+                '{protocolo}': docRef,
+                '{natureza_ocorrencia}': data.articles || data.reason || 'Detenção',
+                '{nome_comunicante}': data.officer || 'Agente',
+                '{relato_fatos}': data.reason || data.description || 'Sem observações adicionais.',
+                '{conclusao}': 'Indivíduo detido e à disposição da justiça.',
+                '{assinatura_agente}': data.officer || user?.nome || 'Agente Responsável',
+                '{cargo_agente}': 'Agente de Polícia Civil'
+            };
+
+            standardContent = [
+                (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
+                    image: coatOfArmsBase64, width: 60, alignment: 'center', margin: [0, 20, 0, 10]
+                } : { text: '[BRASÃO]', alignment: 'center', margin: [0, 20, 0, 10] },
+
+                { text: docTitle, style: 'title' },
+                { text: `REGISTRO: ${docRef}`, style: 'subHeader' },
+                { text: `DATA: ${formatDate(data.date || data.created_at)}`, style: 'subHeader', fontSize: 12 },
+                
+                { text: '\n\n', fontSize: 1 }, 
+
+                { text: '1. DADOS DO DETIDO', style: 'sectionTitle' },
+                {
+                    table: {
+                        widths: ['30%', '70%'],
+                        body: [
+                            [{ text: 'NOME COMPLETO', style: 'tableHeader' }, { text: data.name.toUpperCase(), style: 'tableCell', bold: true }],
+                            [{ text: 'DOCUMENTO', style: 'tableHeader' }, { text: data.passport || 'Não informado', style: 'tableCell' }],
+                            [{ text: 'ARTIGOS/CRIME', style: 'tableHeader' }, { text: data.articles || 'Não especificado', style: 'tableCell' }],
+                        ]
+                    },
+                    layout: 'lightHorizontalLines'
+                },
+
+                { text: '2. MOTIVO DA PRISÃO / OBSERVAÇÕES', style: 'sectionTitle' },
+                { text: data.reason || data.description || 'Sem observações.', style: 'normalText', alignment: 'justify' }
+            ];
+        }
+
+        // Processar Template Personalizado (se houver)
+        let customContent = null;
+        if (templateStr) {
+            // Substituição
+            let text = templateStr;
+            Object.keys(variables).forEach(key => {
+                const regex = new RegExp(key, 'g');
+                text = text.replace(regex, variables[key] || '');
+            });
+
+            // Converter para formato pdfmake (parágrafos)
+            customContent = text.split('\n').map(line => {
+                const trimmed = line.trim();
+                // Detecção simples de "títulos" (linhas curtas em maiúsculas) para aplicar estilo
+                if (trimmed.length > 0 && trimmed.length < 60 && trimmed === trimmed.toUpperCase() && !trimmed.includes(':') && !trimmed.includes('.')) {
+                    return { text: trimmed, style: 'subHeader', margin: [0, 10, 0, 5] };
+                }
+                return { text: trimmed, style: 'normalText', margin: [0, 2, 0, 2] };
+            });
+        }
+
+        // Definir Conteúdo Final
         const docDefinition = {
             pageSize: 'A4',
-            // Margens ABNT: Superior/Esquerda 3cm (approx 85pt), Inferior/Direita 2cm (approx 57pt)
-            // [left, top, right, bottom]
             pageMargins: [85, 85, 57, 57], 
             
             // Cabeçalho em todas as páginas
@@ -180,7 +382,7 @@ export const generateProfessionalPDF = async (investigation, user) => {
                         { text: 'REPÚBLICA FEDERATIVA DO BRASIL', alignment: 'center', fontSize: 10, bold: true, margin: [0, 15, 0, 0] },
                         { text: 'SECRETARIA DE ESTADO DE JUSTIÇA E SEGURANÇA PÚBLICA', alignment: 'center', fontSize: 10, bold: true },
                         { text: 'POLÍCIA CIVIL - DIP', alignment: 'center', fontSize: 10, bold: true },
-                        { canvas: [{ type: 'line', x1: 85, y1: 5, x2: 538, y2: 5, lineWidth: 1 }] } // Linha ajustada às margens
+                        { canvas: [{ type: 'line', x1: 85, y1: 5, x2: 538, y2: 5, lineWidth: 1 }] }
                     ]
                 };
             },
@@ -189,192 +391,89 @@ export const generateProfessionalPDF = async (investigation, user) => {
             footer: (currentPage, pageCount) => {
                 return {
                     columns: [
-                        { text: `Inquérito Nº ${investigation.id} - Confidencial`, alignment: 'left', fontSize: 10, margin: [85, 0, 0, 0] },
+                        { text: `${docTitle} Nº ${data.id} - Confidencial`, alignment: 'left', fontSize: 10, margin: [85, 0, 0, 0] },
                         { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 10, margin: [0, 0, 57, 0] }
                     ]
                 };
             },
 
             content: [
-                // --- CAPA ---
-                // Uso seguro da imagem do brasão
-                (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
-                    image: coatOfArmsBase64,
-                    width: 60,
-                    alignment: 'center',
-                    margin: [0, 20, 0, 10]
-                } : { text: '[BRASÃO]', alignment: 'center', margin: [0, 20, 0, 10] },
+                // Se tiver template customizado, usa ele. Se não, usa o padrão.
+                ...(customContent ? customContent : standardContent),
 
-                { text: 'INQUÉRITO POLICIAL', style: 'title' },
-                { text: `PROCEDIMENTO Nº: PF - ${investigation.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`, style: 'subHeader' },
-                { text: `DATA DE INSTAURAÇÃO: ${formatDate(investigation.createdAt)}`, style: 'subHeader', fontSize: 12 },
-                
-                { text: '\n\n\n\n', fontSize: 1 }, // Espaço
+                // --- ANEXOS (Para Investigations ou se houver imagens em outros tipos) ---
+                (type === 'investigation' || validImages.length > 0) ? [
+                    { text: customContent ? '\n\n--- ANEXOS DO SISTEMA ---\n\n' : '', style: 'subHeader', pageBreak: customContent ? 'before' : undefined },
+                ] : [],
 
-                // --- SUMÁRIO ---
-                {
-                    toc: {
-                        title: { text: 'SUMÁRIO', style: 'header' },
-                        numberStyle: { bold: true }
-                    },
-                    pageBreak: 'after'
-                },
-
-                // --- IDENTIFICAÇÃO (TABELA) ---
-                { text: '1. IDENTIFICAÇÃO', style: 'sectionTitle', tocItem: true },
-                {
-                    table: {
-                        widths: ['30%', '70%'],
-                        body: [
-                            [{ text: 'UNIDADE POLICIAL', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES - DIP', style: 'tableCell' }],
-                            [{ text: 'NATUREZA', style: 'tableHeader' }, { text: 'Inquérito Policial (Investigação Criminal)', style: 'tableCell' }],
-                            [{ text: 'STATUS', style: 'tableHeader' }, { text: investigation.status.toUpperCase(), style: 'tableCell', bold: true }],
-                            [{ text: 'PRIORIDADE', style: 'tableHeader' }, { text: investigation.priority.toUpperCase(), style: 'tableCell' }],
-                            [{ text: 'RESPONSÁVEL', style: 'tableHeader' }, { text: investigation.investigator ? investigation.investigator.nome.toUpperCase() : (user?.nome || 'NÃO ATRIBUÍDO').toUpperCase(), style: 'tableCell' }]
-                        ]
-                    },
-                    layout: 'lightHorizontalLines'
-                },
-
-                // --- ENVOLVIDOS ---
-                { text: '2. PARTES ENVOLVIDAS', style: 'sectionTitle', tocItem: true },
-                {
-                    text: Array.isArray(investigation.involved) ? investigation.involved.join(', ') : (investigation.involved || 'Não informado.'),
-                    style: 'normalText',
-                    margin: [0, 0, 0, 15]
-                },
-
-                // --- RELATO DOS FATOS ---
-                { text: '3. RELATO DOS FATOS', style: 'sectionTitle', tocItem: true },
-                {
-                    text: investigation.description || 'Nenhuma descrição fornecida.',
-                    style: 'normalText'
-                },
-
-                // --- LINHA DO TEMPO ---
-                { text: '4. DILIGÊNCIAS REALIZADAS', style: 'sectionTitle', tocItem: true },
-                {
-                    ul: [
-                        `Abertura do inquérito em ${formatDate(investigation.createdAt)}.`,
-                        `Análise inicial das evidências.`,
-                        investigation.status === 'Finalizada' ? `Encerramento e conclusão em ${formatDate(investigation.closedAt)}.` : 'Investigação em andamento.'
-                    ],
-                    style: 'normalText'
-                },
-
-                // --- PROVAS E EVIDÊNCIAS ---
-                { text: '5. PROVAS COLETADAS', style: 'sectionTitle', pageBreak: 'before', tocItem: true },
-                processedProofs.length > 0 ? {
-                    layout: 'headerLineOnly', // or 'noBorders'
-                    table: {
-                        widths: ['5%', '15%', '60%', '20%'],
-                        headerRows: 1,
-                        body: [
-                            [
-                                { text: '#', style: 'tableHeader' },
-                                { text: 'TIPO', style: 'tableHeader' },
-                                { text: 'DESCRIÇÃO E CONTEÚDO', style: 'tableHeader' },
-                                { text: 'DATA', style: 'tableHeader' }
-                            ],
-                            ...processedProofs.map((proof, index) => [
-                                { text: (index + 1).toString(), style: 'tableCell', alignment: 'center' },
-                                { text: (proof.type || 'DOC').toUpperCase(), style: 'tableCell' },
-                                { 
-                                    stack: [
-                                        { text: proof.title || 'Sem título', bold: true, fontSize: 10 },
-                                        { text: proof.description || '', fontSize: 10, margin: [0, 2, 0, 2] },
-                                        // Renderização condicional do conteúdo
-                                        (proof.type === 'image') ? 
-                                            { text: '(Visualizar na seção de Anexos)', fontSize: 9, italics: true, color: '#666666' } : null,
-                                        
-                                        (proof.type === 'link' || proof.type === 'video') ? 
-                                            { text: proof.content || '', link: proof.content, color: '#2563eb', decoration: 'underline', fontSize: 9, margin: [0, 2, 0, 0] } : null,
-                                        
-                                        (proof.type === 'file') ? 
-                                            { text: `Arquivo/Ref: ${proof.content || 'Não informado'}`, fontSize: 9, italics: true, color: '#4b5563', margin: [0, 2, 0, 0] } : null,
-                                        
-                                        (proof.type === 'text') ? 
-                                            { text: `"${proof.content || ''}"`, fontSize: 9, italics: true, background: '#f3f4f6', margin: [0, 2, 0, 0] } : null
-                                    ].filter(Boolean),
-                                    style: 'tableCell' 
-                                },
-                                { text: formatDate(proof.createdAt), style: 'tableCell', alignment: 'center' }
-                            ])
-                        ]
-                    }
-                } : { text: 'Nenhuma prova anexada.', style: 'normalText', italics: true },
+                // --- PROVAS E EVIDÊNCIAS (Apenas Investigation) ---
+                (type === 'investigation') ? [
+                    { text: customContent ? 'REGISTRO DE PROVAS' : '5. PROVAS COLETADAS', style: 'sectionTitle', tocItem: !customContent },
+                    processedProofs.length > 0 ? {
+                        layout: 'headerLineOnly',
+                        table: {
+                            widths: ['5%', '15%', '60%', '20%'],
+                            headerRows: 1,
+                            body: [
+                                [
+                                    { text: '#', style: 'tableHeader' },
+                                    { text: 'TIPO', style: 'tableHeader' },
+                                    { text: 'DESCRIÇÃO E CONTEÚDO', style: 'tableHeader' },
+                                    { text: 'DATA', style: 'tableHeader' }
+                                ],
+                                ...processedProofs.map((proof, index) => [
+                                    { text: (index + 1).toString(), style: 'tableCell', alignment: 'center' },
+                                    { text: (proof.type || 'DOC').toUpperCase(), style: 'tableCell' },
+                                    { 
+                                        stack: [
+                                            { text: proof.title || 'Sem título', bold: true, fontSize: 10 },
+                                            { text: proof.description || '', fontSize: 10, margin: [0, 2, 0, 2] },
+                                            (proof.type === 'image') ? { text: '(Visualizar na seção de Anexos)', fontSize: 9, italics: true, color: '#666666' } : null,
+                                            (proof.type === 'link' || proof.type === 'video') ? { text: proof.content || '', link: proof.content, color: '#2563eb', decoration: 'underline', fontSize: 9, margin: [0, 2, 0, 0] } : null,
+                                            (proof.type === 'file') ? { text: `Arquivo/Ref: ${proof.content || 'Não informado'}`, fontSize: 9, italics: true, color: '#4b5563', margin: [0, 2, 0, 0] } : null,
+                                            (proof.type === 'text') ? { text: `"${proof.content || ''}"`, fontSize: 9, italics: true, background: '#f3f4f6', margin: [0, 2, 0, 0] } : null
+                                        ].filter(Boolean),
+                                        style: 'tableCell' 
+                                    },
+                                    { text: formatDate(proof.createdAt), style: 'tableCell', alignment: 'center' }
+                                ])
+                            ]
+                        }
+                    } : { text: 'Nenhuma prova anexada.', style: 'normalText', italics: true }
+                ] : [],
 
                 // --- ANEXOS (IMAGENS) ---
-                validImages.length > 0 ? { text: '6. ANEXOS FOTOGRÁFICOS', style: 'sectionTitle', pageBreak: 'before', tocItem: true } : null,
-                ...validImages.map((proof, index) => {
-                    // Garantia final de que temos uma imagem válida antes de renderizar
-                    if (!proof.imgData) return null;
-                    
-                    return [
-                        {
-                            text: `ANEXO ${index + 1} - ${proof.title || 'EVIDÊNCIA VISUAL'}`,
-                            style: 'subHeader',
-                            margin: [0, 20, 0, 10]
-                        },
-                        {
-                            image: proof.imgData, // Aqui garantimos que é válido
-                            fit: [450, 350], // Tamanho máximo
-                            alignment: 'center',
-                            margin: [0, 0, 0, 10]
-                        },
-                        {
-                            text: `Legenda: ${proof.description || 'Sem descrição.'}`,
-                            fontSize: 9,
-                            alignment: 'center',
-                            italics: true,
-                            margin: [0, 0, 0, 20]
-                        }
-                    ];
-                }).flat().filter(Boolean),
+                validImages.length > 0 ? [
+                     { text: customContent ? 'REGISTRO FOTOGRÁFICO' : (type === 'investigation' ? '6. ANEXOS FOTOGRÁFICOS' : 'ANEXOS FOTOGRÁFICOS'), style: 'sectionTitle', pageBreak: 'before', tocItem: !customContent },
+                     ...validImages.map((proof, index) => {
+                        if (!proof.imgData) return null;
+                        return [
+                            { text: `ANEXO ${index + 1} - ${proof.title || 'EVIDÊNCIA VISUAL'}`, style: 'subHeader', margin: [0, 20, 0, 10] },
+                            { image: proof.imgData, fit: [450, 350], alignment: 'center', margin: [0, 0, 0, 10] },
+                            { text: `Legenda: ${proof.description || 'Sem descrição.'}`, fontSize: 9, alignment: 'center', italics: true, margin: [0, 0, 0, 20] }
+                        ];
+                    }).flat().filter(Boolean)
+                ] : [],
 
-                // --- CONCLUSÃO ---
-                { text: '7. CONCLUSÃO', style: 'sectionTitle', pageBreak: 'before', tocItem: true },
-                {
-                    text: "Diante do exposto, encaminha-se o presente Inquérito Policial para apreciação da autoridade competente. Todas as diligências cabíveis nesta fase foram realizadas, e as evidências encontram-se devidamente catalogadas e anexadas a este relatório.",
-                    style: 'normalText'
-                },
-                {
-                    text: "Sendo o que cumpria relatar, submeto à consideração superior.",
-                    style: 'normalText',
-                    margin: [0, 10, 0, 0]
-                },
+                // --- CONCLUSÃO E ASSINATURAS (Se não customizado) ---
+                ...(customContent ? [] : [
+                    { text: type === 'investigation' ? '7. CONCLUSÃO' : 'CONCLUSÃO', style: 'sectionTitle', pageBreak: 'before', tocItem: true },
+                    { text: variables['{conclusao}'], style: 'normalText' },
+                    { text: "Sendo o que cumpria relatar, submeto à consideração superior.", style: 'normalText', margin: [0, 10, 0, 0] },
 
-                // --- ASSINATURAS ---
-                {
-                    text: '___________________________________________________',
-                    style: 'signatureLine'
-                },
-                {
-                    text: investigation.investigator ? investigation.investigator.nome.toUpperCase() : (user?.username || user?.nome || 'AGENTE RESPONSÁVEL').toUpperCase(),
-                    alignment: 'center',
-                    bold: true,
-                    fontSize: 12
-                },
-                {
-                    text: 'AGENTE DE POLÍCIA CIVIL',
-                    alignment: 'center',
-                    fontSize: 10
-                },
-                {
-                    text: `MATRÍCULA: ${user?.badge || 'PC-000'}`,
-                    alignment: 'center',
-                    fontSize: 10
-                }
+                    { text: '___________________________________________________', style: 'signatureLine' },
+                    { text: variables['{assinatura_agente}'].toUpperCase(), alignment: 'center', bold: true, fontSize: 12 },
+                    { text: 'AGENTE DE POLÍCIA CIVIL', alignment: 'center', fontSize: 10 },
+                    { text: `MATRÍCULA: ${user?.badge || 'PC-000'}`, alignment: 'center', fontSize: 10 }
+                ])
             ],
 
             styles: styles,
-            defaultStyle: {
-                font: 'Roboto' // pdfmake default font
-            }
+            defaultStyle: { font: 'Roboto' }
         };
 
         // Gerar e Baixar
-        pdfMake.createPdf(docDefinition).download(`Inquerito_Policial_${investigation.id}.pdf`);
+        pdfMake.createPdf(docDefinition).download(`${docTitle.replace(/ /g, '_')}_${data.id}.pdf`);
 
     } catch (error) {
         console.error("Erro ao gerar PDF Profissional:", error);

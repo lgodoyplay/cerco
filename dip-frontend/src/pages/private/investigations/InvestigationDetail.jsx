@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInvestigations } from '../../../hooks/useInvestigations';
 import { useAuth } from '../../../context/AuthContext';
+import { useSettings } from '../../../hooks/useSettings';
 import { generateProfessionalPDF } from '../../../utils/pdfGeneratorPro';
 import AddProofModal from '../../../components/investigations/AddProofModal';
 import ProofCard from '../../../components/investigations/ProofCard';
@@ -62,7 +63,7 @@ const InvestigationDetail = () => {
       // Generate PDF
       setIsGeneratingPdf(true);
       try {
-        await generateProfessionalPDF(updatedInv, user);
+        await generateProfessionalPDF(updatedInv, user, templates?.investigation);
       } finally {
         setIsGeneratingPdf(false);
       }
@@ -72,7 +73,7 @@ const InvestigationDetail = () => {
   const handleDownloadPDF = async () => {
     setIsGeneratingPdf(true);
     try {
-      await generateProfessionalPDF(investigation, user);
+      await generateProfessionalPDF(investigation, user, templates?.investigation);
     } finally {
       setIsGeneratingPdf(false);
     }

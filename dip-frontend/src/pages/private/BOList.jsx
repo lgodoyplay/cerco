@@ -44,8 +44,13 @@ const BOList = () => {
     currentPage * itemsPerPage
   );
 
-  const handlePrint = (bo) => {
-    alert(`Imprimindo BO: ${bo.id}`);
+  const handlePrint = async (bo) => {
+    try {
+      await generateProfessionalPDF(bo, user, templates?.bo, 'bo');
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      alert("Erro ao gerar PDF do BO.");
+    }
   };
 
   return (

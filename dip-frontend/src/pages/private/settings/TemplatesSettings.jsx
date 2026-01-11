@@ -3,7 +3,7 @@ import { FileText, Save, RefreshCw } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 
 const TemplatesSettings = () => {
-  const { logAction } = useSettings();
+  const { templates: dbTemplates, updateTemplates, logAction } = useSettings();
   
   const defaultTemplates = {
     investigation: `RELATÓRIO DE INVESTIGAÇÃO
@@ -43,7 +43,7 @@ Foi informado ao detido seus direitos constitucionais...
 
 __________________________
 Autoridade Policial`,
-    incident: `BOLETIM DE OCORRÊNCIA
+    bo: `BOLETIM DE OCORRÊNCIA
     
 PROTOCOLO: {protocolo}
 NATUREZA: {natureza_ocorrencia}
@@ -58,27 +58,31 @@ PROVIDÊNCIAS
 Foi determinado o registro da ocorrência para devida apuração...`
   };
 
-  const [templates, setTemplates] = useState(() => {
-    const saved = localStorage.getItem('dip_settings_templates');
-    return saved ? JSON.parse(saved) : defaultTemplates;
-  });
-
+  const [templates, setTemplates] = useState(defaultTemplates);
   const [activeTab, setActiveTab] = useState('investigation');
   const [hasChanges, setHasChanges] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  // Load from DB when available
   useEffect(() => {
-    localStorage.setItem('dip_settings_templates', JSON.stringify(templates));
-  }, [templates]);
+    if (dbTemplates) {
+      setTemplates(dbTemplates);
+    }
+  }, [dbTemplates]);
 
   const handleTemplateChange = (value) => {
     setTemplates(prev => ({ ...prev, [activeTab]: value }));
     setHasChanges(true);
   };
 
-  const handleSave = () => {
-    logAction(`Modelo de documento atualizado: ${activeTab}`);
-    setHasChanges(false);
-    // Visual feedback handled by button state or toast (mock)
+  const handleSave = async () => {
+    setLoading(true);
+    const success = await updateTemplates(templates);
+    if (success) {
+      logAction(`Modelo de documento atualizado: ${activeTab}`);
+      setHasChanges(false);
+    }
+    setLoading(false);
   };
 
   const handleReset = () => {
@@ -91,7 +95,7 @@ Foi determinado o registro da ocorrência para devida apuração...`
   const tabs = [
     { id: 'investigation', label: 'Relatório de Investigação' },
     { id: 'arrest', label: 'Auto de Prisão' },
-    { id: 'incident', label: 'Boletim de Ocorrência' },
+    { id: 'bo', label: 'Boletim de Ocorrência' },
   ];
 
   return (

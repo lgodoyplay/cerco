@@ -24,6 +24,9 @@ export const useSettings = () => {
   // Roles State (Supabase)
   const [roles, setRoles] = useState(DEFAULT_ROLES);
 
+  // Templates State (Supabase)
+  const [templates, setTemplates] = useState(null);
+
   // System Logs (Supabase)
   const [logs, setLogs] = useState([]);
 
@@ -44,6 +47,9 @@ export const useSettings = () => {
 
         const rolesSetting = data.find(s => s.key === 'roles');
         if (rolesSetting) setRoles(rolesSetting.value);
+
+        const templatesSetting = data.find(s => s.key === 'templates');
+        if (templatesSetting) setTemplates(templatesSetting.value);
       }
     } catch (error) {
        console.error('Error fetching settings:', error);
@@ -134,6 +140,7 @@ export const useSettings = () => {
       // Update local state based on key
       if (key === 'corporation') setCorporation(value);
       if (key === 'roles') setRoles(value);
+      if (key === 'templates') setTemplates(value);
 
       logAction(`Configuração atualizada: ${key}`);
     } catch (error) {
@@ -182,11 +189,13 @@ export const useSettings = () => {
   };
 
   const updateRoles = (newRoles) => saveSetting('roles', newRoles);
+  const updateTemplates = (newTemplates) => saveSetting('templates', newTemplates);
 
   return {
     users,
     corporation,
     roles,
+    templates,
     logs,
     addUser,
     updateUser,
@@ -194,6 +203,7 @@ export const useSettings = () => {
     deleteUser,
     updateCorporation,
     updateRoles,
+    updateTemplates,
     logAction
   };
 };
