@@ -36,7 +36,10 @@ const BackupSettings = () => {
         handleAction('Reset de Sistema', 'Sistema restaurado para os padrões de fábrica.');
       } catch (error) {
         console.error('Erro ao resetar sistema:', error);
-        setStatus({ type: 'error', message: 'Erro ao resetar sistema: ' + error.message });
+        setStatus({ 
+          type: 'error', 
+          message: 'Erro ao resetar sistema: ' + (error.message || error.error_description || JSON.stringify(error)) 
+        });
         setIsLoading(false);
       }
     }
