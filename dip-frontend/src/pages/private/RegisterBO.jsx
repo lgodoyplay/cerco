@@ -68,6 +68,8 @@ const RegisterBO = () => {
         type: 'error',
         message: 'Erro ao registrar boletim: ' + error.message
       });
+    } finally {
+      setLoading(false);
     }
     
     // Clear notification after 3s
