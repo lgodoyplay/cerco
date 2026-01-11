@@ -16,12 +16,14 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     
     // Login agora gerencia o estado de loading e user internamente
     // A navegação será tratada pelo useEffect abaixo
     const success = await login(username, password);
     if (!success) {
       setError('Credenciais inválidas. Acesso negado.');
+      setLoading(false);
     }
   };
 
