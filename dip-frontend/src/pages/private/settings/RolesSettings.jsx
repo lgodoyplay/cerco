@@ -5,19 +5,27 @@ import { BadgeCheck, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 const RolesSettings = () => {
   const { roles, updateRoles, logAction } = useSettings();
   const [newRole, setNewRole] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleAddRole = async (e) => {
     e.preventDefault();
     if (!newRole.trim()) return;
     
-    const nextHierarchy = roles.length > 0 ? Math.max(...roles.map(r => r.hierarchy)) + 1 : 1;
-    const newRoleObj = { id: Date.now(), title: newRole, hierarchy: nextHierarchy };
-    
-    const updatedRoles = [...roles, newRoleObj];
-    await updateRoles(updatedRoles);
-    
-    logAction(`Novo cargo criado: ${newRole}`);
-    setNewRole('');
+    setLoading(true);
+    try {
+      const nextHierarchy = roles.length > 0 ? Math.max(...roles.map(r => r.hierarchy)) + 1 : 1;
+      const newRoleObj = { id: Date.now(), title: newRole, hierarchy: nextHierarchy };
+      
+      const updatedRoles = [...roles, newRoleObj];
+      await updateRoles(updatedRoles);
+      
+      logAction(`Novo cargo criado: ${newRole}`);
+      setNewRole('');
+    } catch (error) {
+      console.error('Erro ao adicionar cargo:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRemoveRole = async (id) => {
