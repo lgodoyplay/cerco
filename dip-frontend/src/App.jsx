@@ -28,6 +28,8 @@ const ReportList = React.lazy(() => import('./pages/private/ReportList'));
 const InvestigationList = React.lazy(() => import('./pages/private/investigations/InvestigationList'));
 const InvestigationCreate = React.lazy(() => import('./pages/private/investigations/InvestigationCreate'));
 const InvestigationDetail = React.lazy(() => import('./pages/private/investigations/InvestigationDetail'));
+const RevenueList = React.lazy(() => import('./pages/private/Revenue/RevenueList'));
+const RevenueDetail = React.lazy(() => import('./pages/private/Revenue/RevenueDetail'));
 
 // Settings Pages - Eagerly loaded for better UX
 import SecurityConfig from './pages/private/settings/SecurityConfig';
@@ -139,6 +141,10 @@ function App() {
               </PermissionGuard>
             } />
             <Route path="investigations/:id" element={<InvestigationDetail />} />
+            
+            {/* Revenue Routes */}
+            <Route path="revenue" element={<RevenueList />} />
+            <Route path="revenue/:id" element={<RevenueDetail />} />
             
             {/* Profile Route */}
             <Route path="profile" element={<ProfilePage />} />

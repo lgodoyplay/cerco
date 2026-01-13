@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   Menu,
   X,
-  Search
+  Search,
+  DollarSign
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
@@ -58,6 +59,7 @@ const PrivateLayout = () => {
     { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados' },
     { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados' },
     { to: '/dashboard/investigations', icon: Search, label: 'Investigações' },
+    { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita' },
     { to: '/dashboard/settings', icon: Settings, label: 'Configurações' },
   ];
 
