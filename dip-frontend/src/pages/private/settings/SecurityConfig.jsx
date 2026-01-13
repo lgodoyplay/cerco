@@ -2,7 +2,7 @@ import React from 'react';
 import { Shield, Clock, Key, AlertTriangle } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 
-const SecuritySettings = () => {
+const SecurityConfig = () => {
   const { security, updateSecurity } = useSettings();
 
   // Safety check to prevent ReferenceError if security is undefined
@@ -140,4 +140,4 @@ const SecuritySettings = () => {
   );
 };
 
-export default SecuritySettings;
+export default SecurityConfig;

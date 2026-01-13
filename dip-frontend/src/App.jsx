@@ -36,7 +36,7 @@ const RolesSettings = React.lazy(() => import('./pages/private/settings/RolesSet
 const CrimesSettings = React.lazy(() => import('./pages/private/settings/CrimesSettings'));
 const TemplatesSettings = React.lazy(() => import('./pages/private/settings/TemplatesSettings'));
 const AppearanceSettings = React.lazy(() => import('./pages/private/settings/AppearanceSettings'));
-const SecuritySettings = React.lazy(() => import('./pages/private/settings/SecuritySettings'));
+const SecurityConfig = React.lazy(() => import('./pages/private/settings/SecurityConfig'));
 const BackupSettings = React.lazy(() => import('./pages/private/settings/BackupSettings'));
 const SystemLogs = React.lazy(() => import('./pages/private/settings/SystemLogs'));
 const FormsSettings = React.lazy(() => import('./pages/private/settings/FormsSettings'));
@@ -119,7 +119,7 @@ function App() {
               <Route path="crimes" element={<CrimesSettings />} />
               <Route path="templates" element={<TemplatesSettings />} />
               <Route path="appearance" element={<AppearanceSettings />} />
-              <Route path="security" element={<SecuritySettings />} />
+              <Route path="security" element={<SecurityConfig />} />
               <Route path="backup" element={<BackupSettings />} />
               <Route path="logs" element={<SystemLogs />} />
             </Route>
