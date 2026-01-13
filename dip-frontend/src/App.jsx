@@ -9,44 +9,46 @@ import PrivateLayout from './components/PrivateLayout';
 import ComingSoon from './components/ComingSoon';
 import Home from './pages/public/Home'; // Eager load Home for faster initial render
 
+import { lazyImport } from './utils/lazyImport';
+
 // Public Pages
-const Rules = React.lazy(() => import('./pages/public/Rules'));
-const HowToJoin = React.lazy(() => import('./pages/public/HowToJoin'));
-const Login = React.lazy(() => import('./pages/public/Login'));
+const Rules = React.lazy(() => lazyImport(() => import('./pages/public/Rules')));
+const HowToJoin = React.lazy(() => lazyImport(() => import('./pages/public/HowToJoin')));
+const Login = React.lazy(() => lazyImport(() => import('./pages/public/Login')));
 
 // Private Pages
-const DashboardHome = React.lazy(() => import('./pages/private/DashboardHome'));
-const ProfilePage = React.lazy(() => import('./pages/private/ProfilePage'));
-const RegisterArrest = React.lazy(() => import('./pages/private/RegisterArrest'));
-const RegisterBO = React.lazy(() => import('./pages/private/RegisterBO'));
-const RegisterWanted = React.lazy(() => import('./pages/private/RegisterWanted'));
-const WantedList = React.lazy(() => import('./pages/private/WantedList'));
-const ArrestList = React.lazy(() => import('./pages/private/ArrestList'));
-const BOList = React.lazy(() => import('./pages/private/BOList'));
-const ReportList = React.lazy(() => import('./pages/private/ReportList'));
+const DashboardHome = React.lazy(() => lazyImport(() => import('./pages/private/DashboardHome')));
+const ProfilePage = React.lazy(() => lazyImport(() => import('./pages/private/ProfilePage')));
+const RegisterArrest = React.lazy(() => lazyImport(() => import('./pages/private/RegisterArrest')));
+const RegisterBO = React.lazy(() => lazyImport(() => import('./pages/private/RegisterBO')));
+const RegisterWanted = React.lazy(() => lazyImport(() => import('./pages/private/RegisterWanted')));
+const WantedList = React.lazy(() => lazyImport(() => import('./pages/private/WantedList')));
+const ArrestList = React.lazy(() => lazyImport(() => import('./pages/private/ArrestList')));
+const BOList = React.lazy(() => lazyImport(() => import('./pages/private/BOList')));
+const ReportList = React.lazy(() => lazyImport(() => import('./pages/private/ReportList')));
 
-const InvestigationList = React.lazy(() => import('./pages/private/investigations/InvestigationList'));
-const InvestigationCreate = React.lazy(() => import('./pages/private/investigations/InvestigationCreate'));
-const InvestigationDetail = React.lazy(() => import('./pages/private/investigations/InvestigationDetail'));
-const RevenueList = React.lazy(() => import('./pages/private/Revenue/RevenueList'));
-const RevenueDetail = React.lazy(() => import('./pages/private/Revenue/RevenueDetail'));
+const InvestigationList = React.lazy(() => lazyImport(() => import('./pages/private/investigations/InvestigationList')));
+const InvestigationCreate = React.lazy(() => lazyImport(() => import('./pages/private/investigations/InvestigationCreate')));
+const InvestigationDetail = React.lazy(() => lazyImport(() => import('./pages/private/investigations/InvestigationDetail')));
+const RevenueList = React.lazy(() => lazyImport(() => import('./pages/private/Revenue/RevenueList')));
+const RevenueDetail = React.lazy(() => lazyImport(() => import('./pages/private/Revenue/RevenueDetail')));
 
 // Settings Pages - Eagerly loaded for better UX
 import SecurityConfig from './pages/private/settings/SecurityConfig';
 
-const SettingsLayout = React.lazy(() => import('./pages/private/settings/SettingsLayout'));
-const UsersSettings = React.lazy(() => import('./pages/private/settings/UsersSettings'));
-const CoursesSettings = React.lazy(() => import('./pages/private/settings/CoursesSettings'));
-const WebhookSettings = React.lazy(() => import('./pages/private/settings/WebhookSettings'));
-const CorporationSettings = React.lazy(() => import('./pages/private/settings/CorporationSettings'));
-const RolesSettings = React.lazy(() => import('./pages/private/settings/RolesSettings'));
-const CrimesSettings = React.lazy(() => import('./pages/private/settings/CrimesSettings'));
-const TemplatesSettings = React.lazy(() => import('./pages/private/settings/TemplatesSettings'));
-const AppearanceSettings = React.lazy(() => import('./pages/private/settings/AppearanceSettings'));
+const SettingsLayout = React.lazy(() => lazyImport(() => import('./pages/private/settings/SettingsLayout')));
+const UsersSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/UsersSettings')));
+const CoursesSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/CoursesSettings')));
+const WebhookSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/WebhookSettings')));
+const CorporationSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/CorporationSettings')));
+const RolesSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/RolesSettings')));
+const CrimesSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/CrimesSettings')));
+const TemplatesSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/TemplatesSettings')));
+const AppearanceSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/AppearanceSettings')));
 // SecurityConfig is now eagerly loaded
-const BackupSettings = React.lazy(() => import('./pages/private/settings/BackupSettings'));
-const SystemLogs = React.lazy(() => import('./pages/private/settings/SystemLogs'));
-const FormsSettings = React.lazy(() => import('./pages/private/settings/FormsSettings'));
+const BackupSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/BackupSettings')));
+const SystemLogs = React.lazy(() => lazyImport(() => import('./pages/private/settings/SystemLogs')));
+const FormsSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/FormsSettings')));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen bg-slate-950">
