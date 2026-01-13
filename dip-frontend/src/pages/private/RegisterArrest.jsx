@@ -198,6 +198,7 @@ const RegisterArrest = () => {
                 onRemove={handleImageRemove}
                 required 
                 aspect={1}
+                // forceAspect={true} // Removido para dar liberdade
               />
               <ImageUploadArea 
                 id="bag" 
