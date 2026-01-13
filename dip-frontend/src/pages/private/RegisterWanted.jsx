@@ -208,6 +208,7 @@ const RegisterWanted = () => {
                 onUpload={handleImageUpload} 
                 onRemove={handleImageRemove}
                 required 
+                aspect={1}
               />
               <ImageUploadArea 
                 id="proof2" 

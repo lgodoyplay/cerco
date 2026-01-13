@@ -3,7 +3,7 @@ import { Camera, Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
 import ImageCropperModal from './common/ImageCropperModal';
 
-const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = false }) => {
+const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = false, aspect = 4/3 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [tempImage, setTempImage] = useState(null);
@@ -90,7 +90,7 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={() => !image && inputRef.current?.click()}
+        onClick={() => inputRef.current?.click()}
         className={clsx(
           "relative h-40 rounded-xl border-2 border-dashed transition-all duration-300 cursor-pointer overflow-hidden group",
           image 
@@ -144,6 +144,7 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
         onClose={() => setCropModalOpen(false)}
         imageSrc={tempImage}
         onCropComplete={handleCropComplete}
+        aspect={aspect}
       />
       
       {/* Validation Status */}
