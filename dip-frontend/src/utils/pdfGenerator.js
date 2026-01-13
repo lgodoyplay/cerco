@@ -34,7 +34,7 @@ export const generateInvestigationPDF = (investigation, user) => {
     doc.text('REPÚBLICA FEDERATIVA DO BRASIL', pageWidth / 2, 20, { align: 'center' });
     doc.text('MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA', pageWidth / 2, 25, { align: 'center' });
     doc.text('POLÍCIA FEDERAL', pageWidth / 2, 30, { align: 'center' });
-    doc.text('DIP - POLÍCIA FEDERAL', pageWidth / 2, 35, { align: 'center' });
+    doc.text('POLÍCIA FEDERAL', pageWidth / 2, 35, { align: 'center' });
     
     // Linha separadora
     doc.setLineWidth(0.5);

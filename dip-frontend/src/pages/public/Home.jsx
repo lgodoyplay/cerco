@@ -156,7 +156,6 @@ const Home = () => {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
-            DIP <br/>
             <span className="text-federal-500">Polícia Federal</span>
           </h1>
           

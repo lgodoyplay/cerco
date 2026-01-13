@@ -4,16 +4,16 @@ import { supabase } from '../lib/supabase';
 const SettingsContext = createContext();
 
 const DEFAULT_CORPORATION = {
-  departments: ['DIP', 'DRE', 'DELEFAZ'],
+  departments: ['Departamento de Investigações', 'DRE', 'DELEFAZ'],
   divisions: ['Narcóticos', 'Homicídios', 'Crimes Cibernéticos'],
   sectors: ['Inteligência', 'Operacional', 'Administrativo']
 };
 
 const DEFAULT_ROLES = [
-  { id: 1, title: 'Diretor DIP', hierarchy: 1 },
-  { id: 2, title: 'Coordenador DIP', hierarchy: 2 },
-  { id: 3, title: 'Escrivão DIP', hierarchy: 3 },
-  { id: 4, title: 'Agente DIP', hierarchy: 4 },
+  { id: 1, title: 'Diretor Geral', hierarchy: 1 },
+  { id: 2, title: 'Coordenador', hierarchy: 2 },
+  { id: 3, title: 'Escrivão', hierarchy: 3 },
+  { id: 4, title: 'Agente', hierarchy: 4 },
 ];
 
 const DEFAULT_APPEARANCE = {

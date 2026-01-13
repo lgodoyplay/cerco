@@ -24,9 +24,8 @@ const PublicLayout = () => {
               <div className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-federal-900 border border-federal-700 group-hover:border-federal-500 transition-colors shadow-[0_0_15px_rgba(30,58,138,0.3)]">
                 <Shield className="w-6 h-6 text-federal-400 group-hover:text-federal-300 transition-colors" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-bold tracking-tight text-white uppercase leading-none">DIP</span>
-                <span className="text-[10px] font-medium text-federal-400 tracking-[0.2em] uppercase mt-1">Polícia Federal</span>
+              <div className="flex flex-col justify-center">
+                <span className="text-lg font-bold tracking-tight text-white uppercase leading-none">Polícia Federal</span>
               </div>
             </Link>
 

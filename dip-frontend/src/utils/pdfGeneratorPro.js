@@ -223,7 +223,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                     table: {
                         widths: ['30%', '70%'],
                         body: [
-                            [{ text: 'UNIDADE POLICIAL', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES - DIP', style: 'tableCell' }],
+                            [{ text: 'UNIDADE POLICIAL', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES', style: 'tableCell' }],
                             [{ text: 'NATUREZA', style: 'tableHeader' }, { text: 'Inquérito Policial', style: 'tableCell' }],
                             [{ text: 'STATUS', style: 'tableHeader' }, { text: data.status.toUpperCase(), style: 'tableCell', bold: true }],
                             [{ text: 'PRIORIDADE', style: 'tableHeader' }, { text: data.priority.toUpperCase(), style: 'tableCell' }],
@@ -381,7 +381,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                     stack: [
                         { text: 'REPÚBLICA FEDERATIVA DO BRASIL', alignment: 'center', fontSize: 10, bold: true, margin: [0, 15, 0, 0] },
             { text: 'MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA', alignment: 'center', fontSize: 10, bold: true },
-            { text: 'POLÍCIA FEDERAL - DIP', alignment: 'center', fontSize: 10, bold: true },
+            { text: 'POLÍCIA FEDERAL', alignment: 'center', fontSize: 10, bold: true },
                         { canvas: [{ type: 'line', x1: 85, y1: 5, x2: 538, y2: 5, lineWidth: 1 }] }
                     ]
                 };
