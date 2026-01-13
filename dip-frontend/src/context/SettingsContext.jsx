@@ -119,6 +119,7 @@ export const SettingsProvider = ({ children }) => {
         username: u.email, // Using email as username/login
         role: u.role,
         permissions: u.permissions || [], // Carrega permissões do banco
+        avatar_url: u.avatar_url,
         active: true,
         patente: u.role // Mapping role to patente for now
       }));
@@ -207,7 +208,8 @@ export const SettingsProvider = ({ children }) => {
         .update({
             full_name: userData.name,
             role: userData.role,
-            permissions: userData.permissions // Salva as permissões
+            permissions: userData.permissions, // Salva as permissões
+            avatar_url: userData.avatar_url
         })
         .eq('id', id);
 
@@ -259,7 +261,8 @@ export const SettingsProvider = ({ children }) => {
     updateAppearance,
     updateSecurity,
     updateDiscordConfig,
-    logAction
+    logAction,
+    refreshUsers: fetchUsers
   };
 
   return (

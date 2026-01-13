@@ -7,7 +7,7 @@ import AvatarUpload from '../../../components/AvatarUpload';
 import { getInitials } from '../../../utils/stringUtils';
 
 const UsersSettings = () => {
-  const { users, addUser, updateUser, toggleUserStatus, deleteUser, roles } = useSettings();
+  const { users, addUser, updateUser, toggleUserStatus, deleteUser, roles, refreshUsers } = useSettings();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -162,6 +162,7 @@ const UsersSettings = () => {
     // Se estiver editando, já salva no banco pra agilizar
     if (editingUser) {
       await supabase.from('profiles').update({ avatar_url: url }).eq('id', editingUser.id);
+      if (refreshUsers) refreshUsers();
     }
   };
 
@@ -207,11 +208,12 @@ const UsersSettings = () => {
           <div key={user.id} className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 group hover:border-federal-500/30 transition-all">
             <div className="flex items-center gap-4 w-full md:w-auto">
               <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 overflow-hidden">
-                {user.avatar_url || user.avatar ? ( // Tentar pegar avatar de onde vier
+                {user.avatar_url || user.avatar ? (
                    <img 
-                     src={`https://vtfpfevjoxbnyowrecyu.supabase.co/storage/v1/object/public/avatars/${user.avatar_url || user.avatar}`}
+                     src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${user.avatar_url || user.avatar}`}
                      className="w-full h-full object-cover"
-                     onError={(e) => e.target.style.display = 'none'} // Fallback se falhar
+                     onError={(e) => e.target.style.display = 'none'}
+                     alt={user.name}
                    />
                 ) : (
                    <span className="font-bold text-lg text-slate-400">{getInitials(user.username)}</span>
