@@ -104,16 +104,28 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
 
   const sendDiscordNotification = async (formData, score) => {
     try {
+      console.log('🔄 Tentando buscar configuração do Discord...');
+      
       // Tentar buscar URL do webhook
-      const { data: settingsData } = await supabase
+      const { data: settingsData, error: dbError } = await supabase
         .from('system_settings')
         .select('value')
         .eq('key', 'discord_config')
         .single();
 
+      if (dbError) {
+        console.error('❌ Erro de permissão/banco ao buscar Discord Config:', dbError);
+        return;
+      }
+
       const webhookUrl = settingsData?.value?.webhookUrl;
 
-      if (!webhookUrl) return;
+      if (!webhookUrl) {
+        console.warn('⚠️ Nenhuma URL de Webhook configurada no banco.');
+        return;
+      }
+
+      console.log('✅ URL encontrada. Enviando notificação...');
 
       const embed = {
         title: "📝 Nova Candidatura Recebida",
@@ -128,13 +140,19 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
         timestamp: new Date().toISOString()
       };
 
-      await fetch(webhookUrl, {
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ embeds: [embed] })
       });
+
+      if (response.ok) {
+        console.log('✅ Notificação enviada com sucesso para o Discord!');
+      } else {
+        console.error(`❌ Falha ao enviar para Discord: ${response.status} ${response.statusText}`);
+      }
     } catch (error) {
-      console.error('Erro ao enviar notificação Discord:', error);
+      console.error('❌ Erro crítico ao enviar notificação Discord:', error);
     }
   };
 
