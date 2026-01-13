@@ -380,8 +380,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 return {
                     stack: [
                         { text: 'REPÚBLICA FEDERATIVA DO BRASIL', alignment: 'center', fontSize: 10, bold: true, margin: [0, 15, 0, 0] },
-                        { text: 'SECRETARIA DE ESTADO DE JUSTIÇA E SEGURANÇA PÚBLICA', alignment: 'center', fontSize: 10, bold: true },
-                        { text: 'POLÍCIA CIVIL - DIP', alignment: 'center', fontSize: 10, bold: true },
+            { text: 'MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA', alignment: 'center', fontSize: 10, bold: true },
+            { text: 'POLÍCIA FEDERAL - DIP', alignment: 'center', fontSize: 10, bold: true },
                         { canvas: [{ type: 'line', x1: 85, y1: 5, x2: 538, y2: 5, lineWidth: 1 }] }
                     ]
                 };

@@ -8,13 +8,13 @@ export default {
     extend: {
       colors: {
         federal: {
-          900: '#0a192f', // Darkest blue/black
-          800: '#112240', // Dark blue
-          700: '#233554', // Panel blue
-          600: '#1e3a8a', // Primary Blue
-          500: '#3b82f6', // Bright Blue
-          400: '#60a5fa', // Light Blue
-          accent: '#fbbf24', // Gold/Amber for police badge details
+          900: 'rgb(var(--color-federal-900) / <alpha-value>)',
+          800: 'rgb(var(--color-federal-800) / <alpha-value>)',
+          700: 'rgb(var(--color-federal-700) / <alpha-value>)',
+          600: 'rgb(var(--color-federal-600) / <alpha-value>)',
+          500: 'rgb(var(--color-federal-500) / <alpha-value>)',
+          400: 'rgb(var(--color-federal-400) / <alpha-value>)',
+          accent: 'rgb(var(--color-federal-accent) / <alpha-value>)',
         }
       },
       fontFamily: {

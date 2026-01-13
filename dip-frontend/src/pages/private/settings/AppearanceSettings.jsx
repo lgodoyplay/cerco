@@ -1,25 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Palette, Upload, Moon, Sun, Check, Layout } from 'lucide-react';
+import React, { useState } from 'react';
+import { Palette, Upload, Moon, Sun, Check, Layout, Loader2 } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
+import { supabase } from '../../../lib/supabase';
 
 const AppearanceSettings = () => {
-  const { logAction } = useSettings();
-
-  const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem('dip_settings_appearance');
-    return saved ? JSON.parse(saved) : {
-      theme: 'dark',
-      primaryColor: 'blue',
-      compactMode: false,
-      logoUrl: null
-    };
-  });
-
-  useEffect(() => {
-    localStorage.setItem('dip_settings_appearance', JSON.stringify(settings));
-    // Apply changes (mock effect)
-    document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
-  }, [settings]);
+  const { appearance, updateAppearance, logAction } = useSettings();
+  const [uploading, setUploading] = useState(false);
 
   const colors = [
     { id: 'blue', name: 'Azul Federal', class: 'bg-blue-600' },
@@ -30,22 +16,47 @@ const AppearanceSettings = () => {
   ];
 
   const handleColorChange = (colorId) => {
-    setSettings(prev => ({ ...prev, primaryColor: colorId }));
+    updateAppearance({ ...appearance, primaryColor: colorId });
     logAction(`Cor do sistema alterada para: ${colorId}`);
   };
 
   const handleThemeChange = (theme) => {
-    setSettings(prev => ({ ...prev, theme }));
+    updateAppearance({ ...appearance, theme });
     logAction(`Tema do sistema alterado para: ${theme}`);
   };
 
-  const handleLogoUpload = (e) => {
+  const handleCompactModeChange = (checked) => {
+    updateAppearance({ ...appearance, compactMode: checked });
+    logAction(`Modo compacto ${checked ? 'ativado' : 'desativado'}`);
+  };
+
+  const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Mock upload - create object URL
-      const url = URL.createObjectURL(file);
-      setSettings(prev => ({ ...prev, logoUrl: url }));
-      logAction('Nova logo carregada');
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `system-logo-${Date.now()}.${fileExt}`;
+      const filePath = `system/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      updateAppearance({ ...appearance, logoUrl: publicUrl });
+      logAction('Nova logo do sistema carregada');
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      alert('Erro ao carregar logo. Verifique as permissões.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -67,7 +78,7 @@ const AppearanceSettings = () => {
             <button
               onClick={() => handleThemeChange('dark')}
               className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
-                settings.theme === 'dark'
+                appearance.theme === 'dark'
                   ? 'border-federal-500 bg-slate-900 ring-1 ring-federal-500/50'
                   : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
               }`}
@@ -79,13 +90,13 @@ const AppearanceSettings = () => {
                 <div className="font-bold text-white">Modo Escuro</div>
                 <div className="text-sm text-slate-400">Padrão para operações noturnas</div>
               </div>
-              {settings.theme === 'dark' && <Check className="ml-auto text-federal-500" />}
+              {appearance.theme === 'dark' && <Check className="ml-auto text-federal-500" />}
             </button>
 
             <button
               onClick={() => handleThemeChange('light')}
               className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
-                settings.theme === 'light'
+                appearance.theme === 'light'
                   ? 'border-federal-500 bg-slate-100 ring-1 ring-federal-500/50'
                   : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
               }`}
@@ -94,10 +105,10 @@ const AppearanceSettings = () => {
                 <Sun size={24} />
               </div>
               <div className="text-left">
-                <div className={`font-bold ${settings.theme === 'light' ? 'text-slate-900' : 'text-slate-300'}`}>Modo Claro</div>
+                <div className={`font-bold ${appearance.theme === 'light' ? 'text-slate-900' : 'text-slate-300'}`}>Modo Claro</div>
                 <div className="text-sm text-slate-500">Alto contraste para ambientes claros</div>
               </div>
-              {settings.theme === 'light' && <Check className="ml-auto text-federal-500" />}
+              {appearance.theme === 'light' && <Check className="ml-auto text-federal-500" />}
             </button>
           </div>
         </section>
@@ -111,10 +122,10 @@ const AppearanceSettings = () => {
                 key={color.id}
                 onClick={() => handleColorChange(color.id)}
                 className={`group relative w-16 h-16 rounded-xl flex items-center justify-center transition-all ${color.class} ${
-                  settings.primaryColor === color.id ? 'ring-4 ring-white/20 scale-110' : 'hover:scale-105'
+                  appearance.primaryColor === color.id ? 'ring-4 ring-white/20 scale-110' : 'hover:scale-105'
                 }`}
               >
-                {settings.primaryColor === color.id && <Check className="text-white" size={24} />}
+                {appearance.primaryColor === color.id && <Check className="text-white" size={24} />}
                 <span className="absolute -bottom-8 text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                   {color.name}
                 </span>
@@ -135,14 +146,14 @@ const AppearanceSettings = () => {
                   <div className="text-sm text-slate-400">Reduz o espaçamento entre elementos nas tabelas</div>
                 </div>
               </div>
-              <div className={`w-12 h-6 rounded-full p-1 transition-colors ${settings.compactMode ? 'bg-federal-600' : 'bg-slate-700'}`}>
-                <div className={`w-4 h-4 bg-white rounded-full transition-transform ${settings.compactMode ? 'translate-x-6' : 'translate-x-0'}`} />
+              <div className={`w-12 h-6 rounded-full p-1 transition-colors ${appearance.compactMode ? 'bg-federal-600' : 'bg-slate-700'}`}>
+                <div className={`w-4 h-4 bg-white rounded-full transition-transform ${appearance.compactMode ? 'translate-x-6' : 'translate-x-0'}`} />
               </div>
               <input 
                 type="checkbox" 
                 className="hidden" 
-                checked={settings.compactMode}
-                onChange={(e) => setSettings(prev => ({ ...prev, compactMode: e.target.checked }))}
+                checked={appearance.compactMode}
+                onChange={(e) => handleCompactModeChange(e.target.checked)}
               />
             </label>
           </div>
@@ -152,18 +163,26 @@ const AppearanceSettings = () => {
         <section className="bg-slate-950 border border-slate-800 rounded-xl p-6">
           <h3 className="text-lg font-bold text-white mb-4">Logo da Corporação</h3>
           <div className="flex items-center gap-6">
-            <div className="w-24 h-24 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-center overflow-hidden">
-              {settings.logoUrl ? (
-                <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+            <div className="w-24 h-24 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-center overflow-hidden relative">
+              {uploading ? (
+                <Loader2 className="animate-spin text-federal-500" />
+              ) : appearance.logoUrl ? (
+                <img src={appearance.logoUrl} alt="Logo" className="w-full h-full object-contain" />
               ) : (
                 <span className="text-xs text-slate-500 text-center px-2">Sem Logo</span>
               )}
             </div>
             <div className="flex-1">
-              <label className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg cursor-pointer transition-colors font-medium">
+              <label className={`inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg cursor-pointer transition-colors font-medium ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <Upload size={18} />
-                Carregar Nova Imagem
-                <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
+                {uploading ? 'Enviando...' : 'Carregar Nova Imagem'}
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  accept="image/*" 
+                  onChange={handleLogoUpload}
+                  disabled={uploading}
+                />
               </label>
               <p className="text-sm text-slate-400 mt-2">Recomendado: PNG transparente, 512x512px. Máx 2MB.</p>
             </div>

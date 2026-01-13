@@ -4,12 +4,21 @@
 
 :root {
   color-scheme: dark;
+  
+  /* Default Federal Colors (Blue) - defined as R G B for Tailwind opacity support */
+  --color-federal-900: 10 25 47;   /* #0a192f */
+  --color-federal-800: 17 34 64;   /* #112240 */
+  --color-federal-700: 35 53 84;   /* #233554 */
+  --color-federal-600: 30 58 138;  /* #1e3a8a */
+  --color-federal-500: 59 130 246; /* #3b82f6 */
+  --color-federal-400: 96 165 250; /* #60a5fa */
+  --color-federal-accent: 251 191 36; /* #fbbf24 */
 }
 
 body {
   @apply bg-slate-950 text-slate-100 antialiased;
-  background-color: #020617 !important; /* Força bg-slate-950 */
-  color: #f1f5f9 !important; /* Força text-slate-100 */
+  background-color: #020617 !important;
+  color: #f1f5f9 !important;
 }
 
 /* Custom Scrollbar */
@@ -28,4 +37,11 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-slate-600;
+}
+
+/* Compact Mode */
+body.compact-mode table td,
+body.compact-mode table th {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
