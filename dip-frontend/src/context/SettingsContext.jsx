@@ -23,6 +23,14 @@ const DEFAULT_APPEARANCE = {
   logoUrl: null
 };
 
+const DEFAULT_SECURITY = {
+  forcePasswordChange: true,
+  sessionTimeout: '30',
+  minPasswordStrength: 'strong',
+  mfaEnabled: false,
+  maxLoginAttempts: '3'
+};
+
 export const SettingsProvider = ({ children }) => {
   // Users State (from API)
   const [users, setUsers] = useState([]);
@@ -38,6 +46,9 @@ export const SettingsProvider = ({ children }) => {
 
   // Appearance State (Supabase)
   const [appearance, setAppearance] = useState(DEFAULT_APPEARANCE);
+
+  // Security State (Supabase)
+  const [security, setSecurity] = useState(DEFAULT_SECURITY);
 
   // System Logs (Supabase)
   const [logs, setLogs] = useState([]);
@@ -203,6 +214,7 @@ export const SettingsProvider = ({ children }) => {
   const updateRoles = (newRoles) => saveSetting('roles', newRoles);
   const updateTemplates = (newTemplates) => saveSetting('templates', newTemplates);
   const updateAppearance = (newAppearance) => saveSetting('appearance', newAppearance);
+  const updateSecurity = (newSecurity) => saveSetting('security', newSecurity);
 
   const value = {
     users,
@@ -210,6 +222,7 @@ export const SettingsProvider = ({ children }) => {
     roles,
     templates,
     appearance,
+    security,
     logs,
     addUser,
     updateUser,
@@ -219,6 +232,7 @@ export const SettingsProvider = ({ children }) => {
     updateRoles,
     updateTemplates,
     updateAppearance,
+    updateSecurity,
     logAction
   };
 

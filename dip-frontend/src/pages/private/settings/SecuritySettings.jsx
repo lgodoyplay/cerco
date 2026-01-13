@@ -3,27 +3,13 @@ import { Shield, Lock, Clock, Key, AlertTriangle } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 
 const SecuritySettings = () => {
-  const { logAction } = useSettings();
-
-  const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem('dip_settings_security');
-    return saved ? JSON.parse(saved) : {
-      forcePasswordChange: true,
-      sessionTimeout: '30',
-      minPasswordStrength: 'strong',
-      mfaEnabled: false,
-      maxLoginAttempts: '3'
-    };
-  });
-
-  useEffect(() => {
-    localStorage.setItem('dip_settings_security', JSON.stringify(settings));
-  }, [settings]);
+  const { security, updateSecurity } = useSettings();
 
   const handleChange = (key, value) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
-    logAction(`Configuração de segurança alterada: ${key}`);
+    updateSecurity({ ...security, [key]: value });
   };
+
+  if (!security) return null;
 
   return (
     <div className="space-y-8">
@@ -53,7 +39,7 @@ const SecuritySettings = () => {
                 <input 
                   type="checkbox" 
                   className="sr-only peer"
-                  checked={settings.forcePasswordChange}
+                  checked={security.forcePasswordChange}
                   onChange={(e) => handleChange('forcePasswordChange', e.target.checked)}
                 />
                 <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-federal-600"></div>
@@ -64,7 +50,7 @@ const SecuritySettings = () => {
               <div className="p-4 bg-slate-900/50 rounded-xl">
                 <label className="block text-sm font-medium text-slate-400 mb-2">Nível Mínimo de Senha</label>
                 <select 
-                  value={settings.minPasswordStrength}
+                  value={security.minPasswordStrength}
                   onChange={(e) => handleChange('minPasswordStrength', e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
                 >
@@ -77,7 +63,7 @@ const SecuritySettings = () => {
               <div className="p-4 bg-slate-900/50 rounded-xl">
                 <label className="block text-sm font-medium text-slate-400 mb-2">Tentativas de Login</label>
                 <select 
-                  value={settings.maxLoginAttempts}
+                  value={security.maxLoginAttempts}
                   onChange={(e) => handleChange('maxLoginAttempts', e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
                 >
@@ -121,7 +107,7 @@ const SecuritySettings = () => {
                 <input 
                   type="checkbox" 
                   className="sr-only peer"
-                  checked={settings.mfaEnabled}
+                  checked={security.mfaEnabled}
                   onChange={(e) => handleChange('mfaEnabled', e.target.checked)}
                 />
                 <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-federal-600"></div>

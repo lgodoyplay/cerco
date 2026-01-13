@@ -63,6 +63,7 @@ function App() {
     <AuthProvider>
       <SettingsProvider>
         <ThemeManager />
+        <SessionMonitor />
         <BrowserRouter>
           <Routes>
           {/* Public Routes */}
