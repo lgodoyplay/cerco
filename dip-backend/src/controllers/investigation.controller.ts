@@ -109,7 +109,7 @@ export const finalizeInvestigation = async (req: Request, res: Response) => {
 
     doc.pipe(writeStream);
 
-    doc.fontSize(25).text('RELATÓRIO DE INVESTIGAÇÃO - DIP - POLÍCIA CIVIL', { align: 'center' });
+    doc.fontSize(25).text('RELATÓRIO DE INVESTIGAÇÃO - DPF - POLÍCIA FEDERAL', { align: 'center' });
     doc.moveDown();
     doc.fontSize(12).text(`Título: ${investigation.titulo}`);
     doc.text(`Status: Finalizada`);

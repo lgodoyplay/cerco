@@ -19,7 +19,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
   const quizQuestions = [
     {
       id: 1,
-      question: "Qual é a principal função do DIP (Departamento de Investigações Policiais)?",
+      question: "Qual é a principal função do DPF (Departamento de Polícia Federal)?",
       options: [
         { id: 'a', text: "Patrulhamento ostensivo e multas de trânsito" },
         { id: 'b', text: "Investigação de crimes complexos e combate ao crime organizado" },
@@ -146,7 +146,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
           {!showQuiz ? (
             <>
               <div className="text-center mb-10">
-                <h2 className="text-3xl font-bold text-white mb-4">Candidatura ao DIP</h2>
+                <h2 className="text-3xl font-bold text-white mb-4">Candidatura ao DPF</h2>
                 <p className="text-slate-400">
                   Preencha o formulário e faça o teste de admissão para demonstrar seu interesse em fazer parte da 
                   nossa equipe de elite.
@@ -180,7 +180,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte da DIP?</label>
+                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte do DPF?</label>
                   <textarea 
                     required
                     value={candidateForm.mensagem}

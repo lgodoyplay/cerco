@@ -1,7 +1,7 @@
 -- Atualizar default role da tabela profiles (se já existir)
 DO $$
 BEGIN
-    ALTER TABLE public.profiles ALTER COLUMN role SET DEFAULT 'Agente DIP';
+    ALTER TABLE public.profiles ALTER COLUMN role SET DEFAULT 'Agente DPF';
 EXCEPTION
     WHEN undefined_table THEN
         RAISE NOTICE 'Tabela profiles ainda não existe.';
@@ -12,7 +12,7 @@ create or replace function public.handle_new_user()
 returns trigger as $$
 begin
   insert into public.profiles (id, full_name, role)
-  values (new.id, new.raw_user_meta_data->>'name', 'Agente DIP');
+  values (new.id, new.raw_user_meta_data->>'name', 'Agente DPF');
   return new;
 end;
 $$ language plpgsql security definer;

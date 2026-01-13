@@ -2,7 +2,7 @@
 create table public.profiles (
   id uuid references auth.users not null primary key,
   full_name text,
-  role text default 'Agente DIP', -- Agente DIP, Escrivão DIP, Coordenador DIP, Diretor DIP
+  role text default 'Agente DPF', -- Agente DPF, Escrivão DPF, Coordenador DPF, Diretor DPF
   avatar_url text,
   updated_at timestamp with time zone,
   created_at timestamp with time zone default now()
@@ -13,7 +13,7 @@ create or replace function public.handle_new_user()
 returns trigger as $$
 begin
   insert into public.profiles (id, full_name, role)
-  values (new.id, new.raw_user_meta_data->>'name', 'Agente DIP');
+  values (new.id, new.raw_user_meta_data->>'name', 'Agente DPF');
   return new;
 end;
 $$ language plpgsql security definer;
@@ -195,7 +195,7 @@ create policy "Apenas Diretor e Coordenador podem criar cursos" on public.cursos
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-      and role in ('Diretor DIP', 'Coordenador DIP')
+      and role in ('Diretor DPF', 'Coordenador DPF')
     )
   );
 
@@ -204,7 +204,7 @@ create policy "Apenas Diretor e Coordenador podem editar cursos" on public.curso
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-      and role in ('Diretor DIP', 'Coordenador DIP')
+      and role in ('Diretor DPF', 'Coordenador DPF')
     )
   );
   
@@ -213,7 +213,7 @@ create policy "Apenas Diretor e Coordenador podem deletar cursos" on public.curs
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-      and role in ('Diretor DIP', 'Coordenador DIP')
+      and role in ('Diretor DPF', 'Coordenador DPF')
     )
   );
 
@@ -226,7 +226,7 @@ create policy "Apenas Diretor e Coordenador podem atribuir cursos" on public.cur
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-      and role in ('Diretor DIP', 'Coordenador DIP')
+      and role in ('Diretor DPF', 'Coordenador DPF')
     )
   );
 
@@ -235,7 +235,7 @@ create policy "Apenas Diretor e Coordenador podem remover atribuições" on publ
     exists (
       select 1 from public.profiles
       where id = auth.uid()
-      and role in ('Diretor DIP', 'Coordenador DIP')
+      and role in ('Diretor DPF', 'Coordenador DPF')
     )
   );
 

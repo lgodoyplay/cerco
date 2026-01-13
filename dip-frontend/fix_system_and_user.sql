@@ -88,7 +88,7 @@ BEGIN
           created_at
         ) VALUES (
           new_user_id,
-          'admin@dip.policia',
+          'admin@dpf.policia',
           'Administrador do Sistema',
           'Diretor',
           'PC-000',

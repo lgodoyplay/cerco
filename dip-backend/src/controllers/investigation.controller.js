@@ -111,7 +111,7 @@ const finalizeInvestigation = (req, res) => __awaiter(void 0, void 0, void 0, fu
         const pdfPath = path_1.default.join(__dirname, '../../uploads', filename);
         const writeStream = fs_1.default.createWriteStream(pdfPath);
         doc.pipe(writeStream);
-        doc.fontSize(25).text('RELATÓRIO DE INVESTIGAÇÃO - DIP - POLÍCIA CIVIL', { align: 'center' });
+        doc.fontSize(25).text('RELATÓRIO DE INVESTIGAÇÃO - DPF - POLÍCIA FEDERAL', { align: 'center' });
         doc.moveDown();
         doc.fontSize(12).text(`Título: ${investigation.titulo}`);
         doc.text(`Status: Finalizada`);
