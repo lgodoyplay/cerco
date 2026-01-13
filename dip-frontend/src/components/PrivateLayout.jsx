@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -106,7 +107,7 @@ const PrivateLayout = () => {
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-federal-500 to-federal-700 flex items-center justify-center font-bold text-sm border-2 border-slate-800 shadow-md overflow-hidden">
                    {user?.avatar_url ? (
                       <img 
-                        src={`https://vtfpfevjoxbnyowrecyu.supabase.co/storage/v1/object/public/avatars/${user.avatar_url}`} 
+                        src={user.avatar_url.startsWith('http') ? user.avatar_url : supabase.storage.from('avatars').getPublicUrl(user.avatar_url).data.publicUrl}
                         alt="Avatar" 
                         className="w-full h-full object-cover"
                         onError={(e) => {
