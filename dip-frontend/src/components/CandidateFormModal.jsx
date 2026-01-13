@@ -111,17 +111,34 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
         .from('system_settings')
         .select('value')
         .eq('key', 'discord_config')
-        .single();
+        .maybeSingle(); // Use maybeSingle to avoid error on no rows
 
       if (dbError) {
         console.error('❌ Erro de permissão/banco ao buscar Discord Config:', dbError);
+        // Tentar fallback hardcoded ou alertar
         return;
       }
 
-      const webhookUrl = settingsData?.value?.formsWebhook || settingsData?.value?.webhookUrl;
+      if (!settingsData) {
+        console.error('❌ Configuração discord_config não encontrada no banco (linhas = 0).');
+        return;
+      }
+
+      let webhookUrl = settingsData?.value?.formsWebhook || settingsData?.value?.webhookUrl;
+
+      // Fallback: Check if value is string (should be jsonb but safety first)
+      if (!webhookUrl && typeof settingsData.value === 'string') {
+        try {
+            const parsed = JSON.parse(settingsData.value);
+            webhookUrl = parsed.formsWebhook || parsed.webhookUrl;
+        } catch (e) {
+            console.warn('Erro ao fazer parse manual do JSON:', e);
+        }
+      }
 
       if (!webhookUrl) {
-        console.warn('⚠️ Nenhuma URL de Webhook configurada no banco.');
+        console.warn('⚠️ Nenhuma URL de Webhook configurada no banco (formsWebhook ou webhookUrl vazios).');
+        console.log('Dados recebidos:', settingsData.value);
         return;
       }
 

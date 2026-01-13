@@ -35,7 +35,12 @@ const FormsSettings = () => {
   }, [discordConfig]);
 
   const handleSaveDiscord = () => {
-    updateDiscordConfig({ ...discordConfig, webhookUrl });
+    // Sync both legacy and new keys
+    updateDiscordConfig({ 
+      ...discordConfig, 
+      webhookUrl, 
+      formsWebhook: webhookUrl 
+    });
     alert('Configuração do Discord salva com sucesso!');
   };
 
