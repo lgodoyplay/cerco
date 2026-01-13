@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, DollarSign, Calendar, Save } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, DollarSign, Calendar, Save, ImageIcon } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
+import ImageUploadArea from '../../../components/ImageUploadArea';
 
 const RevenueDetail = () => {
   const { id } = useParams();
@@ -13,6 +14,7 @@ const RevenueDetail = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newItem, setNewItem] = useState({ description: '', value: '' });
+  const [newItemImage, setNewItemImage] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
 
   const fetchData = async () => {
@@ -48,17 +50,45 @@ const RevenueDetail = () => {
     fetchData();
   }, [id]);
 
+  const handleImageUpload = (fieldId, preview, file) => {
+    setNewItemImage({ preview, file });
+  };
+
+  const handleImageRemove = () => {
+    setNewItemImage(null);
+  };
+
   const handleAddItem = async (e) => {
     e.preventDefault();
     if (!newItem.description || !newItem.value) return;
 
     try {
+      let imageUrl = null;
+
+      if (newItemImage?.file) {
+        const fileExt = newItemImage.file.name.split('.').pop();
+        const fileName = `${id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('revenue-assets')
+          .upload(fileName, newItemImage.file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('revenue-assets')
+          .getPublicUrl(fileName);
+          
+        imageUrl = publicUrl;
+      }
+
       const { data, error } = await supabase
         .from('financial_assets')
         .insert([{
           record_id: id,
           description: newItem.description,
           value: parseFloat(newItem.value),
+          image_url: imageUrl,
           added_by: user.id
         }])
         .select()
@@ -68,10 +98,11 @@ const RevenueDetail = () => {
 
       setItems([data, ...items]);
       setNewItem({ description: '', value: '' });
+      setNewItemImage(null);
       setIsAdding(false);
     } catch (error) {
       console.error('Error adding item:', error);
-      alert('Erro ao adicionar item.');
+      alert('Erro ao adicionar item: ' + error.message);
     }
   };
 
@@ -127,44 +158,60 @@ const RevenueDetail = () => {
       {/* Add Item Form */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
         {isAdding ? (
-          <form onSubmit={handleAddItem} className="flex flex-col md:flex-row gap-4 items-end">
-            <div className="flex-1 w-full">
-              <label className="block text-xs font-medium text-slate-500 mb-1">Descrição do Item / Bem</label>
-              <input
-                type="text"
-                autoFocus
-                placeholder="Ex: Carro Esportivo, Mansão, Dinheiro em Mãos..."
-                value={newItem.description}
-                onChange={e => setNewItem({ ...newItem, description: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
-                required
-              />
+          <form onSubmit={handleAddItem} className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row gap-4 items-start">
+              <div className="flex-1 w-full space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Descrição do Item / Bem</label>
+                  <input
+                    type="text"
+                    autoFocus
+                    placeholder="Ex: Carro Esportivo, Mansão, Dinheiro em Mãos..."
+                    value={newItem.description}
+                    onChange={e => setNewItem({ ...newItem, description: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Valor Estimado (R$)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="0,00"
+                    value={newItem.value}
+                    onChange={e => setNewItem({ ...newItem, value: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="w-full md:w-64">
+                <ImageUploadArea
+                  label="Foto do Bem / Prova (Opcional)"
+                  id="item-image"
+                  image={newItemImage?.preview}
+                  onUpload={handleImageUpload}
+                  onRemove={handleImageRemove}
+                  aspect={4/3}
+                />
+              </div>
             </div>
-            <div className="w-full md:w-48">
-              <label className="block text-xs font-medium text-slate-500 mb-1">Valor Estimado (R$)</label>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="0,00"
-                value={newItem.value}
-                onChange={e => setNewItem({ ...newItem, value: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
-                required
-              />
-            </div>
-            <div className="flex gap-2 w-full md:w-auto">
+
+            <div className="flex gap-2 justify-end pt-2 border-t border-slate-800">
               <button
                 type="button"
                 onClick={() => setIsAdding(false)}
-                className="flex-1 md:flex-none px-4 py-2 text-slate-400 hover:text-white transition-colors bg-slate-800 rounded-lg"
+                className="px-4 py-2 text-slate-400 hover:text-white transition-colors bg-slate-800 rounded-lg"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="flex-1 md:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               >
-                <Save size={18} /> Salvar
+                <Save size={18} /> Salvar Item
               </button>
             </div>
           </form>
@@ -192,9 +239,15 @@ const RevenueDetail = () => {
             {items.map(item => (
               <div key={item.id} className="p-4 flex items-center justify-between hover:bg-slate-800/30 transition-colors group">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 mt-1">
-                    <DollarSign size={16} />
-                  </div>
+                  {item.image_url ? (
+                    <div className="w-12 h-12 rounded-lg bg-slate-800 overflow-hidden border border-slate-700 flex-shrink-0 cursor-pointer hover:scale-110 transition-transform" onClick={() => window.open(item.image_url, '_blank')}>
+                      <img src={item.image_url} alt="Bem" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 mt-1">
+                      <DollarSign size={16} />
+                    </div>
+                  )}
                   <div>
                     <p className="font-medium text-slate-200">{item.description}</p>
                     <p className="text-xs text-slate-500">
