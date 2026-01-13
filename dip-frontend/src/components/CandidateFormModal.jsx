@@ -102,7 +102,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
     setQuizAnswers({});
   };
 
-  const sendDiscordNotification = async (formData) => {
+  const sendDiscordNotification = async (formData, score) => {
     try {
       // Tentar buscar URL do webhook
       const { data: settingsData } = await supabase
@@ -121,6 +121,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
         fields: [
           { name: "👤 Nome / Discord", value: formData.nome || 'N/A', inline: true },
           { name: "📱 Telefone", value: formData.telefone || 'N/A', inline: true },
+          { name: "✅ Pontuação Quiz", value: `${score}/5` || 'N/A', inline: true },
           { name: "📄 Motivação", value: formData.mensagem || 'N/A' }
         ],
         footer: { text: "Sistema de Recrutamento DPF" },
