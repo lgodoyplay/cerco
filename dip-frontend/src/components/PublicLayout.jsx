@@ -122,7 +122,7 @@ const PublicLayout = () => {
             <div>
               <h3 className="font-semibold text-white mb-4">Contato de Emergência</h3>
               <p className="text-slate-500 text-sm mb-2">Em caso de emergência, disque:</p>
-              <span className="text-2xl font-bold text-federal-400">197</span>
+              <span className="text-2xl font-bold text-federal-400">194</span>
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-slate-900 text-center text-slate-600 text-xs">
