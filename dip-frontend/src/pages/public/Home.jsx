@@ -121,7 +121,10 @@ const Home = () => {
           ...item,
           name: item.nome,
           image: item.foto_principal,
-          reason: item.observacoes
+          reason: item.observacoes,
+          date: item.data_prisao,
+          passport: item.documento,
+          articles: item.artigo
         })));
       } catch (error) {
         console.error('Erro ao carregar dados públicos:', error);
@@ -579,7 +582,9 @@ const Home = () => {
                     <div>
                       <span className="text-xs text-slate-500 uppercase font-bold block">Data da Ocorrência</span>
                       <p className="text-sm text-slate-200">
-                        {format(new Date(selectedArrest.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                        {selectedArrest.date && !isNaN(new Date(selectedArrest.date).getTime())
+                          ? format(new Date(selectedArrest.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+                          : 'Data não informada'}
                       </p>
                     </div>
                   </div>
