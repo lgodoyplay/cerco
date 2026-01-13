@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SettingsProvider } from './context/SettingsContext';
@@ -9,37 +9,43 @@ import PrivateLayout from './components/PrivateLayout';
 import ComingSoon from './components/ComingSoon';
 
 // Public Pages
-import Home from './pages/public/Home';
-import Rules from './pages/public/Rules';
-import HowToJoin from './pages/public/HowToJoin';
-import Login from './pages/public/Login';
+const Home = React.lazy(() => import('./pages/public/Home'));
+const Rules = React.lazy(() => import('./pages/public/Rules'));
+const HowToJoin = React.lazy(() => import('./pages/public/HowToJoin'));
+const Login = React.lazy(() => import('./pages/public/Login'));
 
 // Private Pages
-import DashboardHome from './pages/private/DashboardHome';
-import ProfilePage from './pages/private/ProfilePage';
-import RegisterArrest from './pages/private/RegisterArrest';
-import RegisterBO from './pages/private/RegisterBO';
-import RegisterWanted from './pages/private/RegisterWanted';
-import WantedList from './pages/private/WantedList';
-import ArrestList from './pages/private/ArrestList';
-import BOList from './pages/private/BOList';
-import InvestigationList from './pages/private/investigations/InvestigationList';
-import InvestigationCreate from './pages/private/investigations/InvestigationCreate';
-import InvestigationDetail from './pages/private/investigations/InvestigationDetail';
+const DashboardHome = React.lazy(() => import('./pages/private/DashboardHome'));
+const ProfilePage = React.lazy(() => import('./pages/private/ProfilePage'));
+const RegisterArrest = React.lazy(() => import('./pages/private/RegisterArrest'));
+const RegisterBO = React.lazy(() => import('./pages/private/RegisterBO'));
+const RegisterWanted = React.lazy(() => import('./pages/private/RegisterWanted'));
+const WantedList = React.lazy(() => import('./pages/private/WantedList'));
+const ArrestList = React.lazy(() => import('./pages/private/ArrestList'));
+const BOList = React.lazy(() => import('./pages/private/BOList'));
+const InvestigationList = React.lazy(() => import('./pages/private/investigations/InvestigationList'));
+const InvestigationCreate = React.lazy(() => import('./pages/private/investigations/InvestigationCreate'));
+const InvestigationDetail = React.lazy(() => import('./pages/private/investigations/InvestigationDetail'));
 
 // Settings Pages
-import SettingsLayout from './pages/private/settings/SettingsLayout';
-import UsersSettings from './pages/private/settings/UsersSettings';
-import CoursesSettings from './pages/private/settings/CoursesSettings';
-import CorporationSettings from './pages/private/settings/CorporationSettings';
-import RolesSettings from './pages/private/settings/RolesSettings';
-import CrimesSettings from './pages/private/settings/CrimesSettings';
-import TemplatesSettings from './pages/private/settings/TemplatesSettings';
-import AppearanceSettings from './pages/private/settings/AppearanceSettings';
-import SecuritySettings from './pages/private/settings/SecuritySettings';
-import BackupSettings from './pages/private/settings/BackupSettings';
-import SystemLogs from './pages/private/settings/SystemLogs';
-import FormsSettings from './pages/private/settings/FormsSettings';
+const SettingsLayout = React.lazy(() => import('./pages/private/settings/SettingsLayout'));
+const UsersSettings = React.lazy(() => import('./pages/private/settings/UsersSettings'));
+const CoursesSettings = React.lazy(() => import('./pages/private/settings/CoursesSettings'));
+const CorporationSettings = React.lazy(() => import('./pages/private/settings/CorporationSettings'));
+const RolesSettings = React.lazy(() => import('./pages/private/settings/RolesSettings'));
+const CrimesSettings = React.lazy(() => import('./pages/private/settings/CrimesSettings'));
+const TemplatesSettings = React.lazy(() => import('./pages/private/settings/TemplatesSettings'));
+const AppearanceSettings = React.lazy(() => import('./pages/private/settings/AppearanceSettings'));
+const SecuritySettings = React.lazy(() => import('./pages/private/settings/SecuritySettings'));
+const BackupSettings = React.lazy(() => import('./pages/private/settings/BackupSettings'));
+const SystemLogs = React.lazy(() => import('./pages/private/settings/SystemLogs'));
+const FormsSettings = React.lazy(() => import('./pages/private/settings/FormsSettings'));
+
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen bg-slate-950">
+    <div className="w-8 h-8 border-4 border-slate-800 border-t-federal-500 rounded-full animate-spin"></div>
+  </div>
+);
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -69,8 +75,9 @@ function App() {
         <ThemeManager />
         <SessionMonitorComponent />
         <BrowserRouter>
-          <Routes>
-          {/* Public Routes */}
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+            {/* Public Routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/rules" element={<Rules />} />
@@ -121,8 +128,9 @@ function App() {
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
-      </SettingsProvider>
+      </Suspense>
+    </BrowserRouter>
+    </SettingsProvider>
     </AuthProvider>
   );
 }
