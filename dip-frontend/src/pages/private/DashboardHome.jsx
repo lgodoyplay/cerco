@@ -3,8 +3,8 @@ import { Users, AlertTriangle, FileText, TrendingUp, Search, Clock, ShieldAlert 
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
-const DashboardStat = ({ title, value, subtext, icon: Icon, color }) => (
-  <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 relative overflow-hidden">
+const DashboardStat = React.memo(({ title, value, subtext, icon: Icon, color }) => (
+  <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 relative overflow-hidden transition-all hover:border-slate-700">
     <div className={`absolute top-0 right-0 p-2 md:p-4 opacity-5 text-${color}-500 transform scale-125 md:scale-150`}>
       <Icon size={60} className="md:w-24 md:h-24" />
     </div>
@@ -12,12 +12,14 @@ const DashboardStat = ({ title, value, subtext, icon: Icon, color }) => (
       <div className={`inline-flex p-2 rounded-lg bg-${color}-500/10 text-${color}-500 mb-3 md:mb-4`}>
         <Icon size={20} className="md:w-6 md:h-6" />
       </div>
-      <h3 className="text-2xl md:text-3xl font-bold text-white mb-1 tracking-tight">{value}</h3>
+      <h3 className="text-2xl md:text-3xl font-bold text-white mb-1 tracking-tight">
+        {value}
+      </h3>
       <p className="text-slate-400 text-xs md:text-sm font-medium truncate">{title}</p>
       {subtext && <p className="text-slate-600 text-[10px] md:text-xs mt-1 md:mt-2 block">{subtext}</p>}
     </div>
   </div>
-);
+));
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -31,7 +33,9 @@ const DashboardHome = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchData = async () => {
+      console.time('Dashboard Fetch');
       try {
         const [
           { count: presosCount },
@@ -44,37 +48,47 @@ const DashboardHome = () => {
           supabase.from('procurados').select('*', { count: 'exact', head: true }),
           supabase.from('investigacoes').select('*', { count: 'exact', head: true }),
           supabase.from('boletins').select('*', { count: 'exact', head: true }),
-          supabase.from('system_logs').select('*, profiles(full_name, role)').order('created_at', { ascending: false }).limit(5)
+          supabase.from('system_logs')
+            .select('*, profiles(full_name, role)')
+            .order('created_at', { ascending: false })
+            .limit(5)
         ]);
 
-        setStats({
-          totalPresos: presosCount || 0,
-          totalProcurados: procuradosCount || 0,
-          totalInvestigacoes: investigacoesCount || 0,
-          totalBos: bosCount || 0
-        });
-        
-        // Map logs to match recentActivities structure if needed
-        const activities = (logs || []).map(log => ({
-          action: log.action,
-          details: log.details,
-          createdAt: log.created_at,
-          user: {
-             nome: log.profiles?.full_name,
-             patente: log.profiles?.role
-          }
-        }));
-
-        setRecentActivities(activities);
+        if (isMounted) {
+          setStats({
+            totalPresos: presosCount || 0,
+            totalProcurados: procuradosCount || 0,
+            totalInvestigacoes: investigacoesCount || 0,
+            totalBos: bosCount || 0
+          });
+          
+          // Map logs to match recentActivities structure if needed
+          const activities = (logs || []).map(log => ({
+            action: log.action,
+            details: log.details,
+            createdAt: log.created_at,
+            user: {
+               nome: log.profiles?.full_name,
+               patente: log.profiles?.role
+            }
+          }));
+  
+          setRecentActivities(activities);
+        }
 
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
+        console.timeEnd('Dashboard Fetch');
       }
     };
 
     fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const formatTimeAgo = (dateString) => {
