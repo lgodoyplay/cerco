@@ -76,6 +76,9 @@ export const SettingsProvider = ({ children }) => {
 
         const appearanceSetting = data.find(s => s.key === 'appearance');
         if (appearanceSetting) setAppearance(appearanceSetting.value);
+
+        const securitySetting = data.find(s => s.key === 'security');
+        if (securitySetting) setSecurity(securitySetting.value);
       }
     } catch (error) {
        console.error('Error fetching settings:', error);
@@ -164,6 +167,7 @@ export const SettingsProvider = ({ children }) => {
       if (key === 'roles') setRoles(value);
       if (key === 'templates') setTemplates(value);
       if (key === 'appearance') setAppearance(value);
+      if (key === 'security') setSecurity(value);
 
       logAction(`Configuração atualizada: ${key}`);
     } catch (error) {
