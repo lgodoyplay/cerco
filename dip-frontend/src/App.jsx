@@ -52,6 +52,8 @@ const LoadingFallback = () => (
   </div>
 );
 
+import PermissionGuard from './components/common/PermissionGuard';
+
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
@@ -98,25 +100,55 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<DashboardHome />} />
-            <Route path="arrest" element={<RegisterArrest />} />
+            
+            <Route path="arrest" element={
+              <PermissionGuard permission="arrest">
+                <RegisterArrest />
+              </PermissionGuard>
+            } />
+            
             <Route path="arrests" element={<ArrestList />} />
-            <Route path="bo" element={<RegisterBO />} />
+            
+            <Route path="bo" element={
+              <PermissionGuard permission="bo">
+                <RegisterBO />
+              </PermissionGuard>
+            } />
+            
             <Route path="bo-list" element={<BOList />} />
-            <Route path="reports" element={<ReportList />} />
-            <Route path="register-wanted" element={<RegisterWanted />} />
+            
+            <Route path="reports" element={
+              <PermissionGuard permission="reports">
+                <ReportList />
+              </PermissionGuard>
+            } />
+            
+            <Route path="register-wanted" element={
+               <PermissionGuard permission="arrest">
+                 <RegisterWanted />
+               </PermissionGuard>
+            } />
 
             <Route path="wanted" element={<WantedList />} />
             
             {/* Investigations Routes */}
             <Route path="investigations" element={<InvestigationList />} />
-            <Route path="investigations/new" element={<InvestigationCreate />} />
+            <Route path="investigations/new" element={
+              <PermissionGuard permission="investigation">
+                <InvestigationCreate />
+              </PermissionGuard>
+            } />
             <Route path="investigations/:id" element={<InvestigationDetail />} />
             
             {/* Profile Route */}
             <Route path="profile" element={<ProfilePage />} />
 
             {/* Settings Routes */}
-            <Route path="settings" element={<SettingsLayout />}>
+            <Route path="settings" element={
+              <PermissionGuard permission="settings">
+                <SettingsLayout />
+              </PermissionGuard>
+            }>
               <Route index element={<Navigate to="courses" replace />} />
               <Route path="users" element={<UsersSettings />} />
               <Route path="courses" element={<CoursesSettings />} />
