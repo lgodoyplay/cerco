@@ -62,8 +62,13 @@ const ArrestList = () => {
     currentPage * itemsPerPage
   );
 
-  const handleDownloadReport = (arrest) => {
-    alert(`Baixando relatório de prisão: ${arrest.name}`);
+  const handleDownloadReport = async (arrest) => {
+    try {
+      await generateProfessionalPDF(arrest, user, templates?.arrest, 'arrest');
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      alert("Erro ao gerar PDF de prisão.");
+    }
   };
 
   const getStatusColor = (status) => {

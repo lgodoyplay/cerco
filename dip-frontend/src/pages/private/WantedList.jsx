@@ -4,9 +4,14 @@ import { Search, Filter, AlertTriangle, MoreVertical, ShieldAlert, Eye, FileText
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../hooks/useSettings';
+import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 
 const WantedList = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { templates } = useSettings();
   const [wantedList, setWantedList] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPerson, setSelectedPerson] = useState(null);
@@ -45,8 +50,13 @@ const WantedList = () => {
     (person.crime || person.reason || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleGenerateFile = (person) => {
-    alert(`Gerando ficha de: ${person.name}`);
+  const handleGenerateFile = async (person) => {
+    try {
+      await generateProfessionalPDF(person, user, templates?.wanted, 'wanted');
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      alert("Erro ao gerar PDF do procurado.");
+    }
   };
 
   const handleArrest = () => {

@@ -171,6 +171,16 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             } catch (e) {
                 console.warn("Erro ao carregar foto do preso:", e);
             }
+        } else if (type === 'wanted' && (data.image || (data.images && data.images.proof1))) {
+            try {
+                const imgUrl = data.image || (data.images && data.images.proof1);
+                const imgData = await getBase64ImageFromURL(imgUrl);
+                if (imgData && typeof imgData === 'string' && imgData.startsWith('data:image')) {
+                    validImages = [{ title: 'FOTO DO PROCURADO', imgData, description: 'Registro fotográfico.' }];
+                }
+            } catch (e) {
+                console.warn("Erro ao carregar foto do procurado:", e);
+            }
         }
 
         // Definição de Variáveis e Conteúdo Padrão baseada no Tipo
@@ -347,6 +357,69 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 { text: '2. MOTIVO DA PRISÃO / OBSERVAÇÕES', style: 'sectionTitle' },
                 { text: data.reason || data.description || 'Sem observações.', style: 'normalText', alignment: 'justify' }
             ];
+        } else if (type === 'wanted') {
+            docTitle = 'MANDADO DE PROCURA';
+            docRef = `WANTED - ${data.id}/${new Date().getFullYear()}`;
+            
+            variables = {
+                '{nome_procurado}': data.name,
+                '{crime}': data.crime || data.reason || 'Não especificado',
+                '{recompensa}': data.reward || 'Não informada',
+                '{periculosidade}': data.dangerLevel || data.status || 'Desconhecida',
+                '{data_registro}': formatDate(data.date || data.created_at),
+                '{assinatura_agente}': user?.nome || 'Departamento de Polícia',
+                '{cargo_agente}': 'Polícia Civil'
+            };
+
+            standardContent = [
+                 (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
+                    image: coatOfArmsBase64, width: 60, alignment: 'center', margin: [0, 20, 0, 10]
+                } : { text: '[BRASÃO]', alignment: 'center', margin: [0, 20, 0, 10] },
+
+                { text: 'PROCURADO', style: 'title', color: '#dc2626' },
+                { text: `REF: ${docRef}`, style: 'subHeader' },
+                
+                { text: '\n\n', fontSize: 1 }, 
+
+                validImages.length > 0 && validImages[0].imgData ? {
+                    image: validImages[0].imgData,
+                    width: 200,
+                    alignment: 'center',
+                    margin: [0, 10, 0, 20]
+                } : null,
+
+                { text: data.name.toUpperCase(), style: 'header', fontSize: 22 },
+                
+                { text: '\n', fontSize: 5 },
+
+                {
+                    table: {
+                        widths: ['50%', '50%'],
+                        body: [
+                            [{ text: 'CRIME / MOTIVO', style: 'tableHeader', fillColor: '#dc2626' }, { text: 'PERICULOSIDADE', style: 'tableHeader', fillColor: '#dc2626' }],
+                            [{ text: data.crime || data.reason || 'Não informado', style: 'tableCell', alignment: 'center', fontSize: 12, bold: true }, { text: (data.dangerLevel || data.status || 'N/A').toUpperCase(), style: 'tableCell', alignment: 'center', fontSize: 12, bold: true, color: '#dc2626' }],
+                        ]
+                    },
+                    layout: 'noBorders',
+                    margin: [0, 0, 0, 20]
+                },
+
+                {
+                    table: {
+                        widths: ['100%'],
+                        body: [
+                            [{ text: 'RECOMPENSA', style: 'tableHeader', fillColor: '#059669' }],
+                            [{ text: data.reward ? `R$ ${data.reward}` : 'A DEFINIR', style: 'tableCell', alignment: 'center', fontSize: 18, bold: true, color: '#059669', margin: [0, 10, 0, 10] }]
+                        ]
+                    },
+                    layout: 'noBorders'
+                },
+
+                { text: '\n\n\n', fontSize: 1 },
+                { text: 'Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades.', style: 'normalText', alignment: 'center', italics: true }
+            ].filter(Boolean);
+            
+            validImages = []; // Evitar duplicação
         }
 
         // Processar Template Personalizado (se houver)

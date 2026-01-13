@@ -24,6 +24,7 @@ const InvestigationDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { templates } = useSettings();
   const { getInvestigation, addProof, closeInvestigation } = useInvestigations();
   
   const [investigation, setInvestigation] = useState(null);

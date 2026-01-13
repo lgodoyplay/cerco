@@ -1,10 +1,17 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Filter, FileText, Eye, Printer, Shield, Calendar, MapPin, User, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../hooks/useSettings';
+import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 
 const BOList = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { templates } = useSettings();
   const [boletins, setBoletins] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBO, setSelectedBO] = useState(null);
