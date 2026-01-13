@@ -170,8 +170,7 @@ const Home = () => {
           </h1>
           
           <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Unidade de elite da Polícia Federal dedicada ao combate ao crime organizado, 
-            corrupção e crimes de alta complexidade.
+            Um sistema Operacional que elevará o nivel do seu RP
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
