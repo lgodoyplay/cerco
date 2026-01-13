@@ -9,9 +9,9 @@ const PermissionGuard = ({ permission, children, fallback }) => {
   // Mas como isso vai rodar dentro de ProtectedRoute, o usuário deve existir.
   
   // Verifica se o usuário tem a permissão necessária
-  // Adicionalmente, podemos dar bypass para 'Diretor Geral' se desejado, 
-  // mas vamos seguir estritamente as checkboxes como solicitado.
-  const hasPermission = user?.permissions?.includes(permission);
+  // Diretores sempre têm acesso total (bypass)
+  const isDirector = user?.role?.toLowerCase().includes('diretor');
+  const hasPermission = isDirector || user?.permissions?.includes(permission);
 
   if (!hasPermission) {
     if (fallback) return fallback;
