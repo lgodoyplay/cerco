@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Camera, Loader2, User } from 'lucide-react';
+import ImageCropperModal from './common/ImageCropperModal';
 
 const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [tempImage, setTempImage] = useState(null);
+  const [fileExt, setFileExt] = useState('jpg');
 
   useEffect(() => {
     if (url) downloadImage(url);
@@ -23,30 +27,48 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
     }
   };
 
-  const uploadAvatar = async (event) => {
+  const handleFileSelect = (event) => {
+    if (!event.target.files || event.target.files.length === 0) {
+      return;
+    }
+    const file = event.target.files[0];
+    const ext = file.name.split('.').pop();
+    setFileExt(ext);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setTempImage(reader.result);
+      setCropModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input
+    event.target.value = '';
+  };
+
+  const handleCropComplete = async (croppedImageBase64) => {
     try {
-      setUploading(true);
+        setCropModalOpen(false);
+        setUploading(true);
 
-      if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('Você deve selecionar uma imagem para upload.');
-      }
-
-      const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      let { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      onUpload(filePath);
+        const res = await fetch(croppedImageBase64);
+        const blob = await res.blob();
+        const file = new File([blob], `avatar.${fileExt}`, { type: 'image/jpeg' });
+        
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+  
+        let { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+  
+        if (uploadError) {
+          throw uploadError;
+        }
+  
+        onUpload(filePath);
     } catch (error) {
-      alert(error.message);
+        alert(error.message);
     } finally {
-      setUploading(false);
+        setUploading(false);
     }
   };
 
@@ -92,11 +114,20 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
             type="file"
             id="single"
             accept="image/*"
-            onChange={uploadAvatar}
+            onChange={handleFileSelect}
             disabled={uploading}
           />
         </div>
       )}
+
+      {/* Modal de Recorte (Quadrado para Avatar) */}
+      <ImageCropperModal 
+        isOpen={cropModalOpen}
+        onClose={() => setCropModalOpen(false)}
+        imageSrc={tempImage}
+        onCropComplete={handleCropComplete}
+        aspect={1}
+      />
     </div>
   );
 };

@@ -1,9 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
+import ImageCropperModal from './common/ImageCropperModal';
 
 const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = false }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [tempImage, setTempImage] = useState(null);
+  const [originalFile, setOriginalFile] = useState(null);
   const inputRef = useRef(null);
 
   const handleDragOver = (e) => {
@@ -21,23 +25,46 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) {
-      handleFile(file);
+      processFileForCrop(file);
     }
   };
 
-  const handleFile = (file) => {
+  const processFileForCrop = (file) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      onUpload(id, reader.result, file);
+      setTempImage(reader.result);
+      setOriginalFile(file);
+      setCropModalOpen(true);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = async (croppedImageBase64) => {
+    // Convert Base64 back to File for consistency with original API
+    try {
+        const res = await fetch(croppedImageBase64);
+        const blob = await res.blob();
+        const file = new File([blob], originalFile.name, { type: 'image/jpeg' });
+        
+        onUpload(id, croppedImageBase64, file);
+        setCropModalOpen(false);
+        setTempImage(null);
+        setOriginalFile(null);
+    } catch (e) {
+        console.error("Erro ao processar imagem cortada", e);
+        // Fallback to original if something fails
+        onUpload(id, tempImage, originalFile);
+        setCropModalOpen(false);
+    }
   };
 
   const handleChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      handleFile(file);
+      processFileForCrop(file);
     }
+    // Reset value to allow selecting same file again
+    e.target.value = ''; 
   };
 
   return (
@@ -101,13 +128,23 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
             )}>
               <Camera size={24} />
             </div>
-            <p className="text-sm font-medium text-slate-300 mb-1">
-              {isDragging ? "Solte a imagem aqui" : "Clique ou arraste"}
-            </p>
-            <p className="text-xs text-slate-500">JPG, PNG (Max 5MB)</p>
+            <span className="text-xs font-bold text-slate-400 block mb-1">
+              {isDragging ? 'Solte a imagem aqui' : 'Clique ou arraste'}
+            </span>
+            <span className="text-[10px] text-slate-600 block">
+              JPG, PNG (Max 5MB)
+            </span>
           </div>
         )}
       </div>
+      
+      {/* Modal de Recorte */}
+      <ImageCropperModal 
+        isOpen={cropModalOpen}
+        onClose={() => setCropModalOpen(false)}
+        imageSrc={tempImage}
+        onCropComplete={handleCropComplete}
+      />
       
       {/* Validation Status */}
       {!image && required && (

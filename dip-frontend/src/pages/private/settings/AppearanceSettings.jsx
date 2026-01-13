@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import { Palette, Upload, Moon, Sun, Check, Layout, Loader2 } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 import { supabase } from '../../../lib/supabase';
+import ImageCropperModal from '../../../components/common/ImageCropperModal';
 
 const AppearanceSettings = () => {
   const { appearance, updateAppearance, logAction } = useSettings();
   const [uploading, setUploading] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [tempImage, setTempImage] = useState(null);
+  const [fileExt, setFileExt] = useState('png');
 
   const colors = [
     { id: 'blue', name: 'Azul Federal', class: 'bg-blue-600' },
@@ -30,14 +34,31 @@ const AppearanceSettings = () => {
     logAction(`Modo compacto ${checked ? 'ativado' : 'desativado'}`);
   };
 
-  const handleLogoUpload = async (e) => {
+  const handleLogoSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
+    const ext = file.name.split('.').pop();
+    setFileExt(ext);
 
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setTempImage(reader.result);
+      setCropModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleCropComplete = async (croppedImageBase64) => {
     try {
       setUploading(true);
-      const fileExt = file.name.split('.').pop();
+      setCropModalOpen(false);
+      
+      const res = await fetch(croppedImageBase64);
+      const blob = await res.blob();
       const fileName = `system-logo-${Date.now()}.${fileExt}`;
+      const file = new File([blob], fileName, { type: blob.type });
       const filePath = `system/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -180,7 +201,7 @@ const AppearanceSettings = () => {
                   type="file" 
                   className="hidden" 
                   accept="image/*" 
-                  onChange={handleLogoUpload}
+                  onChange={handleLogoSelect}
                   disabled={uploading}
                 />
               </label>
@@ -189,6 +210,15 @@ const AppearanceSettings = () => {
           </div>
         </section>
       </div>
+      
+      {/* Modal de Recorte para Logo (Aspecto Livre ou 1:1) */}
+      <ImageCropperModal 
+        isOpen={cropModalOpen}
+        onClose={() => setCropModalOpen(false)}
+        imageSrc={tempImage}
+        onCropComplete={handleCropComplete}
+        aspect={1} 
+      />
     </div>
   );
 };
