@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { prefetchRoute } from '../routes/routeLoaders';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -20,10 +21,11 @@ import {
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
 
-const SidebarItem = ({ to, icon: Icon, label, active, onClick }) => (
+const SidebarItem = ({ to, icon: Icon, label, active, onClick, prefetchKey }) => (
   <Link
     to={to}
     onClick={onClick}
+    onMouseEnter={() => prefetchKey && prefetchRoute(prefetchKey)}
     className={clsx(
       "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all rounded-lg group relative overflow-hidden",
       active
@@ -51,17 +53,17 @@ const PrivateLayout = () => {
   };
 
   const navItems = [
-    { to: '/dashboard', icon: LayoutDashboard, label: 'Painel Geral' },
-    { to: '/dashboard/arrest', icon: UserX, label: 'Registrar Prisão' },
-    { to: '/dashboard/arrests', icon: Shield, label: 'Registro de Prisões' },
-    { to: '/dashboard/bo', icon: FileText, label: 'Registrar BO' },
-    { to: '/dashboard/bo-list', icon: FileText, label: 'Consultar BOs' },
-    { to: '/dashboard/reports', icon: AlertTriangle, label: 'Denúncias' },
-    { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados' },
-    { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados' },
-    { to: '/dashboard/investigations', icon: Search, label: 'Investigações' },
-    { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita' },
-    { to: '/dashboard/settings', icon: Settings, label: 'Configurações' },
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Painel Geral', prefetchKey: 'DashboardHome' },
+    { to: '/dashboard/arrest', icon: UserX, label: 'Registrar Prisão', prefetchKey: 'RegisterArrest' },
+    { to: '/dashboard/arrests', icon: Shield, label: 'Registro de Prisões', prefetchKey: 'ArrestList' },
+    { to: '/dashboard/bo', icon: FileText, label: 'Registrar BO', prefetchKey: 'RegisterBO' },
+    { to: '/dashboard/bo-list', icon: FileText, label: 'Consultar BOs', prefetchKey: 'BOList' },
+    { to: '/dashboard/reports', icon: AlertTriangle, label: 'Denúncias', prefetchKey: 'ReportList' },
+    { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados', prefetchKey: 'RegisterWanted' },
+    { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados', prefetchKey: 'WantedList' },
+    { to: '/dashboard/investigations', icon: Search, label: 'Investigações', prefetchKey: 'InvestigationList' },
+    { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList' },
+    { to: '/dashboard/settings', icon: Settings, label: 'Configurações', prefetchKey: 'SettingsLayout' },
   ];
 
   return (

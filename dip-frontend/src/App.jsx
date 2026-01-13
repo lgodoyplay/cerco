@@ -10,45 +10,46 @@ import ComingSoon from './components/ComingSoon';
 import Home from './pages/public/Home'; // Eager load Home for faster initial render
 
 import { lazyImport } from './utils/lazyImport';
+import { routeLoaders } from './routes/routeLoaders';
 
 // Public Pages
-const Rules = React.lazy(() => lazyImport(() => import('./pages/public/Rules')));
-const HowToJoin = React.lazy(() => lazyImport(() => import('./pages/public/HowToJoin')));
-const Login = React.lazy(() => lazyImport(() => import('./pages/public/Login')));
+const Rules = React.lazy(() => lazyImport(routeLoaders.Rules));
+const HowToJoin = React.lazy(() => lazyImport(routeLoaders.HowToJoin));
+const Login = React.lazy(() => lazyImport(routeLoaders.Login));
 
 // Private Pages
-const DashboardHome = React.lazy(() => lazyImport(() => import('./pages/private/DashboardHome')));
-const ProfilePage = React.lazy(() => lazyImport(() => import('./pages/private/ProfilePage')));
-const RegisterArrest = React.lazy(() => lazyImport(() => import('./pages/private/RegisterArrest')));
-const RegisterBO = React.lazy(() => lazyImport(() => import('./pages/private/RegisterBO')));
-const RegisterWanted = React.lazy(() => lazyImport(() => import('./pages/private/RegisterWanted')));
-const WantedList = React.lazy(() => lazyImport(() => import('./pages/private/WantedList')));
-const ArrestList = React.lazy(() => lazyImport(() => import('./pages/private/ArrestList')));
-const BOList = React.lazy(() => lazyImport(() => import('./pages/private/BOList')));
-const ReportList = React.lazy(() => lazyImport(() => import('./pages/private/ReportList')));
+const DashboardHome = React.lazy(() => lazyImport(routeLoaders.DashboardHome));
+const ProfilePage = React.lazy(() => lazyImport(routeLoaders.ProfilePage));
+const RegisterArrest = React.lazy(() => lazyImport(routeLoaders.RegisterArrest));
+const RegisterBO = React.lazy(() => lazyImport(routeLoaders.RegisterBO));
+const RegisterWanted = React.lazy(() => lazyImport(routeLoaders.RegisterWanted));
+const WantedList = React.lazy(() => lazyImport(routeLoaders.WantedList));
+const ArrestList = React.lazy(() => lazyImport(routeLoaders.ArrestList));
+const BOList = React.lazy(() => lazyImport(routeLoaders.BOList));
+const ReportList = React.lazy(() => lazyImport(routeLoaders.ReportList));
 
-const InvestigationList = React.lazy(() => lazyImport(() => import('./pages/private/investigations/InvestigationList')));
-const InvestigationCreate = React.lazy(() => lazyImport(() => import('./pages/private/investigations/InvestigationCreate')));
-const InvestigationDetail = React.lazy(() => lazyImport(() => import('./pages/private/investigations/InvestigationDetail')));
-const RevenueList = React.lazy(() => lazyImport(() => import('./pages/private/Revenue/RevenueList')));
-const RevenueDetail = React.lazy(() => lazyImport(() => import('./pages/private/Revenue/RevenueDetail')));
+const InvestigationList = React.lazy(() => lazyImport(routeLoaders.InvestigationList));
+const InvestigationCreate = React.lazy(() => lazyImport(routeLoaders.InvestigationCreate));
+const InvestigationDetail = React.lazy(() => lazyImport(routeLoaders.InvestigationDetail));
+const RevenueList = React.lazy(() => lazyImport(routeLoaders.RevenueList));
+const RevenueDetail = React.lazy(() => lazyImport(routeLoaders.RevenueDetail));
 
 // Settings Pages - Eagerly loaded for better UX
 import SecurityConfig from './pages/private/settings/SecurityConfig';
 
-const SettingsLayout = React.lazy(() => lazyImport(() => import('./pages/private/settings/SettingsLayout')));
-const UsersSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/UsersSettings')));
-const CoursesSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/CoursesSettings')));
-const WebhookSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/WebhookSettings')));
-const CorporationSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/CorporationSettings')));
-const RolesSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/RolesSettings')));
-const CrimesSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/CrimesSettings')));
-const TemplatesSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/TemplatesSettings')));
-const AppearanceSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/AppearanceSettings')));
+const SettingsLayout = React.lazy(() => lazyImport(routeLoaders.SettingsLayout));
+const UsersSettings = React.lazy(() => lazyImport(routeLoaders.UsersSettings));
+const CoursesSettings = React.lazy(() => lazyImport(routeLoaders.CoursesSettings));
+const WebhookSettings = React.lazy(() => lazyImport(routeLoaders.WebhookSettings));
+const CorporationSettings = React.lazy(() => lazyImport(routeLoaders.CorporationSettings));
+const RolesSettings = React.lazy(() => lazyImport(routeLoaders.RolesSettings));
+const CrimesSettings = React.lazy(() => lazyImport(routeLoaders.CrimesSettings));
+const TemplatesSettings = React.lazy(() => lazyImport(routeLoaders.TemplatesSettings));
+const AppearanceSettings = React.lazy(() => lazyImport(routeLoaders.AppearanceSettings));
 // SecurityConfig is now eagerly loaded
-const BackupSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/BackupSettings')));
-const SystemLogs = React.lazy(() => lazyImport(() => import('./pages/private/settings/SystemLogs')));
-const FormsSettings = React.lazy(() => lazyImport(() => import('./pages/private/settings/FormsSettings')));
+const BackupSettings = React.lazy(() => lazyImport(routeLoaders.BackupSettings));
+const SystemLogs = React.lazy(() => lazyImport(routeLoaders.SystemLogs));
+const FormsSettings = React.lazy(() => lazyImport(routeLoaders.FormsSettings));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen bg-slate-950">
