@@ -94,8 +94,15 @@ const Home = () => {
           { count: totalCases },
           { count: totalAgents }
         ] = await Promise.all([
-          supabase.from('procurados').select('*').order('created_at', { ascending: false }).limit(6),
-          supabase.from('prisoes').select('*').order('created_at', { ascending: false }).limit(6),
+          // Otimização: Selecionar apenas campos necessários
+          supabase.from('procurados')
+            .select('id, nome, foto_principal, periculosidade, motivo, status')
+            .order('created_at', { ascending: false })
+            .limit(6),
+          supabase.from('prisoes')
+            .select('id, nome, foto_principal, observacoes, data_prisao, documento, artigo')
+            .order('created_at', { ascending: false })
+            .limit(6),
           supabase.from('procurados').select('*', { count: 'exact', head: true }),
           supabase.from('prisoes').select('*', { count: 'exact', head: true }),
           supabase.from('investigacoes').select('*', { count: 'exact', head: true }).eq('status', 'Concluída'),
@@ -338,7 +345,13 @@ const Home = () => {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700">
                           {arrest.image || arrest.images?.face ? (
-                            <img src={arrest.image || arrest.images?.face} alt={arrest.name} className="w-full h-full object-cover" />
+                            <img 
+                              src={arrest.image || arrest.images?.face} 
+                              alt={arrest.name} 
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-cover" 
+                            />
                           ) : (
                             <User size={18} className="text-slate-500" />
                           )}

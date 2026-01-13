@@ -7,9 +7,9 @@ import SessionMonitorComponent from './components/SessionMonitor';
 import PublicLayout from './components/PublicLayout';
 import PrivateLayout from './components/PrivateLayout';
 import ComingSoon from './components/ComingSoon';
+import Home from './pages/public/Home'; // Eager load Home for faster initial render
 
 // Public Pages
-const Home = React.lazy(() => import('./pages/public/Home'));
 const Rules = React.lazy(() => import('./pages/public/Rules'));
 const HowToJoin = React.lazy(() => import('./pages/public/HowToJoin'));
 const Login = React.lazy(() => import('./pages/public/Login'));
