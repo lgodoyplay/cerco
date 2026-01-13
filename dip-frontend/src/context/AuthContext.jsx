@@ -137,6 +137,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = (data) => {
+    setUser(prev => ({ ...prev, ...data }));
+  };
+
   const logout = async () => {
     try {
         isLoggingIn.current = false; // Garante que flags sejam resetadas
@@ -151,7 +155,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, isAuthenticated: !!user, loading }}>
       {loading ? (
         <div className="fixed inset-0 bg-slate-950 z-[9999] flex items-center justify-center flex-col gap-6">
           <div className="flex flex-col items-center gap-4">

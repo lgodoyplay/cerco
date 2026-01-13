@@ -6,7 +6,7 @@ import { User, Shield, Calendar, BookOpen, Save, CheckCircle } from 'lucide-reac
 import clsx from 'clsx';
 
 const ProfilePage = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState(null);
@@ -75,6 +75,13 @@ const ProfilePage = () => {
       const { error } = await supabase.from('profiles').upsert(updates);
 
       if (error) throw error;
+      
+      // Update global context
+      updateUser({ 
+        full_name: profile.full_name,
+        avatar_url: profile.avatar_url
+      });
+
       setMessage({ type: 'success', text: 'Perfil atualizado com sucesso!' });
     } catch (error) {
       setMessage({ type: 'error', text: 'Erro ao atualizar perfil.' });
@@ -92,7 +99,11 @@ const ProfilePage = () => {
         .eq('id', user.id);
 
       if (error) throw error;
+      
       setProfile({ ...profile, avatar_url: url });
+      // Update global context immediately
+      updateUser({ avatar_url: url });
+      
       setMessage({ type: 'success', text: 'Foto de perfil atualizada!' });
     } catch (error) {
       console.error('Error updating avatar:', error);
