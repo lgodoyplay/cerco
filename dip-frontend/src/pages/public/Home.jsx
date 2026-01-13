@@ -561,8 +561,8 @@ const Home = () => {
               <div className="flex gap-6">
                 <div className="w-1/3">
                   <div className="aspect-square bg-slate-950 rounded-xl border border-slate-800 overflow-hidden">
-                    {selectedArrest.images?.face ? (
-                      <img src={selectedArrest.images.face} alt={selectedArrest.name} className="w-full h-full object-cover" />
+                    {selectedArrest.image || selectedArrest.images?.face ? (
+                      <img src={selectedArrest.image || selectedArrest.images.face} alt={selectedArrest.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
                         <User size={32} />
