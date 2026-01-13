@@ -39,6 +39,42 @@ const FormsSettings = () => {
     alert('Configuração do Discord salva com sucesso!');
   };
 
+  const handleTestDiscord = async () => {
+    if (!webhookUrl) {
+      alert('Por favor, insira uma URL de Webhook primeiro.');
+      return;
+    }
+
+    try {
+      const embed = {
+        title: "🔔 Teste de Notificação",
+        description: "Se você está vendo isso, a integração com o Discord está funcionando corretamente!",
+        color: 0x22c55e, // Green 500
+        fields: [
+          { name: "Status", value: "Conectado", inline: true },
+          { name: "Origem", value: "Painel Administrativo", inline: true }
+        ],
+        footer: { text: "Sistema de Recrutamento DPF" },
+        timestamp: new Date().toISOString()
+      };
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ embeds: [embed] })
+      });
+
+      if (response.ok) {
+        alert('Teste enviado com sucesso! Verifique seu canal no Discord.');
+      } else {
+        alert(`Erro ao enviar teste: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Erro no teste do Discord:', error);
+      alert('Erro ao conectar com o Discord. Verifique o console para mais detalhes.');
+    }
+  };
+
   const fetchCandidates = async () => {
     try {
       setLoading(true);
@@ -121,7 +157,14 @@ const FormsSettings = () => {
             className="px-6 py-2 bg-federal-600 hover:bg-federal-500 text-white rounded-lg font-bold transition-colors flex items-center justify-center gap-2"
           >
             <Save size={18} />
-            Salvar Configuração
+            Salvar
+          </button>
+          <button
+            onClick={handleTestDiscord}
+            className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-bold transition-colors flex items-center justify-center gap-2"
+          >
+            <MessageSquare size={18} />
+            Testar
           </button>
         </div>
         <p className="text-xs text-slate-500 mt-2">
