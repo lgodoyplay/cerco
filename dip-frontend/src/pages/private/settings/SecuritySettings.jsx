@@ -87,7 +87,7 @@ const SecuritySettings = () => {
             <div className="p-4 bg-slate-900/50 rounded-xl">
               <label className="block text-sm font-medium text-slate-400 mb-2">Tempo Limite de Sessão (Inatividade)</label>
               <select 
-                value={settings.sessionTimeout}
+                value={security.sessionTimeout}
                 onChange={(e) => handleChange('sessionTimeout', e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
               >
