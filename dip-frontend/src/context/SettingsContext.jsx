@@ -31,6 +31,10 @@ const DEFAULT_SECURITY = {
   maxLoginAttempts: '3'
 };
 
+const DEFAULT_DISCORD_CONFIG = {
+  webhookUrl: ''
+};
+
 export const SettingsProvider = ({ children }) => {
   // Users State (from API)
   const [users, setUsers] = useState([]);
@@ -49,6 +53,9 @@ export const SettingsProvider = ({ children }) => {
 
   // Security State (Supabase)
   const [security, setSecurity] = useState(DEFAULT_SECURITY);
+
+  // Discord Config State (Supabase)
+  const [discordConfig, setDiscordConfig] = useState(DEFAULT_DISCORD_CONFIG);
 
   // System Logs (Supabase)
   const [logs, setLogs] = useState([]);
@@ -81,6 +88,9 @@ export const SettingsProvider = ({ children }) => {
         if (securitySetting && securitySetting.value) {
           setSecurity(securitySetting.value);
         }
+
+        const discordSetting = data.find(s => s.key === 'discord_config');
+        if (discordSetting) setDiscordConfig(discordSetting.value);
       }
     } catch (error) {
        console.error('Error fetching settings:', error);
@@ -221,6 +231,7 @@ export const SettingsProvider = ({ children }) => {
   const updateTemplates = (newTemplates) => saveSetting('templates', newTemplates);
   const updateAppearance = (newAppearance) => saveSetting('appearance', newAppearance);
   const updateSecurity = (newSecurity) => saveSetting('security', newSecurity);
+  const updateDiscordConfig = (newConfig) => saveSetting('discord_config', newConfig);
 
   const value = {
     users,
@@ -229,6 +240,7 @@ export const SettingsProvider = ({ children }) => {
     templates,
     appearance,
     security,
+    discordConfig,
     logs,
     addUser,
     updateUser,
@@ -239,6 +251,7 @@ export const SettingsProvider = ({ children }) => {
     updateTemplates,
     updateAppearance,
     updateSecurity,
+    updateDiscordConfig,
     logAction
   };
 

@@ -102,6 +102,41 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
     setQuizAnswers({});
   };
 
+  const sendDiscordNotification = async (formData) => {
+    try {
+      // Tentar buscar URL do webhook
+      const { data: settingsData } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'discord_config')
+        .single();
+
+      const webhookUrl = settingsData?.value?.webhookUrl;
+
+      if (!webhookUrl) return;
+
+      const embed = {
+        title: "📝 Nova Candidatura Recebida",
+        color: 0x1e293b, // Slate 800
+        fields: [
+          { name: "👤 Nome / Discord", value: formData.nome || 'N/A', inline: true },
+          { name: "📱 Telefone", value: formData.telefone || 'N/A', inline: true },
+          { name: "📄 Motivação", value: formData.mensagem || 'N/A' }
+        ],
+        footer: { text: "Sistema de Recrutamento DPF" },
+        timestamp: new Date().toISOString()
+      };
+
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ embeds: [embed] })
+      });
+    } catch (error) {
+      console.error('Erro ao enviar notificação Discord:', error);
+    }
+  };
+
   const submitApplication = async () => {
     setFormStatus('submitting');
     try {
@@ -114,6 +149,9 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
         }]);
 
       if (error) throw error;
+
+      // Enviar notificação
+      await sendDiscordNotification(candidateForm);
 
       setFormStatus('success');
       setCandidateForm({ nome: '', telefone: '', mensagem: '' });
