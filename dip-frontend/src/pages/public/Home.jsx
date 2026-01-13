@@ -166,7 +166,7 @@ const Home = () => {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
-            <span className="text-federal-500">Polícia Federal</span>
+            <span className="text-federal-500">Policia Federal - FIVEM</span>
           </h1>
           
           <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
