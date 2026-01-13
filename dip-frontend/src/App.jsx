@@ -35,6 +35,7 @@ import SecurityConfig from './pages/private/settings/SecurityConfig';
 const SettingsLayout = React.lazy(() => import('./pages/private/settings/SettingsLayout'));
 const UsersSettings = React.lazy(() => import('./pages/private/settings/UsersSettings'));
 const CoursesSettings = React.lazy(() => import('./pages/private/settings/CoursesSettings'));
+const WebhookSettings = React.lazy(() => import('./pages/private/settings/WebhookSettings'));
 const CorporationSettings = React.lazy(() => import('./pages/private/settings/CorporationSettings'));
 const RolesSettings = React.lazy(() => import('./pages/private/settings/RolesSettings'));
 const CrimesSettings = React.lazy(() => import('./pages/private/settings/CrimesSettings'));
@@ -119,6 +120,7 @@ function App() {
               <Route index element={<Navigate to="courses" replace />} />
               <Route path="users" element={<UsersSettings />} />
               <Route path="courses" element={<CoursesSettings />} />
+              <Route path="webhooks" element={<WebhookSettings />} />
               <Route path="forms" element={<FormsSettings />} />
               <Route path="corporation" element={<CorporationSettings />} />
               <Route path="roles" element={<RolesSettings />} />

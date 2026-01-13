@@ -32,7 +32,11 @@ const DEFAULT_SECURITY = {
 };
 
 const DEFAULT_DISCORD_CONFIG = {
-  webhookUrl: ''
+  webhookUrl: '', // Mantido para compatibilidade, mas o foco será nos específicos
+  formsWebhook: '',
+  arrestsWebhook: '',
+  wantedWebhook: '',
+  bulletinsWebhook: ''
 };
 
 export const SettingsProvider = ({ children }) => {
@@ -90,7 +94,10 @@ export const SettingsProvider = ({ children }) => {
         }
 
         const discordSetting = data.find(s => s.key === 'discord_config');
-        if (discordSetting) setDiscordConfig(discordSetting.value);
+        if (discordSetting) {
+          // Merge with default to ensure all keys exist
+          setDiscordConfig({ ...DEFAULT_DISCORD_CONFIG, ...discordSetting.value });
+        }
       }
     } catch (error) {
        console.error('Error fetching settings:', error);

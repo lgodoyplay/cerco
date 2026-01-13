@@ -91,7 +91,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
 
     if (score >= 4) {
       setQuizStatus('success');
-      await submitApplication();
+      await submitApplication(score);
     } else {
       setQuizStatus('failed');
     }
@@ -118,7 +118,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
         return;
       }
 
-      const webhookUrl = settingsData?.value?.webhookUrl;
+      const webhookUrl = settingsData?.value?.formsWebhook || settingsData?.value?.webhookUrl;
 
       if (!webhookUrl) {
         console.warn('⚠️ Nenhuma URL de Webhook configurada no banco.');

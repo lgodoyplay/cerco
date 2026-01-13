@@ -4,10 +4,12 @@ import clsx from 'clsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ImageUploadArea from '../../components/ImageUploadArea';
 import { supabase } from '../../lib/supabase';
+import { useSettings } from '../../hooks/useSettings';
 
 const RegisterArrest = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { discordConfig } = useSettings();
   const prefillData = location.state?.wantedPerson;
 
   const [formData, setFormData] = useState({
@@ -106,6 +108,34 @@ const RegisterArrest = () => {
           action: 'Nova Prisão',
           details: `Prisão registrada: ${formData.name} (Art. ${formData.articles})`
         }]);
+      }
+
+      // 4. Send Discord Notification
+      if (discordConfig?.arrestsWebhook) {
+        try {
+          const embed = {
+            title: "🚨 Nova Prisão Registrada",
+            color: 0xea580c, // Orange
+            thumbnail: { url: publicUrl },
+            fields: [
+              { name: "Detento", value: formData.name, inline: true },
+              { name: "Documento", value: formData.passport, inline: true },
+              { name: "Artigos", value: formData.articles },
+              { name: "Motivo", value: formData.reason },
+              { name: "Oficial Responsável", value: formData.officer, inline: true }
+            ],
+            footer: { text: "Sistema Prisional DPF" },
+            timestamp: new Date().toISOString()
+          };
+          
+          await fetch(discordConfig.arrestsWebhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ embeds: [embed] })
+          });
+        } catch (err) {
+          console.error("Erro ao enviar webhook Discord:", err);
+        }
       }
 
       setNotification({ type: 'success', message: 'Prisão registrada com sucesso!' });

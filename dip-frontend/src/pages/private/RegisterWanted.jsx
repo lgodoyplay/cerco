@@ -4,9 +4,11 @@ import { Save, Eraser, User, FileText, Camera, CheckCircle, AlertCircle, Shield,
 import clsx from 'clsx';
 import ImageUploadArea from '../../components/ImageUploadArea';
 import { supabase } from '../../lib/supabase';
+import { useSettings } from '../../hooks/useSettings';
 
 const RegisterWanted = () => {
   const navigate = useNavigate();
+  const { discordConfig } = useSettings();
   const [formData, setFormData] = useState({
     name: '',
     document: '',
@@ -107,6 +109,35 @@ const RegisterWanted = () => {
         action: 'Novo Procurado',
         details: `Procurado cadastrado: ${formData.name} (Periculosidade: ${formData.dangerLevel})`
       }]);
+
+      // 4. Send Discord Notification
+      if (discordConfig?.wantedWebhook) {
+        try {
+          const embed = {
+            title: "⚠️ NOVO PROCURADO REGISTRADO",
+            description: `**${formData.name}** foi adicionado à lista de procurados.`,
+            color: 0xdc2626, // Red
+            thumbnail: { url: publicUrl },
+            fields: [
+              { name: "Periculosidade", value: formData.dangerLevel, inline: true },
+              { name: "Motivo", value: formData.reason, inline: true },
+              { name: "Documento", value: formData.document },
+              { name: "Observações", value: formData.observations || 'Nenhuma' },
+              { name: "Policial Responsável", value: formData.officer }
+            ],
+            footer: { text: "Sistema de Procurados DPF" },
+            timestamp: new Date().toISOString()
+          };
+          
+          await fetch(discordConfig.wantedWebhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ embeds: [embed] })
+          });
+        } catch (err) {
+          console.error("Erro ao enviar webhook Discord:", err);
+        }
+      }
 
       setNotification({
         type: 'success',

@@ -12,7 +12,8 @@ import {
   ScrollText,
   Settings,
   Inbox,
-  BookOpen
+  BookOpen,
+  Share2
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -20,6 +21,7 @@ const SettingsLayout = () => {
   const menuItems = [
     { to: '/dashboard/settings/users', icon: Users, label: 'Usuários & Permissões' },
     { to: '/dashboard/settings/courses', icon: BookOpen, label: 'Gestão de Cursos' },
+    { to: '/dashboard/settings/webhooks', icon: Share2, label: 'Webhooks & Integrações' },
     { to: '/dashboard/settings/forms', icon: Inbox, label: 'Formulários Recebidos' },
     { to: '/dashboard/settings/corporation', icon: Building, label: 'Estrutura da Corporação' },
     { to: '/dashboard/settings/roles', icon: BadgeCheck, label: 'Cargos & Patentes' },

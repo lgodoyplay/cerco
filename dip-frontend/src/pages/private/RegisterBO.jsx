@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useSettings } from '../../hooks/useSettings';
 
 const RegisterBO = () => {
-  const { logAction } = useSettings();
+  const { logAction, discordConfig } = useSettings();
   const [formData, setFormData] = useState({
     complainant: '',
     description: '',
@@ -47,6 +47,33 @@ const RegisterBO = () => {
 
       // Log action
       logAction(`B.O. Registrado: ${formData.complainant} - ${formData.description.substring(0, 30)}...`);
+
+      // Send Discord Notification
+      if (discordConfig?.bulletinsWebhook) {
+        try {
+          const embed = {
+            title: "📄 Novo Boletim de Ocorrência",
+            description: formData.description,
+            color: 0x9333ea, // Purple
+            fields: [
+              { name: "Comunicante", value: formData.complainant, inline: true },
+              { name: "Local", value: formData.location, inline: true },
+              { name: "Data do Fato", value: formData.date, inline: true },
+              { name: "Policial Responsável", value: formData.officer, inline: true }
+            ],
+            footer: { text: "Sistema de Ocorrências DPF" },
+            timestamp: new Date().toISOString()
+          };
+          
+          await fetch(discordConfig.bulletinsWebhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ embeds: [embed] })
+          });
+        } catch (err) {
+          console.error("Erro ao enviar webhook Discord:", err);
+        }
+      }
 
       // Success
       setNotification({
