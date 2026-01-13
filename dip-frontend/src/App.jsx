@@ -23,6 +23,8 @@ const RegisterWanted = React.lazy(() => import('./pages/private/RegisterWanted')
 const WantedList = React.lazy(() => import('./pages/private/WantedList'));
 const ArrestList = React.lazy(() => import('./pages/private/ArrestList'));
 const BOList = React.lazy(() => import('./pages/private/BOList'));
+const ReportList = React.lazy(() => import('./pages/private/ReportList'));
+
 const InvestigationList = React.lazy(() => import('./pages/private/investigations/InvestigationList'));
 const InvestigationCreate = React.lazy(() => import('./pages/private/investigations/InvestigationCreate'));
 const InvestigationDetail = React.lazy(() => import('./pages/private/investigations/InvestigationDetail'));
@@ -99,7 +101,9 @@ function App() {
             <Route path="arrests" element={<ArrestList />} />
             <Route path="bo" element={<RegisterBO />} />
             <Route path="bo-list" element={<BOList />} />
+            <Route path="reports" element={<ReportList />} />
             <Route path="register-wanted" element={<RegisterWanted />} />
+
             <Route path="wanted" element={<WantedList />} />
             
             {/* Investigations Routes */}
