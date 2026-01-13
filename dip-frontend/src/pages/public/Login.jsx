@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Shield, Lock, User, Key, AlertTriangle } from 'lucide-react';
+import { Shield, Lock, User, Key, AlertTriangle, ArrowLeft } from 'lucide-react';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -37,6 +37,17 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center relative overflow-hidden font-sans">
+      {/* Back Button */}
+      <Link 
+        to="/" 
+        className="absolute top-6 left-6 z-50 flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
+      >
+        <div className="p-2 rounded-full bg-slate-900/50 border border-slate-800 group-hover:border-federal-500/50 transition-colors">
+          <ArrowLeft size={20} />
+        </div>
+        <span className="font-medium text-sm hidden sm:block">Voltar ao Início</span>
+      </Link>
+
       {/* Background Elements */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-federal-900/50 via-slate-950 to-slate-950" />
