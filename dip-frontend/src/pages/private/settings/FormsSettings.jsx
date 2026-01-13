@@ -105,7 +105,7 @@ const FormsSettings = () => {
                       <h3 className="text-xl font-bold text-white">{candidate.nome}</h3>
                       <span className="text-xs text-slate-500 bg-slate-900 px-2 py-1 rounded-md border border-slate-800 flex items-center gap-1">
                         <Clock size={12} />
-                        {candidate.created_at ? format(new Date(candidate.created_at), "dd 'de' MMM 'às' HH:mm", { locale: ptBR }) : 'Data N/A'}
+                        {candidate.created_at && !isNaN(new Date(candidate.created_at).getTime()) ? format(new Date(candidate.created_at), "dd 'de' MMM 'às' HH:mm", { locale: ptBR }) : 'Data N/A'}
                       </span>
                     </div>
                   </div>

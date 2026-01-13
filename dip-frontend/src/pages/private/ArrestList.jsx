@@ -275,7 +275,9 @@ const ArrestList = () => {
                       <span className="text-xs text-slate-500 uppercase font-bold block mb-1">Data da Ocorrência</span>
                       <div className="flex items-center gap-2 text-slate-200">
                         <Calendar size={16} className="text-federal-500" />
-                        {format(new Date(selectedArrest.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                        {selectedArrest.date && !isNaN(new Date(selectedArrest.date).getTime())
+                          ? format(new Date(selectedArrest.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+                          : 'Data não informada'}
                       </div>
                     </div>
                     <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
