@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SettingsProvider } from './context/SettingsContext';
 import ThemeManager from './components/ThemeManager';
-import SessionMonitor from './components/SessionMonitor';
+import SessionMonitorComponent from './components/SessionMonitor';
 import PublicLayout from './components/PublicLayout';
 import PrivateLayout from './components/PrivateLayout';
 import ComingSoon from './components/ComingSoon';
@@ -60,11 +60,14 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
+  // Debug log to verify version
+  console.log('App Version: 2026-01-13 v2 - SessionMonitor Fix');
+
   return (
     <AuthProvider>
       <SettingsProvider>
         <ThemeManager />
-        <SessionMonitor />
+        <SessionMonitorComponent />
         <BrowserRouter>
           <Routes>
           {/* Public Routes */}
