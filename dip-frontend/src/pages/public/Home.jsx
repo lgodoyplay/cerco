@@ -337,8 +337,8 @@ const Home = () => {
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700">
-                          {arrest.images?.face ? (
-                            <img src={arrest.images.face} alt={arrest.name} className="w-full h-full object-cover" />
+                          {arrest.image || arrest.images?.face ? (
+                            <img src={arrest.image || arrest.images?.face} alt={arrest.name} className="w-full h-full object-cover" />
                           ) : (
                             <User size={18} className="text-slate-500" />
                           )}
