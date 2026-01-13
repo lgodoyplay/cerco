@@ -137,7 +137,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
     }
   };
 
-  const submitApplication = async () => {
+  const submitApplication = async (score) => {
     setFormStatus('submitting');
     try {
       const { error } = await supabase
@@ -145,13 +145,14 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
         .insert([{
           nome: candidateForm.nome,
           telefone: candidateForm.telefone,
-          mensagem: candidateForm.mensagem
+          mensagem: candidateForm.mensagem,
+          pontuacao_quiz: score
         }]);
 
       if (error) throw error;
 
       // Enviar notificação
-      await sendDiscordNotification(candidateForm);
+      await sendDiscordNotification(candidateForm, score);
 
       setFormStatus('success');
       setCandidateForm({ nome: '', telefone: '', mensagem: '' });
