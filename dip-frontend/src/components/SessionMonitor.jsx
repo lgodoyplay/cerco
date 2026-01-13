@@ -9,6 +9,7 @@ const SessionMonitor = () => {
   const intervalRef = useRef(null);
 
   useEffect(() => {
+    // Session monitor initialized
     const updateActivity = () => {
       lastActivityRef.current = Date.now();
     };
