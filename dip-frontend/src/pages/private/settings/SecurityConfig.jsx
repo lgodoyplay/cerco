@@ -5,19 +5,18 @@ import { useSettings } from '../../../hooks/useSettings';
 const SecurityConfig = () => {
   const { security, updateSecurity } = useSettings();
 
-  // Safety check to prevent ReferenceError if security is undefined
-  if (!security) {
-    return (
-      <div className="p-8 text-center text-slate-400">
-        <div className="animate-spin w-8 h-8 border-4 border-federal-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-        Carregando configurações de segurança...
-      </div>
-    );
-  }
+  // Use local fallback if security context is not yet loaded or null
+  const safeSecurity = security || {
+    forcePasswordChange: true,
+    sessionTimeout: '30',
+    minPasswordStrength: 'strong',
+    mfaEnabled: false,
+    maxLoginAttempts: '3'
+  };
 
   const handleChange = (key, value) => {
     if (!updateSecurity) return;
-    updateSecurity({ ...security, [key]: value });
+    updateSecurity({ ...safeSecurity, [key]: value });
   };
 
   return (
@@ -48,7 +47,7 @@ const SecurityConfig = () => {
                 <input 
                   type="checkbox" 
                   className="sr-only peer"
-                  checked={security.forcePasswordChange || false}
+                  checked={safeSecurity.forcePasswordChange || false}
                   onChange={(e) => handleChange('forcePasswordChange', e.target.checked)}
                 />
                 <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-federal-600"></div>
@@ -59,7 +58,7 @@ const SecurityConfig = () => {
               <div className="p-4 bg-slate-900/50 rounded-xl">
                 <label className="block text-sm font-medium text-slate-400 mb-2">Nível Mínimo de Senha</label>
                 <select 
-                  value={security.minPasswordStrength || 'medium'}
+                  value={safeSecurity.minPasswordStrength || 'medium'}
                   onChange={(e) => handleChange('minPasswordStrength', e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
                 >
@@ -72,7 +71,7 @@ const SecurityConfig = () => {
               <div className="p-4 bg-slate-900/50 rounded-xl">
                 <label className="block text-sm font-medium text-slate-400 mb-2">Tentativas de Login</label>
                 <select 
-                  value={security.maxLoginAttempts || '3'}
+                  value={safeSecurity.maxLoginAttempts || '3'}
                   onChange={(e) => handleChange('maxLoginAttempts', e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
                 >
@@ -96,7 +95,7 @@ const SecurityConfig = () => {
             <div className="p-4 bg-slate-900/50 rounded-xl">
               <label className="block text-sm font-medium text-slate-400 mb-2">Tempo Limite de Sessão (Inatividade)</label>
               <select 
-                value={security.sessionTimeout || '30'}
+                value={safeSecurity.sessionTimeout || '30'}
                 onChange={(e) => handleChange('sessionTimeout', e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
               >
@@ -116,7 +115,7 @@ const SecurityConfig = () => {
                 <input 
                   type="checkbox" 
                   className="sr-only peer"
-                  checked={security.mfaEnabled || false}
+                  checked={safeSecurity.mfaEnabled || false}
                   onChange={(e) => handleChange('mfaEnabled', e.target.checked)}
                 />
                 <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-federal-600"></div>

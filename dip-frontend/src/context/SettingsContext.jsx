@@ -78,7 +78,9 @@ export const SettingsProvider = ({ children }) => {
         if (appearanceSetting) setAppearance(appearanceSetting.value);
 
         const securitySetting = data.find(s => s.key === 'security');
-        if (securitySetting) setSecurity(securitySetting.value);
+        if (securitySetting && securitySetting.value) {
+          setSecurity(securitySetting.value);
+        }
       }
     } catch (error) {
        console.error('Error fetching settings:', error);

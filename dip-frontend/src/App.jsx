@@ -27,7 +27,9 @@ const InvestigationList = React.lazy(() => import('./pages/private/investigation
 const InvestigationCreate = React.lazy(() => import('./pages/private/investigations/InvestigationCreate'));
 const InvestigationDetail = React.lazy(() => import('./pages/private/investigations/InvestigationDetail'));
 
-// Settings Pages
+// Settings Pages - Eagerly loaded for better UX
+import SecurityConfig from './pages/private/settings/SecurityConfig';
+
 const SettingsLayout = React.lazy(() => import('./pages/private/settings/SettingsLayout'));
 const UsersSettings = React.lazy(() => import('./pages/private/settings/UsersSettings'));
 const CoursesSettings = React.lazy(() => import('./pages/private/settings/CoursesSettings'));
@@ -36,7 +38,7 @@ const RolesSettings = React.lazy(() => import('./pages/private/settings/RolesSet
 const CrimesSettings = React.lazy(() => import('./pages/private/settings/CrimesSettings'));
 const TemplatesSettings = React.lazy(() => import('./pages/private/settings/TemplatesSettings'));
 const AppearanceSettings = React.lazy(() => import('./pages/private/settings/AppearanceSettings'));
-const SecurityConfig = React.lazy(() => import('./pages/private/settings/SecurityConfig'));
+// SecurityConfig is now eagerly loaded
 const BackupSettings = React.lazy(() => import('./pages/private/settings/BackupSettings'));
 const SystemLogs = React.lazy(() => import('./pages/private/settings/SystemLogs'));
 const FormsSettings = React.lazy(() => import('./pages/private/settings/FormsSettings'));
