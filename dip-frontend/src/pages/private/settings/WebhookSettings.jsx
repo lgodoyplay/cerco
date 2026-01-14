@@ -59,7 +59,7 @@ const WebhookSettings = () => {
           { name: "Status", value: "Conectado", inline: true },
           { name: "Origem", value: "Painel Admin", inline: true }
         ],
-        footer: { text: "Sistema DPF - Teste de Integração" },
+        footer: { text: "Sistema Policia Civil - Teste de Integração" },
         timestamp: new Date().toISOString()
       };
 
