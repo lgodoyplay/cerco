@@ -125,7 +125,7 @@ const RegisterWanted = () => {
               { name: "Observações", value: formData.observations || 'Nenhuma' },
               { name: "Policial Responsável", value: formData.officer }
             ],
-            footer: { text: "Sistema de Procurados DPF" },
+            footer: { text: "Sistema de Procurados Policia Civil" },
             timestamp: new Date().toISOString()
           };
           
@@ -170,7 +170,7 @@ const RegisterWanted = () => {
             <Siren className="text-red-500" size={32} />
             Registrar Procurado
           </h2>
-          <p className="text-slate-400 mt-2">Adicione um novo indivíduo à lista de procurados da Polícia Federal.</p>
+          <p className="text-slate-400 mt-2">Adicione um novo indivíduo à lista de procurados da Policia Civil.</p>
         </div>
       </div>
 

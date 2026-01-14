@@ -19,10 +19,10 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
   const quizQuestions = [
     {
       id: 1,
-      question: "Qual é a principal função do DPF (Departamento de Polícia Federal)?",
+      question: "Qual é a principal função da Policia Civil?",
       options: [
         { id: 'a', text: "Patrulhamento ostensivo e multas de trânsito" },
-        { id: 'b', text: "Investigação de crimes complexos e combate ao crime organizado" },
+        { id: 'b', text: "Investigação de crimes e apoio ao Ministério Público" },
         { id: 'c', text: "Atendimento de ocorrências de baixa prioridade" }
       ],
       correct: 'b'
@@ -153,7 +153,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
           { name: "✅ Pontuação Quiz", value: `${score}/5` || 'N/A', inline: true },
           { name: "📄 Motivação", value: formData.mensagem || 'N/A' }
         ],
-        footer: { text: "Sistema de Recrutamento DPF" },
+        footer: { text: "Sistema de Recrutamento Policia Civil" },
         timestamp: new Date().toISOString()
       };
 
@@ -221,7 +221,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
           {!showQuiz ? (
             <>
               <div className="text-center mb-10">
-                <h2 className="text-3xl font-bold text-white mb-4">Candidatura ao DPF</h2>
+                <h2 className="text-3xl font-bold text-white mb-4">Candidatura à Policia Civil</h2>
                 <p className="text-slate-400">
                   Preencha o formulário e faça o teste de admissão para demonstrar seu interesse em fazer parte da 
                   nossa equipe de elite.
@@ -255,7 +255,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte do DPF?</label>
+                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte da Policia Civil?</label>
                   <textarea 
                     required
                     value={candidateForm.mensagem}
