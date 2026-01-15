@@ -21,6 +21,10 @@ export const routeLoaders = {
   InvestigationCreate: () => import('../pages/private/investigations/InvestigationCreate'),
   InvestigationDetail: () => import('../pages/private/investigations/InvestigationDetail'),
   
+  // Forensics
+  ForensicsList: () => import('../pages/private/forensics/ForensicsList'),
+  RegisterForensics: () => import('../pages/private/forensics/RegisterForensics'),
+
   // Revenue
   RevenueList: () => import('../pages/private/Revenue/RevenueList'),
   RevenueDetail: () => import('../pages/private/Revenue/RevenueDetail'),

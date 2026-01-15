@@ -31,6 +31,10 @@ const ReportList = React.lazy(() => lazyImport(routeLoaders.ReportList));
 const InvestigationList = React.lazy(() => lazyImport(routeLoaders.InvestigationList));
 const InvestigationCreate = React.lazy(() => lazyImport(routeLoaders.InvestigationCreate));
 const InvestigationDetail = React.lazy(() => lazyImport(routeLoaders.InvestigationDetail));
+
+const ForensicsList = React.lazy(() => lazyImport(routeLoaders.ForensicsList));
+const RegisterForensics = React.lazy(() => lazyImport(routeLoaders.RegisterForensics));
+
 const RevenueList = React.lazy(() => lazyImport(routeLoaders.RevenueList));
 const RevenueDetail = React.lazy(() => lazyImport(routeLoaders.RevenueDetail));
 
@@ -145,6 +149,14 @@ function App() {
             } />
             <Route path="investigations/:id" element={<InvestigationDetail />} />
             
+            {/* Forensics Routes */}
+            <Route path="forensics" element={<ForensicsList />} />
+            <Route path="forensics/new" element={
+              <PermissionGuard permission="investigation">
+                <RegisterForensics />
+              </PermissionGuard>
+            } />
+
             {/* Revenue Routes */}
             <Route path="revenue" element={<RevenueList />} />
             <Route path="revenue/:id" element={<RevenueDetail />} />
