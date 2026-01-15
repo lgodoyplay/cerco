@@ -18,7 +18,6 @@ export const generateInvestigationPDF = (investigation, user) => {
   const fontSizeBody = 12;
   const fontSizeTitle = 14;
   const fontSizeSmall = 10;
-  const lineHeight = 1.5; // Espaçamento entre linhas (fator aproximado)
   
   // --- FUNÇÕES AUXILIARES ---
 
@@ -224,7 +223,7 @@ export const generateInvestigationPDF = (investigation, user) => {
             doc.setFontSize(8); // Legenda menor
             doc.text('Figura: Representação visual da evidência.', xImg, yPos + imgHeight + 5);
             yPos += imgHeight + 15;
-        } catch (e) {
+        } catch (_error) {
             doc.setTextColor(200, 0, 0);
             doc.text('[Imagem não pôde ser carregada no relatório]', marginLeft, yPos);
             doc.setTextColor(0, 0, 0);

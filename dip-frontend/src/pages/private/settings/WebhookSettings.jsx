@@ -1,29 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Share2, Save, MessageSquare, AlertCircle, CheckCircle } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 
 const WebhookSettings = () => {
   const { discordConfig, updateDiscordConfig } = useSettings();
   
-  const [config, setConfig] = useState({
-    formsWebhook: '',
-    arrestsWebhook: '',
-    wantedWebhook: '',
-    bulletinsWebhook: ''
-  });
+  const [config, setConfig] = useState(() => ({
+    formsWebhook: discordConfig?.formsWebhook || discordConfig?.webhookUrl || '',
+    arrestsWebhook: discordConfig?.arrestsWebhook || '',
+    wantedWebhook: discordConfig?.wantedWebhook || '',
+    bulletinsWebhook: discordConfig?.bulletinsWebhook || ''
+  }));
 
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (discordConfig) {
-      setConfig({
-        formsWebhook: discordConfig.formsWebhook || discordConfig.webhookUrl || '',
-        arrestsWebhook: discordConfig.arrestsWebhook || '',
-        wantedWebhook: discordConfig.wantedWebhook || '',
-        bulletinsWebhook: discordConfig.bulletinsWebhook || ''
-      });
-    }
-  }, [discordConfig]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

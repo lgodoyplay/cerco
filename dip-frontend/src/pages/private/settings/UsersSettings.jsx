@@ -142,6 +142,7 @@ const UsersSettings = () => {
       fetchUserCourses(editingUser.id);
       setSelectedCourseToAdd('');
     } catch (error) {
+      console.error(error);
       alert('Erro ao adicionar curso. Verifique se o usuário já possui este curso.');
     }
   };

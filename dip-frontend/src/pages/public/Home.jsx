@@ -5,17 +5,21 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
 
-const StatCard = ({ icon: Icon, value, label, color = "blue" }) => (
-  <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl flex items-center gap-4 hover:border-federal-600/50 transition-colors group">
-    <div className={`p-3 rounded-xl bg-${color}-500/10 text-${color}-500 group-hover:scale-110 transition-transform`}>
-      <Icon size={24} />
+const StatCard = ({ icon, value, label, color = "blue" }) => {
+  const IconComponent = icon;
+
+  return (
+    <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl flex items-center gap-4 hover:border-federal-600/50 transition-colors group">
+      <div className={`p-3 rounded-xl bg-${color}-500/10 text-${color}-500 group-hover:scale-110 transition-transform`}>
+        <IconComponent size={24} />
+      </div>
+      <div>
+        <h3 className="text-2xl font-bold text-white">{value}</h3>
+        <p className="text-sm text-slate-400 font-medium">{label}</p>
+      </div>
     </div>
-    <div>
-      <h3 className="text-2xl font-bold text-white">{value}</h3>
-      <p className="text-sm text-slate-400 font-medium">{label}</p>
-    </div>
-  </div>
-);
+  );
+};
 
 const UserPlaceholder = () => (
   <div className="w-full h-full bg-slate-800 flex flex-col items-center justify-center text-slate-600">

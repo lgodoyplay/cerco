@@ -105,7 +105,7 @@ const getBase64ImageFromURL = (url) => {
             }
         };
 
-        img.onerror = error => {
+        img.onerror = _error => {
             clearTimeout(timer);
             console.warn("Erro de rede/carregamento da imagem:", url); // Não loga o objeto erro completo para evitar ruído
             resolve(null);
@@ -113,7 +113,7 @@ const getBase64ImageFromURL = (url) => {
 
         try {
             img.src = url;
-        } catch (e) {
+        } catch (_error) {
             clearTimeout(timer);
             console.warn("URL de imagem inválida:", url);
             resolve(null);
@@ -154,7 +154,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                         if (!imgData || typeof imgData !== 'string' || !imgData.startsWith('data:image')) {
                              imgData = null;
                         }
-                    } catch (e) {
+                    } catch (_error) {
                         imgData = null;
                     }
                 }
@@ -168,8 +168,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 if (imgData && typeof imgData === 'string' && imgData.startsWith('data:image')) {
                     validImages = [{ title: 'FOTO DO DETIDO', imgData, description: 'Registro fotográfico principal.' }];
                 }
-            } catch (e) {
-                console.warn("Erro ao carregar foto do preso:", e);
+            } catch (_error) {
+                console.warn("Erro ao carregar foto do preso");
             }
         } else if (type === 'wanted' && (data.image || (data.images && data.images.proof1))) {
             try {
@@ -178,8 +178,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 if (imgData && typeof imgData === 'string' && imgData.startsWith('data:image')) {
                     validImages = [{ title: 'FOTO DO PROCURADO', imgData, description: 'Registro fotográfico.' }];
                 }
-            } catch (e) {
-                console.warn("Erro ao carregar foto do procurado:", e);
+            } catch (_error) {
+                console.warn("Erro ao carregar foto do procurado");
             }
         }
 
@@ -449,7 +449,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             pageMargins: [85, 85, 57, 57], 
             
             // Cabeçalho em todas as páginas
-            header: (currentPage, pageCount) => {
+            header: () => {
                 return {
                     stack: [
                         { text: 'REPÚBLICA FEDERATIVA DO BRASIL', alignment: 'center', fontSize: 10, bold: true, margin: [0, 15, 0, 0] },

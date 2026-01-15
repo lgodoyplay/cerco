@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FileText, Save, RefreshCw } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 
@@ -58,17 +58,9 @@ PROVIDÊNCIAS
 Foi determinado o registro da ocorrência para devida apuração...`
   };
 
-  const [templates, setTemplates] = useState(defaultTemplates);
+  const [templates, setTemplates] = useState(dbTemplates || defaultTemplates);
   const [activeTab, setActiveTab] = useState('investigation');
   const [hasChanges, setHasChanges] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  // Load from DB when available
-  useEffect(() => {
-    if (dbTemplates) {
-      setTemplates(dbTemplates);
-    }
-  }, [dbTemplates]);
 
   const handleTemplateChange = (value) => {
     setTemplates(prev => ({ ...prev, [activeTab]: value }));
@@ -76,13 +68,11 @@ Foi determinado o registro da ocorrência para devida apuração...`
   };
 
   const handleSave = async () => {
-    setLoading(true);
     const success = await updateTemplates(templates);
     if (success) {
       logAction(`Modelo de documento atualizado: ${activeTab}`);
       setHasChanges(false);
     }
-    setLoading(false);
   };
 
   const handleReset = () => {
