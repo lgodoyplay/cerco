@@ -24,6 +24,7 @@ export const routeLoaders = {
   // Forensics
   ForensicsList: () => import('../pages/private/forensics/ForensicsList'),
   RegisterForensics: () => import('../pages/private/forensics/RegisterForensics'),
+  ForensicsDetail: () => import('../pages/private/forensics/ForensicsDetail'),
 
   // Revenue
   RevenueList: () => import('../pages/private/Revenue/RevenueList'),

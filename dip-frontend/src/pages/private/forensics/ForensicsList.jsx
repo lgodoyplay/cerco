@@ -95,9 +95,10 @@ const ForensicsList = () => {
       ) : (
         <div className="grid gap-4">
           {filteredForensics.map((item) => (
-            <div 
+            <button 
               key={item.id} 
-              className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-federal-500/50 transition-all group"
+              onClick={() => navigate(`/dashboard/forensics/${item.id}`)}
+              className="w-full text-left bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-federal-500/50 hover:bg-slate-900/80 transition-all group"
             >
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex-1 space-y-4">
@@ -134,6 +135,7 @@ const ForensicsList = () => {
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 text-red-400 hover:text-red-300 text-xs font-medium transition-colors"
+                        onClick={e => e.stopPropagation()}
                       >
                         <Youtube size={14} />
                         Vídeo Anexado
@@ -146,7 +148,7 @@ const ForensicsList = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}
