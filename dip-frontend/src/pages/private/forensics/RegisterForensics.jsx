@@ -10,7 +10,8 @@ import {
   Image as ImageIcon,
   MapPin,
   User,
-  Car
+  Car,
+  Plus
 } from 'lucide-react';
 import { useForensics } from '../../../hooks/useForensics';
 import clsx from 'clsx';
