@@ -19,53 +19,103 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
   const quizQuestions = [
     {
       id: 1,
-      question: "Qual é a principal função da Policia Civil?",
+      question: "Qual é a principal função da Divisão de Homicídios (DH)?",
       options: [
-        { id: 'a', text: "Patrulhamento ostensivo e multas de trânsito" },
-        { id: 'b', text: "Investigação de crimes e apoio ao Ministério Público" },
-        { id: 'c', text: "Atendimento de ocorrências de baixa prioridade" }
+        { id: 'a', text: "Aplicar multas de trânsito em alta velocidade" },
+        { id: 'b', text: "Investigar crimes contra a vida e prender os autores" },
+        { id: 'c', text: "Fazer patrulhamento ostensivo em áreas de risco" }
       ],
       correct: 'b'
     },
     {
       id: 2,
-      question: "O que você deve fazer ao coletar uma evidência ilegal durante uma investigação?",
+      question: "Ao chegar em uma cena de crime com um corpo, qual a primeira atitude correta?",
       options: [
-        { id: 'a', text: "Esconder e usar apenas se necessário" },
-        { id: 'b', text: "Documentar, preservar a cadeia de custódia e reportar" },
-        { id: 'c', text: "Descartar para não ter problemas" }
+        { id: 'a', text: "Revistar o corpo imediatamente em busca de documentos" },
+        { id: 'b', text: "Isolar o local e acionar a Polícia Científica" },
+        { id: 'c', text: "Remover o corpo para liberar o trânsito" }
       ],
       correct: 'b'
     },
     {
       id: 3,
-      question: "Qual é o procedimento correto ao identificar um oficial corrupto?",
+      question: "O que é Cadeia de Custódia na Polícia Científica?",
       options: [
-        { id: 'a', text: "Confrontar o oficial imediatamente" },
-        { id: 'b', text: "Reunir provas discretamente e reportar à Corregedoria" },
-        { id: 'c', text: "Espalhar o boato na corporação" }
+        { id: 'a', text: "Uma prisão especial para peritos" },
+        { id: 'b', text: "O rastreamento documental da evidência desde a coleta até o descarte" },
+        { id: 'c', text: "O conjunto de algemas usadas em suspeitos" }
       ],
       correct: 'b'
     },
     {
       id: 4,
-      question: "Em uma operação sigilosa, qual informação pode ser compartilhada com civis?",
+      question: "Qual profissional é responsável pela autópsia e determinação da causa da morte?",
       options: [
-        { id: 'a', text: "Nenhuma informação operacional" },
-        { id: 'b', text: "Apenas o local da operação" },
-        { id: 'c', text: "O nome dos alvos" }
+        { id: 'a', text: "Médico Legista" },
+        { id: 'b', text: "Investigador de Homicídios" },
+        { id: 'c', text: "Delegado Titular" }
       ],
       correct: 'a'
     },
     {
       id: 5,
-      question: "O que significa 'Hierarquia e Disciplina' para a Policia Civil?",
+      question: "O que caracteriza um Homicídio Qualificado?",
       options: [
-        { id: 'a', text: "Conceitos ultrapassados que não se aplicam" },
-        { id: 'b', text: "Pilares fundamentais para o funcionamento e ordem da instituição" },
-        { id: 'c', text: "Apenas formalidades sem importância prática" }
+        { id: 'a', text: "Quando o crime é cometido por acidente de trânsito" },
+        { id: 'b', text: "Quando há motivo fútil, meio cruel ou emboscada" },
+        { id: 'c', text: "Quando o autor se entrega espontaneamente" }
       ],
       correct: 'b'
+    },
+    {
+      id: 6,
+      question: "Qual a função da Balística Forense?",
+      options: [
+        { id: 'a', text: "Analisar armas de fogo, projéteis e trajetórias de tiro" },
+        { id: 'b', text: "Treinar policiais para atirar melhor" },
+        { id: 'c', text: "Fabricar munições para a polícia" }
+      ],
+      correct: 'a'
+    },
+    {
+      id: 7,
+      question: "Durante um interrogatório na DH, o que é essencial garantir ao suspeito?",
+      options: [
+        { id: 'a', text: "Que ele confesse imediatamente sob pressão" },
+        { id: 'b', text: "Seus direitos constitucionais, incluindo o de permanecer calado" },
+        { id: 'c', text: "Uma refeição completa antes de falar" }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 8,
+      question: "Como deve ser coletada uma arma de fogo encontrada na cena do crime?",
+      options: [
+        { id: 'a', text: "Pegando pelo cano com as mãos nuas" },
+        { id: 'b', text: "Usando luvas e pegando por áreas texturizadas (grip)" },
+        { id: 'c', text: "Não se deve coletar, apenas tirar foto" }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 9,
+      question: "O que é o exame residuográfico?",
+      options: [
+        { id: 'a', text: "Teste para detectar presença de drogas no sangue" },
+        { id: 'b', text: "Teste para detectar resíduos de pólvora nas mãos de um atirador" },
+        { id: 'c', text: "Exame de DNA em bitucas de cigarro" }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 10,
+      question: "Qual a importância do isolamento perimétrico em um local de homicídio?",
+      options: [
+        { id: 'a', text: "Preservar vestígios e impedir a contaminação da cena" },
+        { id: 'b', text: "Apenas para afastar curiosos e a imprensa" },
+        { id: 'c', text: "Para que os policiais possam descansar sem serem incomodados" }
+      ],
+      correct: 'a'
     }
   ];
 
@@ -89,7 +139,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
       }
     });
 
-    if (score >= 4) {
+    if (score >= 7) {
       setQuizStatus('success');
       await submitApplication(score);
     } else {
@@ -150,7 +200,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
         fields: [
           { name: "👤 Nome / Discord", value: formData.nome || 'N/A', inline: true },
           { name: "📱 Telefone", value: formData.telefone || 'N/A', inline: true },
-          { name: "✅ Pontuação Quiz", value: `${score}/5` || 'N/A', inline: true },
+          { name: "✅ Pontuação Quiz", value: `${score}/10` || 'N/A', inline: true },
           { name: "📄 Motivação", value: formData.mensagem || 'N/A' }
         ],
         footer: { text: "Sistema de Recrutamento Policia Civil" },
@@ -280,7 +330,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                 <>
                   <div className="text-center mb-8">
                     <h2 className="text-2xl font-bold text-white mb-2">Teste de Admissão</h2>
-                    <p className="text-slate-400">Responda corretamente a pelo menos 4 das 5 questões para enviar sua candidatura.</p>
+                    <p className="text-slate-400">Responda corretamente a pelo menos 7 das 10 questões para enviar sua candidatura.</p>
                   </div>
 
                   <div className="space-y-6">
@@ -332,9 +382,9 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                     <button 
                       type="button"
                       onClick={handleQuizSubmit}
-                      disabled={Object.keys(quizAnswers).length < 5}
+                      disabled={Object.keys(quizAnswers).length < 10}
                       className={`w-2/3 py-4 font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                        Object.keys(quizAnswers).length < 5
+                        Object.keys(quizAnswers).length < 10
                           ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
                           : 'bg-federal-600 hover:bg-federal-500 text-white hover:-translate-y-1 shadow-lg shadow-federal-900/20'
                       }`}
