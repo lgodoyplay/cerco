@@ -43,6 +43,7 @@ export const routeLoaders = {
   BackupSettings: () => import('../pages/private/settings/BackupSettings'),
   SystemLogs: () => import('../pages/private/settings/SystemLogs'),
   FormsSettings: () => import('../pages/private/settings/FormsSettings'),
+  ExamResultsSettings: () => import('../pages/private/settings/ExamResultsSettings'),
 };
 
 export const prefetchRoute = (key) => {

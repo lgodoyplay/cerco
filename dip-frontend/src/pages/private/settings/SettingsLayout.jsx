@@ -13,7 +13,8 @@ import {
   Settings,
   Inbox,
   BookOpen,
-  Share2
+  Share2,
+  CheckSquare
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -23,6 +24,7 @@ const SettingsLayout = () => {
     { to: '/dashboard/settings/courses', icon: BookOpen, label: 'Gestão de Cursos' },
     { to: '/dashboard/settings/webhooks', icon: Share2, label: 'Webhooks & Integrações' },
     { to: '/dashboard/settings/forms', icon: Inbox, label: 'Formulários Recebidos' },
+    { to: '/dashboard/settings/exams', icon: CheckSquare, label: 'Resultados de Prova' },
     { to: '/dashboard/settings/corporation', icon: Building, label: 'Estrutura da Corporação' },
     { to: '/dashboard/settings/roles', icon: BadgeCheck, label: 'Cargos & Patentes' },
     { to: '/dashboard/settings/crimes', icon: Gavel, label: 'Tipos de Crimes' },

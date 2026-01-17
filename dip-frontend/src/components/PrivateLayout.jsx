@@ -16,8 +16,7 @@ import {
   Menu,
   X,
   Search,
-  DollarSign,
-  Camera
+  DollarSign
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
@@ -63,7 +62,6 @@ const PrivateLayout = () => {
     { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados', prefetchKey: 'RegisterWanted' },
     { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados', prefetchKey: 'WantedList' },
     { to: '/dashboard/investigations', icon: Search, label: 'Investigações', prefetchKey: 'InvestigationList' },
-    { to: '/dashboard/forensics', icon: Camera, label: 'Perícias', prefetchKey: 'ForensicsList' },
     { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList' },
     { to: '/dashboard/settings', icon: Settings, label: 'Configurações', prefetchKey: 'SettingsLayout' },
   ];

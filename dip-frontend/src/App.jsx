@@ -55,6 +55,7 @@ const AppearanceSettings = React.lazy(() => lazyImport(routeLoaders.AppearanceSe
 const BackupSettings = React.lazy(() => lazyImport(routeLoaders.BackupSettings));
 const SystemLogs = React.lazy(() => lazyImport(routeLoaders.SystemLogs));
 const FormsSettings = React.lazy(() => lazyImport(routeLoaders.FormsSettings));
+const ExamResultsSettings = React.lazy(() => lazyImport(routeLoaders.ExamResultsSettings));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen bg-slate-950">
@@ -150,15 +151,6 @@ function App() {
             } />
             <Route path="investigations/:id" element={<InvestigationDetail />} />
             
-            {/* Forensics Routes */}
-            <Route path="forensics" element={<ForensicsList />} />
-            <Route path="forensics/new" element={
-              <PermissionGuard permission="investigation">
-                <RegisterForensics />
-              </PermissionGuard>
-            } />
-            <Route path="forensics/:id" element={<ForensicsDetail />} />
-
             {/* Revenue Routes */}
             <Route path="revenue" element={<RevenueList />} />
             <Route path="revenue/:id" element={<RevenueDetail />} />
@@ -177,6 +169,7 @@ function App() {
               <Route path="courses" element={<CoursesSettings />} />
               <Route path="webhooks" element={<WebhookSettings />} />
               <Route path="forms" element={<FormsSettings />} />
+              <Route path="exams" element={<ExamResultsSettings />} />
               <Route path="corporation" element={<CorporationSettings />} />
               <Route path="roles" element={<RolesSettings />} />
               <Route path="crimes" element={<CrimesSettings />} />

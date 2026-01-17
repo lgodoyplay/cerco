@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '../../lib/supabase';
 import {
   Shield,
   GraduationCap,
@@ -135,8 +136,295 @@ const modules = [
   }
 ];
 
+const examQuestions = [
+  {
+    id: 1,
+    question: 'Ao chegar primeiro em um possível local de homicídio, qual é a prioridade absoluta?',
+    options: [
+      { id: 'a', text: 'Verificar bolsos da vítima em busca de documentos' },
+      { id: 'b', text: 'Isolar o local, afastar pessoas e acionar DHPP e perícia' },
+      { id: 'c', text: 'Permitir que familiares se aproximem para reconhecer o corpo' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 2,
+    question: 'Por que não se deve virar o corpo antes da chegada da perícia?',
+    options: [
+      { id: 'a', text: 'Porque o corpo pode estar infectado' },
+      { id: 'b', text: 'Porque isso altera vestígios de posição, sangue e dinâmica do crime' },
+      { id: 'c', text: 'Porque apenas o delegado pode autorizar qualquer contato' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 3,
+    question: 'Qual é o entendimento correto sobre “todo local é potencial cena de crime”?',
+    options: [
+      { id: 'a', text: 'Só vale para locais com sinais evidentes de violência' },
+      { id: 'b', text: 'Mesmo em suspeita de mal súbito, o local deve ser preservado até conclusão técnica' },
+      { id: 'c', text: 'Aplica-se apenas a casos de latrocínio ou execução' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 4,
+    question: 'O que caracteriza a missão principal do DHPP?',
+    options: [
+      { id: 'a', text: 'Fiscalizar trânsito e aplicar multas' },
+      { id: 'b', text: 'Apurar crimes contra a vida, com foco em homicídios e mortes suspeitas' },
+      { id: 'c', text: 'Realizar policiamento comunitário em áreas de risco' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 5,
+    question: 'Qual atitude em relação a cápsulas e projéteis encontrados no local é correta?',
+    options: [
+      { id: 'a', text: 'Recolher rapidamente para evitar que alguém pise' },
+      { id: 'b', text: 'Deixar no local e preservar, aguardando a coleta pericial' },
+      { id: 'c', text: 'Guardá-los na viatura para entregar depois ao delegado' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 6,
+    question: 'Por que o isolamento perimétrico é tão importante em locais de morte?',
+    options: [
+      { id: 'a', text: 'Para evitar que curiosos filmem e gerem repercussão na mídia' },
+      { id: 'b', text: 'Para preservar vestígios e impedir contaminação da cena' },
+      { id: 'c', text: 'Para facilitar o estacionamento das viaturas' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 7,
+    question: 'Em relação à atuação do IML, qual afirmação está correta?',
+    options: [
+      { id: 'a', text: 'O IML apenas guarda corpos até o reconhecimento pela família' },
+      { id: 'b', text: 'O IML realiza necropsias e exames que definem causa e meio da morte' },
+      { id: 'c', text: 'O IML decide se haverá investigação policial ou não' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 8,
+    question: 'Qual é o impacto de “organizar” o local antes da perícia?',
+    options: [
+      { id: 'a', text: 'Ajuda a perícia a circular com mais segurança' },
+      { id: 'b', text: 'Destrói a narrativa original da cena e compromete a investigação' },
+      { id: 'c', text: 'Não há impacto se for feito com cuidado' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 9,
+    question: 'O que se entende por preservação total do local?',
+    options: [
+      { id: 'a', text: 'Manter apenas o corpo intocado; o resto pode ser mexido' },
+      { id: 'b', text: 'Proteger todo o perímetro, vestígios, objetos e trajetórias até a chegada da perícia' },
+      { id: 'c', text: 'Fechar apenas a área imediatamente ao redor da vítima' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 10,
+    question: 'Por que só a perícia deve tocar no corpo em locais de morte?',
+    options: [
+      { id: 'a', text: 'Porque o perito tem prioridade hierárquica sobre o policial' },
+      { id: 'b', text: 'Porque qualquer movimentação pode alterar sinais que orientam a dinâmica do crime' },
+      { id: 'c', text: 'Porque o policial não tem autorização legal para se aproximar da vítima' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 11,
+    question: 'Em uma comunidade ou área sensível, como o DHPP deve atuar?',
+    options: [
+      { id: 'a', text: 'Abrindo mão da preservação de prova para evitar conflito' },
+      { id: 'b', text: 'Aplicando a mesma doutrina de preservação, ajustando apenas a segurança operacional' },
+      { id: 'c', text: 'Deixando a investigação para a unidade territorial local' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 12,
+    question: 'Qual é uma consequência jurídica de erros graves no local de crime?',
+    options: [
+      { id: 'a', text: 'Apenas advertência interna; o processo penal não é afetado' },
+      { id: 'b', text: 'Possível nulidade de provas, absolvições ou arquivamento do caso' },
+      { id: 'c', text: 'Apenas demora maior na conclusão do inquérito' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 13,
+    question: 'O que significa tratar o local com “respeito à cadeia de custódia”?',
+    options: [
+      { id: 'a', text: 'Registrar todo vestígio e preservar sua trajetória até o laudo' },
+      { id: 'b', text: 'Permitir que cada policial fotografe por conta própria' },
+      { id: 'c', text: 'Remover rapidamente objetos para a delegacia' }
+    ],
+    correct: 'a'
+  },
+  {
+    id: 14,
+    question: 'Qual deve ser a postura com familiares e curiosos no local de morte?',
+    options: [
+      { id: 'a', text: 'Permitir aproximação para acalmar as pessoas, mesmo dentro do perímetro' },
+      { id: 'b', text: 'Postura firme e respeitosa, mantendo-os fora da área isolada' },
+      { id: 'c', text: 'Evitar qualquer contato e ignorar totalmente a presença deles' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 15,
+    question: 'Em relação ao laudo do IML, qual é o papel para o DHPP?',
+    options: [
+      { id: 'a', text: 'Apenas formalizar o encerramento do inquérito' },
+      { id: 'b', text: 'Fornecer elementos técnicos que confirmam ou corrigem hipóteses da investigação' },
+      { id: 'c', text: 'Definir sozinho quem é o autor do crime' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 16,
+    question: 'Qual é a consequência de permitir livre circulação de curiosos no local?',
+    options: [
+      { id: 'a', text: 'Apenas maior dificuldade de trabalho para a perícia, sem impacto na prova' },
+      { id: 'b', text: 'Contaminação de vestígios, destruição de marcas e perda de informações' },
+      { id: 'c', text: 'Nenhuma, se o corpo estiver coberto' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 17,
+    question: 'O que mede a eficácia da preservação do local segundo a doutrina do curso?',
+    options: [
+      { id: 'a', text: 'Quantidade de viaturas na cena' },
+      { id: 'b', text: 'Qualidade dos vestígios mantidos íntegros até a perícia e o laudo' },
+      { id: 'c', text: 'Tempo que a ocorrência levou para ser liberada' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 18,
+    question: 'Qual é o papel do primeiro policial em relação às testemunhas?',
+    options: [
+      { id: 'a', text: 'Dispersá-las imediatamente para evitar aglomeração' },
+      { id: 'b', text: 'Identificar, proteger e registrar dados básicos das testemunhas-chave' },
+      { id: 'c', text: 'Deixar esse trabalho apenas para o delegado' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 19,
+    question: 'Por que registrar informações básicas logo no atendimento inicial é tão importante?',
+    options: [
+      { id: 'a', text: 'Para gerar estatística interna da corporação' },
+      { id: 'b', text: 'Porque muitos detalhes se perdem com o tempo e com a movimentação do local' },
+      { id: 'c', text: 'Para facilitar o trabalho da imprensa' }
+    ],
+    correct: 'b'
+  },
+  {
+    id: 20,
+    question: 'Quando se pode considerar que o trabalho de preservação foi bem-sucedido?',
+    options: [
+      { id: 'a', text: 'Quando o local é rapidamente liberado para circulação' },
+      { id: 'b', text: 'Quando DHPP, perícia e IML conseguem reconstruir a dinâmica com base em vestígios íntegros' },
+      { id: 'c', text: 'Quando nenhum familiar reclama do atendimento' }
+    ],
+    correct: 'b'
+  }
+];
+
 const Home = () => {
   const [selectedModule, setSelectedModule] = useState(null);
+  const [showExam, setShowExam] = useState(false);
+  const [examStep, setExamStep] = useState('form');
+  const [examForm, setExamForm] = useState({
+    nome: '',
+    matricula: '',
+    lotacao: '',
+    telefone: ''
+  });
+  const [examAnswers, setExamAnswers] = useState({});
+  const [examScore, setExamScore] = useState(0);
+  const [examStatus, setExamStatus] = useState('idle');
+  const [examError, setExamError] = useState('');
+
+  const handleOpenExam = () => {
+    setShowExam(true);
+    setExamStep('form');
+    setExamAnswers({});
+    setExamScore(0);
+    setExamStatus('idle');
+    setExamError('');
+  };
+
+  const handleCloseExam = () => {
+    setShowExam(false);
+  };
+
+  const handleExamFormSubmit = (e) => {
+    e.preventDefault();
+    setExamStep('quiz');
+  };
+
+  const handleExamAnswer = (questionId, optionId) => {
+    setExamAnswers((prev) => ({
+      ...prev,
+      [questionId]: optionId
+    }));
+  };
+
+  const handleExamSubmit = async () => {
+    let score = 0;
+    examQuestions.forEach((q) => {
+      if (examAnswers[q.id] === q.correct) {
+        score += 1;
+      }
+    });
+
+    setExamScore(score);
+    setExamStatus('submitting');
+    setExamError('');
+
+    const aprovado = score >= 10;
+
+    try {
+      const mensagem = [
+        'Prova DHPP - Preservação de Local de Morte',
+        `Nome: ${examForm.nome || 'N/A'}`,
+        `Matrícula: ${examForm.matricula || 'N/A'}`,
+        `Lotação/Unidade: ${examForm.lotacao || 'N/A'}`,
+        `Telefone: ${examForm.telefone || 'N/A'}`,
+        `Resultado: ${aprovado ? 'APROVADO' : 'REPROVADO'}`,
+        `Acertos: ${score}/20`
+      ].join(' | ');
+
+      const { error } = await supabase.from('candidatos').insert([
+        {
+          nome: examForm.nome,
+          telefone: examForm.telefone,
+          mensagem,
+          pontuacao_quiz: score,
+          status: 'PROVA_DHPP'
+        }
+      ]);
+
+      if (error) {
+        throw error;
+      }
+
+      setExamStatus('success');
+      setExamStep('result');
+    } catch (err) {
+      setExamStatus('error');
+      setExamError('Ocorreu um erro ao registrar a prova. Tente novamente ou avise a chefia.');
+    }
+  };
 
   return (
     <div className="space-y-20 pb-20">
@@ -558,6 +846,22 @@ const Home = () => {
         </div>
       </section>
 
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-center gap-4 bg-slate-950 border border-slate-800 rounded-3xl p-6 sm:p-8">
+          <p className="text-sm text-slate-300 text-center max-w-2xl">
+            Após estudar o conteúdo, você pode testar seus conhecimentos em uma prova oficial deste curso.
+            São 20 questões objetivas focadas na doutrina correta de preservação de local de morte.
+          </p>
+          <button
+            type="button"
+            onClick={handleOpenExam}
+            className="px-8 py-4 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-federal-900/20"
+          >
+            Iniciar Prova
+          </button>
+        </div>
+      </section>
+
       {selectedModule && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden">
@@ -595,6 +899,185 @@ const Home = () => {
                   </li>
                 ))}
               </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showExam && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between px-6 sm:px-8 py-4 border-b border-slate-800">
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]">
+                  Prova Oficial do Curso
+                </p>
+                <p className="text-sm font-semibold text-white">
+                  Preservação de Local de Morte – DHPP
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseExam}
+                className="text-slate-400 hover:text-white text-sm font-semibold"
+              >
+                Fechar
+              </button>
+            </div>
+
+            <div className="px-6 sm:px-8 py-6 space-y-6">
+              {examStep === 'form' && (
+                <form onSubmit={handleExamFormSubmit} className="space-y-5">
+                  <p className="text-sm text-slate-300">
+                    Preencha seus dados para identificação interna. As informações e o resultado serão enviados
+                    para a área de configurações da dashboard.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        Nome completo
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={examForm.nome}
+                        onChange={(e) => setExamForm({ ...examForm, nome: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500"
+                        placeholder="Ex: Inspetor João Silva"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        Matrícula / Identificação
+                      </label>
+                      <input
+                        type="text"
+                        value={examForm.matricula}
+                        onChange={(e) => setExamForm({ ...examForm, matricula: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500"
+                        placeholder="Ex: 12345-XX"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        Lotação / Unidade
+                      </label>
+                      <input
+                        type="text"
+                        value={examForm.lotacao}
+                        onChange={(e) => setExamForm({ ...examForm, lotacao: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500"
+                        placeholder="Ex: DHPP, 3ª Delegacia de Homicídios"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        Telefone / Contato
+                      </label>
+                      <input
+                        type="text"
+                        value={examForm.telefone}
+                        onChange={(e) => setExamForm({ ...examForm, telefone: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500"
+                        placeholder="Ex: (00) 00000-0000"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      className="px-6 py-3 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-federal-900/20"
+                    >
+                      Iniciar Prova
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {examStep === 'quiz' && (
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-white">
+                      Prova com 20 questões objetivas
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      É necessário acertar pelo menos 10 questões para ser considerado aprovado.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {examQuestions.map((q, index) => (
+                      <div
+                        key={q.id}
+                        className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 space-y-3"
+                      >
+                        <p className="text-sm text-white font-semibold flex gap-2">
+                          <span className="text-federal-400">#{index + 1}</span>
+                          {q.question}
+                        </p>
+                        <div className="grid sm:grid-cols-3 gap-2">
+                          {q.options.map((opt) => (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => handleExamAnswer(q.id, opt.id)}
+                              className={`text-left px-3 py-2 rounded-lg border text-xs ${
+                                examAnswers[q.id] === opt.id
+                                  ? 'bg-federal-600 border-federal-500 text-white'
+                                  : 'bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800'
+                              }`}
+                            >
+                              <span className="font-semibold mr-1 uppercase">{opt.id})</span>
+                              {opt.text}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {examError && (
+                    <p className="text-xs text-red-400">
+                      {examError}
+                    </p>
+                  )}
+
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleExamSubmit}
+                      disabled={examStatus === 'submitting'}
+                      className="px-8 py-3 bg-federal-600 hover:bg-federal-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-federal-900/20"
+                    >
+                      {examStatus === 'submitting' ? 'Enviando...' : 'Finalizar Prova'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {examStep === 'result' && (
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-300">
+                    Prova registrada com sucesso. Seu resultado foi:
+                  </p>
+                  <p className="text-xl font-bold text-white">
+                    {examScore}/20 acertos – {examScore >= 10 ? 'APROVADO' : 'REPROVADO'}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    As informações desta prova foram enviadas para a área de configurações da dashboard, para
+                    acompanhamento pela chefia.
+                  </p>
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleCloseExam}
+                      className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all hover:-translate-y-0.5"
+                    >
+                      Fechar
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
