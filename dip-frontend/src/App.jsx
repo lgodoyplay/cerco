@@ -98,6 +98,7 @@ function App() {
             {/* Public Routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
+            <Route path="/curso-dhpp" element={<Home />} />
             <Route path="/rules" element={<Rules />} />
             <Route path="/join" element={<HowToJoin />} />
           </Route>
@@ -150,6 +151,15 @@ function App() {
               </PermissionGuard>
             } />
             <Route path="investigations/:id" element={<InvestigationDetail />} />
+            
+            {/* Forensics Routes */}
+            <Route path="forensics" element={<ForensicsList />} />
+            <Route path="forensics/new" element={
+              <PermissionGuard permission="investigation">
+                <RegisterForensics />
+              </PermissionGuard>
+            } />
+            <Route path="forensics/:id" element={<ForensicsDetail />} />
             
             {/* Revenue Routes */}
             <Route path="revenue" element={<RevenueList />} />

@@ -9,6 +9,7 @@ const PublicLayout = () => {
 
   const navItems = [
     { name: 'Home', path: '/' },
+    { name: 'Curso DHPP', path: '/curso-dhpp' },
     { name: 'Regras', path: '/rules' },
     { name: 'Como Fazer Parte', path: '/join' },
   ];
