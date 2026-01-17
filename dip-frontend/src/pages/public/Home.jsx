@@ -1,611 +1,600 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Shield, Users, Siren, FileText, ChevronRight, AlertTriangle, Search, Filter, Eye, X, Calendar, MapPin, User, Check } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { supabase } from '../../lib/supabase';
+import { useState } from 'react';
+import {
+  Shield,
+  GraduationCap,
+  AlertTriangle,
+  Skull,
+  Microscope,
+  Gavel,
+  ClipboardCheck,
+  Ban,
+  CheckSquare
+} from 'lucide-react';
 
-const StatCard = ({ icon, value, label, color = "blue" }) => {
-  const IconComponent = icon;
-
-  return (
-    <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl flex items-center gap-4 hover:border-federal-600/50 transition-colors group">
-      <div className={`p-3 rounded-xl bg-${color}-500/10 text-${color}-500 group-hover:scale-110 transition-transform`}>
-        <IconComponent size={24} />
-      </div>
-      <div>
-        <h3 className="text-2xl font-bold text-white">{value}</h3>
-        <p className="text-sm text-slate-400 font-medium">{label}</p>
-      </div>
-    </div>
-  );
-};
-
-const UserPlaceholder = () => (
-  <div className="w-full h-full bg-slate-800 flex flex-col items-center justify-center text-slate-600">
-    <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center mb-2">
-      <User size={24} />
-    </div>
-    <span className="text-[10px] font-bold uppercase">Sem Foto</span>
-  </div>
-);
+const modules = [
+  {
+    id: 1,
+    title: 'Módulo 1 — O DHPP e sua missão',
+    description: 'Entenda o papel estratégico do DHPP dentro da estrutura policial.',
+    content: [
+      'Apresentação do DHPP como unidade especializada na investigação de mortes violentas e suspeitas.',
+      'Enquadramento legal e normativo: o que a lei e os regulamentos internos atribuem ao DHPP.',
+      'Diferença entre atendimento de rotina, patrulhamento e atuação especializada em homicídios.',
+      'Visão de cadeia de custódia: como cada ato no local impacta o trabalho do DHPP até a sentença judicial.'
+    ]
+  },
+  {
+    id: 2,
+    title: 'Módulo 2 — Regra de Ouro do Local de Morte',
+    description: 'A regra que separa uma boa investigação de um caso perdido.',
+    content: [
+      'Conceito de Regra de Ouro: preservar tudo, tocar em nada, acionar a perícia e o DHPP.',
+      'Por que o impulso de “ajudar” movendo o corpo ou objetos gera danos irreversíveis à prova.',
+      'Exemplos reais de investigações prejudicadas por violação da regra de ouro.',
+      'Postura profissional esperada do primeiro policial que chega ao local.'
+    ]
+  },
+  {
+    id: 3,
+    title: 'Módulo 3 — O Primeiro Policial no Local',
+    description: 'Condutas obrigatórias de quem chega antes do DHPP.',
+    content: [
+      'Checklist inicial: segurança da guarnição, preservação de vidas e isolamento da área.',
+      'Comunicação com a Central e com o DHPP: o que informar, como e quando.',
+      'Controle de acesso ao local: quem entra, quem não entra e como registrar.',
+      'Postura com familiares, curiosos e imprensa sem comprometer a investigação.'
+    ]
+  },
+  {
+    id: 4,
+    title: 'Módulo 4 — Preservação Total do Local',
+    description: 'Técnicas práticas para manter o local intacto até a chegada da perícia.',
+    content: [
+      'Definição de perímetro primário e secundário e como delimitar cada um.',
+      'Uso de viaturas, cones, fitas e barreiras humanas para conter o fluxo de pessoas.',
+      'Cuidados com pegadas, marcas de pneus, manchas de sangue e vestígios frágeis.',
+      'Registro visual básico, quando autorizado por protocolo, sem invadir o trabalho pericial.'
+    ]
+  },
+  {
+    id: 5,
+    title: 'Módulo 5 — Por que só a Perícia pode tocar no corpo',
+    description: 'Fundamentos técnicos e legais da atuação pericial sobre o cadáver.',
+    content: [
+      'Diferença entre constatar óbito e prestar socorro em situações de urgência.',
+      'Como a posição original do corpo orienta a dinâmica do crime e a linha investigativa.',
+      'Impacto de movimentar o cadáver sobre a análise de manchas de sangue, trajetória de projéteis e sinais de defesa.',
+      'Responsabilidade funcional de quem desrespeita o limite técnico da perícia.'
+    ]
+  },
+  {
+    id: 6,
+    title: 'Módulo 6 — Papel do IML',
+    description: 'Do recolhimento do corpo ao laudo: o ciclo pericial.',
+    content: [
+      'Fluxo entre local de crime, remoção e recebimento no Instituto Médico Legal.',
+      'Exames realizados no IML: necropsia, exames complementares e documentação fotográfica.',
+      'Como o laudo tanatológico subsidia a investigação do DHPP.',
+      'Prazos, limitações técnicas e importância de laudos bem solicitados pelo delegado.'
+    ]
+  },
+  {
+    id: 7,
+    title: 'Módulo 7 — Como o DHPP monta uma investigação de homicídio',
+    description: 'Etapas da investigação desde o primeiro chamado até o indiciamento.',
+    content: [
+      'Levantamento preliminar no local e definição de hipóteses iniciais.',
+      'Coleta e análise de depoimentos, imagens, registros telefônicos e laudos periciais.',
+      'Construção de linha do tempo, dinâmica do crime e motivação provável.',
+      'Integração entre delegados, investigadores, escrivães e peritos oficiais.'
+    ]
+  },
+  {
+    id: 8,
+    title: 'Módulo 8 — Erros que destroem investigações',
+    description: 'O que nunca deve acontecer em um local de morte.',
+    content: [
+      'Exemplos de casos comprometidos por manipulação indevida de vestígios.',
+      'Impacto jurídico: nulidade de prova, absolvições e arquivamentos.',
+      'Como a falta de registro básico inviabiliza a reconstrução do fato.',
+      'Cultura de responsabilização: cada um responde pelos atos que pratica no local.'
+    ]
+  },
+  {
+    id: 9,
+    title: 'Módulo 9 — Atuação do DHPP em qualquer área',
+    description: 'Doutrina única, mesmo em comunidades ou áreas sensíveis.',
+    content: [
+      'Aplicação dos mesmos princípios de preservação em áreas de risco e comunidades.',
+      'Coordenação com unidades territoriais e forças de apoio tático.',
+      'Negociação de acesso ao local sem abrir mão da preservação de prova.',
+      'Respeito à população e firmeza técnica na condução da ocorrência.'
+    ]
+  },
+  {
+    id: 10,
+    title: 'Módulo 10 — Protocolo Operacional Padrão',
+    description: 'Transformando a doutrina em procedimento claro e repetível.',
+    content: [
+      'Passo a passo padronizado desde o primeiro acionamento até a entrega do caso.',
+      'Documentos mínimos que devem ser gerados em toda ocorrência de morte.',
+      'Comunicação entre DHPP, perícia, IML e Ministério Público.',
+      'Indicadores de qualidade para medir a eficácia da preservação de local.'
+    ]
+  },
+  {
+    id: 11,
+    title: 'Módulo 11 — Encerramento e mensagem final',
+    description: 'Fechamento doutrinário e reforço da cultura de preservação.',
+    content: [
+      'Síntese dos principais pontos do curso com foco no dia a dia de rua.',
+      'Reflexão sobre a responsabilidade de quem é o primeiro a chegar no local.',
+      'Mensagem final do DHPP: cada vestígio preservado é um passo rumo à verdade.',
+      'Compromisso ético: respeito às vítimas, às famílias e à sociedade.'
+    ]
+  }
+];
 
 const Home = () => {
-  const [wantedList, setWantedList] = useState([]);
-  const [arrestList, setArrestList] = useState([]);
-  
-  // Search & Filters
-  const [wantedSearch, setWantedSearch] = useState('');
-  const [wantedFilter, setWantedFilter] = useState('all'); // all, Alta, Média, Baixa
-  
-  // Modals
-  const [selectedWanted, setSelectedWanted] = useState(null);
-  const [selectedArrest, setSelectedArrest] = useState(null);
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [reportForm, setReportForm] = useState({
-    description: '',
-    location: '',
-    isAnonymous: true,
-    contact: ''
-  });
-  const [reportStatus, setReportStatus] = useState(null); // 'submitting', 'success', 'error'
-
-  const handleReportSubmit = async (e) => {
-    e.preventDefault();
-    setReportStatus('submitting');
-    
-    try {
-      const { error } = await supabase
-        .from('denuncias')
-        .insert([{
-          descricao: reportForm.description,
-          localizacao: reportForm.location,
-          contato: reportForm.isAnonymous ? 'Anônimo' : reportForm.contact,
-          status: 'Pendente',
-          created_at: new Date()
-        }]);
-
-      if (error) throw error;
-      
-      setReportStatus('success');
-      setReportForm({ description: '', location: '', isAnonymous: true, contact: '' });
-      setTimeout(() => {
-        setShowReportModal(false);
-        setReportStatus(null);
-      }, 2000);
-      
-    } catch (error) {
-      console.error('Erro ao enviar denúncia:', error);
-      setReportStatus('error');
-    }
-  };
-
-  const [stats, setStats] = useState({
-    arrests: 0,
-    wanted: 0,
-    cases: 0,
-    agents: 0
-  });
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [
-          { data: wantedData },
-          { data: arrestData },
-          { count: totalWanted },
-          { count: totalArrests },
-          { count: totalCases },
-          { count: totalAgents }
-        ] = await Promise.all([
-          // Otimização: Selecionar apenas campos necessários
-          supabase.from('procurados')
-            .select('id, nome, foto_principal, periculosidade, motivo, status')
-            .order('created_at', { ascending: false })
-            .limit(6),
-          supabase.from('prisoes')
-            .select('id, nome, foto_principal, observacoes, data_prisao, documento, artigo')
-            .order('created_at', { ascending: false })
-            .limit(6),
-          supabase.from('procurados').select('*', { count: 'exact', head: true }),
-          supabase.from('prisoes').select('*', { count: 'exact', head: true }),
-          supabase.from('investigacoes').select('*', { count: 'exact', head: true }).eq('status', 'Concluída'),
-          supabase.from('profiles').select('*', { count: 'exact', head: true })
-        ]);
-
-        setStats({
-          arrests: totalArrests || 0,
-          wanted: totalWanted || 0,
-          cases: totalCases || 0,
-          agents: totalAgents || 0
-        });
-
-        setWantedList((wantedData || []).map(item => ({
-          ...item,
-          name: item.nome,
-          image: item.foto_principal,
-          dangerLevel: item.periculosidade, // Adjust if column name is different
-          crime: item.motivo
-        })));
-
-        setArrestList((arrestData || []).map(item => ({
-          ...item,
-          name: item.nome,
-          image: item.foto_principal,
-          reason: item.observacoes,
-          date: item.data_prisao,
-          passport: item.documento,
-          articles: item.artigo
-        })));
-      } catch (error) {
-        console.error('Erro ao carregar dados públicos:', error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  // Filter Wanted List
-  const filteredWanted = wantedList.filter(person => {
-    const personName = person.name || '';
-    const personCrime = person.crime || '';
-    
-    const matchesSearch = personName.toLowerCase().includes(wantedSearch.toLowerCase()) || 
-                          personCrime.toLowerCase().includes(wantedSearch.toLowerCase());
-    const matchesFilter = wantedFilter === 'all' || (person.dangerLevel || person.status) === wantedFilter;
-    return matchesSearch && matchesFilter;
-  });
+  const [selectedModule, setSelectedModule] = useState(null);
 
   return (
-    <div className="space-y-16 pb-16">
-      {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-federal-900/20 z-0" />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-transparent to-slate-950 z-0" />
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/50 border border-federal-700/50 text-federal-300 text-xs font-medium uppercase tracking-wider mb-8 animate-fade-in-up">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            Sistema Operacional Ativo
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
-            <span className="text-federal-500">Policia Civil - FIVEM</span>
-          </h1>
-          
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Um sistema Operacional que elevará o nivel do seu RP
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link 
-              to="/join"
-              className="px-8 py-4 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-federal-900/20 flex items-center gap-2"
-            >
-              Quero Fazer Parte
-              <ChevronRight size={18} />
-            </Link>
-            <Link 
-              to="/rules"
-              className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all hover:-translate-y-1 flex items-center gap-2"
-            >
-              Ler Regulamento
-              <ChevronRight size={18} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard icon={Users} value={stats.arrests} label="Presos Detidos" color="blue" />
-          <StatCard icon={Siren} value={stats.wanted} label="Procurados" color="red" />
-          <StatCard icon={FileText} value={stats.cases} label="Casos Encerrados" color="emerald" />
-          <StatCard icon={Shield} value={stats.agents} label="Agentes Ativos" color="amber" />
-        </div>
-      </section>
-
-      {/* 🚨 SEÇÃO: PROCURADOS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-              <Siren className="text-red-500" size={32} />
-              Lista de Procurados
-            </h2>
-            <p className="text-slate-400 mt-2">Indivíduos com mandado de prisão ativo. Cuidado: Podem estar armados.</p>
-          </div>
-          
-          {/* Search & Filters */}
-          <div className="flex gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-              <input 
-                type="text" 
-                placeholder="Buscar procurado..." 
-                value={wantedSearch}
-                onChange={(e) => setWantedSearch(e.target.value)}
-                className="bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition-colors w-48 lg:w-64"
-              />
+    <div className="space-y-20 pb-20">
+      <section className="relative overflow-hidden bg-slate-950">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-federal-900" />
+        <div className="absolute inset-x-0 -top-32 h-64 bg-gradient-to-b from-federal-600/30 to-transparent blur-3xl" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 lg:py-28 flex flex-col lg:flex-row items-center gap-12">
+          <div className="flex-1 space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/60 border border-federal-700/70 text-federal-200 text-xs font-semibold uppercase tracking-[0.18em]">
+              <Shield size={16} className="text-federal-400" />
+              <span>Treinamento Oficial DHPP</span>
             </div>
-            <select 
-              value={wantedFilter}
-              onChange={(e) => setWantedFilter(e.target.value)}
-              className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition-colors"
-            >
-              <option value="all">Todos os Níveis</option>
-              <option value="Alta">Alta</option>
-              <option value="Média">Média</option>
-              <option value="Baixa">Baixa</option>
-              <option value="Extrema">Extrema</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredWanted.map((person) => (
-            <div key={person.id} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-red-500/50 transition-all group flex flex-col shadow-lg">
-              <div className="h-64 relative bg-slate-950">
-                {person.images?.proof1 || person.image ? (
-                  <img src={person.images?.proof1 || person.image} alt={person.name} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
-                ) : (
-                  <UserPlaceholder />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
-                <div className="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider animate-pulse shadow-lg">
-                  Procurado
-                </div>
-              </div>
-              
-              <div className="p-5 flex-1 flex flex-col">
-                <h3 className="text-lg font-bold text-white group-hover:text-red-400 transition-colors line-clamp-1">{person.name}</h3>
-                <div className="mt-3 space-y-2 mb-4 flex-1">
-                  <div>
-                    <span className="text-xs text-slate-500 uppercase font-bold">Crimes</span>
-                    <p className="text-xs text-slate-300 line-clamp-2">{person.crime || person.reason}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-slate-500 uppercase font-bold">Periculosidade</span>
-                    <div className="mt-1">
-                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                        ['Alta', 'Extrema'].includes(person.dangerLevel || person.status)
-                          ? 'bg-red-500/20 text-red-400' 
-                          : 'bg-amber-500/20 text-amber-400'
-                      }`}>
-                        {person.dangerLevel || person.status}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={() => setSelectedWanted(person)}
-                  className="w-full py-2 bg-slate-800 hover:bg-red-600/20 hover:text-red-400 text-slate-300 rounded-lg text-sm font-medium transition-all border border-transparent hover:border-red-500/50 flex items-center justify-center gap-2"
-                >
-                  <Eye size={16} />
-                  Ver Detalhes
-                </button>
-              </div>
-            </div>
-          ))}
-          {filteredWanted.length === 0 && (
-            <div className="col-span-full py-12 text-center text-slate-500 bg-slate-900/50 rounded-xl border border-slate-800/50">
-              Nenhum procurado encontrado com os filtros atuais.
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* 📢 BANNER DE DENÚNCIA */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-r from-federal-900 to-slate-900 border-l-4 border-red-500 rounded-r-xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none" />
-          <div className="relative z-10 flex items-start gap-4">
-            <div className="p-3 bg-red-500/20 rounded-full text-red-500 shrink-0">
-              <AlertTriangle size={32} />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-white mb-1">Você tem informações?</h3>
-              <p className="text-slate-300">Se você viu algum desses indivíduos ou tem informações sobre seu paradeiro, denuncie anonimamente.</p>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white">
+              O sucesso da investigação começa na primeira viatura.
+            </h1>
+            <p className="text-lg text-slate-300 max-w-2xl">
+              Curso oficial de capacitação em Preservação de Local de Morte, focado integralmente no DHPP
+              e na doutrina correta de atendimento inicial em ocorrências de morte violenta ou suspeita.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a
+                href="#estrutura-curso"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-federal-600 hover:bg-federal-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-federal-900/40 transition-transform hover:-translate-y-0.5"
+              >
+                Acessar Conteúdo do Curso
+              </a>
+              <a
+                href="#regra-de-ouro"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-800 text-slate-100 font-semibold text-sm tracking-wide transition-colors"
+              >
+                Ver Regra de Ouro
+              </a>
             </div>
           </div>
-          <button 
-            onClick={() => setShowReportModal(true)}
-            className="relative z-10 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg shadow-lg shadow-red-900/20 transition-all hover:-translate-y-0.5 whitespace-nowrap"
-          >
-            Denunciar Agora
-          </button>
-        </div>
-      </section>
-
-      {/* ⛓️ SEÇÃO: PRESOS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-            <Users className="text-federal-500" size={32} />
-            Últimas Prisões
-          </h2>
-          <p className="text-slate-400 mt-2">Registro público de detenções realizadas pela corporação.</p>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-950 border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
-                  <th className="p-4 font-bold">Detento</th>
-                  <th className="p-4 font-bold hidden md:table-cell">Motivo</th>
-                  <th className="p-4 font-bold">Data da Prisão</th>
-                  <th className="p-4 font-bold text-center">Status</th>
-                  <th className="p-4 font-bold text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                {arrestList.map((arrest) => (
-                  <tr key={arrest.id} className="hover:bg-slate-800/50 transition-colors group">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700">
-                          {arrest.image || arrest.images?.face ? (
-                            <img 
-                              src={arrest.image || arrest.images?.face} 
-                              alt={arrest.name} 
-                              loading="lazy"
-                              decoding="async"
-                              className="w-full h-full object-cover" 
-                            />
-                          ) : (
-                            <User size={18} className="text-slate-500" />
-                          )}
-                        </div>
-                        <span className="font-bold text-white">{arrest.name}</span>
-                      </div>
-                    </td>
-                    <td className="p-4 hidden md:table-cell">
-                      <span className="text-sm text-slate-300">{arrest.reason}</span>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2 text-sm text-slate-300">
-                        <Calendar size={14} className="text-slate-500" />
-                        {arrest.date && !isNaN(new Date(arrest.date).getTime()) 
-                          ? format(new Date(arrest.date), 'dd/MM/yyyy', { locale: ptBR })
-                          : 'Data desconhecida'}
-                      </div>
-                    </td>
-                    <td className="p-4 text-center">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-500 border border-green-500/20">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                        Preso
-                      </span>
-                    </td>
-                    <td className="p-4 text-right">
-                      <button 
-                        onClick={() => setSelectedArrest(arrest)}
-                        className="text-slate-400 hover:text-white transition-colors p-2 hover:bg-slate-800 rounded-lg"
-                        title="Ver Detalhes"
-                      >
-                        <Eye size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {arrestList.length === 0 && (
-                  <tr>
-                    <td colSpan="5" className="p-8 text-center text-slate-500">
-                      Nenhum registro de prisão encontrado.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-
-
-      {/* MODAL: DENÚNCIA */}
-      {showReportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setShowReportModal(false)}>
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl animate-fade-in-up" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950 rounded-t-2xl">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <AlertTriangle className="text-red-500" size={24} />
-                Denúncia Anônima
-              </h3>
-              <button onClick={() => setShowReportModal(false)} className="text-slate-400 hover:text-white transition-colors">
-                <X size={24} />
-              </button>
-            </div>
-            
-            <div className="p-6">
-              {reportStatus === 'success' ? (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Check size={32} className="text-green-500" />
-                  </div>
-                  <h4 className="text-xl font-bold text-white mb-2">Denúncia Enviada!</h4>
-                  <p className="text-slate-400">Sua denúncia foi registrada com sucesso e será analisada pela equipe. Obrigado pela colaboração.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleReportSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-1">Localização / Endereço *</label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 text-slate-500" size={18} />
-                      <input 
-                        required
-                        type="text" 
-                        value={reportForm.location}
-                        onChange={e => setReportForm({...reportForm, location: e.target.value})}
-                        placeholder="Ex: Rua das Flores, 123 - Centro"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-red-500 transition-colors"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-1">Descrição do Fato *</label>
-                    <textarea 
-                      required
-                      value={reportForm.description}
-                      onChange={e => setReportForm({...reportForm, description: e.target.value})}
-                      placeholder="Descreva o que você viu com o máximo de detalhes possível..."
-                      rows="4"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-4 text-white focus:outline-none focus:border-red-500 transition-colors resize-none"
-                    ></textarea>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="checkbox" 
-                      id="anonymous"
-                      checked={reportForm.isAnonymous}
-                      onChange={e => setReportForm({...reportForm, isAnonymous: e.target.checked})}
-                      className="rounded border-slate-700 bg-slate-800 text-red-600 focus:ring-red-500"
-                    />
-                    <label htmlFor="anonymous" className="text-sm text-slate-300">Desejo permanecer anônimo</label>
-                  </div>
-
-                  {!reportForm.isAnonymous && (
-                    <div className="animate-fade-in-up">
-                      <label className="block text-sm font-medium text-slate-400 mb-1">Seu Contato (Opcional)</label>
-                      <input 
-                        type="text" 
-                        value={reportForm.contact}
-                        onChange={e => setReportForm({...reportForm, contact: e.target.value})}
-                        placeholder="Email ou Telefone"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-red-500 transition-colors"
-                      />
-                    </div>
-                  )}
-
-                  <div className="pt-4">
-                    <button 
-                      type="submit" 
-                      disabled={reportStatus === 'submitting'}
-                      className="w-full py-3 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg shadow-lg shadow-red-900/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
-                    >
-                      {reportStatus === 'submitting' ? 'Enviando...' : 'Enviar Denúncia'}
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: PROCURADO */}
-      {selectedWanted && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedWanted(null)}>
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl shadow-2xl animate-fade-in-up overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="relative h-32 bg-slate-950 flex items-center justify-center overflow-hidden">
-               <div className="absolute inset-0 bg-red-900/20" />
-               <div className="relative z-10 flex flex-col items-center">
-                 <div className="w-24 h-24 rounded-full border-4 border-slate-900 shadow-xl overflow-hidden bg-slate-800 -mb-12">
-                    {selectedWanted.images?.proof1 || selectedWanted.image ? (
-                      <img src={selectedWanted.images?.proof1 || selectedWanted.image} alt={selectedWanted.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <UserPlaceholder />
-                    )}
-                 </div>
-               </div>
-               <button onClick={() => setSelectedWanted(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-900/50 p-1 rounded-full backdrop-blur-sm transition-colors">
-                 <X size={20} />
-               </button>
-            </div>
-            
-            <div className="pt-14 pb-8 px-8 text-center">
-              <div className="inline-block bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-2">
-                Procurado
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{selectedWanted.name}</h3>
-              <p className="text-red-400 font-mono text-sm mb-6">Nível de Periculosidade: {selectedWanted.dangerLevel || selectedWanted.status}</p>
-              
-              <div className="grid grid-cols-2 gap-4 text-left bg-slate-950 p-6 rounded-xl border border-slate-800">
-                <div>
-                  <span className="text-xs text-slate-500 uppercase font-bold block mb-1">Motivo / Crimes</span>
-                  <p className="text-sm text-slate-200">{selectedWanted.crime || selectedWanted.reason}</p>
-                </div>
-                <div>
-                  <span className="text-xs text-slate-500 uppercase font-bold block mb-1">Recompensa</span>
-                  <p className="text-sm text-emerald-400 font-bold">{selectedWanted.reward === 'A definir' ? 'A definir' : `R$ ${selectedWanted.reward}`}</p>
-                </div>
-              </div>
-
-              <div className="mt-6 flex justify-center">
-                <button className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
-                  <AlertTriangle size={16} className="text-red-500" />
-                  Reportar Avistamento
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: PRESO */}
-      {selectedArrest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedArrest(null)}>
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl shadow-2xl animate-fade-in-up overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Users className="text-federal-500" size={20} />
-                Detalhes da Detenção
-              </h3>
-              <button onClick={() => setSelectedArrest(null)} className="text-slate-400 hover:text-white transition-colors">
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="p-6">
-              <div className="flex gap-6">
-                <div className="w-1/3">
-                  <div className="aspect-square bg-slate-950 rounded-xl border border-slate-800 overflow-hidden">
-                    {selectedArrest.image || selectedArrest.images?.face ? (
-                      <img src={selectedArrest.image || selectedArrest.images.face} alt={selectedArrest.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
-                        <User size={32} />
-                        <span className="text-[10px] font-bold uppercase mt-2">Sem Foto</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-2 text-center">
-                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/10 text-green-500 border border-green-500/20 uppercase tracking-wider">
-                      Preso
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="flex-1 space-y-4">
-                  <div>
-                    <h2 className="text-xl font-bold text-white">{selectedArrest.name}</h2>
-                    <p className="text-sm text-slate-400">Doc: {selectedArrest.passport}</p>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <span className="text-xs text-slate-500 uppercase font-bold block">Motivo da Prisão</span>
-                      <p className="text-sm text-slate-200">{selectedArrest.reason}</p>
+          <div className="flex-1 w-full max-w-md lg:max-w-lg">
+            <div className="relative rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-federal-900 shadow-2xl overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.35),transparent_60%)]" />
+              <div className="relative p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-slate-900 border border-federal-700 flex items-center justify-center">
+                      <GraduationCap className="text-federal-300" size={26} />
                     </div>
                     <div>
-                      <span className="text-xs text-slate-500 uppercase font-bold block">Artigos</span>
-                      <p className="text-sm text-slate-200">{selectedArrest.articles}</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-slate-500 uppercase font-bold block">Data da Ocorrência</span>
-                      <p className="text-sm text-slate-200">
-                        {selectedArrest.date && !isNaN(new Date(selectedArrest.date).getTime())
-                          ? format(new Date(selectedArrest.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
-                          : 'Data não informada'}
+                      <p className="text-xs uppercase tracking-[0.18em] text-slate-400 font-semibold">
+                        Curso Operacional
+                      </p>
+                      <p className="text-sm font-medium text-slate-100">
+                        Preservação de Local de Morte
                       </p>
                     </div>
                   </div>
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold border border-emerald-500/30">
+                    Focado no DHPP
+                  </span>
+                </div>
+                <div className="mt-4 space-y-3 text-sm text-slate-300">
+                  <p>
+                    Visual sério, policial e investigativo, com ênfase em cenas de crime, isolamento de área e
+                    integração entre DHPP, perícia e IML.
+                  </p>
+                  <p>
+                    Todo o conteúdo é construído para a realidade do atendimento inicial: a primeira viatura,
+                    o primeiro policial, o primeiro contato com o local de morte.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs text-slate-300 pt-2 border-t border-slate-800">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-slate-500 font-semibold uppercase tracking-wide">Foco</span>
+                    <span>DHPP e preservação de local de morte.</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-slate-500 font-semibold uppercase tracking-wide">Público-alvo</span>
+                    <span>Policiais e agentes que chegam primeiro ao local.</span>
+                  </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="dhpp" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-10 items-start">
+          <div className="space-y-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white flex items-center gap-3">
+              <Shield size={30} className="text-federal-400" />
+              O que é o DHPP
+            </h2>
+            <p className="text-slate-300 text-base leading-relaxed">
+              O Departamento de Homicídios e Proteção à Pessoa é a unidade especializada responsável por apurar
+              mortes violentas, suspeitas e casos em que a causa não é imediatamente clara. É o setor que conduz
+              investigações complexas, sensíveis e de alto impacto social.
+            </p>
+            <p className="text-slate-300 text-base leading-relaxed">
+              Sua missão é reconstruir, com rigor técnico e respeito às vítimas, o que aconteceu em cada local de
+              morte, garantindo que nenhuma prova seja perdida e que cada investigação tenha base sólida em laudos
+              periciais e evidências qualificadas.
+            </p>
+          </div>
+          <div className="space-y-6">
+            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
+              <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-[0.18em] mb-3">
+                Ocorrências típicas do DHPP
+              </h3>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-200">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
+                  Homicídio
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
+                  Latrocínio
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
+                  Morte suspeita
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
+                  Encontro de cadáver
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
+                  Morte de causa indeterminada
+                </li>
+              </ul>
+            </div>
+            <div className="bg-federal-900/60 border border-federal-700/60 rounded-2xl p-5">
+              <p className="text-xs font-semibold text-federal-300 uppercase tracking-[0.2em] mb-2">
+                Frase de referência
+              </p>
+              <p className="text-lg font-semibold text-federal-50">
+                “Descobrir o que aconteceu, como aconteceu, por que aconteceu e quem fez.”
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="regra-de-ouro"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        <div className="rounded-3xl border border-red-500/40 bg-gradient-to-br from-red-900/40 via-slate-950 to-slate-950 shadow-xl overflow-hidden">
+          <div className="px-6 sm:px-8 py-6 border-b border-red-500/40 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-red-600/20 border border-red-500/60 flex items-center justify-center">
+              <AlertTriangle className="text-red-300" size={22} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-200">
+                Regra de Ouro do Local de Morte
+              </p>
+              <p className="text-sm text-red-100">
+                Uma vez quebrada, a prova dificilmente volta.
+              </p>
+            </div>
+          </div>
+          <div className="px-6 sm:px-8 py-8 space-y-6">
+            <div className="space-y-2">
+              <p className="text-lg font-bold text-white">
+                Encontrou alguém caído?
+              </p>
+              <ul className="space-y-1 text-sm font-semibold text-red-100">
+                <li>NÃO TOQUE EM NADA.</li>
+                <li>NÃO CONFIRA PULSO.</li>
+                <li>NÃO VIRE O CORPO.</li>
+                <li>PRIMEIRA COISA: CHAME A PERÍCIA E O DHPP.</li>
+              </ul>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6 text-sm text-slate-100">
+              <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                  Ato técnico
+                </p>
+                <p className="text-slate-200">
+                  Declarar óbito, manusear o corpo e interpretar sinais vitais são atos técnicos que
+                  pertencem à equipe de saúde e aos peritos oficiais.
+                </p>
+              </div>
+              <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                  Todo local é potencial cena de crime
+                </p>
+                <p className="text-slate-200">
+                  Mesmo que pareça um mal súbito, queda ou acidente, o local deve ser tratado como
+                  possível cena de crime até conclusão técnica em sentido contrário.
+                </p>
+              </div>
+              <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                  Responsabilidade profissional
+                </p>
+                <p className="text-slate-200">
+                  O policial que altera o local assume o risco de comprometer a investigação e a
+                  responsabilização do autor.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="estrutura-curso"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white flex items-center gap-3">
+              <GraduationCap size={30} className="text-federal-400" />
+              Estrutura do Curso em Módulos
+            </h2>
+            <p className="text-slate-300 mt-3 max-w-2xl">
+              Cada módulo aprofunda uma etapa crítica da preservação de local de morte e da atuação do
+              DHPP, com foco em doutrina correta, casos reais e aplicação prática em serviço.
+            </p>
+          </div>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {modules.map((module) => (
+            <button
+              key={module.id}
+              type="button"
+              onClick={() => setSelectedModule(module)}
+              className="group text-left bg-slate-900/70 border border-slate-800 rounded-2xl p-5 hover:border-federal-500/70 hover:bg-slate-900 transition-all flex flex-col gap-3"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-federal-600/20 text-federal-300 text-xs font-bold border border-federal-500/40">
+                  {String(module.id).padStart(2, '0')}
+                </span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 group-hover:text-federal-300">
+                  Módulo do Curso
+                </span>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-white group-hover:text-federal-200">
+                  {module.title}
+                </h3>
+                <p className="text-xs text-slate-300">
+                  {module.description}
+                </p>
+              </div>
+              <div className="mt-2 text-[11px] font-semibold text-federal-300 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-federal-400 group-hover:bg-federal-200" />
+                Abrir conteúdo detalhado
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
+          <div className="space-y-4">
+            <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+              <Microscope size={28} className="text-federal-400" />
+              Importância da Perícia e do IML
+            </h2>
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+              A perícia de local e o Instituto Médico Legal são pilares da investigação de homicídios.
+              Sem laudos técnicos consistentes, a narrativa dos fatos fica frágil e vulnerável à contestação
+              judicial.
+            </p>
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+              A perícia examina cena, vestígios, trajetórias, manchas e dispositivos, enquanto o IML
+              responde ao que o corpo tem a dizer: causa da morte, meio empregado, tempo decorrido e sinais
+              compatíveis com defesa, tortura ou execução.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.18em] mb-2">
+                O que a perícia faz
+              </p>
+              <ul className="space-y-1.5 text-xs text-slate-200">
+                <li>Analisa a cena de forma técnica e documentada.</li>
+                <li>Registra vestígios, manchas, pegadas e trajetórias.</li>
+                <li>Gera laudos que sustentam a linha investigativa do DHPP.</li>
+              </ul>
+            </div>
+            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.18em] mb-2">
+                O que o IML faz
+              </p>
+              <ul className="space-y-1.5 text-xs text-slate-200">
+                <li>Realiza necropsia e exames complementares.</li>
+                <li>Define causa, meio e circunstâncias prováveis da morte.</li>
+                <li>Fecha o ciclo pericial com laudo que dialoga com o local.</li>
+              </ul>
+            </div>
+            <div className="bg-federal-900/70 border border-federal-700/60 rounded-2xl p-5 sm:col-span-2">
+              <p className="text-xs font-semibold text-federal-300 uppercase tracking-[0.18em] mb-1">
+                Conexão entre laudo e investigação
+              </p>
+              <p className="text-xs sm:text-sm text-federal-50">
+                Quando local, perícia e IML trabalham de forma integrada, o DHPP consegue reconstruir a
+                dinâmica do crime com precisão e oferecer ao Judiciário um caso sólido, técnico e robusto.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-3xl bg-slate-950 border border-red-600/40 shadow-xl p-6 sm:p-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-600/20 border border-red-500/60 flex items-center justify-center">
+                <Skull size={22} className="text-red-300" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-red-200 uppercase tracking-[0.2em]">
+                  Erros graves
+                </p>
+                <p className="text-sm text-red-100">
+                  Condutas que quebram a cadeia de custódia e comprometem o trabalho do DHPP.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+              <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
+              <div className="text-xs text-slate-200">
+                <p className="font-semibold">Mexer no corpo</p>
+                <p>Mudar posição, erguer cabeça ou conferir bolsos destrói a leitura técnica da cena.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+              <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
+              <div className="text-xs text-slate-200">
+                <p className="font-semibold">Recolher cápsulas ou projéteis</p>
+                <p>Retirar vestígios sem técnica rompe a cadeia de custódia e fragiliza o laudo balístico.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+              <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
+              <div className="text-xs text-slate-200">
+                <p className="font-semibold">“Organizar” o local</p>
+                <p>Arrastar móveis, limpar sangue ou alinhar objetos destrói a narrativa original do crime.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+              <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
+              <div className="text-xs text-slate-200">
+                <p className="font-semibold">Mudar objetos de lugar</p>
+                <p>Armas, celulares e pertences devem permanecer exatamente onde foram encontrados.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+              <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
+              <div className="text-xs text-slate-200">
+                <p className="font-semibold">Deixar curiosos entrarem</p>
+                <p>Trânsito desnecessário contamina vestígios, pisa em marcas e espalha informações.</p>
+              </div>
+            </div>
+          </div>
+          <p className="text-sm font-semibold text-red-100 mt-2">
+            “Isso não é erro pequeno. Isso é destruir prova.”
+          </p>
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-[1.3fr_1fr] gap-8 items-start">
+          <div className="bg-slate-950 border border-slate-800 rounded-3xl p-6 sm:p-8">
+            <div className="flex items-center gap-3 mb-4">
+              <ClipboardCheck size={24} className="text-federal-400" />
+              <h2 className="text-2xl font-bold text-white">
+                Checklist Operacional
+              </h2>
+            </div>
+            <p className="text-sm text-slate-300 mb-4">
+              Sequência mínima de condutas para quem chega primeiro em um possível local de morte.
+            </p>
+            <div className="space-y-3 text-sm text-slate-100">
+              <div className="flex items-start gap-3">
+                <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
+                <span>Viu alguém caído: tratou o local como potencial cena de crime.</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
+                <span>Não toquei no corpo em nenhuma hipótese.</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
+                <span>Isolei o local estabelecendo perímetro seguro.</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
+                <span>Chamei a perícia e o DHPP imediatamente.</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
+                <span>Preservei tudo até a chegada das equipes especializadas.</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
+                <span>Identifiquei e protegi testemunhas-chave para posterior oitiva.</span>
+              </div>
+            </div>
+          </div>
+          <div className="bg-slate-950 border border-federal-700/60 rounded-3xl p-6 sm:p-8 flex flex-col justify-between">
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Gavel size={22} className="text-federal-400" />
+                Encerramento
+              </h2>
+              <p className="text-sm text-slate-200">
+                Este curso foi desenhado para que cada policial, em qualquer área, compreenda a
+                gravidade de um local de morte e o impacto direto de suas ações sobre a verdade dos fatos.
+              </p>
+            </div>
+            <p className="mt-6 text-base font-semibold text-federal-50">
+              “O DHPP só consegue trabalhar bem quando ninguém mexe em nada.”
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {selectedModule && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-6 sm:px-8 py-4 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-federal-600/20 border border-federal-500/60 flex items-center justify-center">
+                  <GraduationCap size={22} className="text-federal-200" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]">
+                    Conteúdo do Módulo
+                  </p>
+                  <p className="text-sm font-semibold text-white">
+                    {selectedModule.title}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedModule(null)}
+                className="text-slate-400 hover:text-white text-sm font-semibold"
+              >
+                Fechar
+              </button>
+            </div>
+            <div className="px-6 sm:px-8 py-6 space-y-4">
+              <p className="text-sm text-slate-300">
+                {selectedModule.description}
+              </p>
+              <ul className="space-y-2 text-sm text-slate-200">
+                {selectedModule.content.map((item, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="mt-1 w-1.5 h-1.5 rounded-full bg-federal-400" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
@@ -615,3 +604,4 @@ const Home = () => {
 };
 
 export default Home;
+
