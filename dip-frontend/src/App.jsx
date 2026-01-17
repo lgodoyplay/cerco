@@ -7,7 +7,8 @@ import SessionMonitorComponent from './components/SessionMonitor';
 import PublicLayout from './components/PublicLayout';
 import PrivateLayout from './components/PrivateLayout';
 import ComingSoon from './components/ComingSoon';
-import Home from './pages/public/Home'; // Eager load Home for faster initial render
+import Home from './pages/public/Home'; // Curso DHPP
+import Landing from './pages/public/Landing';
 
 import { lazyImport } from './utils/lazyImport';
 import { routeLoaders } from './routes/routeLoaders';
@@ -97,7 +98,7 @@ function App() {
             <Routes>
             {/* Public Routes */}
           <Route element={<PublicLayout />}>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Landing />} />
             <Route path="/curso-dhpp" element={<Home />} />
             <Route path="/rules" element={<Rules />} />
             <Route path="/join" element={<HowToJoin />} />
