@@ -1,6 +1,51 @@
-import { Shield, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, AlertTriangle, Megaphone, MapPin, Phone, Send, CheckCircle } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 const Landing = () => {
+  const [reportForm, setReportForm] = useState({
+    descricao: '',
+    localizacao: '',
+    contato: ''
+  });
+  const [reportStatus, setReportStatus] = useState('idle');
+  const [reportError, setReportError] = useState('');
+
+  const isReportValid = () => {
+    return reportForm.descricao.trim().length > 0;
+  };
+
+  const handleReportChange = (e) => {
+    const { name, value } = e.target;
+    setReportForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleReportSubmit = async (e) => {
+    e.preventDefault();
+    if (!isReportValid() || reportStatus === 'loading') return;
+
+    setReportStatus('loading');
+    setReportError('');
+
+    try {
+      const { error } = await supabase.from('denuncias').insert([
+        {
+          descricao: reportForm.descricao,
+          localizacao: reportForm.localizacao || null,
+          contato: reportForm.contato || null
+        }
+      ]);
+
+      if (error) throw error;
+
+      setReportStatus('success');
+      setReportForm({ descricao: '', localizacao: '', contato: '' });
+    } catch (err) {
+      setReportStatus('error');
+      setReportError('Ocorreu um erro ao registrar sua denúncia. Tente novamente em instantes.');
+    }
+  };
+
   return (
     <div className="bg-slate-950">
       <section className="relative overflow-hidden border-b border-slate-900">
@@ -112,7 +157,137 @@ const Landing = () => {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-red-500/40 bg-gradient-to-br from-red-900/30 via-slate-950 to-slate-950 shadow-xl overflow-hidden">
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 shadow-xl overflow-hidden">
+            <div className="px-6 sm:px-8 py-6 border-b border-slate-800 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-federal-600/20 border border-federal-500/60 flex items-center justify-center">
+                <Megaphone className="text-federal-200" size={22} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-federal-200">
+                  Denúncia Anônima
+                </p>
+                <p className="text-sm text-slate-100">
+                  Registre informações importantes sem se identificar.
+                </p>
+              </div>
+            </div>
+            <form onSubmit={handleReportSubmit} className="px-6 sm:px-8 py-6 space-y-4">
+              {reportStatus === 'success' && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-900/40 border border-emerald-500/40 text-emerald-100 text-sm">
+                  <CheckCircle size={18} />
+                  <span>Denúncia registrada com sucesso. Ela será encaminhada para análise.</span>
+                </div>
+              )}
+              {reportStatus === 'error' && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-red-900/40 border border-red-500/40 text-red-100 text-sm">
+                  <AlertTriangle size={18} />
+                  <span>{reportError}</span>
+                </div>
+              )}
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-[0.18em]">
+                  Descrição da Denúncia
+                </label>
+                <textarea
+                  name="descricao"
+                  value={reportForm.descricao}
+                  onChange={handleReportChange}
+                  rows={4}
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none resize-none text-sm"
+                  placeholder="Conte o que está acontecendo, quem está envolvido, horários, veículos, locais próximos..."
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-[0.18em]">
+                  Local aproximado
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3.5 text-slate-600" size={18} />
+                  <input
+                    type="text"
+                    name="localizacao"
+                    value={reportForm.localizacao}
+                    onChange={handleReportChange}
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none text-sm"
+                    placeholder="Bairro, rua ou ponto de referência (opcional)"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-[0.18em]">
+                  Contato para retorno
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3.5 text-slate-600" size={18} />
+                  <input
+                    type="text"
+                    name="contato"
+                    value={reportForm.contato}
+                    onChange={handleReportChange}
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none text-sm"
+                    placeholder="Telefone ou outro contato (opcional)"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Informe um contato apenas se desejar que a equipe possa retornar para tirar dúvidas.
+                </p>
+              </div>
+              <div className="flex items-center justify-end pt-2">
+                <button
+                  type="submit"
+                  disabled={!isReportValid() || reportStatus === 'loading'}
+                  className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    isReportValid() && reportStatus !== 'loading'
+                      ? 'bg-federal-600 hover:bg-federal-500 text-white shadow-lg shadow-federal-900/50 hover:-translate-y-0.5'
+                      : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-60'
+                  }`}
+                >
+                  {reportStatus === 'loading' ? (
+                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Send size={16} />
+                  )}
+                  <span>
+                    {reportStatus === 'loading' ? 'Enviando...' : 'Enviar Denúncia'}
+                  </span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div className="rounded-3xl border border-red-500/40 bg-gradient-to-br from-red-900/30 via-slate-950 to-slate-950 shadow-xl overflow-hidden">
+            <div className="px-6 sm:px-8 py-6 border-b border-red-500/40 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-600/20 border border-red-500/60 flex items-center justify-center">
+                <AlertTriangle className="text-red-300" size={22} />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-200">
+                  Aviso Importante
+                </p>
+                <p className="text-sm text-red-100">
+                  Use este canal apenas para denúncias responsáveis.
+                </p>
+              </div>
+            </div>
+            <div className="px-6 sm:px-8 py-6 space-y-3 text-sm text-slate-200">
+              <p>
+                Descreva fatos reais, evitando acusações infundadas ou de cunho pessoal. Toda denúncia
+                pode gerar deslocamento de equipes e abertura de investigações.
+              </p>
+              <p>
+                Sempre que houver risco imediato à vida, acione também os canais de emergência do servidor
+                ou plataforma em que você está jogando.
+              </p>
+              <p className="text-slate-400 text-xs">
+                Mesmo sendo um ambiente de jogo (RP), buscamos simular com respeito a rotina policial.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 rounded-3xl border border-red-500/40 bg-gradient-to-br from-red-900/30 via-slate-950 to-slate-950 shadow-xl overflow-hidden">
           <div className="px-6 sm:px-8 py-6 border-b border-red-500/40 flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-red-600/20 border border-red-500/60 flex items-center justify-center">
               <AlertTriangle className="text-red-300" size={22} />
@@ -144,4 +319,3 @@ const Landing = () => {
 };
 
 export default Landing;
-
