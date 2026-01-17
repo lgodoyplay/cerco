@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
-import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
+import { generateArrestPDF } from '../../utils/pdfGenerator';
 
 const ArrestList = () => {
   const { user } = useAuth();
@@ -64,7 +64,7 @@ const ArrestList = () => {
 
   const handleDownloadReport = async (arrest) => {
     try {
-      await generateProfessionalPDF(arrest, user, templates?.arrest, 'arrest');
+      await generateArrestPDF(arrest, user, templates?.arrest);
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
       alert("Erro ao gerar PDF de prisão.");

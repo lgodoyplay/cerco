@@ -4,7 +4,7 @@ import { Search, Filter, AlertTriangle, MoreVertical, ShieldAlert, Eye, FileText
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
-import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
+import { generateWantedPDF } from '../../utils/pdfGenerator';
 
 const WantedList = () => {
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ const WantedList = () => {
 
   const handleGenerateFile = async (person) => {
     try {
-      await generateProfessionalPDF(person, user, templates?.wanted, 'wanted');
+      await generateWantedPDF(person, user, templates?.wanted);
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
       alert("Erro ao gerar PDF do procurado.");

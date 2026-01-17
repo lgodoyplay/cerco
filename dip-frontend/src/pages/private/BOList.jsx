@@ -6,7 +6,7 @@ import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
-import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
+import { generateBOReportPDF } from '../../utils/pdfGenerator';
 
 const BOList = () => {
   const navigate = useNavigate();
@@ -53,7 +53,7 @@ const BOList = () => {
 
   const handlePrint = async (bo) => {
     try {
-      await generateProfessionalPDF(bo, user, templates?.bo, 'bo');
+      await generateBOReportPDF(bo, user, templates?.bo);
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
       alert("Erro ao gerar PDF do BO.");

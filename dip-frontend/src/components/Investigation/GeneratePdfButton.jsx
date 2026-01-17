@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, Loader2, Download } from 'lucide-react';
-import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
+import { generateInvestigationPDF } from '../../utils/pdfGenerator';
 import { useSettings } from '../../hooks/useSettings';
 
 const GeneratePdfButton = ({ investigation, user, className }) => {
@@ -10,16 +10,13 @@ const GeneratePdfButton = ({ investigation, user, className }) => {
     const handleGenerate = async () => {
         setIsGenerating(true);
         try {
-            // Pequeno delay para feedback visual
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
             // Garantir que user tenha dados mínimos se vier vazio
             const currentUser = user || {
                 nome: 'Usuário do Sistema',
                 badge: 'N/A'
             };
 
-            await generateProfessionalPDF(investigation, currentUser, templates?.investigation);
+            await generateInvestigationPDF(investigation, currentUser);
         } catch (error) {
             console.error(error);
         } finally {

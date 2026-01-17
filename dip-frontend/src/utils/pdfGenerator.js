@@ -287,3 +287,399 @@ export const generateInvestigationPDF = (investigation, user) => {
 
   doc.save(`Inquerito_Policial_${investigation.id}.pdf`);
 };
+
+function fillTemplate(templateStr, variables) {
+  if (!templateStr) return null;
+  let text = templateStr;
+  const source = variables || {};
+  Object.keys(source).forEach((key) => {
+    const value = source[key];
+    const safe = value === undefined || value === null ? "" : String(value);
+    text = text.replace(new RegExp(key, "g"), safe);
+  });
+  const cleaned = text.trim();
+  if (!cleaned) return null;
+  return cleaned;
+}
+
+export const generateBOReportPDF = (bo, user, templateStr) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginTop = 30;
+  const marginLeft = 30;
+  const marginRight = 20;
+  const marginBottom = 20;
+  let yPos = marginTop;
+
+  const fontNormal = "times";
+  const fontBold = "times";
+  const fontSizeBody = 12;
+  const fontSizeTitle = 14;
+
+  const drawHeader = () => {
+    doc.setFont(fontBold, "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text("REPÚBLICA FEDERATIVA DO BRASIL", pageWidth / 2, 20, { align: "center" });
+    doc.text("MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA", pageWidth / 2, 25, { align: "center" });
+    doc.text("POLICIA CIVIL", pageWidth / 2, 30, { align: "center" });
+    doc.setLineWidth(0.5);
+    doc.line(marginLeft, 40, pageWidth - marginRight, 40);
+  };
+
+  const drawFooter = (pageNumber, totalPages) => {
+    doc.setFont(fontNormal, "normal");
+    doc.setFontSize(10);
+    const footerText = `BO Nº ${bo.id || ""}`;
+    doc.text(footerText, marginLeft, pageHeight - 15);
+    doc.text(`Página ${pageNumber} de ${totalPages}`, pageWidth - marginRight, pageHeight - 15, { align: "right" });
+  };
+
+  const checkPageBreak = (heightNeeded) => {
+    if (yPos + heightNeeded > pageHeight - marginBottom) {
+      doc.addPage();
+      drawHeader();
+      yPos = marginTop + 20;
+      return true;
+    }
+    return false;
+  };
+
+  drawHeader();
+  yPos = marginTop + 30;
+
+  doc.setFont(fontBold, "bold");
+  doc.setFontSize(fontSizeTitle);
+  doc.text("BOLETIM DE OCORRÊNCIA", pageWidth / 2, yPos, { align: "center" });
+  yPos += 10;
+
+  const docRef = `BO - ${bo.id}/${new Date().getFullYear()}`;
+  doc.setFont(fontNormal, "normal");
+  doc.setFontSize(fontSizeBody);
+  doc.text(docRef, pageWidth / 2, yPos, { align: "center" });
+  yPos += 20;
+
+  doc.setFont(fontBold, "bold");
+  doc.text("1. DADOS DA OCORRÊNCIA", marginLeft, yPos);
+  yPos += 8;
+
+  doc.setFont(fontNormal, "normal");
+  const width = pageWidth - (marginLeft + marginRight);
+  const ocorrenciaText = [
+    `Local: ${bo.localizacao || "Não informado"}`,
+    `Comunicante: ${bo.comunicante || "Anônimo"}`,
+    `Data/Hora: ${bo.created_at ? new Date(bo.created_at).toLocaleString("pt-BR") : "Não informada"}`
+  ].join("\n");
+  let lines = doc.splitTextToSize(ocorrenciaText, width);
+  doc.text(lines, marginLeft, yPos);
+  yPos += lines.length * 6 + 12;
+
+  const variables = {
+    "{relato_fatos}": bo.descricao || "",
+    "{natureza_ocorrencia}": "Ocorrência Policial",
+    "{nome_comunicante}": bo.comunicante || "Anônimo",
+    "{local_prisao}": bo.localizacao || "Não informado",
+    "{assinatura_agente}": (user && (user.nome || user.username)) || "Agente de Plantão"
+  };
+
+  const templateText = fillTemplate(templateStr, variables);
+  const relato = templateText || bo.descricao || "Sem descrição.";
+
+  checkPageBreak(40);
+  doc.setFont(fontBold, "bold");
+  doc.text("2. RELATO DOS FATOS", marginLeft, yPos);
+  yPos += 8;
+
+  doc.setFont(fontNormal, "normal");
+  lines = doc.splitTextToSize(relato, width);
+  doc.text(lines, marginLeft, yPos);
+  yPos += lines.length * 6 + 16;
+
+  checkPageBreak(40);
+  doc.setFont(fontBold, "bold");
+  doc.text("3. CONCLUSÃO", marginLeft, yPos);
+  yPos += 8;
+
+  doc.setFont(fontNormal, "normal");
+  const conclusion = "Registro realizado para fins legais.";
+  lines = doc.splitTextToSize(conclusion, width);
+  doc.text(lines, marginLeft, yPos);
+  yPos += lines.length * 6 + 30;
+
+  checkPageBreak(30);
+  const officerName = (user && (user.nome || user.username)) || "Agente de Plantão";
+  const officerBadge = (user && user.badge) || "N/A";
+  doc.setLineWidth(0.5);
+  const signatureY = yPos;
+  doc.line(pageWidth / 2 - 40, signatureY, pageWidth / 2 + 40, signatureY);
+  yPos += 6;
+  doc.setFont(fontBold, "bold");
+  doc.setFontSize(10);
+  doc.text(officerName.toUpperCase(), pageWidth / 2, yPos, { align: "center" });
+  yPos += 5;
+  doc.setFont(fontNormal, "normal");
+  doc.setFontSize(9);
+  doc.text("AGENTE DE POLICIA CIVIL", pageWidth / 2, yPos, { align: "center" });
+  doc.text(`Matrícula: ${officerBadge}`, pageWidth / 2, yPos + 4, { align: "center" });
+
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i += 1) {
+    doc.setPage(i);
+    drawFooter(i, totalPages);
+  }
+
+  doc.save(`Boletim_Ocorrencia_${bo.id}.pdf`);
+};
+
+export const generateArrestPDF = (arrest, user, templateStr) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginTop = 30;
+  const marginLeft = 30;
+  const marginRight = 20;
+  const marginBottom = 20;
+  let yPos = marginTop;
+
+  const fontNormal = "times";
+  const fontBold = "times";
+  const fontSizeBody = 12;
+  const fontSizeTitle = 14;
+
+  const drawHeader = () => {
+    doc.setFont(fontBold, "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text("REPÚBLICA FEDERATIVA DO BRASIL", pageWidth / 2, 20, { align: "center" });
+    doc.text("MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA", pageWidth / 2, 25, { align: "center" });
+    doc.text("POLICIA CIVIL", pageWidth / 2, 30, { align: "center" });
+    doc.setLineWidth(0.5);
+    doc.line(marginLeft, 40, pageWidth - marginRight, 40);
+  };
+
+  const drawFooter = (pageNumber, totalPages) => {
+    doc.setFont(fontNormal, "normal");
+    doc.setFontSize(10);
+    const footerText = `AUTO DE PRISÃO Nº ${arrest.id || ""}`;
+    doc.text(footerText, marginLeft, pageHeight - 15);
+    doc.text(`Página ${pageNumber} de ${totalPages}`, pageWidth - marginRight, pageHeight - 15, { align: "right" });
+  };
+
+  const checkPageBreak = (heightNeeded) => {
+    if (yPos + heightNeeded > pageHeight - marginBottom) {
+      doc.addPage();
+      drawHeader();
+      yPos = marginTop + 20;
+      return true;
+    }
+    return false;
+  };
+
+  drawHeader();
+  yPos = marginTop + 30;
+
+  doc.setFont(fontBold, "bold");
+  doc.setFontSize(fontSizeTitle);
+  doc.text("AUTO DE PRISÃO", pageWidth / 2, yPos, { align: "center" });
+  yPos += 10;
+
+  const docRef = `AP - ${arrest.id}/${new Date().getFullYear()}`;
+  doc.setFont(fontNormal, "normal");
+  doc.setFontSize(fontSizeBody);
+  doc.text(docRef, pageWidth / 2, yPos, { align: "center" });
+  yPos += 20;
+
+  doc.setFont(fontBold, "bold");
+  doc.text("1. DADOS DO DETIDO", marginLeft, yPos);
+  yPos += 8;
+
+  doc.setFont(fontNormal, "normal");
+  const width = pageWidth - (marginLeft + marginRight);
+  const detidoText = [
+    `Nome: ${arrest.name || "Não informado"}`,
+    `Documento: ${arrest.passport || "Não informado"}`,
+    `Artigos/Crime: ${arrest.articles || arrest.reason || "Não especificado"}`
+  ].join("\n");
+  let lines = doc.splitTextToSize(detidoText, width);
+  doc.text(lines, marginLeft, yPos);
+  yPos += lines.length * 6 + 12;
+
+  const variables = {
+    "{relato_fatos}": arrest.reason || arrest.description || "",
+    "{local_prisao}": "Delegacia Central",
+    "{assinatura_agente}": arrest.officer || (user && (user.nome || user.username)) || "Agente Responsável"
+  };
+
+  const templateText = fillTemplate(templateStr, variables);
+  const relato = templateText || arrest.reason || arrest.description || "Sem observações adicionais.";
+
+  checkPageBreak(40);
+  doc.setFont(fontBold, "bold");
+  doc.text("2. MOTIVO DA PRISÃO / OBSERVAÇÕES", marginLeft, yPos);
+  yPos += 8;
+
+  doc.setFont(fontNormal, "normal");
+  lines = doc.splitTextToSize(relato, width);
+  doc.text(lines, marginLeft, yPos);
+  yPos += lines.length * 6 + 16;
+
+  checkPageBreak(40);
+  doc.setFont(fontBold, "bold");
+  doc.text("3. CONCLUSÃO", marginLeft, yPos);
+  yPos += 8;
+
+  doc.setFont(fontNormal, "normal");
+  const conclusion = "Indivíduo detido e à disposição da justiça.";
+  lines = doc.splitTextToSize(conclusion, width);
+  doc.text(lines, marginLeft, yPos);
+  yPos += lines.length * 6 + 30;
+
+  checkPageBreak(30);
+  const officerName = arrest.officer || (user && (user.nome || user.username)) || "Agente Responsável";
+  const officerBadge = (user && user.badge) || "N/A";
+  doc.setLineWidth(0.5);
+  const signatureY = yPos;
+  doc.line(pageWidth / 2 - 40, signatureY, pageWidth / 2 + 40, signatureY);
+  yPos += 6;
+  doc.setFont(fontBold, "bold");
+  doc.setFontSize(10);
+  doc.text(officerName.toUpperCase(), pageWidth / 2, yPos, { align: "center" });
+  yPos += 5;
+  doc.setFont(fontNormal, "normal");
+  doc.setFontSize(9);
+  doc.text("AGENTE DE POLICIA CIVIL", pageWidth / 2, yPos, { align: "center" });
+  doc.text(`Matrícula: ${officerBadge}`, pageWidth / 2, yPos + 4, { align: "center" });
+
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i += 1) {
+    doc.setPage(i);
+    drawFooter(i, totalPages);
+  }
+
+  doc.save(`Auto_Prisao_${arrest.id}.pdf`);
+};
+
+export const generateWantedPDF = (person, user, templateStr) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginTop = 30;
+  const marginLeft = 30;
+  const marginRight = 20;
+  const marginBottom = 20;
+  let yPos = marginTop;
+
+  const fontNormal = "times";
+  const fontBold = "times";
+  const fontSizeBody = 12;
+  const fontSizeTitle = 16;
+
+  const drawHeader = () => {
+    doc.setFont(fontBold, "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text("REPÚBLICA FEDERATIVA DO BRASIL", pageWidth / 2, 20, { align: "center" });
+    doc.text("MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA", pageWidth / 2, 25, { align: "center" });
+    doc.text("POLICIA CIVIL", pageWidth / 2, 30, { align: "center" });
+    doc.setLineWidth(0.5);
+    doc.line(marginLeft, 40, pageWidth - marginRight, 40);
+  };
+
+  const drawFooter = (pageNumber, totalPages) => {
+    doc.setFont(fontNormal, "normal");
+    doc.setFontSize(10);
+    const footerText = `Mandado de procura Nº ${person.id || ""}`;
+    doc.text(footerText, marginLeft, pageHeight - 15);
+    doc.text(`Página ${pageNumber} de ${totalPages}`, pageWidth - marginRight, pageHeight - 15, { align: "right" });
+  };
+
+  const checkPageBreak = (heightNeeded) => {
+    if (yPos + heightNeeded > pageHeight - marginBottom) {
+      doc.addPage();
+      drawHeader();
+      yPos = marginTop + 20;
+      return true;
+    }
+    return false;
+  };
+
+  drawHeader();
+  yPos = marginTop + 30;
+
+  doc.setFont(fontBold, "bold");
+  doc.setFontSize(fontSizeTitle);
+  doc.setTextColor(220, 38, 38);
+  doc.text("PROCURADO", pageWidth / 2, yPos, { align: "center" });
+  yPos += 14;
+
+  doc.setTextColor(0, 0, 0);
+  const docRef = `WANTED - ${person.id}/${new Date().getFullYear()}`;
+  doc.setFont(fontNormal, "normal");
+  doc.setFontSize(fontSizeBody);
+  doc.text(docRef, pageWidth / 2, yPos, { align: "center" });
+  yPos += 20;
+
+  doc.setFont(fontBold, "bold");
+  doc.setFontSize(18);
+  const name = person.name || "Não identificado";
+  doc.text(name.toUpperCase(), pageWidth / 2, yPos, { align: "center" });
+  yPos += 18;
+
+  doc.setFont(fontBold, "bold");
+  doc.setFontSize(fontSizeBody);
+  doc.text("1. DADOS DO PROCURADO", marginLeft, yPos);
+  yPos += 8;
+
+  doc.setFont(fontNormal, "normal");
+  const width = pageWidth - (marginLeft + marginRight);
+  const dadosText = [
+    `Crime/Motivo: ${person.crime || person.reason || "Não especificado"}`,
+    `Periculosidade: ${(person.dangerLevel || person.status || "Desconhecida").toString()}`,
+    `Registro: ${person.date || person.created_at ? new Date(person.date || person.created_at).toLocaleDateString("pt-BR") : "Não informado"}`
+  ].join("\n");
+  let lines = doc.splitTextToSize(dadosText, width);
+  doc.text(lines, marginLeft, yPos);
+  yPos += lines.length * 6 + 12;
+
+  const variables = {
+    "{nome_procurado}": name,
+    "{crime}": person.crime || person.reason || "Não especificado",
+    "{recompensa}": person.reward || "Não informada",
+    "{periculosidade}": person.dangerLevel || person.status || "Desconhecida",
+    "{data_registro}": person.date || person.created_at ? new Date(person.date || person.created_at).toLocaleDateString("pt-BR") : "Não informado"
+  };
+
+  const templateText = fillTemplate(templateStr, variables);
+
+  checkPageBreak(40);
+  doc.setFont(fontBold, "bold");
+  doc.text("2. INFORMAÇÕES", marginLeft, yPos);
+  yPos += 8;
+
+  doc.setFont(fontNormal, "normal");
+  const bodyText = templateText || "Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades.";
+  lines = doc.splitTextToSize(bodyText, width);
+  doc.text(lines, marginLeft, yPos);
+  yPos += lines.length * 6 + 20;
+
+  checkPageBreak(30);
+  doc.setFont(fontBold, "bold");
+  doc.text("3. RECOMPENSA", marginLeft, yPos);
+  yPos += 8;
+
+  doc.setFont(fontNormal, "normal");
+  const reward = person.reward ? `R$ ${person.reward}` : "A definir";
+  const rewardText = `Recompensa oferecida: ${reward}.`;
+  lines = doc.splitTextToSize(rewardText, width);
+  doc.text(lines, marginLeft, yPos);
+  yPos += lines.length * 6 + 20;
+
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i += 1) {
+    doc.setPage(i);
+    drawFooter(i, totalPages);
+  }
+
+  doc.save(`Mandado_Procura_${person.id}.pdf`);
+};
