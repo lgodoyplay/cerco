@@ -76,7 +76,7 @@ const RegisterArrest = () => {
       const sanitizedDoc = formData.passport.replace(/[^a-zA-Z0-9]/g, '_');
       const fileName = `arrests/${Date.now()}_${sanitizedDoc}_face.jpg`;
       
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('prisoes')
         .upload(fileName, fileBlob);
 
@@ -339,16 +339,16 @@ const RegisterArrest = () => {
               
               <button
                 type="submit"
-                disabled={!isFormValid()}
+                disabled={!isFormValid() || loading}
                 className={clsx(
                   "px-8 py-3 font-bold rounded-xl transition-all shadow-lg flex items-center gap-2",
-                  isFormValid() 
+                  (isFormValid() && !loading)
                     ? "bg-federal-600 hover:bg-federal-500 text-white shadow-federal-900/50 hover:shadow-federal-600/20 transform hover:-translate-y-0.5" 
                     : "bg-slate-800 text-slate-500 cursor-not-allowed opacity-50"
                 )}
               >
-                <Save size={18} />
-                Registrar Prisão
+                {loading ? <span className="animate-spin">⌛</span> : <Save size={18} />}
+                {loading ? 'Registrando...' : 'Registrar Prisão'}
               </button>
             </div>
           </div>

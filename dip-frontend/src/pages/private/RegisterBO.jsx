@@ -15,6 +15,7 @@ const RegisterBO = () => {
   });
 
   const [notification, setNotification] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,6 +28,7 @@ const RegisterBO = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     
     try {
       const { data: { user } } = await supabase.auth.getUser();

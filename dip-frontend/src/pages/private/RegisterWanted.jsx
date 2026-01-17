@@ -79,7 +79,7 @@ const RegisterWanted = () => {
       const sanitizedDoc = formData.document.replace(/[^a-zA-Z0-9]/g, '_');
       const fileName = `wanted/${Date.now()}_${sanitizedDoc}.jpg`;
       
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('procurados')
         .upload(fileName, fileBlob);
 
@@ -354,16 +354,16 @@ const RegisterWanted = () => {
               
               <button
                 type="submit"
-                disabled={!isFormValid()}
+                disabled={!isFormValid() || loading}
                 className={clsx(
                   "px-8 py-3 font-bold rounded-xl transition-all shadow-lg flex items-center gap-2",
-                  isFormValid() 
+                  (isFormValid() && !loading)
                     ? "bg-red-600 hover:bg-red-500 text-white shadow-red-900/50 hover:shadow-red-600/20 transform hover:-translate-y-0.5" 
                     : "bg-slate-800 text-slate-500 cursor-not-allowed opacity-50"
                 )}
               >
-                <Save size={18} />
-                Registrar Procurado
+                {loading ? <span className="animate-spin">⌛</span> : <Save size={18} />}
+                {loading ? 'Registrando...' : 'Registrar Procurado'}
               </button>
             </div>
           </div>
