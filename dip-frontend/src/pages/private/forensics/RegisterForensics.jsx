@@ -14,11 +14,13 @@ import {
   Plus
 } from 'lucide-react';
 import { useForensics } from '../../../hooks/useForensics';
+import { useSettings } from '../../../hooks/useSettings';
 import clsx from 'clsx';
 
 const RegisterForensics = () => {
   const navigate = useNavigate();
   const { addForensics } = useForensics();
+  const { discordConfig } = useSettings();
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -60,7 +62,35 @@ const RegisterForensics = () => {
 
     try {
       setLoading(true);
-      await addForensics(formData, photos);
+      const newId = await addForensics(formData, photos);
+
+      // Enviar notificação para o Discord se configurado
+      if (discordConfig?.forensicsWebhook) {
+        try {
+          const embed = {
+            title: "🔬 Nova Solicitação de Perícia",
+            description: `**${formData.title}**`,
+            color: 0x06b6d4, // Cyan
+            fields: [
+              { name: "Tipo", value: formData.type, inline: true },
+              { name: "Descrição", value: formData.description || "Sem descrição detalhada" },
+              { name: "Evidências", value: `${photos.length} fotos anexadas`, inline: true },
+              { name: "Vídeo", value: formData.youtube_link ? "Sim" : "Não", inline: true }
+            ],
+            footer: { text: "Sistema de Perícias Técnicas" },
+            timestamp: new Date().toISOString()
+          };
+
+          await fetch(discordConfig.forensicsWebhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ embeds: [embed] })
+          });
+        } catch (webhookError) {
+          console.error('Erro ao enviar webhook:', webhookError);
+        }
+      }
+
       navigate('/dashboard/forensics');
     } catch (error) {
       console.error('Erro ao salvar perícia:', error);

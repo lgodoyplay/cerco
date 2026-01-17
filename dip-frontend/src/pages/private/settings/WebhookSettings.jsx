@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Share2, Save, MessageSquare, AlertCircle, CheckCircle } from 'lucide-react';
+import { Share2, Save, MessageSquare, AlertCircle, CheckCircle, Microscope, ShieldAlert } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 
 const WebhookSettings = () => {
@@ -9,7 +9,9 @@ const WebhookSettings = () => {
     formsWebhook: discordConfig?.formsWebhook || discordConfig?.webhookUrl || '',
     arrestsWebhook: discordConfig?.arrestsWebhook || '',
     wantedWebhook: discordConfig?.wantedWebhook || '',
-    bulletinsWebhook: discordConfig?.bulletinsWebhook || ''
+    bulletinsWebhook: discordConfig?.bulletinsWebhook || '',
+    reportsWebhook: discordConfig?.reportsWebhook || '',
+    forensicsWebhook: discordConfig?.forensicsWebhook || ''
   }));
 
   const [loading, setLoading] = useState(false);
@@ -102,6 +104,64 @@ const WebhookSettings = () => {
             />
             <button
               onClick={() => handleTestWebhook(config.formsWebhook, 'Formulários')}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition-colors"
+            >
+              Testar
+            </button>
+          </div>
+        </div>
+
+        {/* Denúncias */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-slate-800 rounded-lg text-yellow-500">
+              <ShieldAlert size={24} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Denúncias Anônimas</h3>
+              <p className="text-sm text-slate-400">Notificações de novas denúncias recebidas.</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <input
+              type="text"
+              name="reportsWebhook"
+              value={config.reportsWebhook}
+              onChange={handleChange}
+              placeholder="https://discord.com/api/webhooks/..."
+              className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
+            />
+            <button
+              onClick={() => handleTestWebhook(config.reportsWebhook, 'Denúncias')}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition-colors"
+            >
+              Testar
+            </button>
+          </div>
+        </div>
+
+        {/* Perícias */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-slate-800 rounded-lg text-cyan-500">
+              <Microscope size={24} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Solicitações de Perícia</h3>
+              <p className="text-sm text-slate-400">Notificações de novas solicitações de perícia.</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <input
+              type="text"
+              name="forensicsWebhook"
+              value={config.forensicsWebhook}
+              onChange={handleChange}
+              placeholder="https://discord.com/api/webhooks/..."
+              className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
+            />
+            <button
+              onClick={() => handleTestWebhook(config.forensicsWebhook, 'Perícias')}
               className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition-colors"
             >
               Testar

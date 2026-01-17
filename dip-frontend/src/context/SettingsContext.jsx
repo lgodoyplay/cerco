@@ -36,7 +36,9 @@ const DEFAULT_DISCORD_CONFIG = {
   formsWebhook: '',
   arrestsWebhook: '',
   wantedWebhook: '',
-  bulletinsWebhook: ''
+  bulletinsWebhook: '',
+  reportsWebhook: '',
+  forensicsWebhook: ''
 };
 
 export const SettingsProvider = ({ children }) => {

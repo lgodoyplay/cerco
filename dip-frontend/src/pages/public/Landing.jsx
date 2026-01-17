@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Shield, AlertTriangle, Megaphone, MapPin, Phone, Send, CheckCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useSettings } from '../../hooks/useSettings';
 
 const Landing = () => {
+  const { discordConfig } = useSettings();
   const [reportForm, setReportForm] = useState({
     descricao: '',
     localizacao: '',
@@ -37,6 +39,33 @@ const Landing = () => {
       ]);
 
       if (error) throw error;
+
+      // Enviar notificação para o Discord se configurado
+      if (discordConfig?.reportsWebhook) {
+        try {
+          const embed = {
+            title: "📢 Nova Denúncia Anônima",
+            description: reportForm.descricao,
+            color: 0xeab308, // Yellow
+            fields: [
+              { name: "Localização", value: reportForm.localizacao || "Não informada", inline: true },
+              { name: "Contato", value: reportForm.contato || "Anônimo", inline: true },
+              { name: "Status", value: "Pendente", inline: true }
+            ],
+            footer: { text: "Sistema de Denúncias" },
+            timestamp: new Date().toISOString()
+          };
+
+          await fetch(discordConfig.reportsWebhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ embeds: [embed] })
+          });
+        } catch (webhookError) {
+          console.error('Erro ao enviar webhook:', webhookError);
+          // Não falhar o envio da denúncia se o webhook falhar
+        }
+      }
 
       setReportStatus('success');
       setReportForm({ descricao: '', localizacao: '', contato: '' });
