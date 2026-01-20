@@ -11,7 +11,9 @@ import {
   X, 
   CheckCircle, 
   ShieldAlert,
-  GraduationCap
+  GraduationCap,
+  Upload,
+  FileText
 } from 'lucide-react';
 import { getInitials } from '../../../utils/stringUtils';
 
@@ -19,6 +21,7 @@ const CoursesSettings = () => {
   const { user } = useAuth();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -30,6 +33,7 @@ const CoursesSettings = () => {
   // Form states
   const [newCourse, setNewCourse] = useState({ nome: '', descricao: '' });
   const [selectedOfficer, setSelectedOfficer] = useState('');
+  const [certificateFile, setCertificateFile] = useState(null);
   const [officers, setOfficers] = useState([]);
   const [assignments, setAssignments] = useState([]);
 
@@ -133,11 +137,34 @@ const CoursesSettings = () => {
   const handleAssignCourse = async (e) => {
     e.preventDefault();
     try {
+      setUploading(true);
       // Check if already assigned
       const exists = assignments.some(a => a.policial_id === selectedOfficer);
       if (exists) {
         alert('Este policial já possui este curso.');
+        setUploading(false);
         return;
+      }
+
+      let certificadoUrl = null;
+
+      // Upload Certificate if exists
+      if (certificateFile) {
+        const fileExt = certificateFile.name.split('.').pop();
+        const fileName = `${selectedOfficer}/${Date.now()}_certificate.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('certificates')
+          .upload(filePath, certificateFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('certificates')
+          .getPublicUrl(filePath);
+          
+        certificadoUrl = urlData.publicUrl;
       }
 
       const { error } = await supabase
@@ -145,17 +172,21 @@ const CoursesSettings = () => {
         .insert([{
           curso_id: selectedCourse.id,
           policial_id: selectedOfficer,
-          atribuido_por: user.id
+          atribuido_por: user.id,
+          certificado_url: certificadoUrl
         }]);
 
       if (error) throw error;
 
       setShowAssignModal(false);
       setSelectedOfficer('');
+      setCertificateFile(null);
       fetchAssignments(selectedCourse.id);
     } catch (error) {
       console.error('Error assigning course:', error);
-      alert('Erro ao atribuir curso. Verifique suas permissões.');
+      alert('Erro ao atribuir curso: ' + (error.message || 'Erro desconhecido'));
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -461,7 +492,59 @@ const CoursesSettings = () => {
                 </select>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">
+                  Certificado (Opcional)
+                </label>
+                <div className="flex items-center justify-center w-full">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-700 border-dashed rounded-lg cursor-pointer bg-slate-900/50 hover:bg-slate-800 transition-colors">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      {certificateFile ? (
+                        <>
+                          <FileText className="w-8 h-8 mb-3 text-federal-500" />
+                          <p className="mb-2 text-sm text-slate-300">
+                            <span className="font-semibold">{certificateFile.name}</span>
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {(certificateFile.size / 1024).toFixed(1)} KB
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-8 h-8 mb-3 text-slate-400" />
+                          <p className="mb-2 text-sm text-slate-400">
+                            <span className="font-semibold">Clique para enviar</span> ou arraste
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            PNG, JPG ou PDF
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      accept=".png,.jpg,.jpeg,.pdf"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setCertificateFile(e.target.files[0]);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+                {certificateFile && (
+                  <button
+                    type="button"
+                    onClick={() => setCertificateFile(null)}
+                    className="mt-2 text-xs text-red-400 hover:text-red-300 flex items-center gap-1"
+                  >
+                    <X size={12} /> Remover arquivo
+                  </button>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowAssignModal(false)}

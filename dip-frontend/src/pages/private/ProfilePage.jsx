@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import AvatarUpload from '../../components/AvatarUpload';
-import { User, Shield, Calendar, BookOpen, Save, CheckCircle } from 'lucide-react';
+import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText } from 'lucide-react';
 import clsx from 'clsx';
 
 const ProfilePage = () => {
@@ -44,6 +44,7 @@ const ProfilePage = () => {
         .from('cursos_policiais')
         .select(`
           id,
+          certificado_url,
           cursos (
             id,
             nome,
@@ -252,15 +253,29 @@ const ProfilePage = () => {
                 {courses.map((item) => (
                   <div 
                     key={item.id} 
-                    className="flex items-center gap-3 p-3 bg-slate-950 border border-slate-800 rounded-xl hover:border-federal-500/30 transition-colors group"
+                    className="flex items-center justify-between p-3 bg-slate-950 border border-slate-800 rounded-xl hover:border-federal-500/30 transition-colors group"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-federal-900/20 flex items-center justify-center border border-federal-500/20 text-federal-400 group-hover:text-federal-300 group-hover:border-federal-500/40 transition-all">
-                      <CheckCircle size={20} />
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-federal-900/20 flex items-center justify-center border border-federal-500/20 text-federal-400 group-hover:text-federal-300 group-hover:border-federal-500/40 transition-all">
+                        <CheckCircle size={20} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-200 text-sm">{item.cursos?.nome}</h4>
+                        <p className="text-xs text-slate-500 line-clamp-1">{item.cursos?.descricao || 'Curso Oficial'}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-slate-200 text-sm">{item.cursos?.nome}</h4>
-                      <p className="text-xs text-slate-500 line-clamp-1">{item.cursos?.descricao || 'Curso Oficial'}</p>
-                    </div>
+
+                    {item.certificado_url && (
+                      <a 
+                        href={item.certificado_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 text-slate-400 hover:text-federal-400 transition-colors bg-slate-900 rounded-lg border border-slate-800 hover:border-federal-500/30"
+                        title="Ver Certificado"
+                      >
+                        <FileText size={18} />
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>
