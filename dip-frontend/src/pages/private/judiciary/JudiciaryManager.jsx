@@ -548,6 +548,31 @@ const JudiciaryManager = () => {
                         />
                     </div>
 
+                    <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Anexar Documento (Opcional)</label>
+                        <div className="flex items-center gap-2">
+                            <label className="flex-1 cursor-pointer bg-slate-950 border border-slate-700 border-dashed rounded-lg px-4 py-3 hover:bg-slate-900 transition-colors flex items-center justify-center gap-2 text-slate-400 hover:text-white">
+                                <Upload size={18} />
+                                <span className="text-sm">{warrantFile ? warrantFile.name : 'Clique para selecionar PDF, JPG ou PNG'}</span>
+                                <input 
+                                    type="file" 
+                                    className="hidden" 
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                    onChange={e => setWarrantFile(e.target.files[0])}
+                                />
+                            </label>
+                            {warrantFile && (
+                                <button 
+                                    type="button"
+                                    onClick={() => setWarrantFile(null)}
+                                    className="p-3 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20"
+                                >
+                                    <XCircle size={18} />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
                     <div className="pt-4 flex justify-end gap-3">
                         <button 
                             type="button" 
@@ -603,12 +628,21 @@ const JudiciaryManager = () => {
 
         {/* Action Button for Warrants */}
         {activeTab === 'warrants' && (
-            <button 
-                onClick={() => setIsWarrantModalOpen(true)}
-                className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 border-dashed rounded-xl text-slate-300 hover:text-white font-bold flex items-center justify-center gap-2 transition-all"
-            >
-                <Gavel size={18} /> Novo Mandado Judicial
-            </button>
+            <div className="space-y-2">
+                <button 
+                    onClick={() => setIsWarrantModalOpen(true)}
+                    className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 border-dashed rounded-xl text-slate-300 hover:text-white font-bold flex items-center justify-center gap-2 transition-all"
+                >
+                    <Gavel size={18} /> Novo Mandado Judicial
+                </button>
+                
+                {/* Filters */}
+                <div className="flex gap-2 p-1 bg-slate-800/50 rounded-lg">
+                     <button onClick={() => setWarrantFilter('all')} className={clsx("flex-1 py-1 text-[10px] font-bold rounded uppercase transition-colors", warrantFilter === 'all' ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300")}>Todos</button>
+                     <button onClick={() => setWarrantFilter('active')} className={clsx("flex-1 py-1 text-[10px] font-bold rounded uppercase transition-colors", warrantFilter === 'active' ? "bg-red-500/20 text-red-500" : "text-slate-500 hover:text-slate-300")}>Ativos</button>
+                     <button onClick={() => setWarrantFilter('executed')} className={clsx("flex-1 py-1 text-[10px] font-bold rounded uppercase transition-colors", warrantFilter === 'executed' ? "bg-green-500/20 text-green-500" : "text-slate-500 hover:text-slate-300")}>Cumpridos</button>
+                </div>
+            </div>
         )}
 
         {/* List */}
@@ -619,7 +653,14 @@ const JudiciaryManager = () => {
             warrants.length === 0 ? (
                 <div className="text-center py-10 text-slate-500 text-sm">Nenhum mandado encontrado.</div>
             ) : (
-                warrants.map(warrant => (
+                warrants
+                .filter(w => {
+                    if (warrantFilter === 'all') return true;
+                    if (warrantFilter === 'active') return w.status === 'active';
+                    if (warrantFilter === 'executed') return w.status === 'executed';
+                    return true;
+                })
+                .map(warrant => (
                     <div 
                         key={warrant.id}
                         onClick={() => setViewingWarrant(warrant)}

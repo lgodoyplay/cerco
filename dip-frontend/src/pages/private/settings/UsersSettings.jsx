@@ -207,7 +207,7 @@ const UsersSettings = () => {
         <Search className="absolute left-4 top-3 text-slate-500" size={20} />
         <input
           type="text"
-          placeholder="Buscar usuário por nome ou login..."
+          placeholder="Buscar usuário por nome, login ou funcional..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-federal-500 outline-none"

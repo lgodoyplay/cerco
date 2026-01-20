@@ -4,7 +4,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Create warrants table
 CREATE TABLE IF NOT EXISTS public.warrants (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  type TEXT NOT NULL, -- 'search_seizure' (Busca e Apreensão), 'arrest' (Prisão), 'preventive_arrest' (Prisão Preventiva), 'temporary_arrest' (Prisão Temporária), 'breach' (Quebra de Sigilo)
+  type TEXT NOT NULL, -- 'search_seizure', 'arrest', 'preventive_arrest', 'temporary_arrest', 'breach'
   target_name TEXT NOT NULL,
   target_id TEXT, -- Passport/RG
   reason TEXT NOT NULL,
@@ -17,8 +17,32 @@ CREATE TABLE IF NOT EXISTS public.warrants (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   expires_at TIMESTAMP WITH TIME ZONE,
   executed_at TIMESTAMP WITH TIME ZONE,
-  executed_by TEXT
+  executed_by TEXT,
+  attachment_url TEXT -- URL for attached PDF/JPG/PNG
 );
+
+-- Create storage bucket for warrants if it doesn't exist
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('warrants', 'warrants', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage Policies
+CREATE POLICY "Public Access to Warrants"
+ON storage.objects FOR SELECT
+USING ( bucket_id = 'warrants' );
+
+CREATE POLICY "Authenticated users can upload warrants"
+ON storage.objects FOR INSERT
+WITH CHECK ( bucket_id = 'warrants' AND auth.role() = 'authenticated' );
+
+
+-- Add attachment_url column if it doesn't exist
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'warrants' AND column_name = 'attachment_url') THEN
+        ALTER TABLE public.warrants ADD COLUMN attachment_url TEXT;
+    END IF;
+END $$;
 
 -- RLS Policies
 ALTER TABLE public.warrants ENABLE ROW LEVEL SECURITY;
