@@ -35,6 +35,9 @@ export const routeLoaders = {
   // Weapons
   WeaponsManager: () => import('../pages/private/weapons/WeaponsManager'),
 
+  // Judiciary
+  JudiciaryManager: () => import('../pages/private/judiciary/JudiciaryManager'),
+
   // Settings
   SettingsLayout: () => import('../pages/private/settings/SettingsLayout'),
   UsersSettings: () => import('../pages/private/settings/UsersSettings'),

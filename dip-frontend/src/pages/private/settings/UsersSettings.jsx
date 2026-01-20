@@ -33,6 +33,7 @@ const UsersSettings = () => {
     { id: 'reports', label: 'Gerar Relatórios' },
     { id: 'settings', label: 'Acessar Configurações' },
     { id: 'bo', label: 'Registrar BO' },
+    { id: 'judiciary', label: 'Acesso Jurídico' },
   ];
 
   // Carregar cursos disponíveis quando abrir modal

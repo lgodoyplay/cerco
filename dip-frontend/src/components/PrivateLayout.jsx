@@ -18,7 +18,8 @@ import {
   Search,
   DollarSign,
   FileSearch,
-  Target
+  Target,
+  Gavel
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
@@ -56,19 +57,25 @@ const PrivateLayout = () => {
 
   const navItems = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Painel Geral', prefetchKey: 'DashboardHome' },
-    { to: '/dashboard/arrest', icon: UserX, label: 'Registrar Prisão', prefetchKey: 'RegisterArrest' },
+    { to: '/dashboard/judiciary', icon: Gavel, label: 'Jurídico', prefetchKey: 'JudiciaryManager', permission: 'judiciary' },
+    { to: '/dashboard/arrest', icon: UserX, label: 'Registrar Prisão', prefetchKey: 'RegisterArrest', permission: 'arrest' },
     { to: '/dashboard/arrests', icon: Shield, label: 'Registro de Prisões', prefetchKey: 'ArrestList' },
-    { to: '/dashboard/bo', icon: FileText, label: 'Registrar BO', prefetchKey: 'RegisterBO' },
+    { to: '/dashboard/bo', icon: FileText, label: 'Registrar BO', prefetchKey: 'RegisterBO', permission: 'bo' },
     { to: '/dashboard/bo-list', icon: FileText, label: 'Consultar BOs', prefetchKey: 'BOList' },
-    { to: '/dashboard/reports', icon: AlertTriangle, label: 'Denúncias', prefetchKey: 'ReportList' },
-    { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados', prefetchKey: 'RegisterWanted' },
+    { to: '/dashboard/reports', icon: AlertTriangle, label: 'Denúncias', prefetchKey: 'ReportList', permission: 'reports' },
+    { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados', prefetchKey: 'RegisterWanted', permission: 'arrest' },
     { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados', prefetchKey: 'WantedList' },
     { to: '/dashboard/investigations', icon: Search, label: 'Investigações', prefetchKey: 'InvestigationList' },
     { to: '/dashboard/forensics', icon: FileSearch, label: 'Perícias', prefetchKey: 'ForensicsList' },
     { to: '/dashboard/weapons', icon: Target, label: 'Porte de Armas', prefetchKey: 'WeaponsManager' },
     { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList' },
-    { to: '/dashboard/settings', icon: Settings, label: 'Configurações', prefetchKey: 'SettingsLayout' },
+    { to: '/dashboard/settings', icon: Settings, label: 'Configurações', prefetchKey: 'SettingsLayout', permission: 'settings' },
   ];
+
+  const filteredNavItems = navItems.filter(item => {
+    if (!item.permission) return true;
+    return user?.permissions?.includes(item.permission);
+  });
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
@@ -144,14 +151,15 @@ const PrivateLayout = () => {
         {/* Navigation */}
         <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto custom-scrollbar">
           <div className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Menu Principal</div>
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <SidebarItem 
               key={item.to}
               to={item.to}
               icon={item.icon}
               label={item.label}
-              active={location.pathname === item.to}
-              onClick={() => setIsSidebarOpen(false)}
+              active={location.pathname === item.to || location.pathname.startsWith(item.to + '/')}
+              onClick={() => window.innerWidth < 768 && setIsSidebarOpen(false)}
+              prefetchKey={item.prefetchKey}
             />
           ))}
         </nav>

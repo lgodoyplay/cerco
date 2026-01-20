@@ -43,6 +43,7 @@ const RevenueList = React.lazy(() => lazyImport(routeLoaders.RevenueList));
 const RevenueDetail = React.lazy(() => lazyImport(routeLoaders.RevenueDetail));
 
 const WeaponsManager = React.lazy(() => lazyImport(routeLoaders.WeaponsManager));
+const JudiciaryManager = React.lazy(() => lazyImport(routeLoaders.JudiciaryManager));
 
 // Settings Pages - Eagerly loaded for better UX
 import SecurityConfig from './pages/private/settings/SecurityConfig';
@@ -175,6 +176,13 @@ function App() {
             {/* Weapons Routes */}
             <Route path="weapons" element={<WeaponsManager />} />
             
+            {/* Judiciary Routes */}
+            <Route path="judiciary" element={
+              <PermissionGuard permission="judiciary">
+                <JudiciaryManager />
+              </PermissionGuard>
+            } />
+
             {/* Profile Route */}
             <Route path="profile" element={<ProfilePage />} />
 
