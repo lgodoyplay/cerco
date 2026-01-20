@@ -732,10 +732,10 @@ const Home = () => {
               </div>
               <div>
                 <p className="text-xs font-semibold text-red-200 uppercase tracking-[0.2em]">
-                  Condutas Vedadas
+                  Regime Disciplinar (Lei 4.878/65)
                 </p>
                 <p className="text-sm text-red-100">
-                  Ações que ferem a ética e comprometem a missão policial.
+                  Infrações que atentam contra o decoro e a eficácia da Polícia Federal.
                 </p>
               </div>
             </div>
@@ -744,41 +744,48 @@ const Home = () => {
             <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
               <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
               <div className="text-xs text-slate-200">
-                <p className="font-semibold">Uso Indevido do Cargo</p>
-                <p>Utilizar a função policial para obter vantagens pessoais ou favorecer terceiros é crime e infração disciplinar.</p>
+                <p className="font-semibold text-red-200">Abuso da Condição Policial</p>
+                <p>Art. 43, XLVIII: Prevalecer-se, abusivamente, da condição de funcionário policial.</p>
               </div>
             </div>
             <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
               <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
               <div className="text-xs text-slate-200">
-                <p className="font-semibold">Vazamento de Informações</p>
-                <p>Divulgar dados sigilosos de operações coloca em risco a equipe e o sucesso da investigação.</p>
+                <p className="font-semibold text-red-200">Sigilo Funcional</p>
+                <p>Art. 43, XXXII: Divulgar, através da imprensa escrita, falada ou televisionada, fatos ocorridos na repartição.</p>
               </div>
             </div>
             <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
               <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
               <div className="text-xs text-slate-200">
-                <p className="font-semibold">Abuso de Autoridade</p>
-                <p>Exceder os limites legais ou agir com prepotência fere os direitos do cidadão e a imagem da PF.</p>
+                <p className="font-semibold text-red-200">Negligência</p>
+                <p>Art. 43, XX: Deixar de cumprir ou de fazer cumprir, na esfera de suas atribuições, as leis e os regulamentos.</p>
               </div>
             </div>
             <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
               <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
               <div className="text-xs text-slate-200">
-                <p className="font-semibold">Negligência e Desídia</p>
-                <p>Falta de zelo no cumprimento das obrigações funcionais prejudica a eficiência do serviço público.</p>
+                <p className="font-semibold text-red-200">Escândalo</p>
+                <p>Art. 43, VIII: Praticar ato que importe em escândalo ou que concorra para comprometer a função policial.</p>
               </div>
             </div>
             <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
               <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
               <div className="text-xs text-slate-200">
-                <p className="font-semibold">Corrupção</p>
-                <p>Aceitar ou solicitar vantagem indevida é a negação absoluta dos valores policiais.</p>
+                <p className="font-semibold text-red-200">Corrupção/Vantagem</p>
+                <p>Art. 43, LII: Solicitar ou receber propina, comissão, presente ou vantagem de qualquer espécie.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+              <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
+              <div className="text-xs text-slate-200">
+                <p className="font-semibold text-red-200">Violência Desnecessária</p>
+                <p>Art. 43, LXII: Praticar ato lesivo da honra ou do patrimônio, com abuso ou desvio de poder.</p>
               </div>
             </div>
           </div>
           <p className="text-sm font-semibold text-red-100 mt-2">
-            “A integridade é o escudo do policial.”
+            “A função policial funda-se na hierarquia e na disciplina.” (Art. 2º da Lei 4.878/65)
           </p>
         </div>
       </section>
@@ -822,20 +829,42 @@ const Home = () => {
               </div>
             </div>
           </div>
-          <div className="bg-slate-950 border border-federal-700/60 rounded-3xl p-6 sm:p-8 flex flex-col justify-between">
-            <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Gavel size={22} className="text-federal-400" />
-                Legado
+          <div className="bg-slate-950 border border-federal-700/60 rounded-3xl p-6 sm:p-8 flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <Gavel size={24} className="text-federal-400" />
+              <h2 className="text-2xl font-bold text-white">
+                Legislação Essencial
               </h2>
-              <p className="text-sm text-slate-200">
-                Este curso visa integrar o novo policial à cultura de excelência da Polícia Federal,
-                preparando-o para os desafios da carreira e fortalecendo o espírito de corpo.
-              </p>
             </div>
-            <p className="mt-6 text-base font-semibold text-federal-50">
-              “Lealdade, Integridade e Eficiência.”
+            <p className="text-sm text-slate-300 mb-4">
+              O arcabouço jurídico indispensável para o Policial Federal.
             </p>
+            <div className="space-y-4 text-sm text-slate-100">
+              <div className="border-l-2 border-federal-500 pl-3">
+                <p className="font-bold text-federal-200">CF/88, Art. 144</p>
+                <p className="text-xs text-slate-300">Define a PF como órgão permanente, organizado e mantido pela União.</p>
+              </div>
+              <div className="border-l-2 border-federal-500 pl-3">
+                <p className="font-bold text-federal-200">Lei 12.830/2013</p>
+                <p className="text-xs text-slate-300">Investigação criminal conduzida pelo Delegado de Polícia.</p>
+              </div>
+              <div className="border-l-2 border-federal-500 pl-3">
+                <p className="font-bold text-federal-200">Lei 12.850/2013</p>
+                <p className="text-xs text-slate-300">Combate às Organizações Criminosas e meios de obtenção de prova.</p>
+              </div>
+              <div className="border-l-2 border-federal-500 pl-3">
+                <p className="font-bold text-federal-200">Lei 13.869/2019</p>
+                <p className="text-xs text-slate-300">Nova Lei de Abuso de Autoridade.</p>
+              </div>
+              <div className="border-l-2 border-federal-500 pl-3">
+                <p className="font-bold text-federal-200">Lei 11.343/2006</p>
+                <p className="text-xs text-slate-300">Lei de Drogas (Repressão ao Tráfico Nacional e Internacional).</p>
+              </div>
+              <div className="border-l-2 border-federal-500 pl-3">
+                <p className="font-bold text-federal-200">Lei 10.446/2002</p>
+                <p className="text-xs text-slate-300">Infrações de repercussão interestadual ou internacional.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
