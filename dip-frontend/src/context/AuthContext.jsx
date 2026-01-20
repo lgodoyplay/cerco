@@ -131,6 +131,8 @@ export const AuthProvider = ({ children }) => {
               email = data;
           } else {
               console.log('Nenhum email encontrado para este ID.');
+              // Se não encontrou email e não tem @, não adianta tentar logar
+              throw new Error("ID Funcional não encontrado ou sistema de login desatualizado. Por favor, entre com seu E-MAIL.");
           }
       }
 
