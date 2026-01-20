@@ -180,8 +180,8 @@ const Landing = () => {
               Treinamentos e cursos internos
             </h2>
             <p className="text-sm text-slate-300">
-                Acesso a conteúdos como o Curso DPF de preservação de local de morte, reforçando a
-                doutrina operacional da corporação.
+              Acesso a conteúdos como o Curso de Formação Institucional DPF, reforçando a
+                doutrina e os valores da corporação.
               </p>
           </div>
         </div>

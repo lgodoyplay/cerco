@@ -15,123 +15,124 @@ import {
 const modules = [
   {
     id: 1,
-    title: 'Módulo 1 — Competência da Polícia Federal em Locais de Crime',
-    description: 'Quando o DPF assume a investigação de uma morte ou crime grave.',
+    title: 'Módulo 1 — História e Missão da Polícia Federal',
+    description: 'A origem, evolução e o papel constitucional da instituição.',
     content: [
-      'O Artigo 144 da Constituição e as atribuições exclusivas da Polícia Federal.',
-      'Morte em bens, serviços ou interesses da União (empresas públicas, autarquias).',
-      'Crimes com repercussão interestadual ou internacional que exigem repressão uniforme.',
-      'Investigação de homicídios em terras indígenas e crimes contra direitos humanos (quando federalizados).'
+      'Origem histórica da Polícia Federal no Brasil.',
+      'O Artigo 144 da Constituição Federal e a definição como órgão permanente.',
+      'Missão: exercer a segurança pública para a preservação da ordem pública e da incolumidade das pessoas e do patrimônio.',
+      'A Polícia Federal como Polícia Judiciária da União.'
     ]
   },
   {
     id: 2,
-    title: 'Módulo 2 — O Aluno como Primeiro Interventor',
-    description: 'Postura do aluno da ANP ao se deparar com um local de crime simulado ou real.',
+    title: 'Módulo 2 — Estrutura Organizacional',
+    description: 'Como a PF está organizada em todo o território nacional.',
     content: [
-      'Segurança da equipe e avaliação de riscos (doutrina de aluno).',
-      'A decisão imediata de acionar a Perícia Federal e isolar o perímetro.',
-      'Diferença de protocolo entre operações de inteligência e ostensivas (visão do aluno).',
-      'Gerenciamento de crise inicial até a chegada da autoridade policial.'
+      'Direção Geral em Brasília e Superintendências Regionais nos estados.',
+      'Delegacias Descentralizadas e Postos Avançados.',
+      'Diretorias especializadas (DIP, DICOR, DIREX, etc.).',
+      'A capilaridade e a presença em fronteiras, portos e aeroportos.'
     ]
   },
   {
     id: 3,
-    title: 'Módulo 3 — Preservação em Cenários Federais Específicos',
-    description: 'Desafios únicos em aeroportos, portos, fronteiras e terras da União.',
+    title: 'Módulo 3 — Carreiras da Polícia Federal',
+    description: 'Os cargos que compõem a força policial e suas funções.',
     content: [
-      'Morte a bordo de aeronaves ou embarcações: jurisdição e preservação do espaço confinado.',
-      'Corpos encontrados em áreas de fronteira seca: cooperação internacional e isolamento.',
-      'Crimes ambientais com resultado morte em unidades de conservação federal.',
-      'Procedimentos em sedes de órgãos federais (INSS, Caixa, Correios).'
+      'Delegado de Polícia Federal: presunção de inquéritos e operações.',
+      'Agente de Polícia Federal: investigação e execução de operações.',
+      'Escrivão de Polícia Federal: formalização dos atos de polícia judiciária.',
+      'Papiloscopista Policial Federal: identificação humana e perícia papiloscópica.',
+      'Perito Criminal Federal: prova material e científica.'
     ]
   },
   {
     id: 4,
-    title: 'Módulo 4 — Cadeia de Custódia na Justiça Federal',
-    description: 'O rigor técnico exigido nos processos criminais federais.',
+    title: 'Módulo 4 — Atribuições de Polícia Judiciária',
+    description: 'A investigação de crimes de competência federal.',
     content: [
-      'Rastreabilidade total do vestígio: do local do crime ao depósito central.',
-      'O papel do APF na documentação inicial para evitar nulidades em grandes operações.',
-      'Manuseio de evidências sensíveis (drogas, armas de grosso calibre, valores).',
-      'O uso de lacres e formulários padronizados do DPF.'
+      'Infrações penais contra a ordem política e social.',
+      'Crimes contra bens, serviços e interesses da União (empresas públicas, autarquias).',
+      'Tráfico internacional de entorpecentes e drogas afins.',
+      'Contrabando e descaminho.'
     ]
   },
   {
     id: 5,
-    title: 'Módulo 5 — O Papel do Aluno na Preservação para a Perícia',
-    description: 'O que o aluno deve saber sobre a atuação dos Peritos Criminais Federais.',
+    title: 'Módulo 5 — Atribuições de Polícia Administrativa',
+    description: 'Serviços prestados diretamente ao cidadão e controle estatal.',
     content: [
-      'Entendendo a autonomia técnica do Perito Criminal Federal (para alunos).',
-      'Como o aluno pode auxiliar sem contaminar o trabalho da perícia.',
-      'Por que o aluno jamais deve tocar no corpo ou nos vestígios antes do PCF.',
-      'Suporte armado e logístico à equipe de perícia (função do aluno).'
+      'Emissão de passaportes e controle migratório.',
+      'Controle e fiscalização de segurança privada.',
+      'Registro e porte de armas (SINARM).',
+      'Controle de produtos químicos.'
     ]
   },
   {
     id: 6,
-    title: 'Módulo 6 — Crimes Violentos e Organizações Criminosas',
-    description: 'Cenas de crime envolvendo facções e tráfico internacional.',
+    title: 'Módulo 6 — Combate ao Crime Organizado',
+    description: 'O enfrentamento às organizações criminosas e corrupção.',
     content: [
-      'Características de execuções ligadas ao crime organizado transnacional.',
-      'Identificação preliminar de cápsulas de armamento restrito e explosivos.',
-      'Cuidados com armadilhas (booby traps) em laboratórios de drogas ou depósitos.',
-      'A importância de não contaminar a inteligência policial com ações precipitadas.'
+      'Investigação de desvio de recursos públicos.',
+      'Combate à lavagem de dinheiro.',
+      'Repressão a facções criminosas com atuação interestadual.',
+      'Operações especiais e de grande vulto.'
     ]
   },
   {
     id: 7,
-    title: 'Módulo 7 — Integração com Outras Forças',
-    description: 'Relacionamento com PM, Polícia Civil e Forças Armadas.',
+    title: 'Módulo 7 — Cooperação Internacional',
+    description: 'A atuação da PF além das fronteiras.',
     content: [
-      'Assunção da ocorrência: quando a PF chega e assume a jurisdição.',
-      'Tratamento diplomático e técnico com as forças estaduais no local.',
-      'Operações de GLO (Garantia da Lei e da Ordem) e atuação conjunta.',
-      'Compartilhamento de informações versus sigilo da investigação federal.'
+      'Representante exclusiva da Interpol no Brasil.',
+      'Adidâncias policiais em diversos países.',
+      'Cooperação jurídica internacional em matéria penal.',
+      'Combate ao crime transnacional.'
     ]
   },
   {
     id: 8,
-    title: 'Módulo 8 — O Inquérito Policial Federal',
-    description: 'Como o trabalho de local alimenta grandes investigações.',
+    title: 'Módulo 8 — Grupos Especializados',
+    description: 'As unidades de elite e apoio operacional.',
     content: [
-      'O Relatório de Local de Crime como peça-chave do IPL.',
-      'Conexão entre a materialidade do local e a lavagem de dinheiro/organização criminosa.',
-      'Depoimentos iniciais de testemunhas federais ou servidores públicos.',
-      'A visão sistêmica: o local do corpo é apenas uma peça do quebra-cabeça.'
+      'COT (Comando de Operações Táticas): intervenções de alto risco.',
+      'CAOP (Coordenação de Aviação Operacional): suporte aéreo.',
+      'GPI (Grupos de Pronta Intervenção) nos estados.',
+      'NEPOM (Núcleos Especiais de Polícia Marítima).'
     ]
   },
   {
     id: 9,
-    title: 'Módulo 9 — Protocolos de Segurança Orgânica',
-    description: 'Proteção da imagem e dos dados da instituição.',
+    title: 'Módulo 9 — Inteligência Policial',
+    description: 'A produção de conhecimento para a tomada de decisão.',
     content: [
-      'Proibição absoluta de vazamento de imagens para imprensa ou redes sociais.',
-      'Controle de curiosos e imprensa em casos de grande repercussão nacional.',
-      'Uso de balaclava e preservação da identidade dos agentes operacionais.',
-      'Segurança da informação sensível encontrada no local (documentos, HDs).'
+      'Diferença entre investigação e inteligência.',
+      'A doutrina de inteligência policial.',
+      'Contrainteligência e proteção de dados sensíveis.',
+      'O uso de tecnologia no combate ao crime.'
     ]
   },
   {
     id: 10,
-    title: 'Módulo 10 — Estudo de Casos Federais',
-    description: 'Lições aprendidas em grandes casos da Polícia Federal.',
+    title: 'Módulo 10 — Valores e Ética Institucional',
+    description: 'Os princípios que regem a conduta do servidor.',
     content: [
-      'Análise de erros e acertos em casos históricos (ex: Caso Riocentro, Queda de Aeronaves).',
-      'A evolução da doutrina de local de crime na PF nas últimas décadas.',
-      'O padrão ouro de investigação da Polícia Federal reconhecido internacionalmente.',
-      'A responsabilidade de manter esse legado.'
+      'Legalidade, impessoalidade, moralidade, publicidade e eficiência.',
+      'Hierarquia e disciplina.',
+      'O respeito aos direitos humanos.',
+      'A lealdade à instituição e à Constituição.'
     ]
   },
   {
     id: 11,
     title: 'Módulo 11 — O Padrão de Excelência DPF',
-    description: 'Mensagem final para o futuro Agente de Polícia Federal.',
+    description: 'O compromisso com a sociedade brasileira.',
     content: [
-      'Ser Policial Federal é ser técnico, legalista e eficiente.',
-      'A preservação do local é o primeiro ato de defesa da sociedade e da União.',
-      'Compromisso com a verdade real e a justiça.',
-      'Bem-vindo à elite da investigação criminal brasileira.'
+      'A credibilidade da Polícia Federal perante a sociedade.',
+      'A busca constante por inovação e aprimoramento.',
+      'O orgulho de pertencer e servir.',
+      'Bem-vindo à Polícia Federal.'
     ]
   }
 ];
@@ -139,201 +140,201 @@ const modules = [
 const examQuestions = [
   {
     id: 1,
-    question: 'Qual é a competência constitucional primária da Polícia Federal em locais de morte?',
+    question: 'Qual é a principal função constitucional da Polícia Federal conforme o Art. 144?',
     options: [
-      { id: 'a', text: 'Investigar todos os homicídios ocorridos no território nacional' },
-      { id: 'b', text: 'Apurar crimes contra bens, serviços e interesses da União, ou com repercussão interestadual/internacional' },
-      { id: 'c', text: 'Auxiliar a Polícia Militar no patrulhamento ostensivo de bairros' }
+      { id: 'a', text: 'Policiamento ostensivo de trânsito' },
+      { id: 'b', text: 'Polícia judiciária da União e apuração de infrações penais contra a União' },
+      { id: 'c', text: 'Guarda municipal e patrimonial' }
     ],
     correct: 'b'
   },
   {
     id: 2,
-    question: 'Um corpo é encontrado dentro de uma aeronave comercial em voo internacional que pousou em Guarulhos. De quem é a competência?',
+    question: 'Quais são carreiras típicas da Polícia Federal?',
     options: [
-      { id: 'a', text: 'Polícia Civil de São Paulo' },
-      { id: 'b', text: 'Polícia Federal' },
-      { id: 'c', text: 'Polícia Militar' }
+      { id: 'a', text: 'Soldado, Cabo e Sargento' },
+      { id: 'b', text: 'Delegado, Agente, Escrivão, Papiloscopista e Perito' },
+      { id: 'c', text: 'Juiz, Promotor e Advogado' }
     ],
     correct: 'b'
   },
   {
     id: 3,
-    question: 'Ao chegar em um local de crime em Terra Indígena, qual deve ser a postura do Agente Federal?',
+    question: 'Qual órgão é responsável pela emissão de passaportes no Brasil?',
     options: [
-      { id: 'a', text: 'Ignorar a liderança indígena e entrar na aldeia à força' },
-      { id: 'b', text: 'Isolar o local, respeitar a cultura local, mas garantir a preservação técnica para a Perícia Federal' },
-      { id: 'c', text: 'Deixar a investigação para a FUNAI' }
+      { id: 'a', text: 'Receita Federal' },
+      { id: 'b', text: 'Polícia Federal' },
+      { id: 'c', text: 'Itamaraty apenas' }
     ],
     correct: 'b'
   },
   {
     id: 4,
-    question: 'Por que a Cadeia de Custódia é tratada com extremo rigor na Justiça Federal?',
+    question: 'O que é o COT na estrutura da Polícia Federal?',
     options: [
-      { id: 'a', text: 'Apenas por burocracia administrativa' },
-      { id: 'b', text: 'Para evitar nulidades processuais em investigações complexas contra o crime organizado' },
-      { id: 'c', text: 'Porque os juízes federais não confiam nos agentes' }
+      { id: 'a', text: 'Centro de Operações de Trânsito' },
+      { id: 'b', text: 'Comando de Operações Táticas, unidade de elite para situações de alto risco' },
+      { id: 'c', text: 'Coordenação de Transportes' }
     ],
     correct: 'b'
   },
   {
     id: 5,
-    question: 'Qual a função do Perito Criminal Federal (PCF) no local?',
+    question: 'Qual é a representação internacional da Polícia Federal?',
     options: [
-      { id: 'a', text: 'Comandar a operação tática de prisão e ignorar o perito' },
-      { id: 'b', text: 'Garantir a segurança do perímetro para que o perito trabalhe com autonomia e não tocar nos vestígios' },
-      { id: 'c', text: 'Apenas recolher o corpo para o IML antes da perícia chegar' }
+      { id: 'a', text: 'CIA' },
+      { id: 'b', text: 'Interpol (Organização Internacional de Polícia Criminal)' },
+      { id: 'c', text: 'FBI' }
     ],
     correct: 'b'
   },
   {
     id: 6,
-    question: 'Em uma operação contra o tráfico internacional, um suspeito é morto em confronto. O que o APF deve fazer?',
+    question: 'Além da investigação criminal, qual outra função a PF exerce?',
     options: [
-      { id: 'a', text: 'Alterar a cena para favorecer a equipe policial' },
-      { id: 'b', text: 'Preservar o local, as armas e cápsulas para a perícia, garantindo a lisura da ação policial' },
-      { id: 'c', text: 'Remover o corpo imediatamente para o hospital, mesmo se já houver sinais evidentes de morte' }
+      { id: 'a', text: 'Cobrança de impostos estaduais' },
+      { id: 'b', text: 'Polícia administrativa (controle de armas, segurança privada, migração)' },
+      { id: 'c', text: 'Limpeza urbana' }
     ],
     correct: 'b'
   },
   {
     id: 7,
-    question: 'O que caracteriza um crime de repercussão interestadual que atrai a competência da PF?',
+    question: 'A quem a Polícia Federal está subordinada administrativamente?',
     options: [
-      { id: 'a', text: 'Um crime passional entre vizinhos' },
-      { id: 'b', text: 'Ação de grupos criminosos atuando em múltiplos estados com necessidade de repressão uniforme' },
-      { id: 'c', text: 'Furto de celular em transporte público' }
+      { id: 'a', text: 'Ao Governo do Distrito Federal' },
+      { id: 'b', text: 'Ao Ministério da Justiça e Segurança Pública' },
+      { id: 'c', text: 'Ao Exército Brasileiro' }
     ],
     correct: 'b'
   },
   {
     id: 8,
-    question: 'Como deve ser o relacionamento com as forças estaduais (PM/PC) em um local de competência federal?',
+    question: 'O que compete à Polícia Federal investigar?',
     options: [
-      { id: 'a', text: 'De subordinação da PF às polícias estaduais' },
-      { id: 'b', text: 'De cooperação, mas com a PF assumindo a liderança da investigação e da perícia' },
-      { id: 'c', text: 'Hostil e sem troca de informações' }
+      { id: 'a', text: 'Apenas crimes de trânsito' },
+      { id: 'b', text: 'Crimes contra bens, serviços e interesses da União' },
+      { id: 'c', text: 'Brigas de vizinhos' }
     ],
     correct: 'b'
   },
   {
     id: 9,
-    question: 'Qual o procedimento correto ao encontrar grandes somas de dinheiro em espécie no local?',
+    question: 'Qual é o papel do Escrivão de Polícia Federal?',
     options: [
-      { id: 'a', text: 'Contar e guardar no bolso sem testemunhas' },
-      { id: 'b', text: 'Preservar no local exato para fotografia pericial, contabilizar com testemunhas e lacrar conforme protocolo' },
-      { id: 'c', text: 'Distribuir entre a equipe como gratificação' }
+      { id: 'a', text: 'Dirigir as viaturas em perseguição' },
+      { id: 'b', text: 'Formalizar os atos de polícia judiciária e gerir o inquérito policial' },
+      { id: 'c', text: 'Fazer a perícia de laboratório' }
     ],
     correct: 'b'
   },
   {
     id: 10,
-    question: 'Em crimes cibernéticos ou financeiros, o "local de crime" pode ser:',
+    question: 'O SINARM (Sistema Nacional de Armas) é gerido por quem?',
     options: [
-      { id: 'a', text: 'Apenas onde há um corpo físico' },
-      { id: 'b', text: 'Computadores, servidores e mídias digitais, que também devem ser preservados (não ligados/desligados indevidamente)' },
-      { id: 'c', text: 'Apenas agências bancárias físicas' }
+      { id: 'a', text: 'Pelo Exército Brasileiro (para todas as armas)' },
+      { id: 'b', text: 'Pela Polícia Federal (para armas de uso civil)' },
+      { id: 'c', text: 'Pelas Polícias Civis' }
     ],
     correct: 'b'
   },
   {
     id: 11,
-    question: 'Por que o sigilo é vital em investigações da Polícia Federal?',
+    question: 'O que caracteriza a atuação da PF em fronteiras?',
     options: [
-      { id: 'a', text: 'Para que a imprensa possa ter exclusividade depois' },
-      { id: 'b', text: 'Para não alertar organizações criminosas complexas e não comprometer operações futuras' },
-      { id: 'c', text: 'Porque a PF não gosta de publicidade' }
+      { id: 'a', text: 'Apenas controle de turistas' },
+      { id: 'b', text: 'Policiamento marítimo, aeroportuário e de fronteiras para reprimir crimes transnacionais' },
+      { id: 'c', text: 'Venda de passagens' }
     ],
     correct: 'b'
   },
   {
     id: 12,
-    question: 'O que é a "Garantia da Lei e da Ordem" (GLO) e como afeta a competência?',
+    question: 'Qual a importância da autonomia da Polícia Federal?',
     options: [
-      { id: 'a', text: 'Operação exclusiva da Guarda Municipal' },
-      { id: 'b', text: 'Operação onde Forças Armadas atuam com poder de polícia, exigindo integração fina com a PF judiciária' },
-      { id: 'c', text: 'Situação onde não existe mais lei' }
+      { id: 'a', text: 'Para fazer o que quiser sem lei' },
+      { id: 'b', text: 'Para investigar crimes de colarinho branco e corrupção sem interferências políticas indevidas' },
+      { id: 'c', text: 'Para não trabalhar aos fins de semana' }
     ],
     correct: 'b'
   },
   {
     id: 13,
-    question: 'Qual a importância do Relatório de Local de Crime para o Delegado de Polícia Federal?',
+    question: 'O que é um Inquérito Policial?',
     options: [
-      { id: 'a', text: 'Nenhuma, o Delegado não vai ao local' },
-      { id: 'b', text: 'É a base para a instauração do Inquérito e para as primeiras diligências cautelares' },
-      { id: 'c', text: 'Serve apenas para estatística' }
+      { id: 'a', text: 'Uma conversa informal' },
+      { id: 'b', text: 'Procedimento administrativo para apurar autoria e materialidade de crimes' },
+      { id: 'c', text: 'Um julgamento final' }
     ],
     correct: 'b'
   },
   {
     id: 14,
-    question: 'Ao encontrar um laboratório de refino de drogas com produtos químicos, o APF deve:',
+    question: 'Quem preside o Inquérito Policial Federal?',
     options: [
-      { id: 'a', text: 'Manusear os produtos para identificar o cheiro' },
-      { id: 'b', text: 'Isolar a área imediatamente, ventilar se possível e aguardar peritos especializados em química forense' },
-      { id: 'c', text: 'Destruir tudo imediatamente' }
+      { id: 'a', text: 'O Juiz Federal' },
+      { id: 'b', text: 'O Delegado de Polícia Federal' },
+      { id: 'c', text: 'O Ministério Público' }
     ],
     correct: 'b'
   },
   {
     id: 15,
-    question: 'Em caso de morte de autoridade estrangeira em visita oficial ao Brasil, a competência é:',
+    question: 'Qual é a função do NEPOM?',
     options: [
-      { id: 'a', text: 'Da Guarda Municipal' },
-      { id: 'b', text: 'Federal, devido à repercussão internacional e diplomática' },
-      { id: 'c', text: 'Estadual comum' }
+      { id: 'a', text: 'Núcleo de Estudos Políticos' },
+      { id: 'b', text: 'Núcleo Especial de Polícia Marítima' },
+      { id: 'c', text: 'Núcleo de Estradas e Pontes' }
     ],
     correct: 'b'
   },
   {
     id: 16,
-    question: 'O uso de balaclava e preservação da identidade do Agente Federal em operações serve para:',
+    question: 'Sobre a identificação civil e criminal, qual cargo tem atribuição específica?',
     options: [
-      { id: 'a', text: 'Parecer mais "tático" nas fotos' },
-      { id: 'b', text: 'Proteger o servidor e sua família de represálias de organizações criminosas' },
-      { id: 'c', text: 'Esconder o rosto porque está feio' }
+      { id: 'a', text: 'Agente' },
+      { id: 'b', text: 'Papiloscopista Policial Federal' },
+      { id: 'c', text: 'Escrivão' }
     ],
     correct: 'b'
   },
   {
     id: 17,
-    question: 'Sobre a coleta de vestígios biológicos (sangue, DNA) em local federal:',
+    question: 'A PF atua na repressão ao tráfico de drogas. Essa competência é:',
     options: [
-      { id: 'a', text: 'Qualquer agente pode coletar com um pano' },
-      { id: 'b', text: 'Deve ser feita pelo PCF com técnica estéril para alimentar o Banco Nacional de Perfis Genéticos' },
-      { id: 'c', text: 'Não é relevante para a PF' }
+      { id: 'a', text: 'Exclusiva da PF em qualquer caso' },
+      { id: 'b', text: 'Primordialmente da PF em casos de tráfico internacional e interestadual' },
+      { id: 'c', text: 'Apenas da Polícia Militar' }
     ],
     correct: 'b'
   },
   {
     id: 18,
-    question: 'Se um servidor público federal é encontrado morto em seu local de trabalho (repartição federal):',
+    question: 'O combate a crimes ambientais é competência da PF quando:',
     options: [
-      { id: 'a', text: 'Chama-se a Polícia Civil, pois é homicídio comum' },
-      { id: 'b', text: 'Aciona-se a Polícia Federal, pois ocorreu em bem da União e pode ter relação com a função' },
-      { id: 'c', text: 'O chefe da repartição investiga' }
+      { id: 'a', text: 'Ocorre em qualquer lugar' },
+      { id: 'b', text: 'Afeta bens da União, como parques nacionais, terras indígenas ou rios federais' },
+      { id: 'c', text: 'Apenas se houver morte de animais' }
     ],
     correct: 'b'
   },
   {
     id: 19,
-    question: 'Qual o valor da prova testemunhal colhida no calor dos fatos pelo APF?',
+    question: 'O que significa ser uma polícia "Republicana"?',
     options: [
-      { id: 'a', text: 'Baixo, o que vale é o juiz' },
-      { id: 'b', text: 'Alto, pois registra a versão espontânea antes de coações ou esquecimentos (res gestae)' },
-      { id: 'c', text: 'Nenhum, agente não ouve testemunha' }
+      { id: 'a', text: 'Servir apenas a um partido' },
+      { id: 'b', text: 'Atuar em defesa do Estado e da sociedade, independentemente do governo de plantão' },
+      { id: 'c', text: 'Ter sede na República' }
     ],
     correct: 'b'
   },
   {
     id: 20,
-    question: 'O "Padrão DPF" de investigação significa:',
+    question: 'Qual a mensagem principal do "Padrão de Excelência DPF"?',
     options: [
-      { id: 'a', text: 'Fazer o básico e ir embora' },
-      { id: 'b', text: 'Atuar com excelência técnica, legalidade estrita e uso intensivo de inteligência e perícia científica' },
-      { id: 'c', text: 'Usar sempre o armamento mais pesado' }
+      { id: 'a', text: 'Ser o mais forte' },
+      { id: 'b', text: 'Eficiência, legalidade, técnica e compromisso com a justiça' },
+      { id: 'c', text: 'Ter o melhor salário' }
     ],
     correct: 'b'
   }
@@ -395,7 +396,7 @@ const Home = () => {
 
     try {
       const mensagem = [
-        'Prova DPF - Preservação de Local de Crime Federal',
+        'Prova DPF - Conhecimentos Institucionais',
         `Nome: ${examForm.nome || 'N/A'}`,
         `Matrícula: ${examForm.matricula || 'N/A'}`,
         `Lotação/Unidade: ${examForm.lotacao || 'N/A'}`,
@@ -441,8 +442,8 @@ const Home = () => {
               A formação de excelência começa aqui.
             </h1>
             <p className="text-lg text-slate-300 max-w-2xl">
-              Material de estudo para alunos da Polícia Federal, focado na doutrina de preservação
-              de local de crime e conduta policial em formação.
+              Material de estudo para novos integrantes da Polícia Federal, focado na estrutura,
+              missão institucional e funcionamento da instituição.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
@@ -473,7 +474,7 @@ const Home = () => {
                         Curso Operacional
                       </p>
                       <p className="text-sm font-medium text-slate-100">
-                        Estudos de Preservação de Local de Crime Federal
+                        Curso de Formação Institucional - DPF
                       </p>
                     </div>
                   </div>
@@ -487,18 +488,18 @@ const Home = () => {
                     integração entre Agentes, Escrivães, Delegados e Peritos Criminais Federais.
                   </p>
                   <p>
-                    Todo o conteúdo é construído para a realidade do atendimento inicial: a primeira viatura,
-                    o primeiro policial, o primeiro contato com o local de morte.
+                    Todo o conteúdo é construído para aeo atendimenooatend meiio cnlcial pmeprrmeiia vatturaura,
+                    oipiimo po policiolico pprmeero contatoccomnttloc c dcetortee.
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs text-slate-300 pt-2 border-t border-slate-800">
                   <div className="flex flex-col gap-1">
                     <span className="text-slate-500 font-semibold uppercase tracking-wide">Foco</span>
-                    <span>DPF e preservação de local de morte.</span>
+                    <span>Conhecimento institucional e operacional.</span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-slate-500 font-semibold uppercase tracking-wide">Público-alvo</span>
-                    <span>Policiais e agentes que chegam primeiro ao local.</span>
+                    <span>Novos policiais e aspirantes à carreira.</span>
                   </div>
                 </div>
               </div>
@@ -567,58 +568,55 @@ const Home = () => {
         id="regra-de-ouro"
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       >
-        <div className="rounded-3xl border border-red-500/40 bg-gradient-to-br from-red-900/40 via-slate-950 to-slate-950 shadow-xl overflow-hidden">
-          <div className="px-6 sm:px-8 py-6 border-b border-red-500/40 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-red-600/20 border border-red-500/60 flex items-center justify-center">
-              <AlertTriangle className="text-red-300" size={22} />
+        <div className="rounded-3xl border border-federal-500/40 bg-gradient-to-br from-federal-900/40 via-slate-950 to-slate-950 shadow-xl overflow-hidden">
+          <div className="px-6 sm:px-8 py-6 border-b border-federal-500/40 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-federal-600/20 border border-federal-500/60 flex items-center justify-center">
+              <Shield className="text-federal-300" size={22} />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-200">
-                Regra de Ouro do Local de Morte
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-federal-200">
+                Compromisso Institucional
               </p>
-              <p className="text-sm text-red-100">
-                Uma vez quebrada, a prova dificilmente volta.
+              <p className="text-sm text-federal-100">
+                A base que sustenta a confiança da sociedade.
               </p>
             </div>
           </div>
           <div className="px-6 sm:px-8 py-8 space-y-6">
             <div className="space-y-2">
               <p className="text-lg font-bold text-white">
-                Encontrou alguém caído?
+                O que define o Policial Federal?
               </p>
-              <ul className="space-y-1 text-sm font-semibold text-red-100">
-                <li>NÃO TOQUE EM NADA.</li>
-                <li>NÃO CONFIRA PULSO.</li>
-                <li>NÃO VIRE O CORPO.</li>
-                <li>PRIMEIRA COISA: CHAME A PERÍCIA E O DPF.</li>
+              <ul className="space-y-1 text-sm font-semibold text-federal-100">
+                <li>LEALDADE À CONSTITUIÇÃO.</li>
+                <li>ÉTICA PROFISSIONAL INEGOCIÁVEL.</li>
+                <li>DISCIPLINA E HIERARQUIA.</li>
+                <li>EFICIÊNCIA NO SERVIÇO PÚBLICO.</li>
               </ul>
             </div>
             <div className="grid md:grid-cols-3 gap-6 text-sm text-slate-100">
               <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
-                  Ato técnico
+                  Legalidade
                 </p>
                 <p className="text-slate-200">
-                  Declarar óbito, manusear o corpo e interpretar sinais vitais são atos técnicos que
-                  pertencem à equipe de saúde e aos peritos oficiais.
+                  Toda ação policial deve estar estritamente amparada na lei. O Policial Federal é, antes de tudo, um garantidor de direitos.
                 </p>
               </div>
               <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
-                  Todo local é potencial cena de crime
+                  Excelência Técnica
                 </p>
                 <p className="text-slate-200">
-                  Mesmo que pareça um mal súbito, queda ou acidente, o local deve ser tratado como
-                  possível cena de crime até conclusão técnica em sentido contrário.
+                  A investigação criminal exige conhecimento científico, uso de tecnologia e constante aprimoramento profissional.
                 </p>
               </div>
               <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
-                  Responsabilidade profissional
+                  Probidade
                 </p>
                 <p className="text-slate-200">
-                  O policial que altera o local assume o risco de comprometer a investigação e a
-                  responsabilização do autor.
+                  A honestidade e a integridade são valores absolutos. A corrupção é o maior inimigo da instituição.
                 </p>
               </div>
             </div>
@@ -637,8 +635,8 @@ const Home = () => {
               Estrutura do Curso em Módulos
             </h2>
             <p className="text-slate-300 mt-3 max-w-2xl">
-              Cada módulo aprofunda uma etapa crítica da preservação de local de morte e da atuação do
-              DPF, com foco em doutrina correta, casos reais e aplicação prática em serviço.
+              Cada módulo aborda um aspecto fundamental da Polícia Federal, desde sua história e estrutura
+              até suas áreas de atuação e valores, proporcionando uma visão completa da instituição.
             </p>
           </div>
         </div>
@@ -680,47 +678,45 @@ const Home = () => {
           <div className="space-y-4">
             <h2 className="text-3xl font-bold text-white flex items-center gap-3">
               <Microscope size={28} className="text-federal-400" />
-              Importância da Perícia e do IML
+              O Ciclo da Investigação
             </h2>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              A perícia de local e o Instituto Médico Legal são pilares da investigação de homicídios.
-              Sem laudos técnicos consistentes, a narrativa dos fatos fica frágil e vulnerável à contestação
-              judicial.
+              A Polícia Federal atua com base em inteligência e prova técnica. A investigação criminal é o instrumento
+              para alcançar a verdade real dos fatos e garantir a aplicação da lei penal.
             </p>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              A perícia examina cena, vestígios, trajetórias, manchas e dispositivos, enquanto o IML
-              responde ao que o corpo tem a dizer: causa da morte, meio empregado, tempo decorrido e sinais
-              compatíveis com defesa, tortura ou execução.
+              Do trabalho de campo à análise de dados, cada etapa é crucial para desarticular organizações criminosas
+              e combater a corrupção, sempre respeitando os direitos fundamentais e o devido processo legal.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.18em] mb-2">
-                O que a perícia faz
+                Investigação
               </p>
               <ul className="space-y-1.5 text-xs text-slate-200">
-                <li>Analisa a cena de forma técnica e documentada.</li>
-                <li>Registra vestígios, manchas, pegadas e trajetórias.</li>
-                <li>Gera laudos que sustentam a linha investigativa do DPF.</li>
+                <li>Coleta de provas e oitivas.</li>
+                <li>Operações policiais e cumprimento de mandados.</li>
+                <li>Materialidade e autoria delitiva.</li>
               </ul>
             </div>
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.18em] mb-2">
-                O que o IML faz
+                Inteligência
               </p>
               <ul className="space-y-1.5 text-xs text-slate-200">
-                <li>Realiza necropsia e exames complementares.</li>
-                <li>Define causa, meio e circunstâncias prováveis da morte.</li>
-                <li>Fecha o ciclo pericial com laudo que dialoga com o local.</li>
+                <li>Produção de conhecimento estratégico.</li>
+                <li>Análise de vínculos e dados financeiros.</li>
+                <li>Assessoramento para tomada de decisão.</li>
               </ul>
             </div>
             <div className="bg-federal-900/70 border border-federal-700/60 rounded-2xl p-5 sm:col-span-2">
               <p className="text-xs font-semibold text-federal-300 uppercase tracking-[0.18em] mb-1">
-                Conexão entre laudo e investigação
+                Integração Operacional
               </p>
               <p className="text-xs sm:text-sm text-federal-50">
-                Quando local, perícia e IML trabalham de forma integrada, o DPF consegue reconstruir a
-                dinâmica do crime com precisão e oferecer ao Judiciário um caso sólido, técnico e robusto.
+                A união entre investigação, inteligência e perícia permite à Polícia Federal enfrentar a criminalidade
+                organizada com eficiência, técnica e resultados efetivos para a sociedade.
               </p>
             </div>
           </div>
@@ -732,14 +728,14 @@ const Home = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-red-600/20 border border-red-500/60 flex items-center justify-center">
-                <Skull size={22} className="text-red-300" />
+                <AlertTriangle size={22} className="text-red-300" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-red-200 uppercase tracking-[0.2em]">
-                  Erros graves
+                  Condutas Vedadas
                 </p>
                 <p className="text-sm text-red-100">
-                  Condutas que quebram a cadeia de custódia e comprometem o trabalho do DPF.
+                  Ações que ferem a ética e comprometem a missão policial.
                 </p>
               </div>
             </div>
@@ -748,41 +744,41 @@ const Home = () => {
             <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
               <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
               <div className="text-xs text-slate-200">
-                <p className="font-semibold">Mexer no corpo</p>
-                <p>Mudar posição, erguer cabeça ou conferir bolsos destrói a leitura técnica da cena.</p>
+                <p className="font-semibold">Uso Indevido do Cargo</p>
+                <p>Utilizar a função policial para obter vantagens pessoais ou favorecer terceiros é crime e infração disciplinar.</p>
               </div>
             </div>
             <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
               <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
               <div className="text-xs text-slate-200">
-                <p className="font-semibold">Recolher cápsulas ou projéteis</p>
-                <p>Retirar vestígios sem técnica rompe a cadeia de custódia e fragiliza o laudo balístico.</p>
+                <p className="font-semibold">Vazamento de Informações</p>
+                <p>Divulgar dados sigilosos de operações coloca em risco a equipe e o sucesso da investigação.</p>
               </div>
             </div>
             <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
               <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
               <div className="text-xs text-slate-200">
-                <p className="font-semibold">“Organizar” o local</p>
-                <p>Arrastar móveis, limpar sangue ou alinhar objetos destrói a narrativa original do crime.</p>
+                <p className="font-semibold">Abuso de Autoridade</p>
+                <p>Exceder os limites legais ou agir com prepotência fere os direitos do cidadão e a imagem da PF.</p>
               </div>
             </div>
             <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
               <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
               <div className="text-xs text-slate-200">
-                <p className="font-semibold">Mudar objetos de lugar</p>
-                <p>Armas, celulares e pertences devem permanecer exatamente onde foram encontrados.</p>
+                <p className="font-semibold">Negligência e Desídia</p>
+                <p>Falta de zelo no cumprimento das obrigações funcionais prejudica a eficiência do serviço público.</p>
               </div>
             </div>
             <div className="flex items-start gap-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
               <Ban size={18} className="text-red-400 mt-0.5 shrink-0" />
               <div className="text-xs text-slate-200">
-                <p className="font-semibold">Deixar curiosos entrarem</p>
-                <p>Trânsito desnecessário contamina vestígios, pisa em marcas e espalha informações.</p>
+                <p className="font-semibold">Corrupção</p>
+                <p>Aceitar ou solicitar vantagem indevida é a negação absoluta dos valores policiais.</p>
               </div>
             </div>
           </div>
           <p className="text-sm font-semibold text-red-100 mt-2">
-            “Isso não é erro pequeno. Isso é destruir prova.”
+            “A integridade é o escudo do policial.”
           </p>
         </div>
       </section>
@@ -793,36 +789,36 @@ const Home = () => {
             <div className="flex items-center gap-3 mb-4">
               <ClipboardCheck size={24} className="text-federal-400" />
               <h2 className="text-2xl font-bold text-white">
-                Checklist Operacional
+                Deveres Fundamentais
               </h2>
             </div>
             <p className="text-sm text-slate-300 mb-4">
-              Sequência mínima de condutas para quem chega primeiro em um possível local de morte.
+              O que se espera de todo integrante da Polícia Federal no exercício de suas funções.
             </p>
             <div className="space-y-3 text-sm text-slate-100">
               <div className="flex items-start gap-3">
                 <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
-                <span>Viu alguém caído: tratou o local como potencial cena de crime.</span>
+                <span>Servir e proteger a sociedade com dedicação e coragem.</span>
               </div>
               <div className="flex items-start gap-3">
                 <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
-                <span>Não toquei no corpo em nenhuma hipótese.</span>
+                <span>Respeitar incondicionalmente os direitos e garantias fundamentais.</span>
               </div>
               <div className="flex items-start gap-3">
                 <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
-                <span>Isolei o local estabelecendo perímetro seguro.</span>
+                <span>Atuar com imparcialidade, legalidade e isenção.</span>
               </div>
               <div className="flex items-start gap-3">
                 <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
-                <span>Chamei a perícia e o DHPP imediatamente.</span>
+                <span>Manter conduta ilibada na vida pública e privada.</span>
               </div>
               <div className="flex items-start gap-3">
                 <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
-                <span>Preservei tudo até a chegada das equipes especializadas.</span>
+                <span>Zelar pela imagem e pelo bom nome da Polícia Federal.</span>
               </div>
               <div className="flex items-start gap-3">
                 <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
-                <span>Identifiquei e protegi testemunhas-chave para posterior oitiva.</span>
+                <span>Buscar constante aprimoramento técnico e profissional.</span>
               </div>
             </div>
           </div>
@@ -830,15 +826,15 @@ const Home = () => {
             <div className="space-y-3">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Gavel size={22} className="text-federal-400" />
-                Encerramento
+                Legado
               </h2>
               <p className="text-sm text-slate-200">
-                Este curso foi desenhado para que cada policial, em qualquer área, compreenda a
-                gravidade de um local de morte e o impacto direto de suas ações sobre a verdade dos fatos.
+                Este curso visa integrar o novo policial à cultura de excelência da Polícia Federal,
+                preparando-o para os desafios da carreira e fortalecendo o espírito de corpo.
               </p>
             </div>
             <p className="mt-6 text-base font-semibold text-federal-50">
-              “O DPF só consegue trabalhar bem quando ninguém mexe em nada.”
+              “Lealdade, Integridade e Eficiência.”
             </p>
           </div>
         </div>
@@ -848,7 +844,7 @@ const Home = () => {
         <div className="flex flex-col items-center gap-4 bg-slate-950 border border-slate-800 rounded-3xl p-6 sm:p-8">
           <p className="text-sm text-slate-300 text-center max-w-2xl">
             Após estudar o conteúdo, você pode testar seus conhecimentos em uma prova oficial deste curso.
-            São 20 questões objetivas focadas na doutrina correta de preservação de local de morte.
+            São 20 questões objetivas focadas na estrutura, história e funcionamento da instituição.
           </p>
           <button
             type="button"
@@ -911,7 +907,7 @@ const Home = () => {
                   Prova Oficial do Curso
                 </p>
                 <p className="text-sm font-semibold text-white">
-                  Preservação de Local de Morte – DPF
+                  Conhecimentos Institucionais – DPF
                 </p>
               </div>
               <button
