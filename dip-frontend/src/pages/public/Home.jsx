@@ -15,123 +15,123 @@ import {
 const modules = [
   {
     id: 1,
-    title: 'Módulo 1 — O DPF e sua missão',
-    description: 'Entenda o papel estratégico do DPF dentro da estrutura policial.',
+    title: 'Módulo 1 — Competência da Polícia Federal em Locais de Crime',
+    description: 'Quando o DPF assume a investigação de uma morte ou crime grave.',
     content: [
-      'Apresentação do DPF como unidade especializada na investigação de crimes federais e mortes violentas.',
-      'Enquadramento legal e normativo: o que a lei e os regulamentos internos atribuem ao DPF.',
-      'Diferença entre atendimento de rotina, patrulhamento e atuação especializada.',
-      'Visão de cadeia de custódia: como cada ato no local impacta o trabalho do DPF até a sentença judicial.'
+      'O Artigo 144 da Constituição e as atribuições exclusivas da Polícia Federal.',
+      'Morte em bens, serviços ou interesses da União (empresas públicas, autarquias).',
+      'Crimes com repercussão interestadual ou internacional que exigem repressão uniforme.',
+      'Investigação de homicídios em terras indígenas e crimes contra direitos humanos (quando federalizados).'
     ]
   },
   {
     id: 2,
-    title: 'Módulo 2 — Regra de Ouro do Local de Morte',
-    description: 'A regra que separa uma boa investigação de um caso perdido.',
+    title: 'Módulo 2 — O Agente Federal como Primeiro Interventor',
+    description: 'Postura do APF ao se deparar com um local de crime sob jurisdição federal.',
     content: [
-      'Conceito de Regra de Ouro: preservar tudo, tocar em nada, acionar a perícia e o DPF.',
-      'Por que o impulso de “ajudar” movendo o corpo ou objetos gera danos irreversíveis à prova.',
-      'Exemplos reais de investigações prejudicadas por violação da regra de ouro.',
-      'Postura profissional esperada do primeiro policial que chega ao local.'
+      'Segurança da equipe e avaliação de riscos em áreas de fronteira, portos ou aeroportos.',
+      'A decisão imediata de acionar a Perícia Federal e isolar o perímetro.',
+      'Diferença de protocolo entre operações de inteligência e ostensivas.',
+      'Gerenciamento de crise inicial até a chegada do Delegado de Polícia Federal.'
     ]
   },
   {
     id: 3,
-    title: 'Módulo 3 — O Primeiro Policial no Local',
-    description: 'Condutas obrigatórias de quem chega antes do DPF.',
+    title: 'Módulo 3 — Preservação em Cenários Federais Específicos',
+    description: 'Desafios únicos em aeroportos, portos, fronteiras e terras da União.',
     content: [
-      'Checklist inicial: segurança da guarnição, preservação de vidas e isolamento da área.',
-      'Comunicação com a Central e com o DPF: o que informar, como e quando.',
-      'Controle de acesso ao local: quem entra, quem não entra e como registrar.',
-      'Postura com familiares, curiosos e imprensa sem comprometer a investigação.'
+      'Morte a bordo de aeronaves ou embarcações: jurisdição e preservação do espaço confinado.',
+      'Corpos encontrados em áreas de fronteira seca: cooperação internacional e isolamento.',
+      'Crimes ambientais com resultado morte em unidades de conservação federal.',
+      'Procedimentos em sedes de órgãos federais (INSS, Caixa, Correios).'
     ]
   },
   {
     id: 4,
-    title: 'Módulo 4 — Preservação Total do Local',
-    description: 'Técnicas práticas para manter o local intacto até a chegada da perícia.',
+    title: 'Módulo 4 — Cadeia de Custódia na Justiça Federal',
+    description: 'O rigor técnico exigido nos processos criminais federais.',
     content: [
-      'Definição de perímetro primário e secundário e como delimitar cada um.',
-      'Uso de viaturas, cones, fitas e barreiras humanas para conter o fluxo de pessoas.',
-      'Cuidados com pegadas, marcas de pneus, manchas de sangue e vestígios frágeis.',
-      'Registro visual básico, quando autorizado por protocolo, sem invadir o trabalho pericial.'
+      'Rastreabilidade total do vestígio: do local do crime ao depósito central.',
+      'O papel do APF na documentação inicial para evitar nulidades em grandes operações.',
+      'Manuseio de evidências sensíveis (drogas, armas de grosso calibre, valores).',
+      'O uso de lacres e formulários padronizados do DPF.'
     ]
   },
   {
     id: 5,
-    title: 'Módulo 5 — Por que só a Perícia pode tocar no corpo',
-    description: 'Fundamentos técnicos e legais da atuação pericial sobre o cadáver.',
+    title: 'Módulo 5 — A Perícia Criminal Federal',
+    description: 'A atuação dos Peritos Criminais Federais (PCFs) e sua relação com a equipe.',
     content: [
-      'Diferença entre constatar óbito e prestar socorro em situações de urgência.',
-      'Como a posição original do corpo orienta a dinâmica do crime e a linha investigativa.',
-      'Impacto de movimentar o cadáver sobre a análise de manchas de sangue, trajetória de projéteis e sinais de defesa.',
-      'Responsabilidade funcional de quem desrespeita o limite técnico da perícia.'
+      'A autonomia técnica do Perito Criminal Federal no local.',
+      'Tecnologias de ponta usadas pela PF: scanner 3D, laboratórios móveis.',
+      'Por que o Agente não deve tocar no corpo ou nos vestígios antes do PCF.',
+      'Suporte armado e logístico à equipe de perícia em áreas hostis.'
     ]
   },
   {
     id: 6,
-    title: 'Módulo 6 — Papel do IML',
-    description: 'Do recolhimento do corpo ao laudo: o ciclo pericial.',
+    title: 'Módulo 6 — Crimes Violentos e Organizações Criminosas',
+    description: 'Cenas de crime envolvendo facções e tráfico internacional.',
     content: [
-      'Fluxo entre local de crime, remoção e recebimento no Instituto Médico Legal.',
-      'Exames realizados no IML: necropsia, exames complementares e documentação fotográfica.',
-      'Como o laudo tanatológico subsidia a investigação do DPF.',
-      'Prazos, limitações técnicas e importância de laudos bem solicitados pelo delegado.'
+      'Características de execuções ligadas ao crime organizado transnacional.',
+      'Identificação preliminar de cápsulas de armamento restrito e explosivos.',
+      'Cuidados com armadilhas (booby traps) em laboratórios de drogas ou depósitos.',
+      'A importância de não contaminar a inteligência policial com ações precipitadas.'
     ]
   },
   {
     id: 7,
-    title: 'Módulo 7 — Como o DPF monta uma investigação',
-    description: 'Etapas da investigação desde o primeiro chamado até o indiciamento.',
+    title: 'Módulo 7 — Integração com Outras Forças',
+    description: 'Relacionamento com PM, Polícia Civil e Forças Armadas.',
     content: [
-      'Levantamento preliminar no local e definição de hipóteses iniciais.',
-      'Coleta e análise de depoimentos, imagens, registros telefônicos e laudos periciais.',
-      'Construção de linha do tempo, dinâmica do crime e motivação provável.',
-      'Integração entre delegados, agentes, escrivães e peritos oficiais.'
+      'Assunção da ocorrência: quando a PF chega e assume a jurisdição.',
+      'Tratamento diplomático e técnico com as forças estaduais no local.',
+      'Operações de GLO (Garantia da Lei e da Ordem) e atuação conjunta.',
+      'Compartilhamento de informações versus sigilo da investigação federal.'
     ]
   },
   {
     id: 8,
-    title: 'Módulo 8 — Erros que destroem investigações',
-    description: 'O que nunca deve acontecer em um local de morte.',
+    title: 'Módulo 8 — O Inquérito Policial Federal',
+    description: 'Como o trabalho de local alimenta grandes investigações.',
     content: [
-      'Exemplos de casos comprometidos por manipulação indevida de vestígios.',
-      'Impacto jurídico: nulidade de prova, absolvições e arquivamentos.',
-      'Como a falta de registro básico inviabiliza a reconstrução do fato.',
-      'Cultura de responsabilização: cada um responde pelos atos que pratica no local.'
+      'O Relatório de Local de Crime como peça-chave do IPL.',
+      'Conexão entre a materialidade do local e a lavagem de dinheiro/organização criminosa.',
+      'Depoimentos iniciais de testemunhas federais ou servidores públicos.',
+      'A visão sistêmica: o local do corpo é apenas uma peça do quebra-cabeça.'
     ]
   },
   {
     id: 9,
-    title: 'Módulo 9 — Atuação do DPF em qualquer área',
-    description: 'Doutrina única, mesmo em comunidades ou áreas sensíveis.',
+    title: 'Módulo 9 — Protocolos de Segurança Orgânica',
+    description: 'Proteção da imagem e dos dados da instituição.',
     content: [
-      'Aplicação dos mesmos princípios de preservação em áreas de risco e comunidades.',
-      'Coordenação com unidades territoriais e forças de apoio tático.',
-      'Negociação de acesso ao local sem abrir mão da preservação de prova.',
-      'Respeito à população e firmeza técnica na condução da ocorrência.'
+      'Proibição absoluta de vazamento de imagens para imprensa ou redes sociais.',
+      'Controle de curiosos e imprensa em casos de grande repercussão nacional.',
+      'Uso de balaclava e preservação da identidade dos agentes operacionais.',
+      'Segurança da informação sensível encontrada no local (documentos, HDs).'
     ]
   },
   {
     id: 10,
-    title: 'Módulo 10 — Protocolo Operacional Padrão',
-    description: 'Transformando a doutrina em procedimento claro e repetível.',
+    title: 'Módulo 10 — Estudo de Casos Federais',
+    description: 'Lições aprendidas em grandes casos da Polícia Federal.',
     content: [
-      'Passo a passo padronizado desde o primeiro acionamento até a entrega do caso.',
-      'Documentos mínimos que devem ser gerados em toda ocorrência de morte.',
-      'Comunicação entre DPF, perícia, IML e Ministério Público.',
-      'Indicadores de qualidade para medir a eficácia da preservação de local.'
+      'Análise de erros e acertos em casos históricos (ex: Caso Riocentro, Queda de Aeronaves).',
+      'A evolução da doutrina de local de crime na PF nas últimas décadas.',
+      'O padrão ouro de investigação da Polícia Federal reconhecido internacionalmente.',
+      'A responsabilidade de manter esse legado.'
     ]
   },
   {
     id: 11,
-    title: 'Módulo 11 — Encerramento e mensagem final',
-    description: 'Fechamento doutrinário e reforço da cultura de preservação.',
+    title: 'Módulo 11 — O Padrão de Excelência DPF',
+    description: 'Mensagem final para o futuro Agente de Polícia Federal.',
     content: [
-      'Síntese dos principais pontos do curso com foco no dia a dia de rua.',
-      'Reflexão sobre a responsabilidade de quem é o primeiro a chegar no local.',
-      'Mensagem final do DPF: cada vestígio preservado é um passo rumo à verdade.',
-      'Compromisso ético: respeito às vítimas, às famílias e à sociedade.'
+      'Ser Policial Federal é ser técnico, legalista e eficiente.',
+      'A preservação do local é o primeiro ato de defesa da sociedade e da União.',
+      'Compromisso com a verdade real e a justiça.',
+      'Bem-vindo à elite da investigação criminal brasileira.'
     ]
   }
 ];
@@ -139,201 +139,201 @@ const modules = [
 const examQuestions = [
   {
     id: 1,
-    question: 'Ao chegar primeiro em um possível local de homicídio, qual é a prioridade absoluta?',
+    question: 'Qual é a competência constitucional primária da Polícia Federal em locais de morte?',
     options: [
-      { id: 'a', text: 'Verificar bolsos da vítima em busca de documentos' },
-      { id: 'b', text: 'Isolar o local, afastar pessoas e acionar DPF e perícia' },
-      { id: 'c', text: 'Permitir que familiares se aproximem para reconhecer o corpo' }
+      { id: 'a', text: 'Investigar todos os homicídios ocorridos no território nacional' },
+      { id: 'b', text: 'Apurar crimes contra bens, serviços e interesses da União, ou com repercussão interestadual/internacional' },
+      { id: 'c', text: 'Auxiliar a Polícia Militar no patrulhamento ostensivo de bairros' }
     ],
     correct: 'b'
   },
   {
     id: 2,
-    question: 'Por que não se deve virar o corpo antes da chegada da perícia?',
+    question: 'Um corpo é encontrado dentro de uma aeronave comercial em voo internacional que pousou em Guarulhos. De quem é a competência?',
     options: [
-      { id: 'a', text: 'Porque o corpo pode estar infectado' },
-      { id: 'b', text: 'Porque isso altera vestígios de posição, sangue e dinâmica do crime' },
-      { id: 'c', text: 'Porque apenas o delegado pode autorizar qualquer contato' }
+      { id: 'a', text: 'Polícia Civil de São Paulo' },
+      { id: 'b', text: 'Polícia Federal' },
+      { id: 'c', text: 'Polícia Militar' }
     ],
     correct: 'b'
   },
   {
     id: 3,
-    question: 'Qual é o entendimento correto sobre “todo local é potencial cena de crime”?',
+    question: 'Ao chegar em um local de crime em Terra Indígena, qual deve ser a postura do Agente Federal?',
     options: [
-      { id: 'a', text: 'Só vale para locais com sinais evidentes de violência' },
-      { id: 'b', text: 'Mesmo em suspeita de mal súbito, o local deve ser preservado até conclusão técnica' },
-      { id: 'c', text: 'Aplica-se apenas a casos de latrocínio ou execução' }
+      { id: 'a', text: 'Ignorar a liderança indígena e entrar na aldeia à força' },
+      { id: 'b', text: 'Isolar o local, respeitar a cultura local, mas garantir a preservação técnica para a Perícia Federal' },
+      { id: 'c', text: 'Deixar a investigação para a FUNAI' }
     ],
     correct: 'b'
   },
   {
     id: 4,
-    question: 'O que caracteriza a missão principal do DPF?',
+    question: 'Por que a Cadeia de Custódia é tratada com extremo rigor na Justiça Federal?',
     options: [
-      { id: 'a', text: 'Fiscalizar trânsito e aplicar multas' },
-      { id: 'b', text: 'Apurar crimes federais e contra a vida, com foco em investigações complexas' },
-      { id: 'c', text: 'Realizar policiamento comunitário em áreas de risco' }
+      { id: 'a', text: 'Apenas por burocracia administrativa' },
+      { id: 'b', text: 'Para evitar nulidades processuais em investigações complexas contra o crime organizado' },
+      { id: 'c', text: 'Porque os juízes federais não confiam nos agentes' }
     ],
     correct: 'b'
   },
   {
     id: 5,
-    question: 'Qual atitude em relação a cápsulas e projéteis encontrados no local é correta?',
+    question: 'Qual a função do Perito Criminal Federal (PCF) no local?',
     options: [
-      { id: 'a', text: 'Recolher rapidamente para evitar que alguém pise' },
-      { id: 'b', text: 'Deixar no local e preservar, aguardando a coleta pericial' },
-      { id: 'c', text: 'Guardá-los na viatura para entregar depois ao delegado' }
+      { id: 'a', text: 'Comandar a operação tática de prisão' },
+      { id: 'b', text: 'Realizar a análise técnico-científica, materializando a prova pericial com autonomia' },
+      { id: 'c', text: 'Apenas recolher o corpo para o IML' }
     ],
     correct: 'b'
   },
   {
     id: 6,
-    question: 'Por que o isolamento perimétrico é tão importante em locais de morte?',
+    question: 'Em uma operação contra o tráfico internacional, um suspeito é morto em confronto. O que o APF deve fazer?',
     options: [
-      { id: 'a', text: 'Para evitar que curiosos filmem e gerem repercussão na mídia' },
-      { id: 'b', text: 'Para preservar vestígios e impedir contaminação da cena' },
-      { id: 'c', text: 'Para facilitar o estacionamento das viaturas' }
+      { id: 'a', text: 'Alterar a cena para favorecer a equipe policial' },
+      { id: 'b', text: 'Preservar o local, as armas e cápsulas para a perícia, garantindo a lisura da ação policial' },
+      { id: 'c', text: 'Remover o corpo imediatamente para o hospital, mesmo se já houver sinais evidentes de morte' }
     ],
     correct: 'b'
   },
   {
     id: 7,
-    question: 'Em relação à atuação do IML, qual afirmação está correta?',
+    question: 'O que caracteriza um crime de repercussão interestadual que atrai a competência da PF?',
     options: [
-      { id: 'a', text: 'O IML apenas guarda corpos até o reconhecimento pela família' },
-      { id: 'b', text: 'O IML realiza necropsias e exames que definem causa e meio da morte' },
-      { id: 'c', text: 'O IML decide se haverá investigação policial ou não' }
+      { id: 'a', text: 'Um crime passional entre vizinhos' },
+      { id: 'b', text: 'Ação de grupos criminosos atuando em múltiplos estados com necessidade de repressão uniforme' },
+      { id: 'c', text: 'Furto de celular em transporte público' }
     ],
     correct: 'b'
   },
   {
     id: 8,
-    question: 'Qual é o impacto de “organizar” o local antes da perícia?',
+    question: 'Como deve ser o relacionamento com as forças estaduais (PM/PC) em um local de competência federal?',
     options: [
-      { id: 'a', text: 'Ajuda a perícia a circular com mais segurança' },
-      { id: 'b', text: 'Destrói a narrativa original da cena e compromete a investigação' },
-      { id: 'c', text: 'Não há impacto se for feito com cuidado' }
+      { id: 'a', text: 'De subordinação da PF às polícias estaduais' },
+      { id: 'b', text: 'De cooperação, mas com a PF assumindo a liderança da investigação e da perícia' },
+      { id: 'c', text: 'Hostil e sem troca de informações' }
     ],
     correct: 'b'
   },
   {
     id: 9,
-    question: 'O que se entende por preservação total do local?',
+    question: 'Qual o procedimento correto ao encontrar grandes somas de dinheiro em espécie no local?',
     options: [
-      { id: 'a', text: 'Manter apenas o corpo intocado; o resto pode ser mexido' },
-      { id: 'b', text: 'Proteger todo o perímetro, vestígios, objetos e trajetórias até a chegada da perícia' },
-      { id: 'c', text: 'Fechar apenas a área imediatamente ao redor da vítima' }
+      { id: 'a', text: 'Contar e guardar no bolso sem testemunhas' },
+      { id: 'b', text: 'Preservar no local exato para fotografia pericial, contabilizar com testemunhas e lacrar conforme protocolo' },
+      { id: 'c', text: 'Distribuir entre a equipe como gratificação' }
     ],
     correct: 'b'
   },
   {
     id: 10,
-    question: 'Por que só a perícia deve tocar no corpo em locais de morte?',
+    question: 'Em crimes cibernéticos ou financeiros, o "local de crime" pode ser:',
     options: [
-      { id: 'a', text: 'Porque o perito tem prioridade hierárquica sobre o policial' },
-      { id: 'b', text: 'Porque qualquer movimentação pode alterar sinais que orientam a dinâmica do crime' },
-      { id: 'c', text: 'Porque o policial não tem autorização legal para se aproximar da vítima' }
+      { id: 'a', text: 'Apenas onde há um corpo físico' },
+      { id: 'b', text: 'Computadores, servidores e mídias digitais, que também devem ser preservados (não ligados/desligados indevidamente)' },
+      { id: 'c', text: 'Apenas agências bancárias físicas' }
     ],
     correct: 'b'
   },
   {
     id: 11,
-    question: 'Em uma comunidade ou área sensível, como o DPF deve atuar?',
+    question: 'Por que o sigilo é vital em investigações da Polícia Federal?',
     options: [
-      { id: 'a', text: 'Abrindo mão da preservação de prova para evitar conflito' },
-      { id: 'b', text: 'Aplicando a mesma doutrina de preservação, ajustando apenas a segurança operacional' },
-      { id: 'c', text: 'Deixando a investigação para a unidade territorial local' }
+      { id: 'a', text: 'Para que a imprensa possa ter exclusividade depois' },
+      { id: 'b', text: 'Para não alertar organizações criminosas complexas e não comprometer operações futuras' },
+      { id: 'c', text: 'Porque a PF não gosta de publicidade' }
     ],
     correct: 'b'
   },
   {
     id: 12,
-    question: 'Qual é uma consequência jurídica de erros graves no local de crime?',
+    question: 'O que é a "Garantia da Lei e da Ordem" (GLO) e como afeta a competência?',
     options: [
-      { id: 'a', text: 'Apenas advertência interna; o processo penal não é afetado' },
-      { id: 'b', text: 'Possível nulidade de provas, absolvições ou arquivamento do caso' },
-      { id: 'c', text: 'Apenas demora maior na conclusão do inquérito' }
+      { id: 'a', text: 'Operação exclusiva da Guarda Municipal' },
+      { id: 'b', text: 'Operação onde Forças Armadas atuam com poder de polícia, exigindo integração fina com a PF judiciária' },
+      { id: 'c', text: 'Situação onde não existe mais lei' }
     ],
     correct: 'b'
   },
   {
     id: 13,
-    question: 'O que significa tratar o local com “respeito à cadeia de custódia”?',
+    question: 'Qual a importância do Relatório de Local de Crime para o Delegado de Polícia Federal?',
     options: [
-      { id: 'a', text: 'Registrar todo vestígio e preservar sua trajetória até o laudo' },
-      { id: 'b', text: 'Permitir que cada policial fotografe por conta própria' },
-      { id: 'c', text: 'Remover rapidamente objetos para a delegacia' }
+      { id: 'a', text: 'Nenhuma, o Delegado não vai ao local' },
+      { id: 'b', text: 'É a base para a instauração do Inquérito e para as primeiras diligências cautelares' },
+      { id: 'c', text: 'Serve apenas para estatística' }
     ],
-    correct: 'a'
+    correct: 'b'
   },
   {
     id: 14,
-    question: 'Qual deve ser a postura com familiares e curiosos no local de morte?',
+    question: 'Ao encontrar um laboratório de refino de drogas com produtos químicos, o APF deve:',
     options: [
-      { id: 'a', text: 'Permitir aproximação para acalmar as pessoas, mesmo dentro do perímetro' },
-      { id: 'b', text: 'Postura firme e respeitosa, mantendo-os fora da área isolada' },
-      { id: 'c', text: 'Evitar qualquer contato e ignorar totalmente a presença deles' }
+      { id: 'a', text: 'Manusear os produtos para identificar o cheiro' },
+      { id: 'b', text: 'Isolar a área imediatamente, ventilar se possível e aguardar peritos especializados em química forense' },
+      { id: 'c', text: 'Destruir tudo imediatamente' }
     ],
     correct: 'b'
   },
   {
     id: 15,
-    question: 'Em relação ao laudo do IML, qual é o papel para o DPF?',
+    question: 'Em caso de morte de autoridade estrangeira em visita oficial ao Brasil, a competência é:',
     options: [
-      { id: 'a', text: 'Apenas formalizar o encerramento do inquérito' },
-      { id: 'b', text: 'Fornecer elementos técnicos que confirmam ou corrigem hipóteses da investigação' },
-      { id: 'c', text: 'Definir sozinho quem é o autor do crime' }
+      { id: 'a', text: 'Da Guarda Municipal' },
+      { id: 'b', text: 'Federal, devido à repercussão internacional e diplomática' },
+      { id: 'c', text: 'Estadual comum' }
     ],
     correct: 'b'
   },
   {
     id: 16,
-    question: 'Qual é a consequência de permitir livre circulação de curiosos no local?',
+    question: 'O uso de balaclava e preservação da identidade do Agente Federal em operações serve para:',
     options: [
-      { id: 'a', text: 'Apenas maior dificuldade de trabalho para a perícia, sem impacto na prova' },
-      { id: 'b', text: 'Contaminação de vestígios, destruição de marcas e perda de informações' },
-      { id: 'c', text: 'Nenhuma, se o corpo estiver coberto' }
+      { id: 'a', text: 'Parecer mais "tático" nas fotos' },
+      { id: 'b', text: 'Proteger o servidor e sua família de represálias de organizações criminosas' },
+      { id: 'c', text: 'Esconder o rosto porque está feio' }
     ],
     correct: 'b'
   },
   {
     id: 17,
-    question: 'O que mede a eficácia da preservação do local segundo a doutrina do curso?',
+    question: 'Sobre a coleta de vestígios biológicos (sangue, DNA) em local federal:',
     options: [
-      { id: 'a', text: 'Quantidade de viaturas na cena' },
-      { id: 'b', text: 'Qualidade dos vestígios mantidos íntegros até a perícia e o laudo' },
-      { id: 'c', text: 'Tempo que a ocorrência levou para ser liberada' }
+      { id: 'a', text: 'Qualquer agente pode coletar com um pano' },
+      { id: 'b', text: 'Deve ser feita pelo PCF com técnica estéril para alimentar o Banco Nacional de Perfis Genéticos' },
+      { id: 'c', text: 'Não é relevante para a PF' }
     ],
     correct: 'b'
   },
   {
     id: 18,
-    question: 'Qual é o papel do primeiro policial em relação às testemunhas?',
+    question: 'Se um servidor público federal é encontrado morto em seu local de trabalho (repartição federal):',
     options: [
-      { id: 'a', text: 'Dispersá-las imediatamente para evitar aglomeração' },
-      { id: 'b', text: 'Identificar, proteger e registrar dados básicos das testemunhas-chave' },
-      { id: 'c', text: 'Deixar esse trabalho apenas para o delegado' }
+      { id: 'a', text: 'Chama-se a Polícia Civil, pois é homicídio comum' },
+      { id: 'b', text: 'Aciona-se a Polícia Federal, pois ocorreu em bem da União e pode ter relação com a função' },
+      { id: 'c', text: 'O chefe da repartição investiga' }
     ],
     correct: 'b'
   },
   {
     id: 19,
-    question: 'Por que registrar informações básicas logo no atendimento inicial é tão importante?',
+    question: 'Qual o valor da prova testemunhal colhida no calor dos fatos pelo APF?',
     options: [
-      { id: 'a', text: 'Para gerar estatística interna da corporação' },
-      { id: 'b', text: 'Porque muitos detalhes se perdem com o tempo e com a movimentação do local' },
-      { id: 'c', text: 'Para facilitar o trabalho da imprensa' }
+      { id: 'a', text: 'Baixo, o que vale é o juiz' },
+      { id: 'b', text: 'Alto, pois registra a versão espontânea antes de coações ou esquecimentos (res gestae)' },
+      { id: 'c', text: 'Nenhum, agente não ouve testemunha' }
     ],
     correct: 'b'
   },
   {
     id: 20,
-    question: 'Quando se pode considerar que o trabalho de preservação foi bem-sucedido?',
+    question: 'O "Padrão DPF" de investigação significa:',
     options: [
-      { id: 'a', text: 'Quando o local é rapidamente liberado para circulação' },
-      { id: 'b', text: 'Quando DPF, perícia e IML conseguem reconstruir a dinâmica com base em vestígios íntegros' },
-      { id: 'c', text: 'Quando nenhum familiar reclama do atendimento' }
+      { id: 'a', text: 'Fazer o básico e ir embora' },
+      { id: 'b', text: 'Atuar com excelência técnica, legalidade estrita e uso intensivo de inteligência e perícia científica' },
+      { id: 'c', text: 'Usar sempre o armamento mais pesado' }
     ],
     correct: 'b'
   }
@@ -395,7 +395,7 @@ const Home = () => {
 
     try {
       const mensagem = [
-        'Prova DPF - Preservação de Local de Morte',
+        'Prova DPF - Preservação de Local de Crime Federal',
         `Nome: ${examForm.nome || 'N/A'}`,
         `Matrícula: ${examForm.matricula || 'N/A'}`,
         `Lotação/Unidade: ${examForm.lotacao || 'N/A'}`,
@@ -483,8 +483,8 @@ const Home = () => {
                 </div>
                 <div className="mt-4 space-y-3 text-sm text-slate-300">
                   <p>
-                    Visual sério, policial e investigativo, com ênfase em cenas de crime, isolamento de área e
-                    integração entre DPF, perícia e IML.
+                    Visual sério, policial e investigativo, com ênfase em crimes federais, operações interestaduais e
+                    integração entre Agentes, Escrivães, Delegados e Peritos Criminais Federais.
                   </p>
                   <p>
                     Todo o conteúdo é construído para a realidade do atendimento inicial: a primeira viatura,
