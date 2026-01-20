@@ -396,10 +396,10 @@ const Home = () => {
 
     try {
       const mensagem = [
-        'Prova DPF - Conhecimentos Institucionais (Admissão)',
+        'Prova DPF - Conhecimentos Institucionais (Curso Básico)',
         `Nome: ${examForm.nome || 'N/A'}`,
-        `CPF: ${examForm.cpf || 'N/A'}`,
-        `Cidade/UF: ${examForm.cidade || 'N/A'}`,
+        `Matrícula: ${examForm.matricula || 'N/A'}`,
+        `Lotação: ${examForm.lotacao || 'N/A'}`,
         `Telefone: ${examForm.telefone || 'N/A'}`,
         `Resultado: ${aprovado ? 'APROVADO' : 'REPROVADO'}`,
         `Acertos: ${score}/20`
@@ -952,7 +952,7 @@ const Home = () => {
               {examStep === 'form' && (
                 <form onSubmit={handleExamFormSubmit} className="space-y-5">
                   <p className="text-sm text-slate-300">
-                    Preencha o formulário de inscrição para o Simulado Oficial DPF.
+                    Preencha seus dados para identificação interna.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -965,31 +965,31 @@ const Home = () => {
                         value={examForm.nome}
                         onChange={(e) => setExamForm({ ...examForm, nome: e.target.value })}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500"
-                        placeholder="Ex: João da Silva"
+                        placeholder="Ex: Inspetor João Silva"
                       />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                        CPF / Documento
+                        Matrícula / Identificação
                       </label>
                       <input
                         type="text"
-                        value={examForm.cpf}
-                        onChange={(e) => setExamForm({ ...examForm, cpf: e.target.value })}
+                        value={examForm.matricula}
+                        onChange={(e) => setExamForm({ ...examForm, matricula: e.target.value })}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500"
-                        placeholder="Ex: 000.000.000-00"
+                        placeholder="Ex: 12345-XX"
                       />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                        Cidade / UF
+                        Lotação / Unidade
                       </label>
                       <input
                         type="text"
-                        value={examForm.cidade}
-                        onChange={(e) => setExamForm({ ...examForm, cidade: e.target.value })}
+                        value={examForm.lotacao}
+                        onChange={(e) => setExamForm({ ...examForm, lotacao: e.target.value })}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500"
-                        placeholder="Ex: Brasília/DF"
+                        placeholder="Ex: DPF, Superintendência Regional"
                       />
                     </div>
                     <div className="space-y-2">

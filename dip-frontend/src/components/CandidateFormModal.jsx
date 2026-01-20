@@ -19,103 +19,203 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
   const quizQuestions = [
     {
       id: 1,
-      question: "Qual é a principal função da Divisão de Homicídios (DH)?",
+      question: 'Onde está localizada a Academia Nacional de Polícia (ANP), responsável pela formação de todos os Policiais Federais?',
       options: [
-        { id: 'a', text: "Aplicar multas de trânsito em alta velocidade" },
-        { id: 'b', text: "Investigar crimes contra a vida e prender os autores" },
-        { id: 'c', text: "Fazer patrulhamento ostensivo em áreas de risco" }
+        { id: 'a', text: 'Rio de Janeiro/RJ' },
+        { id: 'b', text: 'Brasília/DF' },
+        { id: 'c', text: 'São Paulo/SP' }
       ],
       correct: 'b'
     },
     {
       id: 2,
-      question: "Ao chegar em uma cena de crime com um corpo, qual a primeira atitude correta?",
+      question: 'Qual é o requisito básico de escolaridade para ingresso em qualquer cargo da carreira policial federal (Agente, Escrivão, Papiloscopista, Delegado e Perito)?',
       options: [
-        { id: 'a', text: "Revistar o corpo imediatamente em busca de documentos" },
-        { id: 'b', text: "Isolar o local e acionar a Polícia Científica" },
-        { id: 'c', text: "Remover o corpo para liberar o trânsito" }
+        { id: 'a', text: 'Nível Médio' },
+        { id: 'b', text: 'Nível Superior' },
+        { id: 'c', text: 'Nível Fundamental' }
       ],
       correct: 'b'
     },
     {
       id: 3,
-      question: "O que é Cadeia de Custódia na Polícia Científica?",
+      question: 'O Teste de Aptidão Física (TAF) é uma etapa eliminatória do concurso. O que ele avalia?',
       options: [
-        { id: 'a', text: "Uma prisão especial para peritos" },
-        { id: 'b', text: "O rastreamento documental da evidência desde a coleta até o descarte" },
-        { id: 'c', text: "O conjunto de algemas usadas em suspeitos" }
+        { id: 'a', text: 'Conhecimentos jurídicos' },
+        { id: 'b', text: 'A capacidade física do candidato para desempenhar as atividades policiais' },
+        { id: 'c', text: 'A saúde mental' }
       ],
       correct: 'b'
     },
     {
       id: 4,
-      question: "Qual profissional é responsável pela autópsia e determinação da causa da morte?",
+      question: 'Durante o Curso de Formação Profissional na ANP, qual é o status do aluno?',
       options: [
-        { id: 'a', text: "Médico Legista" },
-        { id: 'b', text: "Investigador de Homicídios" },
-        { id: 'c', text: "Delegado Titular" }
+        { id: 'a', text: 'Ele já é policial nomeado' },
+        { id: 'b', text: 'Ele recebe uma bolsa de auxílio financeiro (50% do subsídio) e dedicação exclusiva' },
+        { id: 'c', text: 'Ele trabalha voluntariamente' }
       ],
-      correct: 'a'
+      correct: 'b'
     },
     {
       id: 5,
-      question: "O que caracteriza um Homicídio Qualificado?",
+      question: 'Qual é o regime de trabalho exigido para o cargo de Policial Federal?',
       options: [
-        { id: 'a', text: "Quando o crime é cometido por acidente de trânsito" },
-        { id: 'b', text: "Quando há motivo fútil, meio cruel ou emboscada" },
-        { id: 'c', text: "Quando o autor se entrega espontaneamente" }
+        { id: 'a', text: 'Regime de meio período' },
+        { id: 'b', text: 'Dedicação integral e exclusiva (salvo magistério)' },
+        { id: 'c', text: 'Trabalho remoto opcional' }
       ],
       correct: 'b'
     },
     {
       id: 6,
-      question: "Qual a função da Balística Forense?",
+      question: 'Qual a idade mínima exigida para a matrícula no Curso de Formação Profissional?',
       options: [
-        { id: 'a', text: "Analisar armas de fogo, projéteis e trajetórias de tiro" },
-        { id: 'b', text: "Treinar policiais para atirar melhor" },
-        { id: 'c', text: "Fabricar munições para a polícia" }
+        { id: 'a', text: '21 anos' },
+        { id: 'b', text: '18 anos completos' },
+        { id: 'c', text: '25 anos' }
       ],
-      correct: 'a'
+      correct: 'b'
     },
     {
       id: 7,
-      question: "Durante um interrogatório na DH, o que é essencial garantir ao suspeito?",
+      question: 'A Investigação Social é uma etapa do concurso que visa avaliar:',
       options: [
-        { id: 'a', text: "Que ele confesse imediatamente sob pressão" },
-        { id: 'b', text: "Seus direitos constitucionais, incluindo o de permanecer calado" },
-        { id: 'c', text: "Uma refeição completa antes de falar" }
+        { id: 'a', text: 'A conta bancária do candidato' },
+        { id: 'b', text: 'A conduta irrepreensível e a idoneidade moral do candidato' },
+        { id: 'c', text: 'As notas escolares do ensino fundamental' }
       ],
       correct: 'b'
     },
     {
       id: 8,
-      question: "Como deve ser coletada uma arma de fogo encontrada na cena do crime?",
+      question: 'Sobre o porte de arma de fogo do Policial Federal, é correto afirmar:',
       options: [
-        { id: 'a', text: "Pegando pelo cano com as mãos nuas" },
-        { id: 'b', text: "Usando luvas e pegando por áreas texturizadas (grip)" },
-        { id: 'c', text: "Não se deve coletar, apenas tirar foto" }
+        { id: 'a', text: 'Só pode usar em serviço' },
+        { id: 'b', text: 'É prerrogativa do cargo, com validade em todo o território nacional' },
+        { id: 'c', text: 'Não tem direito a porte' }
       ],
       correct: 'b'
     },
     {
       id: 9,
-      question: "O que é o exame residuográfico?",
+      question: 'Conforme a Constituição Federal (Art. 144), a Polícia Federal é organizada e mantida pela União como órgão:',
       options: [
-        { id: 'a', text: "Teste para detectar presença de drogas no sangue" },
-        { id: 'b', text: "Teste para detectar resíduos de pólvora nas mãos de um atirador" },
-        { id: 'c', text: "Exame de DNA em bitucas de cigarro" }
+        { id: 'a', text: 'Temporário' },
+        { id: 'b', text: 'Permanente' },
+        { id: 'c', text: 'Terceirizado' }
       ],
       correct: 'b'
     },
     {
       id: 10,
-      question: "Qual a importância do isolamento perimétrico em um local de homicídio?",
+      question: 'Qual é a principal lei que rege o regime disciplinar e o estatuto dos Policiais Federais?',
       options: [
-        { id: 'a', text: "Preservar vestígios e impedir a contaminação da cena" },
-        { id: 'b', text: "Apenas para afastar curiosos e a imprensa" },
-        { id: 'c', text: "Para que os policiais possam descansar sem serem incomodados" }
+        { id: 'a', text: 'CLT' },
+        { id: 'b', text: 'Lei 4.878/65' },
+        { id: 'c', text: 'Código Comercial' }
       ],
-      correct: 'a'
+      correct: 'b'
+    },
+    {
+      id: 11,
+      question: 'Quais são os dois pilares fundamentais da função policial previstos em lei?',
+      options: [
+        { id: 'a', text: 'Força e Velocidade' },
+        { id: 'b', text: 'Hierarquia e Disciplina' },
+        { id: 'c', text: 'Armas e Distintivos' }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 12,
+      question: 'Ao ser aprovado em todas as etapas e nomeado, em qual classe o Policial Federal ingressa na carreira?',
+      options: [
+        { id: 'a', text: 'Classe Especial' },
+        { id: 'b', text: '3ª Classe (ou classe inicial da carreira)' },
+        { id: 'c', text: 'Diretor' }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 13,
+      question: 'Qual categoria de Carteira Nacional de Habilitação (CNH) é exigida no concurso da PF?',
+      options: [
+        { id: 'a', text: 'Categoria A apenas' },
+        { id: 'b', text: 'Categoria B ou superior' },
+        { id: 'c', text: 'Não precisa de CNH' }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 14,
+      question: 'A primeira lotação do Policial Federal recém-formado ocorre preferencialmente em:',
+      options: [
+        { id: 'a', text: 'Sua cidade natal' },
+        { id: 'b', text: 'Regiões de fronteira e na Amazônia Legal' },
+        { id: 'c', text: 'Capitais do litoral' }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 15,
+      question: 'O Exame Psicotécnico visa aferir:',
+      options: [
+        { id: 'a', text: 'Conhecimentos de matemática' },
+        { id: 'b', text: 'Perfil psicológico compatível com o cargo e porte de arma' },
+        { id: 'c', text: 'Capacidade de memorização' }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 16,
+      question: 'Qual cargo da Polícia Federal exige bacharelado em Direito e 3 anos de atividade jurídica ou policial?',
+      options: [
+        { id: 'a', text: 'Agente' },
+        { id: 'b', text: 'Delegado de Polícia Federal' },
+        { id: 'c', text: 'Perito' }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 17,
+      question: 'O que acontece com o candidato que é reprovado no Curso de Formação na ANP?',
+      options: [
+        { id: 'a', text: 'Tenta de novo no mês seguinte' },
+        { id: 'b', text: 'É eliminado do concurso público' },
+        { id: 'c', text: 'Paga uma multa e continua' }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 18,
+      question: 'O combate ao crime organizado e à corrupção é uma prioridade da PF. Quem conduz o Inquérito Policial?',
+      options: [
+        { id: 'a', text: 'O Agente' },
+        { id: 'b', text: 'O Delegado de Polícia Federal' },
+        { id: 'c', text: 'O Juiz' }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 19,
+      question: 'A Polícia Federal é subordinada administrativamente a qual órgão?',
+      options: [
+        { id: 'a', text: 'Ministério da Defesa' },
+        { id: 'b', text: 'Ministério da Justiça e Segurança Pública' },
+        { id: 'c', text: 'Gabinete de Segurança Institucional' }
+      ],
+      correct: 'b'
+    },
+    {
+      id: 20,
+      question: 'Qual é o lema não oficial frequentemente associado aos valores de integridade da PF?',
+      options: [
+        { id: 'a', text: 'Aos amigos tudo, aos inimigos a lei' },
+        { id: 'b', text: 'Lealdade, Integridade e Eficiência (valores institucionais)' },
+        { id: 'c', text: 'Salve-se quem puder' }
+      ],
+      correct: 'b'
     }
   ];
 
@@ -139,7 +239,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
       }
     });
 
-    if (score >= 7) {
+    if (score >= 10) {
       setQuizStatus('success');
       await submitApplication(score);
     } else {
@@ -330,7 +430,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                 <>
                   <div className="text-center mb-8">
                     <h2 className="text-2xl font-bold text-white mb-2">Teste de Admissão</h2>
-                    <p className="text-slate-400">Responda corretamente a pelo menos 7 das 10 questões para enviar sua candidatura.</p>
+                    <p className="text-slate-400">Responda corretamente a pelo menos 10 das 20 questões para enviar sua candidatura.</p>
                   </div>
 
                   <div className="space-y-6">
@@ -382,9 +482,9 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                     <button 
                       type="button"
                       onClick={handleQuizSubmit}
-                      disabled={Object.keys(quizAnswers).length < 10}
+                      disabled={Object.keys(quizAnswers).length < 20}
                       className={`w-2/3 py-4 font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                        Object.keys(quizAnswers).length < 10
+                        Object.keys(quizAnswers).length < 20
                           ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
                           : 'bg-federal-600 hover:bg-federal-500 text-white hover:-translate-y-1 shadow-lg shadow-federal-900/20'
                       }`}
@@ -403,7 +503,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Reprovado no Teste</h3>
                   <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                    Você não atingiu a pontuação mínima necessária (4/5). Estude o regulamento e tente novamente.
+                    Você não atingiu a pontuação mínima necessária (10/20). Estude o regulamento e tente novamente.
                   </p>
                   <button 
                     onClick={handleRetryQuiz}

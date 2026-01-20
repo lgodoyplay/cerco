@@ -15,7 +15,7 @@ const HowToJoin = () => {
     {
       icon: Brain,
       title: "2. Prova Teórica",
-      desc: "Avaliação de conhecimentos sobre o Código Penal, Constituição e Regras da Cidade."
+      desc: "Avaliação de conhecimentos sobre a instituição, carreira e requisitos (20 questões)."
     },
     {
       icon: Dumbbell,
