@@ -82,6 +82,35 @@ const WebhookSettings = () => {
       </div>
 
       <div className="grid gap-6">
+        {/* Porte de Armas */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-slate-800 rounded-lg text-red-500">
+              <Target size={24} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Porte de Armas</h3>
+              <p className="text-sm text-slate-400">Notificações de status de solicitações de porte.</p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <input
+              type="text"
+              name="weaponsWebhook"
+              value={config.weaponsWebhook}
+              onChange={handleChange}
+              placeholder="https://discord.com/api/webhooks/..."
+              className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
+            />
+            <button
+              onClick={() => handleTestWebhook(config.weaponsWebhook, 'Porte de Armas')}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition-colors"
+            >
+              Testar
+            </button>
+          </div>
+        </div>
+
         {/* Formulários */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
           <div className="flex items-center gap-3 mb-4">

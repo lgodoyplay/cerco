@@ -18,6 +18,7 @@ const Rules = React.lazy(() => lazyImport(routeLoaders.Rules));
 const HowToJoin = React.lazy(() => lazyImport(routeLoaders.HowToJoin));
 const Login = React.lazy(() => lazyImport(routeLoaders.Login));
 const SearchAndInvestigations = React.lazy(() => lazyImport(routeLoaders.SearchAndInvestigations));
+const WeaponsLicense = React.lazy(() => lazyImport(routeLoaders.WeaponsLicense));
 
 // Private Pages
 const DashboardHome = React.lazy(() => lazyImport(routeLoaders.DashboardHome));
@@ -40,6 +41,8 @@ const ForensicsDetail = React.lazy(() => lazyImport(routeLoaders.ForensicsDetail
 
 const RevenueList = React.lazy(() => lazyImport(routeLoaders.RevenueList));
 const RevenueDetail = React.lazy(() => lazyImport(routeLoaders.RevenueDetail));
+
+const WeaponsManager = React.lazy(() => lazyImport(routeLoaders.WeaponsManager));
 
 // Settings Pages - Eagerly loaded for better UX
 import SecurityConfig from './pages/private/settings/SecurityConfig';
@@ -104,6 +107,7 @@ function App() {
             <Route path="/rules" element={<Rules />} />
             <Route path="/join" element={<HowToJoin />} />
             <Route path="/pesquisas-e-apuracoes" element={<SearchAndInvestigations />} />
+            <Route path="/porte-de-armas" element={<WeaponsLicense />} />
           </Route>
 
           <Route path="/login" element={<Login />} />
@@ -167,6 +171,9 @@ function App() {
             {/* Revenue Routes */}
             <Route path="revenue" element={<RevenueList />} />
             <Route path="revenue/:id" element={<RevenueDetail />} />
+
+            {/* Weapons Routes */}
+            <Route path="weapons" element={<WeaponsManager />} />
             
             {/* Profile Route */}
             <Route path="profile" element={<ProfilePage />} />

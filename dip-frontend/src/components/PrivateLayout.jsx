@@ -64,6 +64,7 @@ const PrivateLayout = () => {
     { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados', prefetchKey: 'WantedList' },
     { to: '/dashboard/investigations', icon: Search, label: 'Investigações', prefetchKey: 'InvestigationList' },
     { to: '/dashboard/forensics', icon: FileSearch, label: 'Perícias', prefetchKey: 'ForensicsList' },
+    { to: '/dashboard/weapons', icon: Target, label: 'Porte de Armas', prefetchKey: 'WeaponsManager' },
     { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList' },
     { to: '/dashboard/settings', icon: Settings, label: 'Configurações', prefetchKey: 'SettingsLayout' },
   ];

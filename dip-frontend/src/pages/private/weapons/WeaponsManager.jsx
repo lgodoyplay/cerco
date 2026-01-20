@@ -1,0 +1,277 @@
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../../lib/supabase';
+import { 
+  Shield, CheckCircle, XCircle, Clock, AlertTriangle, 
+  FileText, Search, Filter, MoreVertical, Archive, RefreshCw, Send
+} from 'lucide-react';
+
+const StatusBadge = ({ status }) => {
+  const styles = {
+    pending: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+    processing: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    approved: 'bg-green-500/10 text-green-500 border-green-500/20',
+    rejected: 'bg-red-500/10 text-red-500 border-red-500/20',
+    revoked: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
+    expired: 'bg-orange-500/10 text-orange-500 border-orange-500/20'
+  };
+
+  const labels = {
+    pending: 'Pendente',
+    processing: 'Em Análise',
+    approved: 'Aprovado',
+    rejected: 'Negado',
+    revoked: 'Revogado',
+    expired: 'Vencido'
+  };
+
+  return (
+    <span className={`px-2 py-1 rounded-md text-xs font-bold border ${styles[status] || styles.pending}`}>
+      {labels[status] || status}
+    </span>
+  );
+};
+
+const WeaponsManager = () => {
+  const [activeTab, setActiveTab] = useState('requests'); // requests, process, archive
+  const [licenses, setLicenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedLicense, setSelectedLicense] = useState(null);
+  
+  // Fetch data based on active tab
+  useEffect(() => {
+    fetchLicenses();
+  }, [activeTab]);
+
+  const fetchLicenses = async () => {
+    setLoading(true);
+    try {
+      let query = supabase
+        .from('weapon_licenses')
+        .select('*, license_attachments(*)');
+
+      if (activeTab === 'requests') {
+        query = query.eq('status', 'pending');
+      } else if (activeTab === 'process') {
+        query = query.eq('status', 'processing');
+      } else if (activeTab === 'archive') {
+        query = query.in('status', ['approved', 'rejected', 'revoked', 'expired']);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setLicenses(data || []);
+    } catch (err) {
+      console.error('Error fetching licenses:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateStatus = async (id, newStatus) => {
+    try {
+      const updates = { status: newStatus };
+      
+      if (newStatus === 'approved') {
+        const now = new Date();
+        const expires = new Date();
+        expires.setDate(now.getDate() + 30); // 30 dias de validade
+        
+        updates.approved_at = now.toISOString();
+        updates.expires_at = expires.toISOString();
+      }
+
+      const { error } = await supabase
+        .from('weapon_licenses')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      // Refresh list
+      fetchLicenses();
+      setSelectedLicense(null);
+      
+      // Send Webhook notification
+      // We pass the license object with updated status for the notification context
+      // Note: sendWebhookNotification uses the passed status, not the license.status (which is old in the object)
+      sendWebhookNotification({ ...selectedLicense, ...updates }, newStatus);
+      
+    } catch (err) {
+      console.error('Error updating status:', err);
+      alert('Erro ao atualizar status.');
+    }
+  };
+
+  const LicenseCard = ({ license }) => (
+    <div 
+      onClick={() => setSelectedLicense(license)}
+      className={`bg-slate-900 border border-slate-800 rounded-xl p-4 cursor-pointer transition-all hover:border-federal-500/50 hover:bg-slate-800 ${selectedLicense?.id === license.id ? 'border-federal-500 ring-1 ring-federal-500' : ''}`}
+    >
+      <div className="flex justify-between items-start mb-3">
+        <StatusBadge status={license.status} />
+        <span className="text-xs text-slate-500">
+          {new Date(license.created_at).toLocaleDateString()}
+        </span>
+      </div>
+      <h3 className="font-bold text-white mb-1">{license.full_name}</h3>
+      <p className="text-xs text-slate-400 mb-2">ID: {license.passport_id}</p>
+      <p className="text-xs text-slate-500 line-clamp-2">{license.reason}</p>
+    </div>
+  );
+
+  return (
+    <div className="h-[calc(100vh-6rem)] flex flex-col md:flex-row gap-6">
+      {/* Sidebar List */}
+      <div className="w-full md:w-1/3 flex flex-col gap-4">
+        {/* Tabs */}
+        <div className="flex p-1 bg-slate-900 rounded-lg border border-slate-800">
+          <button
+            onClick={() => setActiveTab('requests')}
+            className={`flex-1 py-2 text-xs font-bold rounded-md transition-colors ${activeTab === 'requests' ? 'bg-federal-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+          >
+            Solicitações
+          </button>
+          <button
+            onClick={() => setActiveTab('process')}
+            className={`flex-1 py-2 text-xs font-bold rounded-md transition-colors ${activeTab === 'process' ? 'bg-federal-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+          >
+            Em Processo
+          </button>
+          <button
+            onClick={() => setActiveTab('archive')}
+            className={`flex-1 py-2 text-xs font-bold rounded-md transition-colors ${activeTab === 'archive' ? 'bg-federal-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+          >
+            Arquivo
+          </button>
+        </div>
+
+        {/* List */}
+        <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+          {loading ? (
+            <div className="text-center py-10 text-slate-500 text-sm">Carregando...</div>
+          ) : licenses.length === 0 ? (
+            <div className="text-center py-10 text-slate-500 text-sm">Nenhum registro encontrado.</div>
+          ) : (
+            licenses.map(lic => <LicenseCard key={lic.id} license={lic} />)
+          )}
+        </div>
+      </div>
+
+      {/* Detail View */}
+      <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-6 overflow-y-auto">
+        {selectedLicense ? (
+          <div className="space-y-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-bold text-white">{selectedLicense.full_name}</h2>
+                <div className="flex items-center gap-4 mt-2 text-sm text-slate-400">
+                  <span>Passaporte: {selectedLicense.passport_id}</span>
+                  <span>•</span>
+                  <span>Tel: {selectedLicense.phone}</span>
+                </div>
+              </div>
+              <StatusBadge status={selectedLicense.status} />
+            </div>
+
+            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+              <h3 className="text-sm font-bold text-slate-300 mb-2">Motivo da Solicitação</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">{selectedLicense.reason}</p>
+            </div>
+
+            {selectedLicense.license_attachments?.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-slate-300 mb-3">Documentos Anexados</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {selectedLicense.license_attachments.map(att => (
+                    <a 
+                      key={att.id} 
+                      href={att.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-slate-800 rounded-lg border border-slate-700 hover:border-federal-500 transition-colors"
+                    >
+                      <FileText className="text-federal-400" size={20} />
+                      <span className="text-xs text-slate-300 truncate">{att.file_name}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="pt-6 border-t border-slate-800">
+              <h3 className="text-sm font-bold text-white mb-4">Ações</h3>
+              <div className="flex flex-wrap gap-3">
+                {selectedLicense.status === 'pending' && (
+                  <>
+                    <button
+                      onClick={() => updateStatus(selectedLicense.id, 'processing')}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-lg flex items-center gap-2"
+                    >
+                      <CheckCircle size={16} />
+                      Aceitar Processo
+                    </button>
+                    <button
+                      onClick={() => updateStatus(selectedLicense.id, 'rejected')}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-bold rounded-lg flex items-center gap-2"
+                    >
+                      <XCircle size={16} />
+                      Negar Solicitação
+                    </button>
+                  </>
+                )}
+
+                {selectedLicense.status === 'processing' && (
+                  <>
+                    <button
+                      onClick={() => updateStatus(selectedLicense.id, 'approved')}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-bold rounded-lg flex items-center gap-2"
+                    >
+                      <CheckCircle size={16} />
+                      Finalizar e Aprovar
+                    </button>
+                    <button
+                      onClick={() => updateStatus(selectedLicense.id, 'rejected')}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-bold rounded-lg flex items-center gap-2"
+                    >
+                      <XCircle size={16} />
+                      Finalizar por Falta de Conclusão
+                    </button>
+                  </>
+                )}
+
+                {selectedLicense.status === 'approved' && (
+                  <button
+                    onClick={() => updateStatus(selectedLicense.id, 'revoked')}
+                    className="px-4 py-2 bg-red-900/50 hover:bg-red-900 text-red-200 border border-red-800 text-sm font-bold rounded-lg flex items-center gap-2"
+                  >
+                    <AlertTriangle size={16} />
+                    Revogar Porte
+                  </button>
+                )}
+                
+                {(selectedLicense.status === 'revoked' || selectedLicense.status === 'expired') && (
+                   <button
+                    onClick={() => updateStatus(selectedLicense.id, 'processing')}
+                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold rounded-lg flex items-center gap-2"
+                  >
+                    <RefreshCw size={16} />
+                    Reabrir para Renovação
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-slate-500">
+            <Shield size={48} className="mb-4 opacity-20" />
+            <p>Selecione uma solicitação para ver os detalhes</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default WeaponsManager;

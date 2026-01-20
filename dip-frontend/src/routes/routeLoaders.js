@@ -5,6 +5,7 @@ export const routeLoaders = {
   HowToJoin: () => import('../pages/public/HowToJoin'),
   Login: () => import('../pages/public/Login'),
   SearchAndInvestigations: () => import('../pages/public/SearchAndInvestigations'),
+  WeaponsLicense: () => import('../pages/public/WeaponsLicense'),
 
   // Private - Dashboard
   DashboardHome: () => import('../pages/private/DashboardHome'),
@@ -28,8 +29,11 @@ export const routeLoaders = {
   ForensicsDetail: () => import('../pages/private/forensics/ForensicsDetail'),
 
   // Revenue
-  RevenueList: () => import('../pages/private/Revenue/RevenueList'),
-  RevenueDetail: () => import('../pages/private/Revenue/RevenueDetail'),
+  RevenueList: () => import('../pages/private/revenue/RevenueList'),
+  RevenueDetail: () => import('../pages/private/revenue/RevenueDetail'),
+
+  // Weapons
+  WeaponsManager: () => import('../pages/private/weapons/WeaponsManager'),
 
   // Settings
   SettingsLayout: () => import('../pages/private/settings/SettingsLayout'),
