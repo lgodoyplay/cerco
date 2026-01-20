@@ -19,201 +19,201 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
   const quizQuestions = [
     {
       id: 1,
-      question: 'Onde está localizada a Academia Nacional de Polícia (ANP), responsável pela formação de todos os Policiais Federais?',
+      question: 'Qual é a principal função da Academia Nacional de Polícia (ANP)?',
       options: [
-        { id: 'a', text: 'Rio de Janeiro/RJ' },
-        { id: 'b', text: 'Brasília/DF' },
-        { id: 'c', text: 'São Paulo/SP' }
+        { id: 'a', text: 'Vender cursos online' },
+        { id: 'b', text: 'Formar e treinar os novos Policiais Federais' },
+        { id: 'c', text: 'Organizar festas para a polícia' }
       ],
       correct: 'b'
     },
     {
       id: 2,
-      question: 'Qual é o requisito básico de escolaridade para ingresso em qualquer cargo da carreira policial federal (Agente, Escrivão, Papiloscopista, Delegado e Perito)?',
+      question: 'O que é necessário para se tornar um Policial Federal na cidade?',
       options: [
-        { id: 'a', text: 'Nível Médio' },
-        { id: 'b', text: 'Nível Superior' },
-        { id: 'c', text: 'Nível Fundamental' }
+        { id: 'a', text: 'Ser amigo do dono da cidade' },
+        { id: 'b', text: 'Passar no recrutamento e ter ficha limpa' },
+        { id: 'c', text: 'Pagar uma taxa em dinheiro' }
       ],
       correct: 'b'
     },
     {
       id: 3,
-      question: 'O Teste de Aptidão Física (TAF) é uma etapa eliminatória do concurso. O que ele avalia?',
+      question: 'O Teste de Aptidão Física (TAF) serve para avaliar:',
       options: [
-        { id: 'a', text: 'Conhecimentos jurídicos' },
-        { id: 'b', text: 'A capacidade física do candidato para desempenhar as atividades policiais' },
-        { id: 'c', text: 'A saúde mental' }
+        { id: 'a', text: 'Se você sabe atirar' },
+        { id: 'b', text: 'Sua resistência física e saúde para o trabalho policial' },
+        { id: 'c', text: 'Se você sabe dirigir bem' }
       ],
       correct: 'b'
     },
     {
       id: 4,
-      question: 'Durante o Curso de Formação Profissional na ANP, qual é o status do aluno?',
+      question: 'Durante o curso de formação, como você deve se comportar?',
       options: [
-        { id: 'a', text: 'Ele já é policial nomeado' },
-        { id: 'b', text: 'Ele recebe uma bolsa de auxílio financeiro (50% do subsídio) e dedicação exclusiva' },
-        { id: 'c', text: 'Ele trabalha voluntariamente' }
+        { id: 'a', text: 'Como se já fosse o chefe de tudo' },
+        { id: 'b', text: 'Com disciplina, respeitando os instrutores como Aluno' },
+        { id: 'c', text: 'Fazendo piadas o tempo todo' }
       ],
       correct: 'b'
     },
     {
       id: 5,
-      question: 'Qual é o regime de trabalho exigido para o cargo de Policial Federal?',
+      question: 'O policial federal pode ter outro emprego formal (como mecânico ou taxista)?',
       options: [
-        { id: 'a', text: 'Regime de meio período' },
-        { id: 'b', text: 'Dedicação integral e exclusiva (salvo magistério)' },
-        { id: 'c', text: 'Trabalho remoto opcional' }
+        { id: 'a', text: 'Sim, para complementar renda' },
+        { id: 'b', text: 'Não, o cargo exige dedicação exclusiva (exceto professor)' },
+        { id: 'c', text: 'Sim, se ninguém descobrir' }
       ],
       correct: 'b'
     },
     {
       id: 6,
-      question: 'Qual a idade mínima exigida para a matrícula no Curso de Formação Profissional?',
+      question: 'Qual a idade mínima para entrar na polícia?',
       options: [
-        { id: 'a', text: '21 anos' },
-        { id: 'b', text: '18 anos completos' },
-        { id: 'c', text: '25 anos' }
+        { id: 'a', text: '16 anos' },
+        { id: 'b', text: '18 anos (Maioridade)' },
+        { id: 'c', text: '50 anos' }
       ],
       correct: 'b'
     },
     {
       id: 7,
-      question: 'A Investigação Social é uma etapa do concurso que visa avaliar:',
+      question: 'Se você tiver passagens pela polícia (ficha suja), o que acontece?',
       options: [
-        { id: 'a', text: 'A conta bancária do candidato' },
-        { id: 'b', text: 'A conduta irrepreensível e a idoneidade moral do candidato' },
-        { id: 'c', text: 'As notas escolares do ensino fundamental' }
+        { id: 'a', text: 'Nada, o passado não importa' },
+        { id: 'b', text: 'Você é reprovado na Investigação Social' },
+        { id: 'c', text: 'Ganha pontos por experiência' }
       ],
       correct: 'b'
     },
     {
       id: 8,
-      question: 'Sobre o porte de arma de fogo do Policial Federal, é correto afirmar:',
+      question: 'Quando o policial pode usar sua arma de fogo?',
       options: [
-        { id: 'a', text: 'Só pode usar em serviço' },
-        { id: 'b', text: 'É prerrogativa do cargo, com validade em todo o território nacional' },
-        { id: 'c', text: 'Não tem direito a porte' }
+        { id: 'a', text: 'Para assustar pessoas na rua' },
+        { id: 'b', text: 'Em legítima defesa ou estrito cumprimento do dever legal' },
+        { id: 'c', text: 'Sempre que alguém xingar ele' }
       ],
       correct: 'b'
     },
     {
       id: 9,
-      question: 'Conforme a Constituição Federal (Art. 144), a Polícia Federal é organizada e mantida pela União como órgão:',
+      question: 'A Polícia Federal é uma instituição:',
       options: [
-        { id: 'a', text: 'Temporário' },
-        { id: 'b', text: 'Permanente' },
-        { id: 'c', text: 'Terceirizado' }
+        { id: 'a', text: 'Privada de segurança' },
+        { id: 'b', text: 'Permanente de Estado, mantida pela União' },
+        { id: 'c', text: 'Temporária, só funciona no verão' }
       ],
       correct: 'b'
     },
     {
       id: 10,
-      question: 'Qual é a principal lei que rege o regime disciplinar e o estatuto dos Policiais Federais?',
+      question: 'Qual é o guia de conduta do policial?',
       options: [
-        { id: 'a', text: 'CLT' },
-        { id: 'b', text: 'Lei 4.878/65' },
-        { id: 'c', text: 'Código Comercial' }
+        { id: 'a', text: 'Fazer o que bem entender' },
+        { id: 'b', text: 'O Código de Ética e a Hierarquia' },
+        { id: 'c', text: 'As regras da gangue' }
       ],
       correct: 'b'
     },
     {
       id: 11,
-      question: 'Quais são os dois pilares fundamentais da função policial previstos em lei?',
+      question: 'Quais são os pilares da Polícia?',
       options: [
-        { id: 'a', text: 'Força e Velocidade' },
+        { id: 'a', text: 'Dinheiro e Fama' },
         { id: 'b', text: 'Hierarquia e Disciplina' },
-        { id: 'c', text: 'Armas e Distintivos' }
+        { id: 'c', text: 'Velocidade e Furor' }
       ],
       correct: 'b'
     },
     {
       id: 12,
-      question: 'Ao ser aprovado em todas as etapas e nomeado, em qual classe o Policial Federal ingressa na carreira?',
+      question: 'Ao entrar na polícia, você começa como:',
       options: [
-        { id: 'a', text: 'Classe Especial' },
-        { id: 'b', text: '3ª Classe (ou classe inicial da carreira)' },
-        { id: 'c', text: 'Diretor' }
+        { id: 'a', text: 'Comandante Geral' },
+        { id: 'b', text: 'Recruta / Agente Iniciante' },
+        { id: 'c', text: 'Prefeito' }
       ],
       correct: 'b'
     },
     {
       id: 13,
-      question: 'Qual categoria de Carteira Nacional de Habilitação (CNH) é exigida no concurso da PF?',
+      question: 'É necessário ter Carteira de Habilitação (CNH)?',
       options: [
-        { id: 'a', text: 'Categoria A apenas' },
-        { id: 'b', text: 'Categoria B ou superior' },
-        { id: 'c', text: 'Não precisa de CNH' }
+        { id: 'a', text: 'Não, a viatura dirige sozinha' },
+        { id: 'b', text: 'Sim, para Carro e Moto' },
+        { id: 'c', text: 'Só para bicicleta' }
       ],
       correct: 'b'
     },
     {
       id: 14,
-      question: 'A primeira lotação do Policial Federal recém-formado ocorre preferencialmente em:',
+      question: 'Onde o policial deve atuar?',
       options: [
-        { id: 'a', text: 'Sua cidade natal' },
-        { id: 'b', text: 'Regiões de fronteira e na Amazônia Legal' },
-        { id: 'c', text: 'Capitais do litoral' }
+        { id: 'a', text: 'Apenas dentro da delegacia' },
+        { id: 'b', text: 'Em toda a cidade, prevenindo e combatendo crimes' },
+        { id: 'c', text: 'Apenas em bairros ricos' }
       ],
       correct: 'b'
     },
     {
       id: 15,
-      question: 'O Exame Psicotécnico visa aferir:',
+      question: 'O exame psicológico serve para garantir que:',
       options: [
-        { id: 'a', text: 'Conhecimentos de matemática' },
-        { id: 'b', text: 'Perfil psicológico compatível com o cargo e porte de arma' },
-        { id: 'c', text: 'Capacidade de memorização' }
+        { id: 'a', text: 'Você sabe fazer contas' },
+        { id: 'b', text: 'Você tem equilíbrio emocional para portar arma e autoridade' },
+        { id: 'c', text: 'Você é bom de lábia' }
       ],
       correct: 'b'
     },
     {
       id: 16,
-      question: 'Qual cargo da Polícia Federal exige bacharelado em Direito e 3 anos de atividade jurídica ou policial?',
+      question: 'Quem é o responsável por comandar inquéritos e operações?',
       options: [
-        { id: 'a', text: 'Agente' },
-        { id: 'b', text: 'Delegado de Polícia Federal' },
-        { id: 'c', text: 'Perito' }
+        { id: 'a', text: 'O Agente' },
+        { id: 'b', text: 'O Delegado' },
+        { id: 'c', text: 'O Estagiário' }
       ],
       correct: 'b'
     },
     {
       id: 17,
-      question: 'O que acontece com o candidato que é reprovado no Curso de Formação na ANP?',
+      question: 'Se você desrespeitar um superior ou quebrar regras graves:',
       options: [
-        { id: 'a', text: 'Tenta de novo no mês seguinte' },
-        { id: 'b', text: 'É eliminado do concurso público' },
-        { id: 'c', text: 'Paga uma multa e continua' }
+        { id: 'a', text: 'Ganha uma promoção' },
+        { id: 'b', text: 'Pode ser punido ou até expulso da corporação' },
+        { id: 'c', text: 'Ninguém liga' }
       ],
       correct: 'b'
     },
     {
       id: 18,
-      question: 'O combate ao crime organizado e à corrupção é uma prioridade da PF. Quem conduz o Inquérito Policial?',
+      question: 'Qual a prioridade da PF no combate ao crime?',
       options: [
-        { id: 'a', text: 'O Agente' },
-        { id: 'b', text: 'O Delegado de Polícia Federal' },
-        { id: 'c', text: 'O Juiz' }
+        { id: 'a', text: 'Multar carros mal estacionados' },
+        { id: 'b', text: 'Combater tráfico, crime organizado e corrupção' },
+        { id: 'c', text: 'Prender quem rouba galinha' }
       ],
       correct: 'b'
     },
     {
       id: 19,
-      question: 'A Polícia Federal é subordinada administrativamente a qual órgão?',
+      question: 'A Polícia deve servir a quem?',
       options: [
-        { id: 'a', text: 'Ministério da Defesa' },
-        { id: 'b', text: 'Ministério da Justiça e Segurança Pública' },
-        { id: 'c', text: 'Gabinete de Segurança Institucional' }
+        { id: 'a', text: 'Aos políticos' },
+        { id: 'b', text: 'À sociedade e à Lei' },
+        { id: 'c', text: 'A si mesma' }
       ],
       correct: 'b'
     },
     {
       id: 20,
-      question: 'Qual é o lema não oficial frequentemente associado aos valores de integridade da PF?',
+      question: 'Quais são os valores da PF?',
       options: [
-        { id: 'a', text: 'Aos amigos tudo, aos inimigos a lei' },
-        { id: 'b', text: 'Lealdade, Integridade e Eficiência (valores institucionais)' },
-        { id: 'c', text: 'Salve-se quem puder' }
+        { id: 'a', text: 'Corrupção e Preguiça' },
+        { id: 'b', text: 'Lealdade, Integridade e Eficiência' },
+        { id: 'c', text: 'Medo e Opressão' }
       ],
       correct: 'b'
     }
