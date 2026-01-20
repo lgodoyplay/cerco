@@ -911,7 +911,7 @@ const Home = () => {
                   Prova Oficial do Curso
                 </p>
                 <p className="text-sm font-semibold text-white">
-                  Preservação de Local de Morte – DHPP
+                  Preservação de Local de Morte – DPF
                 </p>
               </div>
               <button
