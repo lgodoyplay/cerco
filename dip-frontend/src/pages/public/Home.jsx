@@ -396,7 +396,7 @@ const Home = () => {
 
     try {
       const mensagem = [
-        'Prova DPF - Conhecimentos Institucionais (Curso Básico)',
+        'Prova DPF - Capacitação Técnica Superior (Curso Avançado)',
         `Nome: ${examForm.nome || 'N/A'}`,
         `Matrícula: ${examForm.matricula || 'N/A'}`,
         `Lotação: ${examForm.lotacao || 'N/A'}`,
