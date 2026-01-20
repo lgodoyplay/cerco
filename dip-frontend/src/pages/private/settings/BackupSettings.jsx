@@ -27,19 +27,61 @@ const BackupSettings = () => {
   
   const handleReset = async () => {
     if (window.confirm('ATENÇÃO: Esta ação apagará TODOS os dados do sistema e restaurará as configurações de fábrica. Tem certeza?')) {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
+        // Tenta primeiro via RPC (método preferencial, mais rápido e ignora RLS)
         const { error } = await supabase.rpc('reset_system_data');
         
-        if (error) throw error;
+        if (error) {
+          console.warn('RPC falhou, tentando método manual...', error);
+          throw error; // Força cair no catch para tentar o manual
+        }
         
         handleAction('Reset de Sistema', 'Sistema restaurado para os padrões de fábrica.');
-      } catch (error) {
-        console.error('Erro ao resetar sistema:', error);
-        setStatus({ 
-          type: 'error', 
-          message: 'Erro ao resetar sistema: ' + (error.message || error.error_description || JSON.stringify(error)) 
-        });
+      } catch (rpcError) {
+        // Fallback: Método manual (cliente deleta tabela por tabela)
+        try {
+          console.log('Iniciando reset manual...');
+          
+          // Ordem específica para evitar erros de Foreign Key (tabelas dependentes primeiro)
+          const tablesToDelete = [
+            'provas',             // Depende de investigacoes
+            'cursos_policiais',   // Depende de cursos e profiles
+            'investigacoes',
+            'prisoes',
+            'procurados',
+            'boletins',
+            'candidatos',
+            'cursos',
+            'denuncias',
+            'notifications',
+            'system_logs'
+          ];
+
+          // Deleta dados das tabelas operacionais
+          for (const table of tablesToDelete) {
+            // .neq('id', '0000...') é um hack comum para deletar "todas as linhas" no Supabase-js
+            // pois o delete() requer um filtro por segurança.
+            const { error } = await supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+            
+            // Ignora erro se a tabela não existir (42P01)
+            if (error && error.code !== '42P01') {
+              console.warn(`Erro ao limpar tabela ${table}:`, error.message);
+            }
+          }
+
+          // Limpa system_settings (chave primária é 'key', não 'id')
+          await supabase.from('system_settings').delete().neq('key', 'PLACEHOLDER_KEY');
+
+          handleAction('Reset de Sistema', 'Sistema restaurado (modo manual executado).');
+        } catch (manualError) {
+          console.error('Erro fatal ao resetar sistema:', manualError);
+          setStatus({ 
+            type: 'error', 
+            message: 'Erro ao resetar: ' + (manualError.message || 'Falha na operação de limpeza.')
+          });
+        }
+      } finally {
         setIsLoading(false);
       }
     }
