@@ -58,16 +58,37 @@ const BackupSettings = () => {
             'system_logs'
           ];
 
+          // Função auxiliar para limpar tabela lidando com diferentes tipos de ID (UUID vs BigInt)
+          const clearTable = async (table) => {
+            try {
+              // Tenta primeiro assumindo UUID (padrão antigo/comum)
+              const { error } = await supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+              
+              if (error) {
+                // Se der erro de sintaxe para BigInt (22P02), tenta deletar usando filtro numérico
+                if (error.code === '22P02') {
+                  // console.log(`Tabela ${table} usa ID numérico, tentando método alternativo...`);
+                  const { error: intError } = await supabase.from(table).delete().gt('id', 0);
+                  if (intError) throw intError;
+                  return;
+                }
+                
+                // Ignora erro se a tabela não existir (42P01 ou 404 do PostgREST)
+                if (error.code === '42P01' || error.message?.includes('Could not find the table') || error.code === 'PGRST200') {
+                  console.warn(`Tabela ${table} não encontrada ou inacessível. Ignorando.`);
+                  return;
+                }
+
+                throw error;
+              }
+            } catch (err) {
+              console.warn(`Erro ao limpar tabela ${table}:`, err.message);
+            }
+          };
+
           // Deleta dados das tabelas operacionais
           for (const table of tablesToDelete) {
-            // .neq('id', '0000...') é um hack comum para deletar "todas as linhas" no Supabase-js
-            // pois o delete() requer um filtro por segurança.
-            const { error } = await supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
-            
-            // Ignora erro se a tabela não existir (42P01)
-            if (error && error.code !== '42P01') {
-              console.warn(`Erro ao limpar tabela ${table}:`, error.message);
-            }
+            await clearTable(table);
           }
 
           // Limpa system_settings (chave primária é 'key', não 'id')
