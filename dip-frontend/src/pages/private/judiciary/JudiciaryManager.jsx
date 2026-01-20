@@ -153,6 +153,20 @@ const WarrantDocument = ({ warrant, onClose, onUpdateStatus }) => {
             <h3 className="text-sm font-bold uppercase text-slate-500 mb-2">Motivação / Determinação Judicial</h3>
             <p className="text-base italic">{warrant.reason}</p>
             {warrant.detailed_description && <p className="mt-2 text-base">{warrant.detailed_description}</p>}
+            
+            {warrant.attachment_url && (
+              <div className="mt-4 print:hidden">
+                <a 
+                  href={warrant.attachment_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 border border-slate-300 rounded text-sm text-blue-700 hover:bg-slate-200 transition-colors"
+                >
+                  <FileText size={16} />
+                  Ver Anexo (PDF/Imagem)
+                </a>
+              </div>
+            )}
           </div>
           
           <div className="flex justify-between text-sm mt-8 border-t border-dashed border-slate-300 pt-4">
@@ -227,6 +241,8 @@ const JudiciaryManager = () => {
   // Warrant Logic States
   const [isWarrantModalOpen, setIsWarrantModalOpen] = useState(false);
   const [viewingWarrant, setViewingWarrant] = useState(null);
+  const [warrantFilter, setWarrantFilter] = useState('all');
+  const [warrantFile, setWarrantFile] = useState(null);
   const [warrantForm, setWarrantForm] = useState({
     type: 'search_seizure',
     target_name: '',
@@ -364,12 +380,35 @@ const JudiciaryManager = () => {
 
   const handleCreateWarrant = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
+      let attachmentUrl = null;
+
+      // Handle File Upload
+      if (warrantFile) {
+        const fileExt = warrantFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `attachments/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('warrants')
+            .upload(filePath, warrantFile);
+
+        if (uploadError) throw new Error('Erro ao fazer upload do arquivo.');
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('warrants')
+            .getPublicUrl(filePath);
+
+        attachmentUrl = publicUrl;
+      }
+
       const newWarrant = {
         ...warrantForm,
         judge_id: user.id,
         judge_name: user.name || 'Juiz Federal',
-        status: 'active'
+        status: 'active',
+        attachment_url: attachmentUrl
       };
 
       const { data, error } = await supabase.from('warrants').insert([newWarrant]).select();
@@ -387,6 +426,7 @@ const JudiciaryManager = () => {
         priority: 'normal',
         expires_at: ''
       });
+      setWarrantFile(null);
       
       // Notify
       if (data && data[0]) {
@@ -394,7 +434,9 @@ const JudiciaryManager = () => {
       }
     } catch (err) {
       console.error("Erro ao criar mandado:", err);
-      alert("Erro ao criar mandado. Verifique se a tabela 'warrants' foi criada.");
+      alert("Erro ao criar mandado: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
