@@ -26,13 +26,13 @@ const modules = [
   },
   {
     id: 2,
-    title: 'Módulo 2 — O Agente Federal como Primeiro Interventor',
-    description: 'Postura do APF ao se deparar com um local de crime sob jurisdição federal.',
+    title: 'Módulo 2 — O Aluno como Primeiro Interventor',
+    description: 'Postura do aluno da ANP ao se deparar com um local de crime simulado ou real.',
     content: [
-      'Segurança da equipe e avaliação de riscos em áreas de fronteira, portos ou aeroportos.',
+      'Segurança da equipe e avaliação de riscos (doutrina de aluno).',
       'A decisão imediata de acionar a Perícia Federal e isolar o perímetro.',
-      'Diferença de protocolo entre operações de inteligência e ostensivas.',
-      'Gerenciamento de crise inicial até a chegada do Delegado de Polícia Federal.'
+      'Diferença de protocolo entre operações de inteligência e ostensivas (visão do aluno).',
+      'Gerenciamento de crise inicial até a chegada da autoridade policial.'
     ]
   },
   {
@@ -59,13 +59,13 @@ const modules = [
   },
   {
     id: 5,
-    title: 'Módulo 5 — A Perícia Criminal Federal',
-    description: 'A atuação dos Peritos Criminais Federais (PCFs) e sua relação com a equipe.',
+    title: 'Módulo 5 — O Papel do Aluno na Preservação para a Perícia',
+    description: 'O que o aluno deve saber sobre a atuação dos Peritos Criminais Federais.',
     content: [
-      'A autonomia técnica do Perito Criminal Federal no local.',
-      'Tecnologias de ponta usadas pela PF: scanner 3D, laboratórios móveis.',
-      'Por que o Agente não deve tocar no corpo ou nos vestígios antes do PCF.',
-      'Suporte armado e logístico à equipe de perícia em áreas hostis.'
+      'Entendendo a autonomia técnica do Perito Criminal Federal (para alunos).',
+      'Como o aluno pode auxiliar sem contaminar o trabalho da perícia.',
+      'Por que o aluno jamais deve tocar no corpo ou nos vestígios antes do PCF.',
+      'Suporte armado e logístico à equipe de perícia (função do aluno).'
     ]
   },
   {
@@ -181,9 +181,9 @@ const examQuestions = [
     id: 5,
     question: 'Qual a função do Perito Criminal Federal (PCF) no local?',
     options: [
-      { id: 'a', text: 'Comandar a operação tática de prisão' },
-      { id: 'b', text: 'Realizar a análise técnico-científica, materializando a prova pericial com autonomia' },
-      { id: 'c', text: 'Apenas recolher o corpo para o IML' }
+      { id: 'a', text: 'Comandar a operação tática de prisão e ignorar o perito' },
+      { id: 'b', text: 'Garantir a segurança do perímetro para que o perito trabalhe com autonomia e não tocar nos vestígios' },
+      { id: 'c', text: 'Apenas recolher o corpo para o IML antes da perícia chegar' }
     ],
     correct: 'b'
   },
@@ -438,11 +438,11 @@ const Home = () => {
               <span>Treinamento Oficial DPF</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white">
-              O sucesso da investigação começa na primeira viatura.
+              A formação de excelência começa aqui.
             </h1>
             <p className="text-lg text-slate-300 max-w-2xl">
-              Curso oficial de capacitação em Preservação de Local de Morte, focado integralmente no DPF
-              e na doutrina correta de atendimento inicial em ocorrências de morte violenta ou suspeita.
+              Material de estudo para alunos da Polícia Federal, focado na doutrina de preservação
+              de local de crime e conduta policial em formação.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
@@ -473,7 +473,7 @@ const Home = () => {
                         Curso Operacional
                       </p>
                       <p className="text-sm font-medium text-slate-100">
-                        Preservação de Local de Morte
+                        Estudos de Preservação de Local de Crime Federal
                       </p>
                     </div>
                   </div>
