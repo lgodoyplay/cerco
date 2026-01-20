@@ -646,7 +646,7 @@ const Home = () => {
               key={module.id}
               type="button"
               onClick={() => setSelectedModule(module)}
-              className="group text-left bg-slate-900/70 border border-slate-800 rounded-2xl p-5 hover:border-federal-500/70 hover:bg-slate-900 transition-all flex flex-col gap-3"
+              className="group text-left bg-slate-900/70 border border-slate-800 rounded-2xl p-5 hover:border-federal-500/70 hover:bg-slate-900 transition-all flex flex-col gap-3 h-full"
             >
               <div className="flex items-center justify-between gap-3">
                 <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-federal-600/20 text-federal-300 text-xs font-bold border border-federal-500/40">
@@ -656,17 +656,25 @@ const Home = () => {
                   Módulo do Curso
                 </span>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 flex-1">
                 <h3 className="text-sm font-semibold text-white group-hover:text-federal-200">
                   {module.title}
                 </h3>
-                <p className="text-xs text-slate-300">
+                <p className="text-xs text-slate-300 mb-3">
                   {module.description}
                 </p>
+                <ul className="space-y-1.5 border-t border-slate-800 pt-3 mt-3">
+                  {module.content.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-[11px] text-slate-400 group-hover:text-slate-300 transition-colors">
+                      <span className="mt-1.5 w-1 h-1 rounded-full bg-federal-500 shrink-0 opacity-70" />
+                      <span className="leading-tight">{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="mt-2 text-[11px] font-semibold text-federal-300 flex items-center gap-1">
+              <div className="mt-2 text-[11px] font-semibold text-federal-300 flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
                 <span className="w-1.5 h-1.5 rounded-full bg-federal-400 group-hover:bg-federal-200" />
-                Abrir conteúdo detalhado
+                Clique para expandir
               </div>
             </button>
           ))}
