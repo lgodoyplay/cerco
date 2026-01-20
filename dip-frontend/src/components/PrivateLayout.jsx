@@ -145,6 +145,9 @@ const PrivateLayout = () => {
                     {user?.full_name || user?.username || 'Agente'}
                   </p>
                   <p className="text-xs text-federal-400 truncate">{user?.role || 'Agente'}</p>
+                  {user?.passport_id && (
+                    <p className="text-[10px] text-slate-500 font-mono mt-0.5">#{user.passport_id}</p>
+                  )}
                 </div>
               </div>
               <div className="text-[10px] text-slate-500 uppercase tracking-wider font-medium flex items-center gap-1.5">

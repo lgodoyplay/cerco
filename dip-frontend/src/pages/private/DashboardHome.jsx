@@ -44,19 +44,28 @@ const DashboardHome = () => {
         if (user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('codigo_funcional')
+            .select('passport_id, codigo_funcional')
             .eq('id', user.id)
             .single();
 
           if (profile) {
-            if (profile.codigo_funcional) {
-              if (isMounted) setFunctionalCode(profile.codigo_funcional);
+            // Prioriza passport_id (novo padrão), fallback para codigo_funcional (legado)
+            const currentCode = profile.passport_id || profile.codigo_funcional;
+
+            if (currentCode) {
+              if (isMounted) setFunctionalCode(currentCode);
+              
+              // Se tiver codigo antigo mas nao novo, migra
+              if (!profile.passport_id && profile.codigo_funcional) {
+                 await supabase.from('profiles').update({ passport_id: profile.codigo_funcional }).eq('id', user.id);
+              }
+
             } else {
-              // Generate new code
+              // Generate new code if none exists
               const newCode = 'PF-' + Math.floor(100000 + Math.random() * 900000);
               const { error: updateError } = await supabase
                 .from('profiles')
-                .update({ codigo_funcional: newCode })
+                .update({ passport_id: newCode })
                 .eq('id', user.id);
               
               if (!updateError && isMounted) {

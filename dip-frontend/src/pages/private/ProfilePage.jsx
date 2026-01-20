@@ -195,6 +195,20 @@ const ProfilePage = () => {
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Funcional (Passaporte)</label>
+                <div className="relative">
+                  <Shield className="absolute left-4 top-3 text-slate-500" size={18} />
+                  <input
+                    type="text"
+                    value={profile?.passport_id || ''}
+                    readOnly
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-12 pr-4 py-3 text-slate-400 cursor-not-allowed focus:outline-none"
+                    title="Para alterar a funcional, contate um administrador."
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Email / Login</label>
