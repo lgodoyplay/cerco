@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { useSettings } from '../../../hooks/useSettings';
 import { 
   Shield, CheckCircle, XCircle, Clock, AlertTriangle, 
   FileText, Search, Filter, MoreVertical, Archive, RefreshCw, Send, Upload
@@ -32,6 +33,7 @@ const StatusBadge = ({ status }) => {
 };
 
 const WeaponsManager = () => {
+  const { discordConfig } = useSettings();
   const [activeTab, setActiveTab] = useState('requests'); // requests, process, archive
   const [licenses, setLicenses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +128,56 @@ const WeaponsManager = () => {
       setUploading(false);
       // Reset input
       e.target.value = null;
+    }
+  };
+
+  const sendWebhookNotification = async (license, newStatus) => {
+    if (!discordConfig?.weaponsWebhook) return;
+
+    try {
+      const colors = {
+        processing: 0x3b82f6, // Blue
+        approved: 0x22c55e,   // Green
+        rejected: 0xef4444,   // Red
+        revoked: 0x94a3b8,    // Gray
+        expired: 0xf97316     // Orange
+      };
+
+      const titles = {
+        processing: "📝 Solicitação em Análise",
+        approved: "✅ Porte de Arma Aprovado",
+        rejected: "❌ Solicitação Negada",
+        revoked: "🚫 Porte Revogado",
+        expired: "⚠️ Porte Vencido"
+      };
+
+      const embed = {
+        title: titles[newStatus] || "Atualização de Status",
+        color: colors[newStatus] || 0x000000,
+        fields: [
+          { name: "Solicitante", value: license.full_name, inline: true },
+          { name: "Passaporte", value: license.passport_id, inline: true },
+          { name: "Status", value: newStatus.toUpperCase(), inline: true },
+          { name: "Motivo/Justificativa", value: license.reason }
+        ],
+        footer: { text: "Sistema de Armas - Polícia Federal" },
+        timestamp: new Date().toISOString()
+      };
+
+      if (newStatus === 'approved') {
+        embed.fields.push(
+          { name: "Data de Aprovação", value: new Date(license.approved_at).toLocaleDateString(), inline: true },
+          { name: "Vencimento", value: new Date(license.expires_at).toLocaleDateString(), inline: true }
+        );
+      }
+
+      await fetch(discordConfig.weaponsWebhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ embeds: [embed] })
+      });
+    } catch (err) {
+      console.error("Erro ao enviar webhook:", err);
     }
   };
 
