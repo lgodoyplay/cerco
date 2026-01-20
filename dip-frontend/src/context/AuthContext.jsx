@@ -110,10 +110,20 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (identifier, password) => {
     try {
       isLoggingIn.current = true;
       
+      let email = identifier;
+
+      // Se não parece um email, tenta resolver pelo ID Funcional ou Email salvo no profile
+      if (!identifier.includes('@')) {
+          const { data, error } = await supabase.rpc('get_email_by_identifier', { identifier });
+          if (data) {
+              email = data;
+          }
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,

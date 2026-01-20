@@ -80,7 +80,7 @@ const Login = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 bg-slate-950/50 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-600 focus:outline-none focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all sm:text-sm"
-                  placeholder="ID ou Usuário"
+                  placeholder="Email ou ID Funcional"
                 />
               </div>
             </div>
