@@ -122,6 +122,7 @@ export const SettingsProvider = ({ children }) => {
         role: u.role,
         permissions: u.permissions || [], // Carrega permissões do banco
         avatar_url: u.avatar_url,
+        passport_id: u.passport_id,
         active: true,
         patente: u.role // Mapping role to patente for now
       }));
@@ -199,7 +200,25 @@ export const SettingsProvider = ({ children }) => {
   };
 
   const addUser = async (userData) => {
-    alert('Para adicionar usuários, utilize o painel de Autenticação do Supabase (Authentication -> Add User).');
+    try {
+      const { data, error } = await supabase.rpc('create_user_command', {
+        email: userData.username,
+        password: userData.password,
+        full_name: userData.name,
+        passport_id: userData.passport_id,
+        role: userData.role,
+        permissions: userData.permissions
+      });
+
+      if (error) throw error;
+
+      await fetchUsers();
+      logAction(`Novo usuário criado: ${userData.name}`);
+      alert('Usuário criado com sucesso!');
+    } catch (error) {
+      console.error('Error adding user:', error);
+      alert('Erro ao criar usuário: ' + error.message);
+    }
   };
 
   const updateUser = async (id, userData) => {
@@ -211,7 +230,8 @@ export const SettingsProvider = ({ children }) => {
             full_name: userData.name,
             role: userData.role,
             permissions: userData.permissions, // Salva as permissões
-            avatar_url: userData.avatar_url
+            avatar_url: userData.avatar_url,
+            passport_id: userData.passport_id
         })
         .eq('id', id);
 
@@ -230,7 +250,17 @@ export const SettingsProvider = ({ children }) => {
   };
 
   const deleteUser = async (id) => {
-    alert('Remover usuários deve ser feito no painel do Supabase.');
+    try {
+      const { error } = await supabase.rpc('delete_user_command', { target_user_id: id });
+      
+      if (error) throw error;
+      
+      await fetchUsers();
+      logAction(`Usuário removido: ID ${id}`);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Erro ao remover usuário: ' + error.message);
+    }
   };
 
   const updateCorporation = (type, list) => {

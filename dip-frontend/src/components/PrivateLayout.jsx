@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { prefetchRoute } from '../routes/routeLoaders';
+import ChangePasswordModal from './ChangePasswordModal';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -59,26 +60,32 @@ const PrivateLayout = () => {
     { to: '/dashboard', icon: LayoutDashboard, label: 'Painel Geral', prefetchKey: 'DashboardHome' },
     { to: '/dashboard/judiciary', icon: Gavel, label: 'Jurídico', prefetchKey: 'JudiciaryManager', permission: 'judiciary' },
     { to: '/dashboard/arrest', icon: UserX, label: 'Registrar Prisão', prefetchKey: 'RegisterArrest', permission: 'arrest' },
-    { to: '/dashboard/arrests', icon: Shield, label: 'Registro de Prisões', prefetchKey: 'ArrestList' },
+    { to: '/dashboard/arrests', icon: Shield, label: 'Registro de Prisões', prefetchKey: 'ArrestList', permission: 'arrest' },
     { to: '/dashboard/bo', icon: FileText, label: 'Registrar BO', prefetchKey: 'RegisterBO', permission: 'bo' },
-    { to: '/dashboard/bo-list', icon: FileText, label: 'Consultar BOs', prefetchKey: 'BOList' },
+    { to: '/dashboard/bo-list', icon: FileText, label: 'Consultar BOs', prefetchKey: 'BOList', permission: 'bo' },
     { to: '/dashboard/reports', icon: AlertTriangle, label: 'Denúncias', prefetchKey: 'ReportList', permission: 'reports' },
-    { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados', prefetchKey: 'RegisterWanted', permission: 'arrest' },
-    { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados', prefetchKey: 'WantedList' },
-    { to: '/dashboard/investigations', icon: Search, label: 'Investigações', prefetchKey: 'InvestigationList' },
-    { to: '/dashboard/forensics', icon: FileSearch, label: 'Perícias', prefetchKey: 'ForensicsList' },
-    { to: '/dashboard/weapons', icon: Target, label: 'Porte de Armas', prefetchKey: 'WeaponsManager' },
-    { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList' },
+    { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados', prefetchKey: 'RegisterWanted', permission: 'wanted' },
+    { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados', prefetchKey: 'WantedList', permission: 'wanted' },
+    { to: '/dashboard/investigations', icon: Search, label: 'Investigações', prefetchKey: 'InvestigationList', permission: 'investigations' },
+    { to: '/dashboard/forensics', icon: FileSearch, label: 'Perícias', prefetchKey: 'ForensicsList', permission: 'forensics' },
+    { to: '/dashboard/weapons', icon: Target, label: 'Porte de Armas', prefetchKey: 'WeaponsManager', permission: 'weapons' },
+    { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList', permission: 'revenue' },
     { to: '/dashboard/settings', icon: Settings, label: 'Configurações', prefetchKey: 'SettingsLayout', permission: 'settings' },
   ];
 
   const filteredNavItems = navItems.filter(item => {
+    // Diretor Geral sees everything
+    if (user?.role?.toLowerCase().includes('diretor')) return true;
+    
     if (!item.permission) return true;
-    return user?.permissions?.includes(item.permission);
+    return (user?.permissions || []).includes(item.permission);
   });
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
+      {/* Force Password Change Modal */}
+      {user?.must_change_password && <ChangePasswordModal />}
+
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 

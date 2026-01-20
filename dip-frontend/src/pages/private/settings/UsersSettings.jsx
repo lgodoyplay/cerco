@@ -17,6 +17,8 @@ const UsersSettings = () => {
   const [formData, setFormData] = useState({
     name: '',
     username: '',
+    password: '', // Novo campo para senha
+    passport_id: '', // Novo campo para funcional
     role: '',
     permissions: [],
     avatar_url: null
@@ -28,12 +30,16 @@ const UsersSettings = () => {
   const [selectedCourseToAdd, setSelectedCourseToAdd] = useState('');
 
   const availablePermissions = [
-    { id: 'arrest', label: 'Registrar Prisão' },
-    { id: 'investigation', label: 'Abrir Investigação' },
-    { id: 'reports', label: 'Gerar Relatórios' },
-    { id: 'settings', label: 'Acessar Configurações' },
-    { id: 'bo', label: 'Registrar BO' },
-    { id: 'judiciary', label: 'Acesso Jurídico' },
+    { id: 'judiciary', label: 'Jurídico' },
+    { id: 'arrest', label: 'Prisões' },
+    { id: 'wanted', label: 'Procurados' },
+    { id: 'bo', label: 'Boletins de Ocorrência' },
+    { id: 'reports', label: 'Denúncias' },
+    { id: 'investigations', label: 'Investigações' },
+    { id: 'forensics', label: 'Perícias' },
+    { id: 'weapons', label: 'Porte de Armas' },
+    { id: 'revenue', label: 'Receita' },
+    { id: 'settings', label: 'Configurações' },
   ];
 
   // Carregar cursos disponíveis quando abrir modal
@@ -81,9 +87,11 @@ const UsersSettings = () => {
       setFormData({
         name: user.name,
         username: user.username,
+        password: '', // Não carregamos a senha
+        passport_id: user.passport_id || '', 
         role: user.role,
         permissions: user.permissions,
-        avatar_url: user.avatar_url // Supondo que venha do hook, se não, precisaria ajustar o hook
+        avatar_url: user.avatar_url
       });
       // Avatar url pode não vir do hook useSettings dependendo da implementação
       // Vamos buscar o profile completo para garantir
@@ -93,6 +101,8 @@ const UsersSettings = () => {
       setFormData({
         name: '',
         username: '',
+        password: '',
+        passport_id: '',
         role: roles[0]?.title || '',
         permissions: [],
         avatar_url: null
@@ -103,9 +113,9 @@ const UsersSettings = () => {
   };
 
   const fetchProfileDetails = async (id) => {
-    const { data } = await supabase.from('profiles').select('avatar_url').eq('id', id).single();
+    const { data } = await supabase.from('profiles').select('avatar_url, passport_id').eq('id', id).single();
     if (data) {
-      setFormData(prev => ({ ...prev, avatar_url: data.avatar_url }));
+      setFormData(prev => ({ ...prev, avatar_url: data.avatar_url, passport_id: data.passport_id || '' }));
     }
   };
 
@@ -224,6 +234,7 @@ const UsersSettings = () => {
               <div>
                 <h3 className="font-bold text-white flex items-center gap-2">
                   {user.name}
+                  {user.passport_id && <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">#{user.passport_id}</span>}
                   {!user.active && <span className="px-2 py-0.5 rounded text-[10px] bg-red-500/10 text-red-400 border border-red-500/20">INATIVO</span>}
                 </h3>
                 <div className="flex items-center gap-2 text-sm text-slate-400">
@@ -309,15 +320,26 @@ const UsersSettings = () => {
                   </div>
 
                   <div className="space-y-4">
-                    <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase">Nome Completo</label>
-                      <input 
-                        type="text" 
-                        value={formData.name}
-                        onChange={e => setFormData({...formData, name: e.target.value})}
-                        className="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white focus:border-federal-500 outline-none"
-                        required
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase">Nome Completo</label>
+                        <input 
+                          type="text" 
+                          value={formData.name}
+                          onChange={e => setFormData({...formData, name: e.target.value})}
+                          className="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white focus:border-federal-500 outline-none"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase">Funcional (Passaporte)</label>
+                        <input 
+                          type="text" 
+                          value={formData.passport_id}
+                          onChange={e => setFormData({...formData, passport_id: e.target.value})}
+                          className="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white focus:border-federal-500 outline-none"
+                        />
+                      </div>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4">
@@ -329,13 +351,28 @@ const UsersSettings = () => {
                           onChange={e => setFormData({...formData, username: e.target.value})}
                           className="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white focus:border-federal-500 outline-none"
                           required
-                          disabled={!!editingUser} // Email geralmente não se muda fácil no Supabase Auth sem reconfirmar
+                          disabled={!!editingUser}
                         />
                       </div>
-                      <div>
-                        <label className="text-xs font-bold text-slate-400 uppercase">Cargo / Patente</label>
-                        <select 
-                          value={formData.role}
+                      {!editingUser && (
+                        <div>
+                          <label className="text-xs font-bold text-slate-400 uppercase">Senha Inicial</label>
+                          <input 
+                            type="password" 
+                            value={formData.password}
+                            onChange={e => setFormData({...formData, password: e.target.value})}
+                            className="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white focus:border-federal-500 outline-none"
+                            required
+                            placeholder="Mínimo 6 caracteres"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-400 uppercase">Cargo / Patente</label>
+                      <select 
+                        value={formData.role}
                           onChange={e => setFormData({...formData, role: e.target.value})}
                           className="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white focus:border-federal-500 outline-none"
                         >
@@ -366,7 +403,6 @@ const UsersSettings = () => {
                         ))}
                       </div>
                     </div>
-                  </div>
                 </form>
               ) : (
                 <div className="space-y-6">
