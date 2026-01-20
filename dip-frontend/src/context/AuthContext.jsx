@@ -114,13 +114,23 @@ export const AuthProvider = ({ children }) => {
     try {
       isLoggingIn.current = true;
       
-      let email = identifier;
+      // Remove espaços extras do identificador (mas não da senha)
+      let email = identifier.trim();
 
       // Se não parece um email, tenta resolver pelo ID Funcional ou Email salvo no profile
-      if (!identifier.includes('@')) {
-          const { data, error } = await supabase.rpc('get_email_by_identifier', { identifier });
+      if (!email.includes('@')) {
+          console.log('Tentando resolver email para ID:', email);
+          const { data, error } = await supabase.rpc('get_email_by_identifier', { identifier: email });
+          
+          if (error) {
+            console.warn('Erro ao resolver ID (verifique se update_login_capabilities.sql foi executado):', error);
+          }
+          
           if (data) {
+              console.log('Email resolvido:', data);
               email = data;
+          } else {
+              console.log('Nenhum email encontrado para este ID.');
           }
       }
 
