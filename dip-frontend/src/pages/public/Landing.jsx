@@ -101,10 +101,10 @@ const Landing = () => {
                 Acessar Painel Restrito
               </a>
               <a
-                href="/curso-dhpp"
+                href="/curso-dpf"
                 className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-800 text-slate-100 font-semibold text-sm tracking-wide transition-colors"
               >
-                Conhecer Curso DHPP
+                Conhecer Curso DPF
               </a>
             </div>
           </div>
@@ -180,9 +180,9 @@ const Landing = () => {
               Treinamentos e cursos internos
             </h2>
             <p className="text-sm text-slate-300">
-              Acesso a conteúdos como o Curso DHPP de preservação de local de morte, reforçando a
-              doutrina operacional da corporação.
-            </p>
+                Acesso a conteúdos como o Curso DPF de preservação de local de morte, reforçando a
+                doutrina operacional da corporação.
+              </p>
           </div>
         </div>
 

@@ -276,7 +276,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 '{relato_fatos}': data.descricao || 'Sem descrição.',
                 '{conclusao}': 'Registro realizado para fins legais.',
                 '{assinatura_agente}': user?.nome || 'Agente de Plantão',
-                '{cargo_agente}': 'Agente de Policia Civil'
+                '{cargo_agente}': 'Agente de Polícia Federal'
             };
 
             standardContent = [
@@ -327,7 +327,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 '{relato_fatos}': data.reason || data.description || 'Sem observações adicionais.',
                 '{conclusao}': 'Indivíduo detido e à disposição da justiça.',
                 '{assinatura_agente}': data.officer || user?.nome || 'Agente Responsável',
-                '{cargo_agente}': 'Agente de Policia Civil'
+                '{cargo_agente}': 'Agente de Polícia Federal'
             };
 
             standardContent = [
@@ -536,8 +536,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
 
                     { text: '___________________________________________________', style: 'signatureLine' },
                     { text: variables['{assinatura_agente}'].toUpperCase(), alignment: 'center', bold: true, fontSize: 12 },
-                    { text: 'AGENTE DE POLÍCIA CIVIL', alignment: 'center', fontSize: 10 },
-                    { text: `MATRÍCULA: ${user?.badge || 'PC-000'}`, alignment: 'center', fontSize: 10 }
+                    { text: 'AGENTE DE POLÍCIA FEDERAL', alignment: 'center', fontSize: 10 },
+                    { text: `MATRÍCULA: ${user?.badge || 'DPF-000'}`, alignment: 'center', fontSize: 10 }
                 ])
             ],
 

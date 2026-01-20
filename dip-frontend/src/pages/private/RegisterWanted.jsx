@@ -125,7 +125,7 @@ const RegisterWanted = () => {
               { name: "Observações", value: formData.observations || 'Nenhuma' },
               { name: "Policial Responsável", value: formData.officer }
             ],
-            footer: { text: "Sistema de Procurados Policia Civil" },
+            footer: { text: "Sistema de Procurados Polícia Federal" },
             timestamp: new Date().toISOString()
           };
           

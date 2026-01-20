@@ -9,7 +9,7 @@ const PublicLayout = () => {
 
   const navItems = [
     { name: 'Home', path: '/' },
-    { name: 'Curso DHPP', path: '/curso-dhpp' },
+    { name: 'Curso DPF', path: '/curso-dpf' },
     { name: 'Regras', path: '/rules' },
     { name: 'Como Fazer Parte', path: '/join' },
   ];
@@ -26,7 +26,7 @@ const PublicLayout = () => {
                 <Shield className="w-6 h-6 text-federal-400 group-hover:text-federal-300 transition-colors" />
               </div>
               <div className="flex flex-col justify-center">
-                <span className="text-lg font-bold tracking-tight text-white uppercase leading-none">Policia Civil</span>
+                <span className="text-lg font-bold tracking-tight text-white uppercase leading-none">Policia Federal</span>
               </div>
             </Link>
 
@@ -105,10 +105,10 @@ const PublicLayout = () => {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Shield className="w-6 h-6 text-federal-600" />
-                <span className="font-bold text-lg text-white">PC</span>
+                <span className="font-bold text-lg text-white">DPF</span>
               </div>
               <p className="text-slate-500 text-sm leading-relaxed">
-                Departamento de Policia Civil.<br/>
+                Departamento de Polícia Federal.<br/>
                 Compromisso com a verdade e a justiça.
               </p>
             </div>

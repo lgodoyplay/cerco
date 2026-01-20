@@ -32,8 +32,8 @@ export const generateInvestigationPDF = (investigation, user) => {
     doc.setTextColor(0, 0, 0);
     doc.text('REPÚBLICA FEDERATIVA DO BRASIL', pageWidth / 2, 20, { align: 'center' });
     doc.text('MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA', pageWidth / 2, 25, { align: 'center' });
-    doc.text('POLICIA CIVIL', pageWidth / 2, 30, { align: 'center' });
-    doc.text('POLICIA CIVIL', pageWidth / 2, 35, { align: 'center' });
+    doc.text('POLÍCIA FEDERAL', pageWidth / 2, 30, { align: 'center' });
+    doc.text('DEPARTAMENTO DE POLÍCIA FEDERAL', pageWidth / 2, 35, { align: 'center' });
     
     // Linha separadora
     doc.setLineWidth(0.5);
@@ -73,7 +73,7 @@ export const generateInvestigationPDF = (investigation, user) => {
   doc.text('RELATÓRIO FINAL DE INQUÉRITO POLICIAL', pageWidth / 2, yPos, { align: 'center' });
   yPos += 10;
   
-  const formattedId = `PC - ${investigation.id.toString().padStart(3, '0')}`;
+  const formattedId = `DPF - ${investigation.id.toString().padStart(3, '0')}`;
   doc.setFontSize(fontSizeBody);
   doc.text(`INQUÉRITO Nº: ${formattedId}/${new Date().getFullYear()}`, pageWidth / 2, yPos, { align: 'center' });
   yPos += 20;
@@ -124,7 +124,7 @@ export const generateInvestigationPDF = (investigation, user) => {
   // Tenta usar o nome do investigador vindo do objeto (se implementado join) ou do usuário logado
   let officerName = 'AGENTE RESPONSÁVEL';
   let officerBadge = '000.000';
-  let officerRole = 'Agente de Policia Civil';
+  let officerRole = 'Agente de Polícia Federal';
 
   if (investigation.investigator) {
       officerName = investigation.investigator.nome.toUpperCase();

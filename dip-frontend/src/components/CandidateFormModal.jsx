@@ -203,7 +203,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
           { name: "✅ Pontuação Quiz", value: `${score}/10` || 'N/A', inline: true },
           { name: "📄 Motivação", value: formData.mensagem || 'N/A' }
         ],
-        footer: { text: "Sistema de Recrutamento Policia Civil" },
+        footer: { text: "Sistema de Recrutamento Polícia Federal" },
         timestamp: new Date().toISOString()
       };
 
@@ -271,7 +271,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
           {!showQuiz ? (
             <>
               <div className="text-center mb-10">
-                <h2 className="text-3xl font-bold text-white mb-4">Candidatura à Policia Civil</h2>
+                <h2 className="text-3xl font-bold text-white mb-4">Candidatura à Polícia Federal</h2>
                 <p className="text-slate-400">
                   Preencha o formulário e faça o teste de admissão para demonstrar seu interesse em fazer parte da 
                   nossa equipe de elite.

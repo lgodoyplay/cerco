@@ -91,7 +91,7 @@ BEGIN
           'admin@dpf.policia',
           'Administrador do Sistema',
           'Diretor',
-          'PC-000',
+          'DPF-000',
           now()
         );
   END IF;

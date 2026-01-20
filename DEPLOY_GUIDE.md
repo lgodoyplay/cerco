@@ -1,6 +1,6 @@
-# Guia de Deploy - Cerco Polícia Civil
+# Guia de Implantação (Deployment) - Sistema Polícia Federal - DPF
 
-Este projeto foi preparado para deploy escalável e profissional.
+Este guia descreve como colocar o sistema Sistema Polícia Federal - DPF em funcionamento em um servidor Linux (Ubuntu 22.04 recomendada).
 - **Frontend:** React (Vite) -> Deploy no **Netlify**
 - **Backend:** Node.js (Express) -> Deploy no **Render**
 - **Banco de Dados:** PostgreSQL -> Hospedado no **Supabase**
@@ -24,7 +24,7 @@ O backend precisa rodar 24/7 para atender as requisições do painel.
 
 1. Crie uma conta em [render.com](https://render.com).
 2. Clique em **New +** e selecione **Web Service**.
-3. Conecte seu repositório do GitHub (`lgodoyplay/cerco`).
+3. Conecte seu repositório do GitHub (`lgodoyplay/dpf-system`).
 4. O Render deve detectar o arquivo `render.yaml` na raiz, mas se pedir configurações manuais:
    - **Root Directory:** `dip-backend`
    - **Build Command:** `npm install && npm run build`
@@ -50,7 +50,7 @@ O backend precisa rodar 24/7 para atender as requisições do painel.
 5. Clique em **Deploy site**.
 6. Vá em **Site configuration > Environment variables** e adicione:
    - Key: `VITE_API_URL`
-   - Value: (Cole a URL do seu backend no Render, sem a barra no final, ex: `https://cerco-backend.onrender.com`)
+   - Value: (Cole a URL do seu backend no Render, sem a barra no final, ex: `https://dpf-backend.onrender.com`)
 7. O Netlify vai reconstruir o site.
 
 ---

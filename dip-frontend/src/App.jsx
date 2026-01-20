@@ -7,7 +7,7 @@ import SessionMonitorComponent from './components/SessionMonitor';
 import PublicLayout from './components/PublicLayout';
 import PrivateLayout from './components/PrivateLayout';
 import ComingSoon from './components/ComingSoon';
-import Home from './pages/public/Home'; // Curso DHPP
+import Home from './pages/public/Home'; // Curso DPF
 import Landing from './pages/public/Landing';
 
 import { lazyImport } from './utils/lazyImport';
@@ -99,7 +99,7 @@ function App() {
             {/* Public Routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Landing />} />
-            <Route path="/curso-dhpp" element={<Home />} />
+            <Route path="/curso-dpf" element={<Home />} />
             <Route path="/rules" element={<Rules />} />
             <Route path="/join" element={<HowToJoin />} />
           </Route>

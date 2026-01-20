@@ -1,6 +1,6 @@
-# Guia de Implantação (Deployment) - Cerco Polícia Civil
+# Guia de Deploy - Sistema Polícia Federal - DPF
 
-Este guia descreve como colocar o sistema Cerco Polícia Civil em funcionamento em um servidor Linux (Ubuntu 22.04 recomendada).
+Este projeto foi preparado para deploy escalável e profissional.
 
 ## Pré-requisitos
 - Um servidor VPS (DigitalOcean, AWS, Linode, etc.) com Ubuntu 20.04 ou superior.
@@ -34,12 +34,12 @@ sudo apt install nginx -y
 
 ## 2. Configuração do Projeto
 
-Clone seu repositório ou suba os arquivos para o servidor (ex: `/var/www/cerco-system`).
+Clone seu repositório ou suba os arquivos para o servidor (ex: `/var/www/dpf-system`).
 
 ```bash
-mkdir -p /var/www/cerco-system
+mkdir -p /var/www/dpf-system
 # Use git clone ou SCP/SFTP para enviar os arquivos
-cd /var/www/cerco-system
+cd /var/www/dpf-system
 ```
 
 ### Backend Setup
@@ -94,7 +94,7 @@ server {
 
     # Frontend (Arquivos Estáticos)
     location / {
-        root /var/www/cerco-system/dip-frontend/dist;
+        root /var/www/dpf-system/dip-frontend/dist;
         index index.html;
         try_files $uri $uri/ /index.html;
     }
@@ -114,7 +114,7 @@ server {
 
     # Arquivos Estáticos do Backend (Uploads/Fotos)
     location /uploads/ {
-        alias /var/www/cerco-system/dip-backend/uploads/;
+        alias /var/www/dpf-system/dip-backend/uploads/;
         autoindex off;
     }
 }
@@ -159,9 +159,9 @@ pm2 startup
 
 1. **Permissões**: Certifique-se que o usuário do Nginx (geralmente `www-data`) ou o usuário rodando o Node tem permissão de escrita na pasta `dip-backend/prisma` (para o SQLite) e `dip-backend/uploads`.
    ```bash
-   sudo chown -R $USER:www-data /var/www/dip-system/dip-backend/uploads
-   sudo chmod -R 775 /var/www/dip-system/dip-backend/uploads
-   sudo chown -R $USER:www-data /var/www/dip-system/dip-backend/prisma
+   sudo chown -R $USER:www-data /var/www/dpf-system/dip-backend/uploads
+   sudo chmod -R 775 /var/www/dpf-system/dip-backend/uploads
+   sudo chown -R $USER:www-data /var/www/dpf-system/dip-backend/prisma
    ```
 
 2. **Segurança**: Configure o Firewall (UFW) para permitir apenas portas 22 (SSH), 80 (HTTP) e 443 (HTTPS).

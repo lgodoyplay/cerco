@@ -124,7 +124,7 @@ const RegisterArrest = () => {
               { name: "Motivo", value: formData.reason },
               { name: "Oficial Responsável", value: formData.officer, inline: true }
             ],
-            footer: { text: "Sistema Prisional Policia Civil" },
+            footer: { text: "Sistema Prisional Polícia Federal" },
             timestamp: new Date().toISOString()
           };
           

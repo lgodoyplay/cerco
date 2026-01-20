@@ -63,7 +63,7 @@ const RegisterBO = () => {
               { name: "Data do Fato", value: formData.date, inline: true },
               { name: "Policial Responsável", value: formData.officer, inline: true }
             ],
-            footer: { text: "Sistema de Ocorrências Policia Civil" },
+            footer: { text: "Sistema de Ocorrências Polícia Federal" },
             timestamp: new Date().toISOString()
           };
           

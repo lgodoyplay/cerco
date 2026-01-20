@@ -15,13 +15,13 @@ import {
 const modules = [
   {
     id: 1,
-    title: 'Módulo 1 — O DHPP e sua missão',
-    description: 'Entenda o papel estratégico do DHPP dentro da estrutura policial.',
+    title: 'Módulo 1 — O DPF e sua missão',
+    description: 'Entenda o papel estratégico do DPF dentro da estrutura policial.',
     content: [
-      'Apresentação do DHPP como unidade especializada na investigação de mortes violentas e suspeitas.',
-      'Enquadramento legal e normativo: o que a lei e os regulamentos internos atribuem ao DHPP.',
-      'Diferença entre atendimento de rotina, patrulhamento e atuação especializada em homicídios.',
-      'Visão de cadeia de custódia: como cada ato no local impacta o trabalho do DHPP até a sentença judicial.'
+      'Apresentação do DPF como unidade especializada na investigação de crimes federais e mortes violentas.',
+      'Enquadramento legal e normativo: o que a lei e os regulamentos internos atribuem ao DPF.',
+      'Diferença entre atendimento de rotina, patrulhamento e atuação especializada.',
+      'Visão de cadeia de custódia: como cada ato no local impacta o trabalho do DPF até a sentença judicial.'
     ]
   },
   {
@@ -29,7 +29,7 @@ const modules = [
     title: 'Módulo 2 — Regra de Ouro do Local de Morte',
     description: 'A regra que separa uma boa investigação de um caso perdido.',
     content: [
-      'Conceito de Regra de Ouro: preservar tudo, tocar em nada, acionar a perícia e o DHPP.',
+      'Conceito de Regra de Ouro: preservar tudo, tocar em nada, acionar a perícia e o DPF.',
       'Por que o impulso de “ajudar” movendo o corpo ou objetos gera danos irreversíveis à prova.',
       'Exemplos reais de investigações prejudicadas por violação da regra de ouro.',
       'Postura profissional esperada do primeiro policial que chega ao local.'
@@ -38,10 +38,10 @@ const modules = [
   {
     id: 3,
     title: 'Módulo 3 — O Primeiro Policial no Local',
-    description: 'Condutas obrigatórias de quem chega antes do DHPP.',
+    description: 'Condutas obrigatórias de quem chega antes do DPF.',
     content: [
       'Checklist inicial: segurança da guarnição, preservação de vidas e isolamento da área.',
-      'Comunicação com a Central e com o DHPP: o que informar, como e quando.',
+      'Comunicação com a Central e com o DPF: o que informar, como e quando.',
       'Controle de acesso ao local: quem entra, quem não entra e como registrar.',
       'Postura com familiares, curiosos e imprensa sem comprometer a investigação.'
     ]
@@ -75,19 +75,19 @@ const modules = [
     content: [
       'Fluxo entre local de crime, remoção e recebimento no Instituto Médico Legal.',
       'Exames realizados no IML: necropsia, exames complementares e documentação fotográfica.',
-      'Como o laudo tanatológico subsidia a investigação do DHPP.',
+      'Como o laudo tanatológico subsidia a investigação do DPF.',
       'Prazos, limitações técnicas e importância de laudos bem solicitados pelo delegado.'
     ]
   },
   {
     id: 7,
-    title: 'Módulo 7 — Como o DHPP monta uma investigação de homicídio',
+    title: 'Módulo 7 — Como o DPF monta uma investigação',
     description: 'Etapas da investigação desde o primeiro chamado até o indiciamento.',
     content: [
       'Levantamento preliminar no local e definição de hipóteses iniciais.',
       'Coleta e análise de depoimentos, imagens, registros telefônicos e laudos periciais.',
       'Construção de linha do tempo, dinâmica do crime e motivação provável.',
-      'Integração entre delegados, investigadores, escrivães e peritos oficiais.'
+      'Integração entre delegados, agentes, escrivães e peritos oficiais.'
     ]
   },
   {
@@ -103,7 +103,7 @@ const modules = [
   },
   {
     id: 9,
-    title: 'Módulo 9 — Atuação do DHPP em qualquer área',
+    title: 'Módulo 9 — Atuação do DPF em qualquer área',
     description: 'Doutrina única, mesmo em comunidades ou áreas sensíveis.',
     content: [
       'Aplicação dos mesmos princípios de preservação em áreas de risco e comunidades.',
@@ -119,7 +119,7 @@ const modules = [
     content: [
       'Passo a passo padronizado desde o primeiro acionamento até a entrega do caso.',
       'Documentos mínimos que devem ser gerados em toda ocorrência de morte.',
-      'Comunicação entre DHPP, perícia, IML e Ministério Público.',
+      'Comunicação entre DPF, perícia, IML e Ministério Público.',
       'Indicadores de qualidade para medir a eficácia da preservação de local.'
     ]
   },
@@ -130,7 +130,7 @@ const modules = [
     content: [
       'Síntese dos principais pontos do curso com foco no dia a dia de rua.',
       'Reflexão sobre a responsabilidade de quem é o primeiro a chegar no local.',
-      'Mensagem final do DHPP: cada vestígio preservado é um passo rumo à verdade.',
+      'Mensagem final do DPF: cada vestígio preservado é um passo rumo à verdade.',
       'Compromisso ético: respeito às vítimas, às famílias e à sociedade.'
     ]
   }
@@ -142,7 +142,7 @@ const examQuestions = [
     question: 'Ao chegar primeiro em um possível local de homicídio, qual é a prioridade absoluta?',
     options: [
       { id: 'a', text: 'Verificar bolsos da vítima em busca de documentos' },
-      { id: 'b', text: 'Isolar o local, afastar pessoas e acionar DHPP e perícia' },
+      { id: 'b', text: 'Isolar o local, afastar pessoas e acionar DPF e perícia' },
       { id: 'c', text: 'Permitir que familiares se aproximem para reconhecer o corpo' }
     ],
     correct: 'b'
@@ -169,10 +169,10 @@ const examQuestions = [
   },
   {
     id: 4,
-    question: 'O que caracteriza a missão principal do DHPP?',
+    question: 'O que caracteriza a missão principal do DPF?',
     options: [
       { id: 'a', text: 'Fiscalizar trânsito e aplicar multas' },
-      { id: 'b', text: 'Apurar crimes contra a vida, com foco em homicídios e mortes suspeitas' },
+      { id: 'b', text: 'Apurar crimes federais e contra a vida, com foco em investigações complexas' },
       { id: 'c', text: 'Realizar policiamento comunitário em áreas de risco' }
     ],
     correct: 'b'
@@ -239,7 +239,7 @@ const examQuestions = [
   },
   {
     id: 11,
-    question: 'Em uma comunidade ou área sensível, como o DHPP deve atuar?',
+    question: 'Em uma comunidade ou área sensível, como o DPF deve atuar?',
     options: [
       { id: 'a', text: 'Abrindo mão da preservação de prova para evitar conflito' },
       { id: 'b', text: 'Aplicando a mesma doutrina de preservação, ajustando apenas a segurança operacional' },
@@ -279,7 +279,7 @@ const examQuestions = [
   },
   {
     id: 15,
-    question: 'Em relação ao laudo do IML, qual é o papel para o DHPP?',
+    question: 'Em relação ao laudo do IML, qual é o papel para o DPF?',
     options: [
       { id: 'a', text: 'Apenas formalizar o encerramento do inquérito' },
       { id: 'b', text: 'Fornecer elementos técnicos que confirmam ou corrigem hipóteses da investigação' },
@@ -332,7 +332,7 @@ const examQuestions = [
     question: 'Quando se pode considerar que o trabalho de preservação foi bem-sucedido?',
     options: [
       { id: 'a', text: 'Quando o local é rapidamente liberado para circulação' },
-      { id: 'b', text: 'Quando DHPP, perícia e IML conseguem reconstruir a dinâmica com base em vestígios íntegros' },
+      { id: 'b', text: 'Quando DPF, perícia e IML conseguem reconstruir a dinâmica com base em vestígios íntegros' },
       { id: 'c', text: 'Quando nenhum familiar reclama do atendimento' }
     ],
     correct: 'b'
@@ -395,7 +395,7 @@ const Home = () => {
 
     try {
       const mensagem = [
-        'Prova DHPP - Preservação de Local de Morte',
+        'Prova DPF - Preservação de Local de Morte',
         `Nome: ${examForm.nome || 'N/A'}`,
         `Matrícula: ${examForm.matricula || 'N/A'}`,
         `Lotação/Unidade: ${examForm.lotacao || 'N/A'}`,
@@ -410,7 +410,7 @@ const Home = () => {
           telefone: examForm.telefone,
           mensagem,
           pontuacao_quiz: score,
-          status: 'PROVA_DHPP'
+          status: 'PROVA_DPF'
         }
       ]);
 
@@ -435,13 +435,13 @@ const Home = () => {
           <div className="flex-1 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/60 border border-federal-700/70 text-federal-200 text-xs font-semibold uppercase tracking-[0.18em]">
               <Shield size={16} className="text-federal-400" />
-              <span>Treinamento Oficial DHPP</span>
+              <span>Treinamento Oficial DPF</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white">
               O sucesso da investigação começa na primeira viatura.
             </h1>
             <p className="text-lg text-slate-300 max-w-2xl">
-              Curso oficial de capacitação em Preservação de Local de Morte, focado integralmente no DHPP
+              Curso oficial de capacitação em Preservação de Local de Morte, focado integralmente no DPF
               e na doutrina correta de atendimento inicial em ocorrências de morte violenta ou suspeita.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -478,13 +478,13 @@ const Home = () => {
                     </div>
                   </div>
                   <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold border border-emerald-500/30">
-                    Focado no DHPP
+                    Focado no DPF
                   </span>
                 </div>
                 <div className="mt-4 space-y-3 text-sm text-slate-300">
                   <p>
                     Visual sério, policial e investigativo, com ênfase em cenas de crime, isolamento de área e
-                    integração entre DHPP, perícia e IML.
+                    integração entre DPF, perícia e IML.
                   </p>
                   <p>
                     Todo o conteúdo é construído para a realidade do atendimento inicial: a primeira viatura,
@@ -494,7 +494,7 @@ const Home = () => {
                 <div className="grid grid-cols-2 gap-3 text-xs text-slate-300 pt-2 border-t border-slate-800">
                   <div className="flex flex-col gap-1">
                     <span className="text-slate-500 font-semibold uppercase tracking-wide">Foco</span>
-                    <span>DHPP e preservação de local de morte.</span>
+                    <span>DPF e preservação de local de morte.</span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-slate-500 font-semibold uppercase tracking-wide">Público-alvo</span>
@@ -507,49 +507,47 @@ const Home = () => {
         </div>
       </section>
 
-      <section id="dhpp" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="dpf" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-10 items-start">
           <div className="space-y-4">
             <h2 className="text-3xl sm:text-4xl font-bold text-white flex items-center gap-3">
               <Shield size={30} className="text-federal-400" />
-              O que é o DHPP
+              O que é o DPF
             </h2>
             <p className="text-slate-300 text-base leading-relaxed">
-              O Departamento de Homicídios e Proteção à Pessoa é a unidade especializada responsável por apurar
-              mortes violentas, suspeitas e casos em que a causa não é imediatamente clara. É o setor que conduz
-              investigações complexas, sensíveis e de alto impacto social.
+              O Departamento de Polícia Federal é a instituição de excelência responsável por apurar
+              infrações penais contra a ordem política e social ou em detrimento de bens, serviços e interesses da União.
             </p>
             <p className="text-slate-300 text-base leading-relaxed">
-              Sua missão é reconstruir, com rigor técnico e respeito às vítimas, o que aconteceu em cada local de
-              morte, garantindo que nenhuma prova seja perdida e que cada investigação tenha base sólida em laudos
-              periciais e evidências qualificadas.
+              Sua missão é atuar com rigor técnico e científico, garantindo a preservação de provas e a elucidação
+              de crimes federais, mantendo a ordem e a segurança pública.
             </p>
           </div>
           <div className="space-y-6">
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
               <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-[0.18em] mb-3">
-                Ocorrências típicas do DHPP
+                Ocorrências típicas do DPF
               </h3>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-200">
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
-                  Homicídio
+                  Crimes Federais
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
-                  Latrocínio
+                  Tráfico Internacional
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
-                  Morte suspeita
+                  Corrupção
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
-                  Encontro de cadáver
+                  Crimes Cibernéticos
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
-                  Morte de causa indeterminada
+                  Crimes Ambientais
                 </li>
               </ul>
             </div>
@@ -592,7 +590,7 @@ const Home = () => {
                 <li>NÃO TOQUE EM NADA.</li>
                 <li>NÃO CONFIRA PULSO.</li>
                 <li>NÃO VIRE O CORPO.</li>
-                <li>PRIMEIRA COISA: CHAME A PERÍCIA E O DHPP.</li>
+                <li>PRIMEIRA COISA: CHAME A PERÍCIA E O DPF.</li>
               </ul>
             </div>
             <div className="grid md:grid-cols-3 gap-6 text-sm text-slate-100">
@@ -640,7 +638,7 @@ const Home = () => {
             </h2>
             <p className="text-slate-300 mt-3 max-w-2xl">
               Cada módulo aprofunda uma etapa crítica da preservação de local de morte e da atuação do
-              DHPP, com foco em doutrina correta, casos reais e aplicação prática em serviço.
+              DPF, com foco em doutrina correta, casos reais e aplicação prática em serviço.
             </p>
           </div>
         </div>
@@ -703,7 +701,7 @@ const Home = () => {
               <ul className="space-y-1.5 text-xs text-slate-200">
                 <li>Analisa a cena de forma técnica e documentada.</li>
                 <li>Registra vestígios, manchas, pegadas e trajetórias.</li>
-                <li>Gera laudos que sustentam a linha investigativa do DHPP.</li>
+                <li>Gera laudos que sustentam a linha investigativa do DPF.</li>
               </ul>
             </div>
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
@@ -721,7 +719,7 @@ const Home = () => {
                 Conexão entre laudo e investigação
               </p>
               <p className="text-xs sm:text-sm text-federal-50">
-                Quando local, perícia e IML trabalham de forma integrada, o DHPP consegue reconstruir a
+                Quando local, perícia e IML trabalham de forma integrada, o DPF consegue reconstruir a
                 dinâmica do crime com precisão e oferecer ao Judiciário um caso sólido, técnico e robusto.
               </p>
             </div>
@@ -741,7 +739,7 @@ const Home = () => {
                   Erros graves
                 </p>
                 <p className="text-sm text-red-100">
-                  Condutas que quebram a cadeia de custódia e comprometem o trabalho do DHPP.
+                  Condutas que quebram a cadeia de custódia e comprometem o trabalho do DPF.
                 </p>
               </div>
             </div>
@@ -840,7 +838,7 @@ const Home = () => {
               </p>
             </div>
             <p className="mt-6 text-base font-semibold text-federal-50">
-              “O DHPP só consegue trabalhar bem quando ninguém mexe em nada.”
+              “O DPF só consegue trabalhar bem quando ninguém mexe em nada.”
             </p>
           </div>
         </div>
@@ -967,7 +965,7 @@ const Home = () => {
                         value={examForm.lotacao}
                         onChange={(e) => setExamForm({ ...examForm, lotacao: e.target.value })}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500"
-                        placeholder="Ex: DHPP, 3ª Delegacia de Homicídios"
+                        placeholder="Ex: DPF, Superintendência Regional"
                       />
                     </div>
                     <div className="space-y-2">
