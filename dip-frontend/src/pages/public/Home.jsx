@@ -140,201 +140,201 @@ const modules = [
 const examQuestions = [
   {
     id: 1,
-    question: 'Conforme o Art. 144 da Constituição Federal, a Polícia Federal é definida como:',
+    question: 'No contexto de uma operação policial de alto risco, qual é o protocolo prioritário do Comandante de Cena?',
     options: [
-      { id: 'a', text: 'Uma força auxiliar do Exército' },
-      { id: 'b', text: 'Um órgão permanente, organizado e mantido pela União' },
-      { id: 'c', text: 'Uma guarda municipal expandida' }
+      { id: 'a', text: 'Entrar sozinho no perímetro para negociar' },
+      { id: 'b', text: 'Estabelecer perímetro, conter a crise e coordenar as equipes táticas' },
+      { id: 'c', text: 'Aguardar a imprensa chegar para dar entrevista' }
     ],
     correct: 'b'
   },
   {
     id: 2,
-    question: 'Qual é a missão fundamental da Polícia Federal?',
+    question: 'Sobre o Inquérito Policial (IP), é correto afirmar que:',
     options: [
-      { id: 'a', text: 'Apenas emitir passaportes' },
-      { id: 'b', text: 'Exercer a segurança pública para preservação da ordem e incolumidade das pessoas' },
-      { id: 'c', text: 'Cobrar impostos federais' }
+      { id: 'a', text: 'É um processo judicial presidido pelo Juiz' },
+      { id: 'b', text: 'É um procedimento administrativo, inquisitivo e preparatório, presidido pelo Delegado' },
+      { id: 'c', text: 'Pode ser arquivado diretamente pelo Delegado de Polícia' }
     ],
     correct: 'b'
   },
   {
     id: 3,
-    question: 'Como a Polícia Federal está estruturada geograficamente?',
+    question: 'Na Cadeia de Custódia da prova material, a etapa de "Acondicionamento" visa:',
     options: [
-      { id: 'a', text: 'Apenas em Brasília' },
-      { id: 'b', text: 'Direção Geral em Brasília e Superintendências Regionais nos estados' },
-      { id: 'c', text: 'Uma delegacia por cidade' }
+      { id: 'a', text: 'Jogar fora o que não serve' },
+      { id: 'b', text: 'Proteger o vestígio de contaminação ou alteração, em embalagem lacrada e identificada' },
+      { id: 'c', text: 'Tirar fotos para postar nas redes sociais' }
     ],
     correct: 'b'
   },
   {
     id: 4,
-    question: 'Qual é a atribuição privativa do Delegado de Polícia Federal?',
+    question: 'Conforme a Lei de Organizações Criminosas (12.850/13), considera-se Organização Criminosa a associação de:',
     options: [
-      { id: 'a', text: 'Dirigir a viatura' },
-      { id: 'b', text: 'Presidir inquéritos policiais e chefiar operações' },
-      { id: 'c', text: 'Realizar perícias de laboratório' }
+      { id: 'a', text: '3 ou mais pessoas, estruturalmente ordenada' },
+      { id: 'b', text: '4 ou mais pessoas, estruturalmente ordenada e com divisão de tarefas' },
+      { id: 'c', text: 'Qualquer grupo que cometa crimes' }
     ],
     correct: 'b'
   },
   {
     id: 5,
-    question: 'Qual é a principal função do Agente de Polícia Federal?',
+    question: 'Na Lavagem de Dinheiro, a fase de "Integração" consiste em:',
     options: [
-      { id: 'a', text: 'Executar investigações e operações policiais' },
-      { id: 'b', text: 'Julgar os criminosos' },
-      { id: 'c', text: 'Fazer a contabilidade da delegacia' }
+      { id: 'a', text: 'Depositar o dinheiro sujo no banco (Placement)' },
+      { id: 'b', text: 'Movimentar o dinheiro para dificultar o rastreio (Layering)' },
+      { id: 'c', text: 'Incorporar o capital ilícito na economia formal como se fosse lícito' }
     ],
-    correct: 'a'
+    correct: 'c'
   },
   {
     id: 6,
-    question: 'O Escrivão de Polícia Federal é responsável por:',
+    question: 'O princípio da "Compartimentação" na Atividade de Inteligência significa:',
     options: [
-      { id: 'a', text: 'Prender criminosos na rua' },
-      { id: 'b', text: 'Formalizar os atos de polícia judiciária e gerir inquéritos' },
-      { id: 'c', text: 'Limpar as armas' }
+      { id: 'a', text: 'Esconder tudo de todos' },
+      { id: 'b', text: 'Restringir o conhecimento de dados sensíveis apenas a quem tem real necessidade de conhecer' },
+      { id: 'c', text: 'Dividir o escritório em salas pequenas' }
     ],
     correct: 'b'
   },
   {
     id: 7,
-    question: 'O Perito Criminal Federal atua principalmente na:',
+    question: 'Em uma situação de Gerenciamento de Crises com reféns, a prioridade absoluta é:',
     options: [
-      { id: 'a', text: 'Segurança de dignitários' },
-      { id: 'b', text: 'Produção de prova material e científica' },
-      { id: 'c', text: 'Emissão de passaportes' }
+      { id: 'a', text: 'A preservação da vida (de todos os envolvidos)' },
+      { id: 'b', text: 'A prisão imediata do causador' },
+      { id: 'c', text: 'A aplicação rigorosa da lei' }
     ],
-    correct: 'b'
+    correct: 'a'
   },
   {
     id: 8,
-    question: 'Qual destes crimes é de competência da Polícia Federal?',
+    question: 'O Indiciamento é um ato privativo do Delegado de Polícia que ocorre quando:',
     options: [
-      { id: 'a', text: 'Furto de celular na rua' },
-      { id: 'b', text: 'Tráfico internacional de drogas' },
-      { id: 'c', text: 'Briga de vizinhos' }
+      { id: 'a', text: 'Há apenas suspeitas vagas sobre o autor' },
+      { id: 'b', text: 'Existem indícios suficientes de autoria e materialidade delitiva contra o investigado' },
+      { id: 'c', text: 'O Ministério Público solicita' }
     ],
     correct: 'b'
   },
   {
     id: 9,
-    question: 'A função de "Polícia Administrativa" da PF inclui:',
+    question: 'A "Difusão Vermelha" (Red Notice) da Interpol serve para:',
     options: [
-      { id: 'a', text: 'Investigação de homicídios' },
-      { id: 'b', text: 'Controle de segurança privada e emissão de passaportes' },
-      { id: 'c', text: 'Policiamento ostensivo de trânsito' }
+      { id: 'a', text: 'Alertar sobre perigo de incêndio' },
+      { id: 'b', text: 'Solicitar a localização e prisão de pessoas procuradas para extradição' },
+      { id: 'c', text: 'Informar sobre pessoas desaparecidas' }
     ],
     correct: 'b'
   },
   {
     id: 10,
-    question: 'O que é o SINARM, gerido pela PF?',
+    question: 'Cometer Abuso de Autoridade inclui a conduta de:',
     options: [
-      { id: 'a', text: 'Sistema Nacional de Armas' },
-      { id: 'b', text: 'Sistema de Navegação Aérea' },
-      { id: 'c', text: 'Sindicato dos Armeiros' }
+      { id: 'a', text: 'Algemar preso que oferece resistência física' },
+      { id: 'b', text: 'Negar ao interessado ou seu defensor acesso aos autos de investigação (Súmula Vinculante 14)' },
+      { id: 'c', text: 'Dar voz de prisão em flagrante' }
     ],
-    correct: 'a'
+    correct: 'b'
   },
   {
     id: 11,
-    question: 'No combate ao crime organizado, a PF foca em:',
+    question: 'O Relatório Final do Inquérito Policial deve conter:',
     options: [
-      { id: 'a', text: 'Crimes de menor potencial ofensivo' },
-      { id: 'b', text: 'Descapitalização das facções e combate à lavagem de dinheiro' },
-      { id: 'c', text: 'Prender usuários de drogas' }
+      { id: 'a', text: 'A opinião pessoal do Delegado sobre o juiz' },
+      { id: 'b', text: 'A minuciosa descrição dos fatos, das provas colhidas e a classificação do crime' },
+      { id: 'c', text: 'A sentença condenatória do réu' }
     ],
     correct: 'b'
   },
   {
     id: 12,
-    question: 'Qual é o papel da PF na cooperação internacional?',
+    question: 'A Lei de Drogas (11.343/06) diferencia usuário de traficante baseando-se em:',
     options: [
-      { id: 'a', text: 'Não possui atuação internacional' },
-      { id: 'b', text: 'É a representante exclusiva da Interpol no Brasil' },
-      { id: 'c', text: 'Atua apenas na América do Sul' }
+      { id: 'a', text: 'Apenas a quantidade de droga apreendida' },
+      { id: 'b', text: 'Quantidade, natureza, local, condições da ação e circunstâncias sociais/pessoais' },
+      { id: 'c', text: 'A confissão do suspeito apenas' }
     ],
     correct: 'b'
   },
   {
     id: 13,
-    question: 'O COT (Comando de Operações Táticas) é especializado em:',
+    question: 'A Corregedoria de Polícia tem como função principal:',
     options: [
-      { id: 'a', text: 'Serviços administrativos' },
-      { id: 'b', text: 'Intervenções de alto risco e antiterrorismo' },
-      { id: 'c', text: 'Controle de tráfego aéreo' }
+      { id: 'a', text: 'Defender policiais em processos judiciais' },
+      { id: 'b', text: 'Apurar infrações disciplinares e penais praticadas por servidores policiais' },
+      { id: 'c', text: 'Organizar escalas de serviço' }
     ],
     correct: 'b'
   },
   {
     id: 14,
-    question: 'A Inteligência Policial se diferencia da investigação por:',
+    question: 'Em operações interagências (ex: PF + PRF), o comando deve ser:',
     options: [
-      { id: 'a', text: 'Usar armas mais potentes' },
-      { id: 'b', text: 'Focar na produção de conhecimento para assessorar decisões' },
-      { id: 'c', text: 'Ser feita apenas por civis' }
+      { id: 'a', text: 'Disputado na hora' },
+      { id: 'b', text: 'Integrado, com definição prévia de competências e liderança situacional' },
+      { id: 'c', text: 'Cada um faz o seu sem conversar' }
     ],
     correct: 'b'
   },
   {
     id: 15,
-    question: 'O que é Contrainteligência?',
+    question: 'O uso de algemas é lícito (Súmula Vinculante 11) apenas em casos de:',
     options: [
-      { id: 'a', text: 'Inteligência feita ao contrário' },
-      { id: 'b', text: 'Proteção da instituição e de dados sensíveis contra ameaças' },
-      { id: 'c', text: 'Espionagem ilegal' }
+      { id: 'a', text: 'Qualquer prisão para garantir a humilhação' },
+      { id: 'b', text: 'Resistência, fundado receio de fuga ou perigo à integridade física (própria ou alheia)' },
+      { id: 'c', text: 'Crimes de colarinho branco' }
     ],
     correct: 'b'
   },
   {
     id: 16,
-    question: 'Quais são os princípios da administração pública (LIMPE)?',
+    question: 'A infiltração de agentes em organizações criminosas exige:',
     options: [
-      { id: 'a', text: 'Lucro, Interesse, Medo, Poder e Ego' },
-      { id: 'b', text: 'Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência' },
-      { id: 'c', text: 'Liberdade, Igualdade e Fraternidade' }
+      { id: 'a', text: 'Apenas ordem do Delegado' },
+      { id: 'b', text: 'Autorização judicial prévia, fundamentada e sigilosa' },
+      { id: 'c', text: 'Votação entre os policiais' }
     ],
     correct: 'b'
   },
   {
     id: 17,
-    question: 'A base da disciplina policial é:',
+    question: 'O crime de Corrupção Passiva (Art. 317 CP) se configura quando o funcionário público:',
     options: [
-      { id: 'a', text: 'O medo do chefe' },
-      { id: 'b', text: 'A hierarquia e a disciplina' },
-      { id: 'c', text: 'O salário no final do mês' }
+      { id: 'a', text: 'Oferece dinheiro a outro funcionário' },
+      { id: 'b', text: 'Solicita ou recebe, para si ou outrem, vantagem indevida em razão da função' },
+      { id: 'c', text: 'Desvia dinheiro público de que tem a posse' }
     ],
     correct: 'b'
   },
   {
     id: 18,
-    question: 'Em relação aos Direitos Humanos, o policial deve:',
+    question: 'O "Flagrante Preparado" (ou provocado) pela polícia:',
     options: [
-      { id: 'a', text: 'Ignorá-los para ser eficiente' },
-      { id: 'b', text: 'Respeitá-los incondicionalmente em todas as ações' },
-      { id: 'c', text: 'Aplicar apenas para cidadãos de bem' }
+      { id: 'a', text: 'É a melhor forma de prender criminosos' },
+      { id: 'b', text: 'É ilegal e torna a prisão nula (Súmula 145 STF - crime impossível)' },
+      { id: 'c', text: 'É permitido em qualquer situação' }
     ],
     correct: 'b'
   },
   {
     id: 19,
-    question: 'A Lei 13.869/2019 trata de:',
+    question: 'A autonomia funcional do Perito Criminal visa garantir:',
     options: [
-      { id: 'a', text: 'Aumento de salários' },
-      { id: 'b', text: 'Abuso de Autoridade' },
-      { id: 'c', text: 'Uniforme policial' }
+      { id: 'a', text: 'Que ele possa trabalhar de casa' },
+      { id: 'b', text: 'A isenção e imparcialidade da prova científica, sem interferência hierárquica no laudo' },
+      { id: 'c', text: 'Salários mais altos' }
     ],
     correct: 'b'
   },
   {
     id: 20,
-    question: 'Qual o objetivo final da excelência na PF?',
+    question: 'O dever de "Sigilo Funcional" implica que o policial:',
     options: [
-      { id: 'a', text: 'Ganhar prêmios' },
-      { id: 'b', text: 'Servir à sociedade com credibilidade e eficiência' },
-      { id: 'c', text: 'Aumentar a burocracia' }
+      { id: 'a', text: 'Não pode contar nada para a esposa' },
+      { id: 'b', text: 'Deve guardar segredo sobre informações sensíveis da repartição, sob pena de crime e demissão' },
+      { id: 'c', text: 'Só pode falar com jornalistas autorizados' }
     ],
     correct: 'b'
   }
@@ -933,10 +933,10 @@ const Home = () => {
             <div className="flex items-center justify-between px-6 sm:px-8 py-4 border-b border-slate-800">
               <div>
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]">
-                  Prova Oficial do Curso
+                  Prova de Capacitação Técnica Superior
                 </p>
                 <p className="text-sm font-semibold text-white">
-                  Conhecimentos Institucionais – DPF
+                  Curso de Aperfeiçoamento Profissional – DPF
                 </p>
               </div>
               <button
