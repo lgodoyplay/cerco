@@ -64,18 +64,20 @@ const WeaponsLicense = () => {
     setError('');
 
     try {
+      // Generate ID client-side to avoid SELECT permission issues for public users
+      const licenseId = crypto.randomUUID();
+
       // 1. Create License Request
-      const { data: license, error: licenseError } = await supabase
+      const { error: licenseError } = await supabase
         .from('weapon_licenses')
         .insert({
+          id: licenseId,
           full_name: formData.fullName,
           passport_id: formData.passportId,
           phone: formData.phone,
           reason: formData.reason,
           status: 'pending'
-        })
-        .select()
-        .single();
+        });
 
       if (licenseError) throw licenseError;
 
@@ -83,7 +85,7 @@ const WeaponsLicense = () => {
       if (formData.files.length > 0) {
         for (const file of formData.files) {
           const fileExt = file.name.split('.').pop();
-          const fileName = `${license.id}/${Math.random()}.${fileExt}`;
+          const fileName = `${licenseId}/${Math.random()}.${fileExt}`;
           
           const { error: uploadError } = await supabase.storage
             .from('license-docs')
@@ -98,7 +100,7 @@ const WeaponsLicense = () => {
           await supabase
             .from('license_attachments')
             .insert({
-              license_id: license.id,
+              license_id: licenseId,
               url: publicUrl,
               file_name: file.name,
               file_type: file.type
