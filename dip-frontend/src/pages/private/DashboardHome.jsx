@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, AlertTriangle, FileText, TrendingUp, Search, Clock, ShieldAlert } from 'lucide-react';
+import { Users, AlertTriangle, FileText, TrendingUp, Search, Clock, ShieldAlert, BadgeCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
@@ -31,12 +31,41 @@ const DashboardHome = () => {
   });
   const [recentActivities, setRecentActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [functionalCode, setFunctionalCode] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
       console.time('Dashboard Fetch');
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // 1. Check/Generate Functional Code
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('codigo_funcional')
+            .eq('id', user.id)
+            .single();
+
+          if (profile) {
+            if (profile.codigo_funcional) {
+              if (isMounted) setFunctionalCode(profile.codigo_funcional);
+            } else {
+              // Generate new code
+              const newCode = 'PF-' + Math.floor(100000 + Math.random() * 900000);
+              const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ codigo_funcional: newCode })
+                .eq('id', user.id);
+              
+              if (!updateError && isMounted) {
+                setFunctionalCode(newCode);
+              }
+            }
+          }
+        }
+
         const [
           { count: presosCount },
           { count: procuradosCount },
@@ -198,6 +227,29 @@ const DashboardHome = () => {
 
         {/* Quick Actions / Notices */}
         <div className="space-y-6">
+          {/* Functional Code Card */}
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-5 text-federal-500 transform scale-150 group-hover:scale-125 transition-transform duration-500">
+              <BadgeCheck size={100} />
+            </div>
+            <div className="relative z-10">
+              <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Identificação Funcional</h3>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl md:text-3xl font-mono font-bold text-white tracking-widest">
+                  {functionalCode || '...'}
+                </span>
+                {functionalCode && (
+                  <span className="px-2 py-0.5 bg-federal-500/20 text-federal-400 text-[10px] font-bold rounded border border-federal-500/30">
+                    ATIVO
+                  </span>
+                )}
+              </div>
+              <p className="text-slate-500 text-xs mt-2">
+                Utilize este código para se identificar em operações e para verificação de identidade.
+              </p>
+            </div>
+          </div>
+
           <div className="bg-gradient-to-br from-federal-900 to-federal-800 border border-federal-700 rounded-xl p-6 text-white relative overflow-hidden">
             <div className="relative z-10">
               <h3 className="font-bold text-lg mb-2">Acesso Rápido</h3>

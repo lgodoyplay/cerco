@@ -4,6 +4,7 @@ export const routeLoaders = {
   Rules: () => import('../pages/public/Rules'),
   HowToJoin: () => import('../pages/public/HowToJoin'),
   Login: () => import('../pages/public/Login'),
+  SearchAndInvestigations: () => import('../pages/public/SearchAndInvestigations'),
 
   // Private - Dashboard
   DashboardHome: () => import('../pages/private/DashboardHome'),

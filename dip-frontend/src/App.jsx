@@ -17,6 +17,7 @@ import { routeLoaders } from './routes/routeLoaders';
 const Rules = React.lazy(() => lazyImport(routeLoaders.Rules));
 const HowToJoin = React.lazy(() => lazyImport(routeLoaders.HowToJoin));
 const Login = React.lazy(() => lazyImport(routeLoaders.Login));
+const SearchAndInvestigations = React.lazy(() => lazyImport(routeLoaders.SearchAndInvestigations));
 
 // Private Pages
 const DashboardHome = React.lazy(() => lazyImport(routeLoaders.DashboardHome));
@@ -102,6 +103,7 @@ function App() {
             <Route path="/curso-dpf" element={<Home />} />
             <Route path="/rules" element={<Rules />} />
             <Route path="/join" element={<HowToJoin />} />
+            <Route path="/pesquisas-e-apuracoes" element={<SearchAndInvestigations />} />
           </Route>
 
           <Route path="/login" element={<Login />} />
