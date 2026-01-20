@@ -17,7 +17,8 @@ import {
   X,
   Search,
   DollarSign,
-  FileSearch
+  FileSearch,
+  Target
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
