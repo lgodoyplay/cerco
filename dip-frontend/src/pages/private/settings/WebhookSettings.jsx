@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Share2, Save, MessageSquare, AlertCircle, CheckCircle, Microscope, ShieldAlert } from 'lucide-react';
+import { Share2, Save, MessageSquare, AlertCircle, CheckCircle, Microscope, ShieldAlert, Target } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 
 const WebhookSettings = () => {
