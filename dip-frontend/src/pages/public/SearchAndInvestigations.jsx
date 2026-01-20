@@ -181,7 +181,13 @@ const SearchAndInvestigations = () => {
                   <div className="flex flex-col items-center gap-4">
                     <div className="w-24 h-24 rounded-full bg-slate-800 border-4 border-emerald-500/30 overflow-hidden relative">
                        {verifyResult.avatar_url ? (
-                         <img src={verifyResult.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                         <img 
+                           src={verifyResult.avatar_url.startsWith('http') 
+                             ? verifyResult.avatar_url 
+                             : supabase.storage.from('avatars').getPublicUrl(verifyResult.avatar_url).data.publicUrl} 
+                           alt="Avatar" 
+                           className="w-full h-full object-cover" 
+                         />
                        ) : (
                          <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold text-3xl">
                            {verifyResult.full_name?.charAt(0)}
