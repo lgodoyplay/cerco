@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { 
   Shield, CheckCircle, XCircle, Clock, AlertTriangle, 
-  FileText, Search, Filter, MoreVertical, Archive, RefreshCw, Send
+  FileText, Search, Filter, MoreVertical, Archive, RefreshCw, Send, Upload
 } from 'lucide-react';
 
 const StatusBadge = ({ status }) => {
@@ -35,6 +35,7 @@ const WeaponsManager = () => {
   const [activeTab, setActiveTab] = useState('requests'); // requests, process, archive
   const [licenses, setLicenses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [selectedLicense, setSelectedLicense] = useState(null);
   
   // Fetch data based on active tab
@@ -65,6 +66,66 @@ const WeaponsManager = () => {
       console.error('Error fetching licenses:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    setUploading(true);
+    try {
+      const files = Array.from(e.target.files);
+      const user = (await supabase.auth.getUser()).data.user;
+      
+      for (const file of files) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${selectedLicense.id}/${Math.random()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('license-docs')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('license-docs')
+          .getPublicUrl(fileName);
+
+        const { error: dbError } = await supabase
+          .from('license_attachments')
+          .insert({
+            license_id: selectedLicense.id,
+            url: publicUrl,
+            file_name: file.name,
+            file_type: file.type,
+            uploaded_by: user?.id
+          });
+          
+        if (dbError) throw dbError;
+      }
+      
+      // Refresh current license data
+      const { data: updatedLicense } = await supabase
+        .from('weapon_licenses')
+        .select('*, license_attachments(*)')
+        .eq('id', selectedLicense.id)
+        .single();
+        
+      if (updatedLicense) {
+        setSelectedLicense(updatedLicense);
+        // Also update the list item
+        setLicenses(prev => prev.map(l => l.id === updatedLicense.id ? updatedLicense : l));
+      }
+      
+      alert('Documentos adicionados com sucesso!');
+      
+    } catch (err) {
+      console.error('Error uploading files:', err);
+      alert('Erro ao enviar documentos: ' + err.message);
+    } finally {
+      setUploading(false);
+      // Reset input
+      e.target.value = null;
     }
   };
 
@@ -201,6 +262,34 @@ const WeaponsManager = () => {
 
             {/* Actions */}
             <div className="pt-6 border-t border-slate-800">
+              
+              {selectedLicense.status === 'processing' && (
+                <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 mb-6">
+                  <h3 className="text-sm font-bold text-slate-300 mb-3">Adicionar Documentos do Processo</h3>
+                  <p className="text-xs text-slate-500 mb-4">
+                    Anexe laudos médicos, psicológicos e comprovantes de pagamento enviados pelo cidadão.
+                  </p>
+                  
+                  <label className={`flex items-center justify-center gap-3 p-4 border-2 border-dashed border-slate-700 rounded-xl cursor-pointer hover:border-federal-500 hover:bg-slate-900 transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <input 
+                      type="file" 
+                      multiple 
+                      className="hidden" 
+                      onChange={handleFileUpload}
+                      disabled={uploading}
+                    />
+                    {uploading ? (
+                      <RefreshCw className="animate-spin text-federal-500" size={24} />
+                    ) : (
+                      <Upload className="text-slate-400" size={24} />
+                    )}
+                    <span className="text-sm font-bold text-slate-300">
+                      {uploading ? 'Enviando...' : 'Clique para selecionar arquivos'}
+                    </span>
+                  </label>
+                </div>
+              )}
+
               <h3 className="text-sm font-bold text-white mb-4">Ações</h3>
               <div className="flex flex-wrap gap-3">
                 {selectedLicense.status === 'pending' && (
