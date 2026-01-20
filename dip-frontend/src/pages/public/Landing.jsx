@@ -84,10 +84,10 @@ const Landing = () => {
           <div className="flex-1 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/70 border border-slate-700 text-federal-200 text-xs font-semibold uppercase tracking-[0.18em]">
               <Shield size={16} className="text-federal-400" />
-              <span>Departamento de Polícia Civil</span>
+              <span>Polícia Federal - DPF</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white">
-              Sistema Operacional da Polícia Civil.
+              Sistema Operacional da Polícia Federal.
             </h1>
             <p className="text-lg text-slate-300 max-w-2xl">
               Painel integrado para prisões, procurados, investigações, perícias e inteligência,
@@ -332,7 +332,7 @@ const Landing = () => {
           </div>
           <div className="px-6 sm:px-8 py-6 space-y-3 text-sm text-slate-200">
             <p>
-              Este sistema não representa, não substitui e não fala em nome de nenhuma Polícia Civil
+              Este sistema não representa, não substitui e não fala em nome de nenhuma Polícia Federal
               real. Toda a ambientação é ficcional, voltada para entretenimento e treinamento em
               servidores de roleplay.
             </p>

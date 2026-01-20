@@ -305,7 +305,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte da Policia Civil?</label>
+                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte da Polícia Federal?</label>
                   <textarea 
                     required
                     value={candidateForm.mensagem}

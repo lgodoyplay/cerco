@@ -60,9 +60,9 @@ const Login = () => {
             <div className="absolute inset-0 bg-federal-500/10 blur-xl rounded-full group-hover:bg-federal-500/20 transition-all" />
             <Shield className="w-12 h-12 text-federal-500 relative z-10" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Policia Civil</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Polícia Federal</h1>
           <div className="h-1 w-20 bg-federal-600 mx-auto mb-4 rounded-full" />
-          <p className="text-slate-500 text-xs mt-2 uppercase tracking-widest">Acesso Restrito</p>
+          <p className="text-slate-500 text-xs mt-2 uppercase tracking-widest">DPF - Acesso Restrito</p>
         </div>
 
         <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden">

@@ -127,7 +127,7 @@ const PublicLayout = () => {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-slate-900 text-center text-slate-600 text-xs">
-            &copy; {new Date().getFullYear()} Departamento de Policia Civil (Roleplay). Este ambiente faz parte de um jogo (RP) e não possui vínculo com a instituição real.
+            &copy; {new Date().getFullYear()} Departamento de Polícia Federal (Roleplay). Este ambiente faz parte de um jogo (RP) e não possui vínculo com a instituição real.
           </div>
         </div>
       </footer>

@@ -191,7 +191,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
 
         if (type === 'investigation') {
             docTitle = 'INQUÉRITO POLICIAL';
-            docRef = `PC - ${data.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`;
+            docRef = `DPF - ${data.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`;
             
             variables = {
                 '{numero_inquerito}': data.id,
@@ -209,7 +209,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 '{relato_fatos}': data.description || 'Ver seção de provas.',
                 '{conclusao}': 'Conforme relatório de provas em anexo.',
                 '{assinatura_agente}': user?.nome || 'Agente',
-                '{cargo_agente}': 'Agente de Policia Civil'
+                '{cargo_agente}': 'Agente de Polícia Federal'
             };
 
             standardContent = [
@@ -367,8 +367,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 '{recompensa}': data.reward || 'Não informada',
                 '{periculosidade}': data.dangerLevel || data.status || 'Desconhecida',
                 '{data_registro}': formatDate(data.date || data.created_at),
-                '{assinatura_agente}': user?.nome || 'Departamento de Policia Civil',
-                '{cargo_agente}': 'Policia Civil'
+                '{assinatura_agente}': user?.nome || 'Departamento de Polícia Federal',
+                '{cargo_agente}': 'Polícia Federal'
             };
 
             standardContent = [
