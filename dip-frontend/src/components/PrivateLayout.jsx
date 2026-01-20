@@ -149,7 +149,7 @@ const PrivateLayout = () => {
               icon={item.icon}
               label={item.label}
               active={location.pathname === item.to}
-              onClick={() => {}} // Não fecha mais sidebar
+              onClick={() => setIsSidebarOpen(false)}
             />
           ))}
         </nav>
@@ -173,7 +173,12 @@ const PrivateLayout = () => {
         
         {/* Top Header (Mobile Only / Breadcrumbs) */}
         <header className="h-16 flex items-center justify-between px-4 md:px-8 border-b border-slate-800 bg-slate-950/80 backdrop-blur-sm z-30 sticky top-0">
-          {/* Botão de menu removido pois a sidebar é fixa */}
+          <button 
+            className="md:hidden mr-4 p-2 text-slate-400 hover:text-white"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu size={24} />
+          </button>
           
           <div className="flex items-center gap-4 flex-1 px-4 md:px-0 md:w-full md:max-w-md">
              <div className="relative w-full">
