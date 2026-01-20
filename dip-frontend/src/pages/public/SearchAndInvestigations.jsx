@@ -26,11 +26,11 @@ const SearchAndInvestigations = () => {
     setVerifyError('');
 
     try {
-      // Query profiles by functional code
+      // Query profiles by functional code (passport_id or legacy codigo_funcional)
       const { data, error } = await supabase
         .from('profiles')
-        .select('full_name, role, codigo_funcional, avatar_url')
-        .eq('codigo_funcional', verifyCode.trim())
+        .select('full_name, role, passport_id, codigo_funcional, avatar_url')
+        .or(`passport_id.eq.${verifyCode.trim()},codigo_funcional.eq.${verifyCode.trim()}`)
         .single();
 
       if (error) {
@@ -202,7 +202,7 @@ const SearchAndInvestigations = () => {
                       <h3 className="text-2xl font-bold text-white">{verifyResult.full_name}</h3>
                       <p className="text-slate-400 font-medium">{verifyResult.role}</p>
                       <div className="inline-block px-3 py-1 rounded bg-slate-800 text-slate-300 text-xs font-mono mt-2">
-                        {verifyResult.codigo_funcional}
+                        {verifyResult.passport_id || verifyResult.codigo_funcional}
                       </div>
                     </div>
                   </div>

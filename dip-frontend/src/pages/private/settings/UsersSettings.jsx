@@ -181,7 +181,8 @@ const UsersSettings = () => {
   const filteredUsers = users.filter(user => 
     (user.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
     (user.username || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (user.passport_id || '').toLowerCase().includes(searchTerm.toLowerCase())
+    (user.passport_id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.codigo_funcional || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
