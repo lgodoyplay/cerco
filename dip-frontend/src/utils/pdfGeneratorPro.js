@@ -5,66 +5,62 @@ const ensureFontsConfigured = () => true;
 
 // --- CONFIGURAÇÃO DE ESTILOS ---
 const styles = {
-    header: {
+    headerBlock: {
+        alignment: 'center',
+        margin: [0, 0, 0, 20]
+    },
+    headerText: {
+        fontSize: 10,
+        bold: true,
+        alignment: 'center',
+        margin: [0, 2, 0, 0],
+        color: '#000000'
+    },
+    docTitle: {
         fontSize: 18,
         bold: true,
         alignment: 'center',
-        margin: [0, 0, 0, 10]
-    },
-    subHeader: {
-        fontSize: 14,
-        bold: true,
-        alignment: 'center',
-        margin: [0, 5, 0, 5]
-    },
-    title: {
-        fontSize: 24,
-        bold: true,
-        alignment: 'center',
-        margin: [0, 20, 0, 10]
-    },
-    sectionTitle: {
-        fontSize: 14,
-        bold: true,
-        margin: [0, 20, 0, 10],
-        color: '#000000',
+        margin: [0, 20, 0, 5],
         decoration: 'underline'
     },
-    normalText: {
+    docSubtitle: {
         fontSize: 12,
+        bold: true,
+        alignment: 'center',
+        margin: [0, 0, 0, 20]
+    },
+    sectionTitle: {
+        fontSize: 12,
+        bold: true,
+        fillColor: '#eeeeee',
+        margin: [0, 15, 0, 10],
+        padding: 5
+    },
+    normalText: {
+        fontSize: 11,
         alignment: 'justify',
         margin: [0, 0, 0, 5],
-        lineHeight: 1.5
-    },
-    smallText: {
-        fontSize: 10,
-        alignment: 'left',
-        color: '#333333'
+        lineHeight: 1.3
     },
     tableHeader: {
         bold: true,
-        fontSize: 11,
-        color: 'white',
-        fillColor: '#2d3748', // Dark gray/blue style
-        alignment: 'center',
-        margin: [0, 5, 0, 5]
+        fontSize: 10,
+        color: 'black',
+        fillColor: '#e5e7eb',
+        alignment: 'left',
+        margin: [0, 4, 0, 4]
     },
     tableCell: {
         fontSize: 10,
         color: 'black',
         alignment: 'left',
-        margin: [0, 5, 0, 5]
-    },
-    signatureLine: {
-        margin: [0, 50, 0, 10],
-        alignment: 'center',
-        bold: true
+        margin: [0, 4, 0, 4]
     },
     footer: {
-        fontSize: 9,
-        italics: true,
+        fontSize: 8,
         alignment: 'center',
-        color: '#555555'
+        color: '#666666',
+        margin: [0, 10, 0, 0]
     }
 };
 
@@ -186,12 +182,20 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         // Definição de Variáveis e Conteúdo Padrão baseada no Tipo
         let variables = {};
         let standardContent = [];
-        let docTitle = 'DOCUMENTO OFICIAL';
-        let docRef = `${new Date().getFullYear()}.${data.id || '000'}`;
+        // --- HEADER PADRÃO ---
+        const officialHeader = [
+            (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
+                image: coatOfArmsBase64, width: 40, alignment: 'center', margin: [0, 0, 0, 5]
+            } : null,
+            { text: 'REPÚBLICA FEDERATIVA DO BRASIL', style: 'headerText' },
+            { text: 'MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA', style: 'headerText' },
+            { text: 'DEPARTAMENTO DE POLÍCIA FEDERAL', style: 'headerText' },
+            { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1 }], margin: [0, 5, 0, 10] }
+        ];
 
         if (type === 'investigation') {
             docTitle = 'INQUÉRITO POLICIAL';
-            docRef = `DPF - ${data.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`;
+            docRef = `IP Nº ${data.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`;
             
             variables = {
                 '{numero_inquerito}': data.id,
@@ -213,52 +217,52 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             };
 
             standardContent = [
-                // --- CAPA ---
-                (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
-                    image: coatOfArmsBase64, width: 60, alignment: 'center', margin: [0, 20, 0, 10]
-                } : { text: '[BRASÃO]', alignment: 'center', margin: [0, 20, 0, 10] },
+                ...officialHeader,
 
-                { text: docTitle, style: 'title' },
-                { text: `PROCEDIMENTO Nº: ${docRef}`, style: 'subHeader' },
-                { text: `DATA DE INSTAURAÇÃO: ${formatDate(data.createdAt)}`, style: 'subHeader', fontSize: 12 },
-                
-                { text: '\n\n\n\n', fontSize: 1 }, 
-
-                // --- SUMÁRIO ---
-                { toc: { title: { text: 'SUMÁRIO', style: 'header' }, numberStyle: { bold: true } }, pageBreak: 'after' },
+                { text: docTitle, style: 'docTitle' },
+                { text: docRef, style: 'docSubtitle' },
 
                 // --- IDENTIFICAÇÃO ---
-                { text: '1. IDENTIFICAÇÃO', style: 'sectionTitle', tocItem: true },
+                { text: '1. DADOS GERAIS', style: 'sectionTitle' },
                 {
                     table: {
-                        widths: ['30%', '70%'],
+                        widths: ['25%', '75%'],
                         body: [
-                            [{ text: 'UNIDADE POLICIAL', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES', style: 'tableCell' }],
-                            [{ text: 'NATUREZA', style: 'tableHeader' }, { text: 'Inquérito Policial', style: 'tableCell' }],
-                            [{ text: 'STATUS', style: 'tableHeader' }, { text: data.status.toUpperCase(), style: 'tableCell', bold: true }],
-                            [{ text: 'PRIORIDADE', style: 'tableHeader' }, { text: data.priority.toUpperCase(), style: 'tableCell' }],
-                            [{ text: 'RESPONSÁVEL', style: 'tableHeader' }, { text: data.investigator ? data.investigator.nome.toUpperCase() : (user?.nome || 'NÃO ATRIBUÍDO').toUpperCase(), style: 'tableCell' }]
+                            [{ text: 'UNIDADE:', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES', style: 'tableCell' }],
+                            [{ text: 'NATUREZA:', style: 'tableHeader' }, { text: 'Inquérito Policial', style: 'tableCell' }],
+                            [{ text: 'STATUS:', style: 'tableHeader' }, { text: data.status.toUpperCase(), style: 'tableCell', bold: true }],
+                            [{ text: 'PRIORIDADE:', style: 'tableHeader' }, { text: data.priority.toUpperCase(), style: 'tableCell' }],
+                            [{ text: 'RESPONSÁVEL:', style: 'tableHeader' }, { text: data.investigator ? data.investigator.nome.toUpperCase() : (user?.nome || 'NÃO ATRIBUÍDO').toUpperCase(), style: 'tableCell' }],
+                            [{ text: 'DATA INSTAURAÇÃO:', style: 'tableHeader' }, { text: formatDate(data.createdAt), style: 'tableCell' }]
                         ]
                     },
-                    layout: 'lightHorizontalLines'
+                    layout: 'noBorders'
                 },
 
                 // --- ENVOLVIDOS ---
-                { text: '2. PARTES ENVOLVIDAS', style: 'sectionTitle', tocItem: true },
-                { text: Array.isArray(data.involved) ? data.involved.join(', ') : (data.involved || 'Não informado.'), style: 'normalText', margin: [0, 0, 0, 15] },
+                { text: '2. PARTES ENVOLVIDAS', style: 'sectionTitle' },
+                {
+                    table: {
+                        widths: ['100%'],
+                        body: [
+                           [{ text: Array.isArray(data.involved) ? data.involved.join(', ') : (data.involved || 'Não informado.'), style: 'tableCell' }]
+                        ]
+                    },
+                    layout: 'noBorders'
+                },
 
                 // --- RELATO ---
-                { text: '3. RELATO DOS FATOS', style: 'sectionTitle', tocItem: true },
+                { text: '3. RELATO DOS FATOS', style: 'sectionTitle' },
                 { text: data.description || 'Nenhuma descrição fornecida.', style: 'normalText' },
 
                 // --- DILIGÊNCIAS ---
-                { text: '4. DILIGÊNCIAS REALIZADAS', style: 'sectionTitle', tocItem: true },
-                { ul: [`Abertura do inquérito em ${formatDate(data.createdAt)}.`, `Análise inicial das evidências.`, data.status === 'Finalizada' ? `Encerramento e conclusão em ${formatDate(data.closedAt)}.` : 'Investigação em andamento.'], style: 'normalText' }
+                { text: '4. HISTÓRICO E DILIGÊNCIAS', style: 'sectionTitle' },
+                { ul: [`Abertura do inquérito em ${formatDate(data.createdAt)}.`, `Análise inicial das evidências.`, data.status === 'Finalizada' ? `Encerramento e conclusão em ${formatDate(data.closedAt)}.` : 'Investigação em andamento.'], style: 'normalText', margin: [10, 0, 0, 0] }
             ];
 
         } else if (type === 'bo') {
             docTitle = 'BOLETIM DE OCORRÊNCIA';
-            docRef = `BO - ${data.id}/${new Date().getFullYear()}`;
+            docRef = `BO Nº ${data.id}/${new Date().getFullYear()}`;
             
             variables = {
                 '{numero_inquerito}': data.id,
@@ -280,36 +284,32 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             };
 
             standardContent = [
-                (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
-                    image: coatOfArmsBase64, width: 60, alignment: 'center', margin: [0, 20, 0, 10]
-                } : { text: '[BRASÃO]', alignment: 'center', margin: [0, 20, 0, 10] },
+                ...officialHeader,
 
-                { text: docTitle, style: 'title' },
-                { text: `PROTOCOLO: ${docRef}`, style: 'subHeader' },
-                { text: `DATA DO REGISTRO: ${formatDate(data.created_at)}`, style: 'subHeader', fontSize: 12 },
-                
-                { text: '\n\n', fontSize: 1 }, 
+                { text: docTitle, style: 'docTitle' },
+                { text: docRef, style: 'docSubtitle' },
 
                 { text: '1. DADOS DA OCORRÊNCIA', style: 'sectionTitle' },
                 {
                     table: {
-                        widths: ['30%', '70%'],
+                        widths: ['25%', '75%'],
                         body: [
-                            [{ text: 'LOCAL', style: 'tableHeader' }, { text: data.localizacao || 'Não informado', style: 'tableCell' }],
-                            [{ text: 'COMUNICANTE', style: 'tableHeader' }, { text: data.comunicante || 'Anônimo', style: 'tableCell' }],
-                            [{ text: 'DATA/HORA', style: 'tableHeader' }, { text: formatDate(data.created_at), style: 'tableCell' }],
+                            [{ text: 'LOCAL:', style: 'tableHeader' }, { text: data.localizacao || 'Não informado', style: 'tableCell' }],
+                            [{ text: 'COMUNICANTE:', style: 'tableHeader' }, { text: data.comunicante || 'Anônimo', style: 'tableCell' }],
+                            [{ text: 'DATA/HORA:', style: 'tableHeader' }, { text: formatDate(data.created_at), style: 'tableCell' }],
+                            [{ text: 'NATUREZA:', style: 'tableHeader' }, { text: 'Registro de Ocorrência', style: 'tableCell' }]
                         ]
                     },
-                    layout: 'lightHorizontalLines'
+                    layout: 'noBorders'
                 },
 
-                { text: '2. DESCRIÇÃO DOS FATOS', style: 'sectionTitle' },
-                { text: data.descricao || 'Nenhuma descrição fornecida.', style: 'normalText', alignment: 'justify' }
+                { text: '2. NARRATIVA DOS FATOS', style: 'sectionTitle' },
+                { text: data.descricao || 'Nenhuma descrição fornecida.', style: 'normalText' }
             ];
 
         } else if (type === 'arrest') {
-            docTitle = 'AUTO DE PRISÃO';
-            docRef = `AP - ${data.id}/${new Date().getFullYear()}`;
+            docTitle = 'AUTO DE PRISÃO EM FLAGRANTE';
+            docRef = `APF Nº ${data.id}/${new Date().getFullYear()}`;
             
             variables = {
                 '{numero_inquerito}': data.id,
@@ -331,34 +331,40 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             };
 
             standardContent = [
-                (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
-                    image: coatOfArmsBase64, width: 60, alignment: 'center', margin: [0, 20, 0, 10]
-                } : { text: '[BRASÃO]', alignment: 'center', margin: [0, 20, 0, 10] },
+                ...officialHeader,
 
-                { text: docTitle, style: 'title' },
-                { text: `REGISTRO: ${docRef}`, style: 'subHeader' },
-                { text: `DATA: ${formatDate(data.date || data.created_at)}`, style: 'subHeader', fontSize: 12 },
-                
-                { text: '\n\n', fontSize: 1 }, 
+                { text: docTitle, style: 'docTitle' },
+                { text: docRef, style: 'docSubtitle' },
 
-                { text: '1. DADOS DO DETIDO', style: 'sectionTitle' },
+                { text: '1. QUALIFICAÇÃO DO CONDUZIDO', style: 'sectionTitle' },
                 {
                     table: {
-                        widths: ['30%', '70%'],
+                        widths: ['25%', '75%'],
                         body: [
-                            [{ text: 'NOME COMPLETO', style: 'tableHeader' }, { text: data.name.toUpperCase(), style: 'tableCell', bold: true }],
-                            [{ text: 'DOCUMENTO', style: 'tableHeader' }, { text: data.passport || 'Não informado', style: 'tableCell' }],
-                            [{ text: 'ARTIGOS/CRIME', style: 'tableHeader' }, { text: data.articles || 'Não especificado', style: 'tableCell' }],
+                            [{ text: 'NOME COMPLETO:', style: 'tableHeader' }, { text: data.name.toUpperCase(), style: 'tableCell', bold: true }],
+                            [{ text: 'DOCUMENTO:', style: 'tableHeader' }, { text: data.passport || 'Não informado', style: 'tableCell' }],
+                            [{ text: 'DATA:', style: 'tableHeader' }, { text: formatDate(data.date || data.created_at), style: 'tableCell' }]
                         ]
                     },
-                    layout: 'lightHorizontalLines'
+                    layout: 'noBorders'
                 },
 
-                { text: '2. MOTIVO DA PRISÃO / OBSERVAÇÕES', style: 'sectionTitle' },
-                { text: data.reason || data.description || 'Sem observações.', style: 'normalText', alignment: 'justify' }
+                { text: '2. TIPIFICAÇÃO PENAL', style: 'sectionTitle' },
+                {
+                    table: {
+                        widths: ['25%', '75%'],
+                        body: [
+                            [{ text: 'INCIDÊNCIA:', style: 'tableHeader' }, { text: data.articles || 'Não especificado', style: 'tableCell' }]
+                        ]
+                    },
+                    layout: 'noBorders'
+                },
+
+                { text: '3. HISTÓRICO DA PRISÃO', style: 'sectionTitle' },
+                { text: data.reason || data.description || 'Sem observações.', style: 'normalText' }
             ];
         } else if (type === 'wanted') {
-            docTitle = 'MANDADO DE PROCURA';
+            docTitle = 'MANDADO DE BUSCA E CAPTURA';
             docRef = `WANTED - ${data.id}/${new Date().getFullYear()}`;
             
             variables = {
@@ -372,15 +378,11 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             };
 
             standardContent = [
-                 (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
-                    image: coatOfArmsBase64, width: 60, alignment: 'center', margin: [0, 20, 0, 10]
-                } : { text: '[BRASÃO]', alignment: 'center', margin: [0, 20, 0, 10] },
+                ...officialHeader,
 
-                { text: 'PROCURADO', style: 'title', color: '#dc2626' },
-                { text: `REF: ${docRef}`, style: 'subHeader' },
+                { text: 'PROCURADO', style: 'docTitle', color: '#dc2626' },
+                { text: `REF: ${docRef}`, style: 'docSubtitle' },
                 
-                { text: '\n\n', fontSize: 1 }, 
-
                 validImages.length > 0 && validImages[0].imgData ? {
                     image: validImages[0].imgData,
                     width: 200,
@@ -388,15 +390,13 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                     margin: [0, 10, 0, 20]
                 } : null,
 
-                { text: data.name.toUpperCase(), style: 'header', fontSize: 22 },
+                { text: data.name.toUpperCase(), style: 'headerBlock', fontSize: 22, bold: true },
                 
-                { text: '\n', fontSize: 5 },
-
                 {
                     table: {
                         widths: ['50%', '50%'],
                         body: [
-                            [{ text: 'CRIME / MOTIVO', style: 'tableHeader', fillColor: '#dc2626' }, { text: 'PERICULOSIDADE', style: 'tableHeader', fillColor: '#dc2626' }],
+                            [{ text: 'CRIME / MOTIVO', style: 'tableHeader', alignment: 'center', fillColor: '#fca5a5' }, { text: 'PERICULOSIDADE', style: 'tableHeader', alignment: 'center', fillColor: '#fca5a5' }],
                             [{ text: data.crime || data.reason || 'Não informado', style: 'tableCell', alignment: 'center', fontSize: 12, bold: true }, { text: (data.dangerLevel || data.status || 'N/A').toUpperCase(), style: 'tableCell', alignment: 'center', fontSize: 12, bold: true, color: '#dc2626' }],
                         ]
                     },
@@ -408,14 +408,14 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                     table: {
                         widths: ['100%'],
                         body: [
-                            [{ text: 'RECOMPENSA', style: 'tableHeader', fillColor: '#059669' }],
+                            [{ text: 'RECOMPENSA', style: 'tableHeader', alignment: 'center', fillColor: '#6ee7b7' }],
                             [{ text: data.reward ? `R$ ${data.reward}` : 'A DEFINIR', style: 'tableCell', alignment: 'center', fontSize: 18, bold: true, color: '#059669', margin: [0, 10, 0, 10] }]
                         ]
                     },
                     layout: 'noBorders'
                 },
 
-                { text: '\n\n\n', fontSize: 1 },
+                { text: '\n\n', fontSize: 1 },
                 { text: 'Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades.', style: 'normalText', alignment: 'center', italics: true }
             ].filter(Boolean);
             
