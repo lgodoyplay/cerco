@@ -19,201 +19,201 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
   const quizQuestions = [
     {
       id: 1,
-      question: 'Qual é a principal função da Academia Nacional de Polícia (ANP)?',
+      question: 'Qual é a principal missão de um Policial Federal?',
       options: [
-        { id: 'a', text: 'Vender cursos online' },
-        { id: 'b', text: 'Formar e treinar os novos Policiais Federais' },
-        { id: 'c', text: 'Organizar festas para a polícia' }
+        { id: 'a', text: 'Ganhar muito dinheiro e ter poder' },
+        { id: 'b', text: 'Servir e proteger a sociedade, cumprindo a lei' },
+        { id: 'c', text: 'Mandar na cidade' }
       ],
       correct: 'b'
     },
     {
       id: 2,
-      question: 'O que é necessário para se tornar um Policial Federal na cidade?',
+      question: 'O que significa Hierarquia na Polícia?',
       options: [
-        { id: 'a', text: 'Ser amigo do dono da cidade' },
-        { id: 'b', text: 'Passar no recrutamento e ter ficha limpa' },
-        { id: 'c', text: 'Pagar uma taxa em dinheiro' }
+        { id: 'a', text: 'Que todos são iguais e ninguém manda em ninguém' },
+        { id: 'b', text: 'Respeito aos níveis de comando e subordinação funcional' },
+        { id: 'c', text: 'Que o mais velho de idade manda mais' }
       ],
       correct: 'b'
     },
     {
       id: 3,
-      question: 'O Teste de Aptidão Física (TAF) serve para avaliar:',
+      question: 'O que é Disciplina?',
       options: [
-        { id: 'a', text: 'Se você sabe atirar' },
-        { id: 'b', text: 'Sua resistência física e saúde para o trabalho policial' },
-        { id: 'c', text: 'Se você sabe dirigir bem' }
+        { id: 'a', text: 'Fazer o que quiser quando ninguém está olhando' },
+        { id: 'b', text: 'Obediência às regras, normas e ordens superiores' },
+        { id: 'c', text: 'Castigar as pessoas' }
       ],
       correct: 'b'
     },
     {
       id: 4,
-      question: 'Durante o curso de formação, como você deve se comportar?',
+      question: 'Como deve ser o tratamento do policial com o cidadão?',
       options: [
-        { id: 'a', text: 'Como se já fosse o chefe de tudo' },
-        { id: 'b', text: 'Com disciplina, respeitando os instrutores como Aluno' },
-        { id: 'c', text: 'Fazendo piadas o tempo todo' }
+        { id: 'a', text: 'Agressivo e intimidaddor sempre' },
+        { id: 'b', text: 'Respeitoso, firme e profissional' },
+        { id: 'c', text: 'Debochado e irônico' }
       ],
       correct: 'b'
     },
     {
       id: 5,
-      question: 'O policial federal pode ter outro emprego formal (como mecânico ou taxista)?',
+      question: 'Em caso de ordem manifestamente ilegal de um superior, o que fazer?',
       options: [
-        { id: 'a', text: 'Sim, para complementar renda' },
-        { id: 'b', text: 'Não, o cargo exige dedicação exclusiva (exceto professor)' },
-        { id: 'c', text: 'Sim, se ninguém descobrir' }
+        { id: 'a', text: 'Cumprir sem questionar' },
+        { id: 'b', text: 'Não cumprir e reportar à autoridade competente' },
+        { id: 'c', text: 'Fazer de conta que não ouviu' }
       ],
       correct: 'b'
     },
     {
       id: 6,
-      question: 'Qual a idade mínima para entrar na polícia?',
+      question: 'O que caracteriza o crime de Corrupção Passiva?',
       options: [
-        { id: 'a', text: '16 anos' },
-        { id: 'b', text: '18 anos (Maioridade)' },
-        { id: 'c', text: '50 anos' }
+        { id: 'a', text: 'Solicitar ou receber vantagem indevida em razão da função' },
+        { id: 'b', text: 'Prender alguém por engano' },
+        { id: 'c', text: 'Chegar atrasado no plantão' }
       ],
-      correct: 'b'
+      correct: 'a'
     },
     {
       id: 7,
-      question: 'Se você tiver passagens pela polícia (ficha suja), o que acontece?',
+      question: 'Quando o policial deve utilizar a sirene e o giroflex?',
       options: [
-        { id: 'a', text: 'Nada, o passado não importa' },
-        { id: 'b', text: 'Você é reprovado na Investigação Social' },
-        { id: 'c', text: 'Ganha pontos por experiência' }
+        { id: 'a', text: 'Para furar o sinal vermelho e chegar cedo em casa' },
+        { id: 'b', text: 'Apenas em situações de emergência ou perseguição' },
+        { id: 'c', text: 'Para passear na cidade' }
       ],
       correct: 'b'
     },
     {
       id: 8,
-      question: 'Quando o policial pode usar sua arma de fogo?',
+      question: 'Qual é o procedimento correto ao realizar uma abordagem?',
       options: [
-        { id: 'a', text: 'Para assustar pessoas na rua' },
-        { id: 'b', text: 'Em legítima defesa ou estrito cumprimento do dever legal' },
-        { id: 'c', text: 'Sempre que alguém xingar ele' }
+        { id: 'a', text: 'Chegar atirando para garantir a segurança' },
+        { id: 'b', text: 'Verbalizar, identificar-se e garantir a segurança de todos' },
+        { id: 'c', text: 'Pedir o dinheiro do suspeito' }
       ],
       correct: 'b'
     },
     {
       id: 9,
-      question: 'A Polícia Federal é uma instituição:',
+      question: 'O que é "Metagaming" (em contexto de RP/Simulação)?',
       options: [
-        { id: 'a', text: 'Privada de segurança' },
-        { id: 'b', text: 'Permanente de Estado, mantida pela União' },
-        { id: 'c', text: 'Temporária, só funciona no verão' }
+        { id: 'a', text: 'Usar informações externas ao personagem para obter vantagem' },
+        { id: 'b', text: 'Jogar muito bem' },
+        { id: 'c', text: 'Ser o chefe da polícia' }
       ],
-      correct: 'b'
+      correct: 'a'
     },
     {
       id: 10,
-      question: 'Qual é o guia de conduta do policial?',
+      question: 'O policial pode usar a viatura para fins pessoais?',
       options: [
-        { id: 'a', text: 'Fazer o que bem entender' },
-        { id: 'b', text: 'O Código de Ética e a Hierarquia' },
-        { id: 'c', text: 'As regras da gangue' }
+        { id: 'a', text: 'Sim, se colocar gasolina do próprio bolso' },
+        { id: 'b', text: 'Não, a viatura é para uso exclusivo em serviço' },
+        { id: 'c', text: 'Sim, para buscar o filho na escola' }
       ],
       correct: 'b'
     },
     {
       id: 11,
-      question: 'Quais são os pilares da Polícia?',
+      question: 'O que significa a sigla QTH no código Q?',
       options: [
-        { id: 'a', text: 'Dinheiro e Fama' },
-        { id: 'b', text: 'Hierarquia e Disciplina' },
-        { id: 'c', text: 'Velocidade e Furor' }
+        { id: 'a', text: 'Qual o seu nome?' },
+        { id: 'b', text: 'Qual a sua localização?' },
+        { id: 'c', text: 'Estou com fome' }
       ],
       correct: 'b'
     },
     {
       id: 12,
-      question: 'Ao entrar na polícia, você começa como:',
+      question: 'O que significa a sigla QRU no código Q?',
       options: [
-        { id: 'a', text: 'Comandante Geral' },
-        { id: 'b', text: 'Recruta / Agente Iniciante' },
-        { id: 'c', text: 'Prefeito' }
+        { id: 'a', text: 'Ocorrência / Problema' },
+        { id: 'b', text: 'Estou indo almoçar' },
+        { id: 'c', text: 'Obrigado' }
       ],
-      correct: 'b'
+      correct: 'a'
     },
     {
       id: 13,
-      question: 'É necessário ter Carteira de Habilitação (CNH)?',
+      question: 'O uso da força policial deve ser:',
       options: [
-        { id: 'a', text: 'Não, a viatura dirige sozinha' },
-        { id: 'b', text: 'Sim, para Carro e Moto' },
-        { id: 'c', text: 'Só para bicicleta' }
+        { id: 'a', text: 'Máximo e letal desde o início' },
+        { id: 'b', text: 'Progressivo, moderado e proporcional à ameaça' },
+        { id: 'c', text: 'Aleatório' }
       ],
       correct: 'b'
     },
     {
       id: 14,
-      question: 'Onde o policial deve atuar?',
+      question: 'Um cidadão desacata o policial. Qual a conduta correta?',
       options: [
-        { id: 'a', text: 'Apenas dentro da delegacia' },
-        { id: 'b', text: 'Em toda a cidade, prevenindo e combatendo crimes' },
-        { id: 'c', text: 'Apenas em bairros ricos' }
+        { id: 'a', text: 'Agredir o cidadão imediatamente' },
+        { id: 'b', text: 'Dar voz de prisão por desacato e conduzir à delegacia' },
+        { id: 'c', text: 'Xingar de volta' }
       ],
       correct: 'b'
     },
     {
       id: 15,
-      question: 'O exame psicológico serve para garantir que:',
+      question: 'Qual é o dever do policial ao presenciar um crime fora de serviço?',
       options: [
-        { id: 'a', text: 'Você sabe fazer contas' },
-        { id: 'b', text: 'Você tem equilíbrio emocional para portar arma e autoridade' },
-        { id: 'c', text: 'Você é bom de lábia' }
+        { id: 'a', text: 'Fingir que não viu' },
+        { id: 'b', text: 'Agir (se possível e seguro) ou acionar o apoio imediatamente' },
+        { id: 'c', text: 'Filmar e postar na internet' }
       ],
       correct: 'b'
     },
     {
       id: 16,
-      question: 'Quem é o responsável por comandar inquéritos e operações?',
+      question: 'O que é Prevaricação?',
       options: [
-        { id: 'a', text: 'O Agente' },
-        { id: 'b', text: 'O Delegado' },
-        { id: 'c', text: 'O Estagiário' }
+        { id: 'a', text: 'Roubar dinheiro' },
+        { id: 'b', text: 'Deixar de praticar ato de ofício por interesse pessoal' },
+        { id: 'c', text: 'Faltar ao serviço' }
       ],
       correct: 'b'
     },
     {
       id: 17,
-      question: 'Se você desrespeitar um superior ou quebrar regras graves:',
+      question: 'A quem a Polícia Federal se subordina?',
       options: [
-        { id: 'a', text: 'Ganha uma promoção' },
-        { id: 'b', text: 'Pode ser punido ou até expulso da corporação' },
-        { id: 'c', text: 'Ninguém liga' }
+        { id: 'a', text: 'Ao Exército' },
+        { id: 'b', text: 'Ao Ministério da Justiça e Segurança Pública' },
+        { id: 'c', text: 'Ao Prefeito' }
       ],
       correct: 'b'
     },
     {
       id: 18,
-      question: 'Qual a prioridade da PF no combate ao crime?',
+      question: 'É permitido ao policial divulgar informações sigilosas de investigações?',
       options: [
-        { id: 'a', text: 'Multar carros mal estacionados' },
-        { id: 'b', text: 'Combater tráfico, crime organizado e corrupção' },
-        { id: 'c', text: 'Prender quem rouba galinha' }
+        { id: 'a', text: 'Sim, para ficar famoso' },
+        { id: 'b', text: 'Não, é crime de violação de sigilo funcional' },
+        { id: 'c', text: 'Sim, se for para amigos' }
       ],
       correct: 'b'
     },
     {
       id: 19,
-      question: 'A Polícia deve servir a quem?',
+      question: 'Qual a importância do Relatório de Ocorrência?',
       options: [
-        { id: 'a', text: 'Aos políticos' },
-        { id: 'b', text: 'À sociedade e à Lei' },
-        { id: 'c', text: 'A si mesma' }
+        { id: 'a', text: 'Nenhuma, é burocracia inútil' },
+        { id: 'b', text: 'Registrar oficialmente os fatos para futuras investigações e processos' },
+        { id: 'c', text: 'Gastarr papel' }
       ],
       correct: 'b'
     },
     {
       id: 20,
-      question: 'Quais são os valores da PF?',
+      question: 'Por que você deseja entrar para a Polícia Federal?',
       options: [
-        { id: 'a', text: 'Corrupção e Preguiça' },
-        { id: 'b', text: 'Lealdade, Integridade e Eficiência' },
-        { id: 'c', text: 'Medo e Opressão' }
+        { id: 'a', text: 'Para ter arma e distintivo' },
+        { id: 'b', text: 'Para contribuir com a segurança e justiça da sociedade' },
+        { id: 'c', text: 'Porque o salário é bom' }
       ],
       correct: 'b'
     }
