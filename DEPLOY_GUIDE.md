@@ -34,7 +34,7 @@ O backend precisa rodar 24/7 para atender as requisições do painel.
    - `JWT_SECRET`: (Crie uma senha forte e aleatória)
    - `NODE_ENV`: `production`
 6. Clique em **Create Web Service**.
-7. Aguarde o deploy finalizar. Copie a URL do serviço (ex: `https://cerco-backend.onrender.com`).
+7. Aguarde o deploy finalizar. Copie a URL do serviço (ex: `https://dpf-backend.onrender.com`).
 
 ---
 
@@ -42,7 +42,7 @@ O backend precisa rodar 24/7 para atender as requisições do painel.
 
 1. Crie uma conta em [netlify.com](https://netlify.com).
 2. Clique em **Add new site** > **Import from Git**.
-3. Conecte seu GitHub e selecione o repositório `cerco`.
+3. Conecte seu GitHub e selecione o repositório `dpf-system` (ou o nome atual do seu repo).
 4. Configurações de Build:
    - **Base directory:** `dip-frontend`
    - **Build command:** `npm run build`
