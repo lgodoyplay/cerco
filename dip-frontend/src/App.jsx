@@ -4,7 +4,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { SettingsProvider } from './context/SettingsContext';
 import ThemeManager from './components/ThemeManager';
 import SessionMonitorComponent from './components/SessionMonitor';
-import DomainEnforcer from './components/common/DomainEnforcer';
 import PublicLayout from './components/PublicLayout';
 import PrivateLayout from './components/PrivateLayout';
 import ComingSoon from './components/ComingSoon';
@@ -97,7 +96,6 @@ function App() {
   return (
     <AuthProvider>
       <SettingsProvider>
-        <DomainEnforcer />
         <ThemeManager />
         <SessionMonitorComponent />
         <BrowserRouter>
