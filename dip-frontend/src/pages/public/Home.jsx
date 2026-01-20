@@ -140,201 +140,201 @@ const modules = [
 const examQuestions = [
   {
     id: 1,
-    question: 'Qual é a principal função constitucional da Polícia Federal conforme o Art. 144?',
+    question: 'Onde está localizada a Academia Nacional de Polícia (ANP), responsável pela formação de todos os Policiais Federais?',
     options: [
-      { id: 'a', text: 'Policiamento ostensivo de trânsito' },
-      { id: 'b', text: 'Polícia judiciária da União e apuração de infrações penais contra a União' },
-      { id: 'c', text: 'Guarda municipal e patrimonial' }
+      { id: 'a', text: 'Rio de Janeiro/RJ' },
+      { id: 'b', text: 'Brasília/DF' },
+      { id: 'c', text: 'São Paulo/SP' }
     ],
     correct: 'b'
   },
   {
     id: 2,
-    question: 'Quais são carreiras típicas da Polícia Federal?',
+    question: 'Qual é o requisito básico de escolaridade para ingresso em qualquer cargo da carreira policial federal (Agente, Escrivão, Papiloscopista, Delegado e Perito)?',
     options: [
-      { id: 'a', text: 'Soldado, Cabo e Sargento' },
-      { id: 'b', text: 'Delegado, Agente, Escrivão, Papiloscopista e Perito' },
-      { id: 'c', text: 'Juiz, Promotor e Advogado' }
+      { id: 'a', text: 'Nível Médio' },
+      { id: 'b', text: 'Nível Superior' },
+      { id: 'c', text: 'Nível Fundamental' }
     ],
     correct: 'b'
   },
   {
     id: 3,
-    question: 'Qual órgão é responsável pela emissão de passaportes no Brasil?',
+    question: 'O Teste de Aptidão Física (TAF) é uma etapa eliminatória do concurso. O que ele avalia?',
     options: [
-      { id: 'a', text: 'Receita Federal' },
-      { id: 'b', text: 'Polícia Federal' },
-      { id: 'c', text: 'Itamaraty apenas' }
+      { id: 'a', text: 'Conhecimentos jurídicos' },
+      { id: 'b', text: 'A capacidade física do candidato para desempenhar as atividades policiais' },
+      { id: 'c', text: 'A saúde mental' }
     ],
     correct: 'b'
   },
   {
     id: 4,
-    question: 'O que é o COT na estrutura da Polícia Federal?',
+    question: 'Durante o Curso de Formação Profissional na ANP, qual é o status do aluno?',
     options: [
-      { id: 'a', text: 'Centro de Operações de Trânsito' },
-      { id: 'b', text: 'Comando de Operações Táticas, unidade de elite para situações de alto risco' },
-      { id: 'c', text: 'Coordenação de Transportes' }
+      { id: 'a', text: 'Ele já é policial nomeado' },
+      { id: 'b', text: 'Ele recebe uma bolsa de auxílio financeiro (50% do subsídio) e dedicação exclusiva' },
+      { id: 'c', text: 'Ele trabalha voluntariamente' }
     ],
     correct: 'b'
   },
   {
     id: 5,
-    question: 'Qual é a representação internacional da Polícia Federal?',
+    question: 'Qual é o regime de trabalho exigido para o cargo de Policial Federal?',
     options: [
-      { id: 'a', text: 'CIA' },
-      { id: 'b', text: 'Interpol (Organização Internacional de Polícia Criminal)' },
-      { id: 'c', text: 'FBI' }
+      { id: 'a', text: 'Regime de meio período' },
+      { id: 'b', text: 'Dedicação integral e exclusiva (salvo magistério)' },
+      { id: 'c', text: 'Trabalho remoto opcional' }
     ],
     correct: 'b'
   },
   {
     id: 6,
-    question: 'Além da investigação criminal, qual outra função a PF exerce?',
+    question: 'Qual a idade mínima exigida para a matrícula no Curso de Formação Profissional?',
     options: [
-      { id: 'a', text: 'Cobrança de impostos estaduais' },
-      { id: 'b', text: 'Polícia administrativa (controle de armas, segurança privada, migração)' },
-      { id: 'c', text: 'Limpeza urbana' }
+      { id: 'a', text: '21 anos' },
+      { id: 'b', text: '18 anos completos' },
+      { id: 'c', text: '25 anos' }
     ],
     correct: 'b'
   },
   {
     id: 7,
-    question: 'A quem a Polícia Federal está subordinada administrativamente?',
+    question: 'A Investigação Social é uma etapa do concurso que visa avaliar:',
     options: [
-      { id: 'a', text: 'Ao Governo do Distrito Federal' },
-      { id: 'b', text: 'Ao Ministério da Justiça e Segurança Pública' },
-      { id: 'c', text: 'Ao Exército Brasileiro' }
+      { id: 'a', text: 'A conta bancária do candidato' },
+      { id: 'b', text: 'A conduta irrepreensível e a idoneidade moral do candidato' },
+      { id: 'c', text: 'As notas escolares do ensino fundamental' }
     ],
     correct: 'b'
   },
   {
     id: 8,
-    question: 'O que compete à Polícia Federal investigar?',
+    question: 'Sobre o porte de arma de fogo do Policial Federal, é correto afirmar:',
     options: [
-      { id: 'a', text: 'Apenas crimes de trânsito' },
-      { id: 'b', text: 'Crimes contra bens, serviços e interesses da União' },
-      { id: 'c', text: 'Brigas de vizinhos' }
+      { id: 'a', text: 'Só pode usar em serviço' },
+      { id: 'b', text: 'É prerrogativa do cargo, com validade em todo o território nacional' },
+      { id: 'c', text: 'Não tem direito a porte' }
     ],
     correct: 'b'
   },
   {
     id: 9,
-    question: 'Qual é o papel do Escrivão de Polícia Federal?',
+    question: 'Conforme a Constituição Federal (Art. 144), a Polícia Federal é organizada e mantida pela União como órgão:',
     options: [
-      { id: 'a', text: 'Dirigir as viaturas em perseguição' },
-      { id: 'b', text: 'Formalizar os atos de polícia judiciária e gerir o inquérito policial' },
-      { id: 'c', text: 'Fazer a perícia de laboratório' }
+      { id: 'a', text: 'Temporário' },
+      { id: 'b', text: 'Permanente' },
+      { id: 'c', text: 'Terceirizado' }
     ],
     correct: 'b'
   },
   {
     id: 10,
-    question: 'O SINARM (Sistema Nacional de Armas) é gerido por quem?',
+    question: 'Qual é a principal lei que rege o regime disciplinar e o estatuto dos Policiais Federais?',
     options: [
-      { id: 'a', text: 'Pelo Exército Brasileiro (para todas as armas)' },
-      { id: 'b', text: 'Pela Polícia Federal (para armas de uso civil)' },
-      { id: 'c', text: 'Pelas Polícias Civis' }
+      { id: 'a', text: 'CLT' },
+      { id: 'b', text: 'Lei 4.878/65' },
+      { id: 'c', text: 'Código Comercial' }
     ],
     correct: 'b'
   },
   {
     id: 11,
-    question: 'O que caracteriza a atuação da PF em fronteiras?',
+    question: 'Quais são os dois pilares fundamentais da função policial previstos em lei?',
     options: [
-      { id: 'a', text: 'Apenas controle de turistas' },
-      { id: 'b', text: 'Policiamento marítimo, aeroportuário e de fronteiras para reprimir crimes transnacionais' },
-      { id: 'c', text: 'Venda de passagens' }
+      { id: 'a', text: 'Força e Velocidade' },
+      { id: 'b', text: 'Hierarquia e Disciplina' },
+      { id: 'c', text: 'Armas e Distintivos' }
     ],
     correct: 'b'
   },
   {
     id: 12,
-    question: 'Qual a importância da autonomia da Polícia Federal?',
+    question: 'Ao ser aprovado em todas as etapas e nomeado, em qual classe o Policial Federal ingressa na carreira?',
     options: [
-      { id: 'a', text: 'Para fazer o que quiser sem lei' },
-      { id: 'b', text: 'Para investigar crimes de colarinho branco e corrupção sem interferências políticas indevidas' },
-      { id: 'c', text: 'Para não trabalhar aos fins de semana' }
+      { id: 'a', text: 'Classe Especial' },
+      { id: 'b', text: '3ª Classe (ou classe inicial da carreira)' },
+      { id: 'c', text: 'Diretor' }
     ],
     correct: 'b'
   },
   {
     id: 13,
-    question: 'O que é um Inquérito Policial?',
+    question: 'Qual categoria de Carteira Nacional de Habilitação (CNH) é exigida no concurso da PF?',
     options: [
-      { id: 'a', text: 'Uma conversa informal' },
-      { id: 'b', text: 'Procedimento administrativo para apurar autoria e materialidade de crimes' },
-      { id: 'c', text: 'Um julgamento final' }
+      { id: 'a', text: 'Categoria A apenas' },
+      { id: 'b', text: 'Categoria B ou superior' },
+      { id: 'c', text: 'Não precisa de CNH' }
     ],
     correct: 'b'
   },
   {
     id: 14,
-    question: 'Quem preside o Inquérito Policial Federal?',
+    question: 'A primeira lotação do Policial Federal recém-formado ocorre preferencialmente em:',
     options: [
-      { id: 'a', text: 'O Juiz Federal' },
-      { id: 'b', text: 'O Delegado de Polícia Federal' },
-      { id: 'c', text: 'O Ministério Público' }
+      { id: 'a', text: 'Sua cidade natal' },
+      { id: 'b', text: 'Regiões de fronteira e na Amazônia Legal' },
+      { id: 'c', text: 'Capitais do litoral' }
     ],
     correct: 'b'
   },
   {
     id: 15,
-    question: 'Qual é a função do NEPOM?',
+    question: 'O Exame Psicotécnico visa aferir:',
     options: [
-      { id: 'a', text: 'Núcleo de Estudos Políticos' },
-      { id: 'b', text: 'Núcleo Especial de Polícia Marítima' },
-      { id: 'c', text: 'Núcleo de Estradas e Pontes' }
+      { id: 'a', text: 'Conhecimentos de matemática' },
+      { id: 'b', text: 'Perfil psicológico compatível com o cargo e porte de arma' },
+      { id: 'c', text: 'Capacidade de memorização' }
     ],
     correct: 'b'
   },
   {
     id: 16,
-    question: 'Sobre a identificação civil e criminal, qual cargo tem atribuição específica?',
+    question: 'Qual cargo da Polícia Federal exige bacharelado em Direito e 3 anos de atividade jurídica ou policial?',
     options: [
       { id: 'a', text: 'Agente' },
-      { id: 'b', text: 'Papiloscopista Policial Federal' },
-      { id: 'c', text: 'Escrivão' }
+      { id: 'b', text: 'Delegado de Polícia Federal' },
+      { id: 'c', text: 'Perito' }
     ],
     correct: 'b'
   },
   {
     id: 17,
-    question: 'A PF atua na repressão ao tráfico de drogas. Essa competência é:',
+    question: 'O que acontece com o candidato que é reprovado no Curso de Formação na ANP?',
     options: [
-      { id: 'a', text: 'Exclusiva da PF em qualquer caso' },
-      { id: 'b', text: 'Primordialmente da PF em casos de tráfico internacional e interestadual' },
-      { id: 'c', text: 'Apenas da Polícia Militar' }
+      { id: 'a', text: 'Tenta de novo no mês seguinte' },
+      { id: 'b', text: 'É eliminado do concurso público' },
+      { id: 'c', text: 'Paga uma multa e continua' }
     ],
     correct: 'b'
   },
   {
     id: 18,
-    question: 'O combate a crimes ambientais é competência da PF quando:',
+    question: 'O combate ao crime organizado e à corrupção é uma prioridade da PF. Quem conduz o Inquérito Policial?',
     options: [
-      { id: 'a', text: 'Ocorre em qualquer lugar' },
-      { id: 'b', text: 'Afeta bens da União, como parques nacionais, terras indígenas ou rios federais' },
-      { id: 'c', text: 'Apenas se houver morte de animais' }
+      { id: 'a', text: 'O Agente' },
+      { id: 'b', text: 'O Delegado de Polícia Federal' },
+      { id: 'c', text: 'O Juiz' }
     ],
     correct: 'b'
   },
   {
     id: 19,
-    question: 'O que significa ser uma polícia "Republicana"?',
+    question: 'A Polícia Federal é subordinada administrativamente a qual órgão?',
     options: [
-      { id: 'a', text: 'Servir apenas a um partido' },
-      { id: 'b', text: 'Atuar em defesa do Estado e da sociedade, independentemente do governo de plantão' },
-      { id: 'c', text: 'Ter sede na República' }
+      { id: 'a', text: 'Ministério da Defesa' },
+      { id: 'b', text: 'Ministério da Justiça e Segurança Pública' },
+      { id: 'c', text: 'Gabinete de Segurança Institucional' }
     ],
     correct: 'b'
   },
   {
     id: 20,
-    question: 'Qual a mensagem principal do "Padrão de Excelência DPF"?',
+    question: 'Qual é o lema não oficial frequentemente associado aos valores de integridade da PF?',
     options: [
-      { id: 'a', text: 'Ser o mais forte' },
-      { id: 'b', text: 'Eficiência, legalidade, técnica e compromisso com a justiça' },
-      { id: 'c', text: 'Ter o melhor salário' }
+      { id: 'a', text: 'Aos amigos tudo, aos inimigos a lei' },
+      { id: 'b', text: 'Lealdade, Integridade e Eficiência (valores institucionais)' },
+      { id: 'c', text: 'Salve-se quem puder' }
     ],
     correct: 'b'
   }
