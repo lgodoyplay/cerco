@@ -71,7 +71,7 @@ const InvestigationList = () => {
               filter === 'closed' ? "bg-slate-800 text-white shadow" : "text-slate-400 hover:text-slate-200"
             )}
           >
-            <Archive size={16} /> Arquivadas
+            <Archive size={16} /> {category === 'financial' ? 'Finalizadas' : 'Arquivadas'}
           </button>
         </div>
 
