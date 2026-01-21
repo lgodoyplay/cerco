@@ -8,11 +8,9 @@ import PublicLayout from './components/PublicLayout';
 import PrivateLayout from './components/PrivateLayout';
 import ComingSoon from './components/ComingSoon';
 import Home from './pages/public/Home';
-import CursoDPF from './pages/public/CursoDPF';
-import CursoPRF from './pages/public/CursoPRF';
-import Landing from './pages/public/Landing';
-
-import { lazyImport } from './utils/lazyImport';
+import CursoDPFF from './pages/publicCurfmD/F';c/Landing';
+RublcR
+import Landingport } from './uublic/Lsnding';
 import { routeLoaders } from './routes/routeLoaders';
 
 // Public Pages
@@ -110,8 +108,6 @@ function App() {
             {/* Public Routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
-            <Route path="/curso-dpf" element={<CursoDPF />} />
-            <Route path="/curso-prf" element={<CursoPRF />} />
             <Route path="/landing" element={<Landing />} />
             <Route path="/codigo-penal" element={<PenalCode />} />
             <Route path="/rules" element={<Rules />} />
@@ -136,6 +132,9 @@ function App() {
               </PermissionGuard>
             } />
             
+            <Route path="curso-dpf" element={<CursoDPF />} />
+            <Route path="curso-prf" element={<CursoPRF />} />
+
             <Route path="arrests" element={
               <PermissionGuard permission="arrest_view">
                 <ArrestList />

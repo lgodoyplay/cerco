@@ -558,13 +558,30 @@ const CursoDPF = () => {
             Após estudar o conteúdo, você pode testar seus conhecimentos em uma prova oficial deste curso.
             São 20 questões objetivas focadas na estrutura, história e funcionamento da instituição.
           </p>
-          <button
-            type="button"
-            onClick={handleOpenExam}
-            className="px-8 py-4 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-federal-900/20"
-          >
-            Iniciar Prova
-          </button>
+          
+          {loadingProfile ? (
+            <div className="animate-pulse flex flex-col items-center gap-2">
+              <div className="h-12 w-48 bg-slate-800 rounded-xl"></div>
+              <p className="text-xs text-slate-500">Verificando permissões...</p>
+            </div>
+          ) : modulesFinished ? (
+            <button
+              type="button"
+              onClick={handleOpenExam}
+              className="px-8 py-4 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-federal-900/20"
+            >
+              Iniciar Prova
+            </button>
+          ) : (
+            <div className="flex flex-col items-center gap-2 p-6 bg-yellow-500/5 border border-yellow-500/10 rounded-2xl">
+              <Ban size={32} className="text-yellow-500 mb-2" />
+              <p className="text-yellow-500 font-bold text-lg">Prova Bloqueada</p>
+              <p className="text-sm text-yellow-500/80 text-center max-w-md">
+                A prova final estará disponível apenas após a confirmação de conclusão dos módulos pela instrução.
+                Continue seus estudos e aguarde a liberação.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

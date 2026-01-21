@@ -529,16 +529,32 @@ const CursoPRF = () => {
             Prova de Capacitação PRF
           </h2>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-            Após estudar os módulos, realize a avaliação final para comprovar seus conhecimentos
-            e obter a aprovação no Curso de Formação Profissional.
+            São 20 questões objetivas focadas na estrutura, história e funcionamento da instituição.
           </p>
-          <button
-            onClick={handleOpenExam}
-            className="inline-flex items-center justify-center px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-blue-950 font-black text-lg rounded-xl transition-all hover:scale-105 shadow-[0_0_20px_rgba(234,179,8,0.3)]"
-          >
-            <CheckSquare className="mr-2" />
-            INICIAR PROVA PRF
-          </button>
+
+          {loadingProfile ? (
+            <div className="animate-pulse flex flex-col items-center gap-2">
+              <div className="h-12 w-48 bg-slate-800 rounded-xl"></div>
+              <p className="text-xs text-slate-500">Verificando permissões...</p>
+            </div>
+          ) : modulesFinished ? (
+            <button
+              type="button"
+              onClick={handleOpenExam}
+              className="px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-blue-950 font-black rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-yellow-500/20"
+            >
+              INICIAR PROVA PRF
+            </button>
+          ) : (
+            <div className="flex flex-col items-center gap-2 p-6 bg-yellow-500/5 border border-yellow-500/10 rounded-2xl">
+              <Ban size={32} className="text-yellow-500 mb-2" />
+              <p className="text-yellow-500 font-bold text-lg">Prova Bloqueada</p>
+              <p className="text-sm text-yellow-500/80 text-center max-w-md">
+                A prova final estará disponível apenas após a confirmação de conclusão dos módulos pela instrução.
+                Continue seus estudos e aguarde a liberação.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

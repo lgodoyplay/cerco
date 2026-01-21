@@ -10,6 +10,8 @@ export const routeLoaders = {
 
   // Private
   DashboardHome: () => import('../pages/private/DashboardHome'),
+  CursoDPF: () => import('../pages/private/CursoDPF'),
+  CursoPRF: () => import('../pages/private/CursoPRF'),
   ProfilePage: () => import('../pages/private/ProfilePage'),
   RegisterArrest: () => import('../pages/private/RegisterArrest'),
   RegisterBO: () => import('../pages/private/RegisterBO'),
