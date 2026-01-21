@@ -13,8 +13,13 @@ const RegisterWanted = () => {
   const { can } = usePermissions();
   
   // Protect route
+  useEffect(() => {
+    if (!can('wanted_manage')) {
+      navigate('/dashboard/wanted');
+    }
+  }, [can, navigate]);
+
   if (!can('wanted_manage')) {
-    navigate('/dashboard/wanted');
     return null;
   }
 

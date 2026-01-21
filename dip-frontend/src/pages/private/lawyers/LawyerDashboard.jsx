@@ -65,19 +65,28 @@ const LawyerDashboard = () => {
     setLoading(true);
     try {
       let query = supabase
-        .from('incident_reports')
+        .from('boletins')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (searchTerm) {
         // Search by ID or description
-        // Note: checking if searchTerm is UUID or text would be better, but ilike works for text fields
-        query = query.or(`description.ilike.%${searchTerm}%, type.ilike.%${searchTerm}%`);
+        query = query.or(`descricao.ilike.%${searchTerm}%, tipo.ilike.%${searchTerm}%`);
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      setProcesses(data || []);
+      
+      // Map boletins to process format
+      const formattedData = data?.map(item => ({
+        id: item.id,
+        type: item.tipo,
+        description: item.descricao,
+        officer_name: item.created_by_name || 'Agente', // We might need to fetch this or it's in the view
+        created_at: item.created_at
+      })) || [];
+      
+      setProcesses(formattedData);
     } catch (error) {
       console.error('Error fetching processes:', error);
     } finally {
