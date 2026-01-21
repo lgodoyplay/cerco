@@ -8,6 +8,7 @@ export const useInvestigations = () => {
   const mapInvestigation = (inv) => ({
     id: inv.id,
     title: inv.titulo,
+    category: inv.categoria || 'criminal',
     description: inv.descricao,
     involved: inv.envolvidos || 'Não informado',
     priority: inv.prioridade || 'Média',

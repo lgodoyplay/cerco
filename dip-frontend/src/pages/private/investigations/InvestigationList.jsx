@@ -5,7 +5,7 @@ import { usePermissions } from '../../../hooks/usePermissions';
 import { Search, Plus, FileText, Clock, CheckCircle, AlertTriangle, FolderOpen, Archive } from 'lucide-react';
 import clsx from 'clsx';
 
-const InvestigationList = () => {
+const InvestigationList = ({ category = 'criminal', title }) => {
   const { investigations } = useInvestigations();
   const { can } = usePermissions();
   const [filter, setFilter] = useState('active'); // 'active' | 'closed'
@@ -13,13 +13,15 @@ const InvestigationList = () => {
 
   const canManage = can('investigations_manage');
 
-  const filteredInvestigations = investigations.filter(inv => {
-    const isClosed = inv.status === 'Encerrada' || inv.status === 'Finalizada';
-    const matchesStatus = filter === 'active' ? !isClosed : isClosed;
-    const matchesSearch = (inv.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          (inv.description || '').toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
+  const filteredInvestigations = investigations
+    .filter(inv => inv.category === category) // Filter by category
+    .filter(inv => {
+      const isClosed = inv.status === 'Encerrada' || inv.status === 'Finalizada';
+      const matchesStatus = filter === 'active' ? !isClosed : isClosed;
+      const matchesSearch = (inv.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            (inv.description || '').toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesStatus && matchesSearch;
+    });
 
   const getPriorityColor = (priority) => {
     switch (priority) {
