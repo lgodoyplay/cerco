@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, Eraser, User, FileText, Camera, CheckCircle, AlertCircle, Shield, Siren, AlertTriangle } from 'lucide-react';
 import clsx from 'clsx';
