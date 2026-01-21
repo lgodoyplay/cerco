@@ -10,6 +10,7 @@ import ComingSoon from './components/ComingSoon';
 import Home from './pages/public/Home';
 import Landing from './pages/public/Landing';
 import { routeLoaders } from './routes/routeLoaders';
+import { lazyImport } from './utils/lazyImport';
 
 // Public Pages
 const Rules = React.lazy(() => lazyImport(routeLoaders.Rules));
