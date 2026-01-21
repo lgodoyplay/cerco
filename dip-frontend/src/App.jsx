@@ -7,7 +7,8 @@ import SessionMonitorComponent from './components/SessionMonitor';
 import PublicLayout from './components/PublicLayout';
 import PrivateLayout from './components/PrivateLayout';
 import ComingSoon from './components/ComingSoon';
-import Home from './pages/public/Home'; // Curso DPF
+import Home from './pages/public/Home';
+import CursoDPF from './pages/public/CursoDPF';
 import Landing from './pages/public/Landing';
 
 import { lazyImport } from './utils/lazyImport';
@@ -108,7 +109,8 @@ function App() {
             {/* Public Routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
-          <Route path="/landing" element={<Landing />} />
+            <Route path="/curso-dpf" element={<CursoDPF />} />
+            <Route path="/landing" element={<Landing />} />
             <Route path="/codigo-penal" element={<PenalCode />} />
             <Route path="/rules" element={<Rules />} />
             <Route path="/join" element={<HowToJoin />} />
