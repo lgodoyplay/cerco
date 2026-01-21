@@ -347,7 +347,6 @@ const examQuestions = [
 ];
 
 const Home = () => {
-  const [activeTab, setActiveTab] = useState('home');
   const [wantedList, setWantedList] = useState([]);
   const [loadingWanted, setLoadingWanted] = useState(false);
   const [tipForm, setTipForm] = useState({
@@ -373,10 +372,8 @@ const Home = () => {
   const [examError, setExamError] = useState('');
 
   useEffect(() => {
-    if (activeTab === 'wanted') {
-      fetchWanted();
-    }
-  }, [activeTab]);
+    fetchWanted();
+  }, []);
 
   const fetchWanted = async () => {
     setLoadingWanted(true);
@@ -500,39 +497,8 @@ const Home = () => {
 
   return (
     <div className="space-y-20 pb-20">
-      
-      {/* Navigation Header */}
-      <div className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center h-16 gap-8">
-            <button
-              onClick={() => setActiveTab('home')}
-              className={clsx(
-                "px-4 py-2 text-sm font-bold uppercase tracking-wider transition-colors relative",
-                activeTab === 'home' ? "text-federal-400" : "text-slate-400 hover:text-white"
-              )}
-            >
-              Início
-              {activeTab === 'home' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-federal-400" />}
-            </button>
-            <button
-              onClick={() => setActiveTab('wanted')}
-              className={clsx(
-                "px-4 py-2 text-sm font-bold uppercase tracking-wider transition-colors relative flex items-center gap-2",
-                activeTab === 'wanted' ? "text-red-500" : "text-slate-400 hover:text-white"
-              )}
-            >
-              <Siren size={16} />
-              Procurados
-              {activeTab === 'wanted' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-red-500" />}
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {activeTab === 'home' && (
-        <>
-          <section className="relative overflow-hidden bg-slate-950">
+      <section className="relative overflow-hidden bg-slate-950">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-federal-900" />
         <div className="absolute inset-x-0 -top-32 h-64 bg-gradient-to-b from-federal-600/30 to-transparent blur-3xl" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 lg:py-28 flex flex-col lg:flex-row items-center gap-12">
@@ -995,17 +961,16 @@ const Home = () => {
           </button>
         </div>
       </section>
-      </>
-      )}
 
-      {activeTab === 'wanted' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 animate-fade-in-up">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 animate-fade-in-up py-8 sm:py-12">
           
           <div className="text-center space-y-4">
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-white flex items-center justify-center gap-4">
-              <Siren className="text-red-600 animate-pulse" size={48} />
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Siren className="text-red-600 animate-pulse hidden sm:block" size={48} />
+              <Siren className="text-red-600 animate-pulse sm:hidden" size={32} />
               LISTA DE PROCURADOS
-              <Siren className="text-red-600 animate-pulse" size={48} />
+              <Siren className="text-red-600 animate-pulse hidden sm:block" size={48} />
+              <Siren className="text-red-600 animate-pulse sm:hidden" size={32} />
             </h2>
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
               Ajude a Polícia Federal a localizar criminosos perigosos. Sua identidade será mantida em absoluto sigilo.
@@ -1075,15 +1040,15 @@ const Home = () => {
           )}
 
           {/* Anonymous Tip Section */}
-          <div id="tip-form" className="bg-slate-900 border border-slate-800 rounded-3xl p-8 lg:p-12 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+          <div id="tip-form" className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 lg:p-12 relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none hidden lg:block">
                <Shield size={300} />
              </div>
              
-             <div className="relative z-10 grid lg:grid-cols-2 gap-12 items-center">
+             <div className="relative z-10 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                <div>
-                 <h3 className="text-3xl font-bold text-white mb-4 flex items-center gap-3">
-                   <User size={32} className="text-federal-400" />
+                 <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 flex items-center gap-3">
+                   <User size={24} className="text-federal-400 sm:w-8 sm:h-8" />
                    Denúncia Anônima
                  </h3>
                  <p className="text-slate-300 text-lg mb-6 leading-relaxed">
@@ -1184,7 +1149,6 @@ const Home = () => {
              </div>
           </div>
         </div>
-      )}
 
       {selectedModule && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
