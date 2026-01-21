@@ -107,8 +107,8 @@ function App() {
             <Routes>
             {/* Public Routes */}
           <Route element={<PublicLayout />}>
-            <Route path="/" element={<Landing />} />
-            <Route path="/curso-dpf" element={<Home />} />
+            <Route path="/" element={<Home />} />
+          <Route path="/landing" element={<Landing />} />
             <Route path="/codigo-penal" element={<PenalCode />} />
             <Route path="/rules" element={<Rules />} />
             <Route path="/join" element={<HowToJoin />} />

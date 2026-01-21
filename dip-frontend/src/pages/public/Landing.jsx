@@ -101,7 +101,7 @@ const Landing = () => {
                 Acessar Painel Restrito
               </a>
               <a
-                href="/curso-dpf"
+                href="/"
                 className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-800 text-slate-100 font-semibold text-sm tracking-wide transition-colors"
               >
                 Conhecer Curso DPF

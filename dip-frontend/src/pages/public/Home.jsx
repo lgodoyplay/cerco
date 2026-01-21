@@ -404,11 +404,11 @@ const Home = () => {
       const { error } = await supabase
         .from('boletins')
         .insert([{
-           tipo: 'Denúncia Anônima',
-           descricao: `ALVO: ${tipForm.target} | DETALHES: ${tipForm.details} | LOCAL: ${tipForm.location} | CONTATO: ${tipForm.contact || 'Anônimo'}`,
+           comunicante: tipForm.contact || 'Anônimo (Denúncia Site)',
+           descricao: `[DENÚNCIA ANÔNIMA] ALVO: ${tipForm.target} | DETALHES: ${tipForm.details}`,
            localizacao: tipForm.location,
            status: 'Pendente',
-           data_hora: new Date().toISOString()
+           data_fato: new Date().toISOString()
         }]); // 'boletins' usually has these fields based on memory.
 
       if (error) {

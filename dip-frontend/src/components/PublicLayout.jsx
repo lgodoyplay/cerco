@@ -8,8 +8,7 @@ const PublicLayout = () => {
   const location = useLocation();
 
   const navItems = [
-    { name: 'Home', path: '/' },
-    { name: 'Curso DPF', path: '/curso-dpf' },
+    { name: 'Início', path: '/' },
     { name: 'Pesquisas', path: '/pesquisas-e-apuracoes' },
     { name: 'Porte de Armas', path: '/porte-de-armas' },
     { name: 'Regras', path: '/rules' },
