@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Folder, DollarSign, Calendar, ChevronRight } from 'lucide-react';
+import { Plus, Search, Folder, DollarSign, Calendar, ChevronRight, Briefcase, User } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
+import clsx from 'clsx';
 
 const RevenueList = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newPlayerName, setNewPlayerName] = useState('');
+  const [newRecordForm, setNewRecordForm] = useState({
+    type: 'PF',
+    player_name: '',
+    company_name: '',
+    cnpj: ''
+  });
   const { user } = useAuth();
 
   const fetchRecords = async () => {
@@ -29,7 +35,9 @@ const RevenueList = () => {
       const processed = data.map(record => ({
         ...record,
         totalValue: record.financial_assets?.reduce((sum, asset) => sum + Number(asset.value), 0) || 0,
-        itemCount: record.financial_assets?.length || 0
+        itemCount: record.financial_assets?.length || 0,
+        displayName: record.type === 'PJ' ? record.company_name : record.player_name,
+        identifier: record.type === 'PJ' ? record.cnpj : 'CPF não inf.'
       }));
 
       setRecords(processed);
@@ -46,31 +54,45 @@ const RevenueList = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!newPlayerName.trim()) return;
+    if (newRecordForm.type === 'PF' && !newRecordForm.player_name.trim()) return;
+    if (newRecordForm.type === 'PJ' && (!newRecordForm.company_name.trim() || !newRecordForm.cnpj.trim())) return;
 
     try {
       const { data, error } = await supabase
         .from('financial_records')
         .insert([{ 
-          player_name: newPlayerName,
-          created_by: user.id 
+          type: newRecordForm.type,
+          player_name: newRecordForm.type === 'PF' ? newRecordForm.player_name : null,
+          company_name: newRecordForm.type === 'PJ' ? newRecordForm.company_name : null,
+          cnpj: newRecordForm.type === 'PJ' ? newRecordForm.cnpj : null,
+          created_by: user.id,
+          tax_status: 'regular'
         }])
         .select()
         .single();
 
       if (error) throw error;
 
-      setRecords([{ ...data, totalValue: 0, itemCount: 0 }, ...records]);
+      const newRecord = {
+          ...data,
+          totalValue: 0, 
+          itemCount: 0,
+          displayName: data.type === 'PJ' ? data.company_name : data.player_name,
+          identifier: data.type === 'PJ' ? data.cnpj : 'CPF não inf.'
+      };
+
+      setRecords([newRecord, ...records]);
       setIsModalOpen(false);
-      setNewPlayerName('');
+      setNewRecordForm({ type: 'PF', player_name: '', company_name: '', cnpj: '' });
     } catch (error) {
       console.error('Error creating record:', error);
-      alert('Erro ao criar pasta. Verifique se as tabelas foram criadas no Supabase.');
+      alert('Erro ao criar registro. Verifique o banco de dados.');
     }
   };
 
   const filteredRecords = records.filter(r => 
-    r.player_name.toLowerCase().includes(searchTerm.toLowerCase())
+    (r.displayName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (r.identifier || '').includes(searchTerm)
   );
 
   return (
@@ -122,22 +144,33 @@ const RevenueList = () => {
               className="group bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-5 transition-all hover:bg-slate-800/80 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Folder size={80} />
+                {record.type === 'PJ' ? <Briefcase size={80} /> : <Folder size={80} />}
               </div>
               
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
-                    <Folder size={24} />
+                  <div className={clsx(
+                      "w-12 h-12 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110",
+                      record.type === 'PJ' ? "bg-blue-500/10 text-blue-500" : "bg-emerald-500/10 text-emerald-500"
+                  )}>
+                    {record.type === 'PJ' ? <Briefcase size={24} /> : <User size={24} />}
                   </div>
-                  <span className="text-xs font-mono text-slate-500 bg-slate-950 px-2 py-1 rounded border border-slate-800">
-                    {new Date(record.created_at).toLocaleDateString()}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                      <span className="text-xs font-mono text-slate-500 bg-slate-950 px-2 py-1 rounded border border-slate-800">
+                        {new Date(record.created_at).toLocaleDateString()}
+                      </span>
+                      {record.type === 'PJ' && (
+                          <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Pessoa Jurídica</span>
+                      )}
+                  </div>
                 </div>
                 
                 <h3 className="text-lg font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors truncate">
-                  {record.player_name}
+                  {record.displayName}
                 </h3>
+                {record.type === 'PJ' && (
+                    <p className="text-xs text-slate-400 font-mono mb-2">CNPJ: {record.cnpj}</p>
+                )}
                 
                 <div className="flex items-baseline gap-1 mb-4">
                   <span className="text-sm text-slate-500">Patrimônio:</span>
@@ -162,21 +195,75 @@ const RevenueList = () => {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-4">Nova Pasta de Jogador</h3>
+            <h3 className="text-lg font-bold text-white mb-4">Novo Registro Financeiro</h3>
             <form onSubmit={handleCreate}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-400 mb-1">Nome do Jogador</label>
-                <input
-                  type="text"
-                  autoFocus
-                  required
-                  value={newPlayerName}
-                  onChange={e => setNewPlayerName(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
-                  placeholder="Ex: João da Silva"
-                />
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Tipo de Pessoa</label>
+                  <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800 mb-4">
+                      <button 
+                          type="button"
+                          onClick={() => setNewRecordForm({...newRecordForm, type: 'PF'})}
+                          className={clsx(
+                              "flex-1 py-2 text-sm font-bold rounded-md transition-colors",
+                              newRecordForm.type === 'PF' ? "bg-emerald-600 text-white shadow" : "text-slate-500 hover:text-white"
+                          )}
+                      >
+                          Pessoa Física
+                      </button>
+                      <button 
+                          type="button"
+                          onClick={() => setNewRecordForm({...newRecordForm, type: 'PJ'})}
+                          className={clsx(
+                              "flex-1 py-2 text-sm font-bold rounded-md transition-colors",
+                              newRecordForm.type === 'PJ' ? "bg-blue-600 text-white shadow" : "text-slate-500 hover:text-white"
+                          )}
+                      >
+                          Pessoa Jurídica
+                      </button>
+                  </div>
+
+                  {newRecordForm.type === 'PF' ? (
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-1">Nome do Jogador</label>
+                        <input
+                        type="text"
+                        autoFocus
+                        required
+                        value={newRecordForm.player_name}
+                        onChange={e => setNewRecordForm({...newRecordForm, player_name: e.target.value})}
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                        placeholder="Ex: João da Silva"
+                        />
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                         <div>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">Nome da Empresa</label>
+                            <input
+                            type="text"
+                            autoFocus
+                            required
+                            value={newRecordForm.company_name}
+                            onChange={e => setNewRecordForm({...newRecordForm, company_name: e.target.value})}
+                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                            placeholder="Ex: Mineração Ltda"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">CNPJ</label>
+                            <input
+                            type="text"
+                            required
+                            value={newRecordForm.cnpj}
+                            onChange={e => setNewRecordForm({...newRecordForm, cnpj: e.target.value})}
+                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                            placeholder="00.000.000/0001-00"
+                            />
+                        </div>
+                    </div>
+                  )}
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800 mt-6">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -186,9 +273,12 @@ const RevenueList = () => {
                 </button>
                 <button
                   type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                  className={clsx(
+                      "text-white px-4 py-2 rounded-lg font-medium transition-colors",
+                      newRecordForm.type === 'PF' ? "bg-emerald-600 hover:bg-emerald-500" : "bg-blue-600 hover:bg-blue-500"
+                  )}
                 >
-                  Criar Pasta
+                  Criar {newRecordForm.type === 'PF' ? 'Pasta' : 'Empresa'}
                 </button>
               </div>
             </form>

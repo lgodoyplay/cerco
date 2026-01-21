@@ -228,6 +228,8 @@ const JudiciaryManager = () => {
   const [activeTab, setActiveTab] = useState('warrants'); // warrants, hearings, releases, petitions
   const [warrants, setWarrants] = useState([]);
   const [petitions, setPetitions] = useState([]);
+  const [hearings, setHearings] = useState([]);
+  const [releases, setReleases] = useState([]);
   const [loading, setLoading] = useState(true);
   
   // Warrant Logic States
@@ -235,6 +237,26 @@ const JudiciaryManager = () => {
   const [viewingWarrant, setViewingWarrant] = useState(null);
   const [viewingPetition, setViewingPetition] = useState(null);
   const [warrantFilter, setWarrantFilter] = useState('all');
+
+  // Hearing Logic States
+  const [isHearingModalOpen, setIsHearingModalOpen] = useState(false);
+  const [hearingForm, setHearingForm] = useState({
+    case_number: '',
+    date_time: '',
+    target_name: '', // Used as 'participant' or title
+    type: 'instruction',
+    location: 'Sala 1',
+    notes: ''
+  });
+
+  // Release Logic States
+  const [isReleaseModalOpen, setIsReleaseModalOpen] = useState(false);
+  const [releaseForm, setReleaseForm] = useState({
+    prisoner_name: '',
+    prisoner_passport: '',
+    case_number: '',
+    details: ''
+  });
   const [warrantFile, setWarrantFile] = useState(null);
   const [warrantForm, setWarrantForm] = useState({
     type: 'search_seizure',
@@ -270,8 +292,23 @@ const JudiciaryManager = () => {
 
         if (error && error.code !== '42P01') throw error;
         setPetitions(data || []);
+      } else if (activeTab === 'hearings') {
+        const { data, error } = await supabase
+          .from('hearings')
+          .select('*')
+          .order('date_time', { ascending: true });
+
+        if (error && error.code !== '42P01') throw error;
+        setHearings(data || []);
+      } else if (activeTab === 'releases') {
+        const { data, error } = await supabase
+          .from('release_orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error && error.code !== '42P01') throw error;
+        setReleases(data || []);
       }
-      // Future: Fetch hearings and releases
     } catch (err) {
       console.error('Error fetching data:', err);
     } finally {
@@ -290,6 +327,52 @@ const JudiciaryManager = () => {
     } catch (err) {
       console.error('Error updating petition:', err);
       alert('Erro ao atualizar status da petição.');
+    }
+  };
+
+  const handleCreateHearing = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('hearings').insert([{
+        ...hearingForm,
+        judge_name: user.full_name || 'Juiz Federal',
+        status: 'scheduled'
+      }]);
+
+      if (error) throw error;
+
+      setIsHearingModalOpen(false);
+      fetchData();
+      setHearingForm({ case_number: '', date_time: '', target_name: '', type: 'instruction', location: 'Sala 1', notes: '' });
+    } catch (err) {
+      console.error('Error creating hearing:', err);
+      alert('Erro ao agendar audiência.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateRelease = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('release_orders').insert([{
+        ...releaseForm,
+        judge_name: user.full_name || 'Juiz Federal',
+        status: 'approved'
+      }]);
+
+      if (error) throw error;
+
+      setIsReleaseModalOpen(false);
+      fetchData();
+      setReleaseForm({ prisoner_name: '', prisoner_passport: '', case_number: '', details: '' });
+    } catch (err) {
+      console.error('Error issuing release:', err);
+      alert('Erro ao emitir alvará.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -452,17 +535,22 @@ const JudiciaryManager = () => {
 
       {/* Create Warrant Modal */}
       {isWarrantModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                        <Gavel className="text-federal-500" /> Expedir Novo Mandado
-                    </h3>
-                    <button onClick={() => setIsWarrantModalOpen(false)}><XCircle className="text-slate-400 hover:text-white" /></button>
-                </div>
-                
-                <form onSubmit={handleCreateWarrant} className="p-6 overflow-y-auto space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+                <button 
+                    onClick={() => setIsWarrantModalOpen(false)}
+                    className="absolute top-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+                >
+                    <XCircle size={20} />
+                </button>
+
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                    <Gavel className="text-red-500" />
+                    Novo Mandado Judicial
+                </h2>
+
+                <form onSubmit={handleCreateWarrant} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Tipo de Mandado</label>
                             <select 
@@ -474,7 +562,7 @@ const JudiciaryManager = () => {
                                 <option value="arrest">Prisão</option>
                                 <option value="preventive_arrest">Prisão Preventiva</option>
                                 <option value="temporary_arrest">Prisão Temporária</option>
-                                <option value="breach">Quebra de Sigilo</option>
+                                <option value="breach_confidentiality">Quebra de Sigilo</option>
                             </select>
                         </div>
                         <div>
@@ -487,12 +575,12 @@ const JudiciaryManager = () => {
                                 <option value="low">Baixa</option>
                                 <option value="normal">Normal</option>
                                 <option value="high">Alta</option>
-                                <option value="urgent">URGENTE</option>
+                                <option value="urgent">Urgente</option>
                             </select>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Nome do Alvo</label>
                             <input 
@@ -523,24 +611,24 @@ const JudiciaryManager = () => {
                             value={warrantForm.address}
                             onChange={e => setWarrantForm({...warrantForm, address: e.target.value})}
                             className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
-                            placeholder="Endereço para busca e apreensão..."
+                            placeholder="Endereço da busca ou local provável"
                         />
                     </div>
 
                     <div>
-                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Motivo / Justificativa Resumida</label>
+                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Motivo do Mandado</label>
                         <input 
                             type="text"
                             value={warrantForm.reason}
                             onChange={e => setWarrantForm({...warrantForm, reason: e.target.value})}
                             className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
                             required
-                            placeholder="Ex: Suspeita de tráfico de entorpecentes..."
+                            placeholder="Resumo da motivação legal"
                         />
                     </div>
 
                     <div>
-                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Determinação Judicial Detalhada</label>
+                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Descrição Detalhada / Determinações</label>
                         <textarea 
                             value={warrantForm.detailed_description}
                             onChange={e => setWarrantForm({...warrantForm, detailed_description: e.target.value})}
@@ -552,51 +640,240 @@ const JudiciaryManager = () => {
                     <div>
                         <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Data de Validade (Opcional)</label>
                         <input 
-                            type="datetime-local"
+                            type="date"
                             value={warrantForm.expires_at}
                             onChange={e => setWarrantForm({...warrantForm, expires_at: e.target.value})}
                             className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
                         />
                     </div>
 
-                    <div>
-                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Anexar Documento (Opcional)</label>
-                        <div className="flex items-center gap-2">
-                            <label className="flex-1 cursor-pointer bg-slate-950 border border-slate-700 border-dashed rounded-lg px-4 py-3 hover:bg-slate-900 transition-colors flex items-center justify-center gap-2 text-slate-400 hover:text-white">
-                                <Upload size={18} />
-                                <span className="text-sm">{warrantFile ? warrantFile.name : 'Clique para selecionar PDF, JPG ou PNG'}</span>
+                     {/* File Upload */}
+                     <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Anexar Arquivo (PDF/Imagem)</label>
+                        <div className="flex items-center gap-4">
+                            <label className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-300 transition-colors">
+                                <Upload size={16} />
+                                {warrantFile ? 'Arquivo Selecionado' : 'Escolher Arquivo'}
                                 <input 
                                     type="file" 
                                     className="hidden" 
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                    onChange={e => setWarrantFile(e.target.files[0])}
+                                    onChange={(e) => setWarrantFile(e.target.files[0])}
+                                    accept=".pdf,.png,.jpg,.jpeg"
                                 />
                             </label>
                             {warrantFile && (
-                                <button 
-                                    type="button"
-                                    onClick={() => setWarrantFile(null)}
-                                    className="p-3 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20"
-                                >
-                                    <XCircle size={18} />
-                                </button>
+                                <span className="text-xs text-slate-400">{warrantFile.name}</span>
                             )}
                         </div>
                     </div>
 
-                    <div className="pt-4 flex justify-end gap-3">
+                    <div className="pt-4 border-t border-slate-800 flex justify-end gap-3">
                         <button 
-                            type="button" 
+                            type="button"
                             onClick={() => setIsWarrantModalOpen(false)}
-                            className="px-4 py-2 rounded-lg text-slate-400 hover:text-white"
+                            className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
                         >
                             Cancelar
                         </button>
                         <button 
                             type="submit"
-                            className="px-6 py-2 bg-federal-600 hover:bg-federal-500 text-white rounded-lg font-bold shadow-lg"
+                            disabled={loading}
+                            className="px-6 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg shadow-lg shadow-red-900/20 transition-all flex items-center gap-2"
                         >
-                            Expedir Mandado
+                            {loading ? 'Processando...' : <><Gavel size={18} /> Expedir Mandado</>}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+      )}
+
+      {/* Hearing Modal */}
+      {isHearingModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+                <button 
+                    onClick={() => setIsHearingModalOpen(false)}
+                    className="absolute top-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+                >
+                    <XCircle size={20} />
+                </button>
+
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                    <Calendar className="text-federal-500" />
+                    Agendar Audiência
+                </h2>
+
+                <form onSubmit={handleCreateHearing} className="space-y-6">
+                    <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Número do Processo</label>
+                        <input 
+                            type="text"
+                            value={hearingForm.case_number}
+                            onChange={e => setHearingForm({...hearingForm, case_number: e.target.value})}
+                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
+                            required
+                            placeholder="Ex: 001/2024"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Data e Hora</label>
+                        <input 
+                            type="datetime-local"
+                            value={hearingForm.date_time}
+                            onChange={e => setHearingForm({...hearingForm, date_time: e.target.value})}
+                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Nome do Réu / Parte</label>
+                        <input 
+                            type="text"
+                            value={hearingForm.target_name}
+                            onChange={e => setHearingForm({...hearingForm, target_name: e.target.value})}
+                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
+                            required
+                            placeholder="Nome completo"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Tipo de Audiência</label>
+                            <select 
+                                value={hearingForm.type}
+                                onChange={e => setHearingForm({...hearingForm, type: e.target.value})}
+                                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
+                            >
+                                <option value="custody">Custódia</option>
+                                <option value="instruction">Instrução e Julgamento</option>
+                                <option value="judgment">Leitura de Sentença</option>
+                                <option value="other">Outros</option>
+                            </select>
+                        </div>
+                         <div>
+                            <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Local</label>
+                            <input 
+                                type="text"
+                                value={hearingForm.location}
+                                onChange={e => setHearingForm({...hearingForm, location: e.target.value})}
+                                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Observações / Pauta</label>
+                        <textarea 
+                            value={hearingForm.notes}
+                            onChange={e => setHearingForm({...hearingForm, notes: e.target.value})}
+                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none h-32 resize-none"
+                            placeholder="Detalhes sobre o caso..."
+                        />
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-800 flex justify-end gap-3">
+                        <button 
+                            type="button"
+                            onClick={() => setIsHearingModalOpen(false)}
+                            className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            type="submit"
+                            disabled={loading}
+                            className="px-6 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg shadow-lg shadow-federal-900/20 transition-all flex items-center gap-2"
+                        >
+                            {loading ? 'Agendando...' : <><Calendar size={18} /> Agendar</>}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+      )}
+
+      {/* Release Modal */}
+      {isReleaseModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+                <button 
+                    onClick={() => setIsReleaseModalOpen(false)}
+                    className="absolute top-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+                >
+                    <XCircle size={20} />
+                </button>
+
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                    <FileSignature className="text-green-500" />
+                    Emitir Alvará de Soltura
+                </h2>
+
+                <form onSubmit={handleCreateRelease} className="space-y-6">
+                    <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Número do Processo</label>
+                        <input 
+                            type="text"
+                            value={releaseForm.case_number}
+                            onChange={e => setReleaseForm({...releaseForm, case_number: e.target.value})}
+                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
+                            required
+                            placeholder="Ex: 001/2024"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Nome do Beneficiário (Preso)</label>
+                        <input 
+                            type="text"
+                            value={releaseForm.prisoner_name}
+                            onChange={e => setReleaseForm({...releaseForm, prisoner_name: e.target.value})}
+                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
+                            required
+                            placeholder="Nome completo"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">ID / Passaporte</label>
+                        <input 
+                            type="text"
+                            value={releaseForm.prisoner_passport}
+                            onChange={e => setReleaseForm({...releaseForm, prisoner_passport: e.target.value})}
+                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
+                            placeholder="Opcional"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Motivo / Detalhes</label>
+                        <textarea 
+                            value={releaseForm.details}
+                            onChange={e => setReleaseForm({...releaseForm, details: e.target.value})}
+                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none h-32 resize-none"
+                            required
+                            placeholder="Ex: Liberdade Provisória, Absolvição..."
+                        />
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-800 flex justify-end gap-3">
+                        <button 
+                            type="button"
+                            onClick={() => setIsReleaseModalOpen(false)}
+                            className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            type="submit"
+                            disabled={loading}
+                            className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg shadow-green-900/20 transition-all flex items-center gap-2"
+                        >
+                            {loading ? 'Emitindo...' : <><FileSignature size={18} /> Emitir Alvará</>}
                         </button>
                     </div>
                 </form>
@@ -646,24 +923,44 @@ const JudiciaryManager = () => {
           </button>
         </div>
 
-        {/* Action Button for Warrants */}
-        {activeTab === 'warrants' && (
-            <div className="space-y-2">
+        {/* Action Buttons */}
+        <div className="space-y-2">
+            {activeTab === 'warrants' && (
+                <>
+                    <button 
+                        onClick={() => setIsWarrantModalOpen(true)}
+                        className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 border-dashed rounded-xl text-slate-300 hover:text-white font-bold flex items-center justify-center gap-2 transition-all"
+                    >
+                        <Gavel size={18} /> Novo Mandado Judicial
+                    </button>
+                    
+                    {/* Filters */}
+                    <div className="flex gap-2 p-1 bg-slate-800/50 rounded-lg">
+                        <button onClick={() => setWarrantFilter('all')} className={clsx("flex-1 py-1 text-[10px] font-bold rounded uppercase transition-colors", warrantFilter === 'all' ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300")}>Todos</button>
+                        <button onClick={() => setWarrantFilter('active')} className={clsx("flex-1 py-1 text-[10px] font-bold rounded uppercase transition-colors", warrantFilter === 'active' ? "bg-red-500/20 text-red-500" : "text-slate-500 hover:text-slate-300")}>Ativos</button>
+                        <button onClick={() => setWarrantFilter('executed')} className={clsx("flex-1 py-1 text-[10px] font-bold rounded uppercase transition-colors", warrantFilter === 'executed' ? "bg-green-500/20 text-green-500" : "text-slate-500 hover:text-slate-300")}>Cumpridos</button>
+                    </div>
+                </>
+            )}
+
+            {activeTab === 'hearings' && (
                 <button 
-                    onClick={() => setIsWarrantModalOpen(true)}
+                    onClick={() => setIsHearingModalOpen(true)}
                     className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 border-dashed rounded-xl text-slate-300 hover:text-white font-bold flex items-center justify-center gap-2 transition-all"
                 >
-                    <Gavel size={18} /> Novo Mandado Judicial
+                    <Calendar size={18} /> Agendar Audiência
                 </button>
-                
-                {/* Filters */}
-                <div className="flex gap-2 p-1 bg-slate-800/50 rounded-lg">
-                     <button onClick={() => setWarrantFilter('all')} className={clsx("flex-1 py-1 text-[10px] font-bold rounded uppercase transition-colors", warrantFilter === 'all' ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300")}>Todos</button>
-                     <button onClick={() => setWarrantFilter('active')} className={clsx("flex-1 py-1 text-[10px] font-bold rounded uppercase transition-colors", warrantFilter === 'active' ? "bg-red-500/20 text-red-500" : "text-slate-500 hover:text-slate-300")}>Ativos</button>
-                     <button onClick={() => setWarrantFilter('executed')} className={clsx("flex-1 py-1 text-[10px] font-bold rounded uppercase transition-colors", warrantFilter === 'executed' ? "bg-green-500/20 text-green-500" : "text-slate-500 hover:text-slate-300")}>Cumpridos</button>
-                </div>
-            </div>
-        )}
+            )}
+
+            {activeTab === 'releases' && (
+                <button 
+                    onClick={() => setIsReleaseModalOpen(true)}
+                    className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 border-dashed rounded-xl text-slate-300 hover:text-white font-bold flex items-center justify-center gap-2 transition-all"
+                >
+                    <FileSignature size={18} /> Emitir Alvará
+                </button>
+            )}
+        </div>
 
         {/* List */}
         <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
@@ -752,21 +1049,73 @@ const JudiciaryManager = () => {
                 ))
             )
           ) : activeTab === 'hearings' ? (
-            <div className="flex flex-col items-center justify-center py-10 text-slate-500 gap-4">
-                <Calendar size={48} className="opacity-20" />
-                <div className="text-center">
-                    <p className="font-bold">Nenhuma audiência agendada</p>
-                    <p className="text-xs mt-1">O sistema de agendamento de audiências estará disponível em breve.</p>
+            hearings.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-slate-500 gap-4">
+                    <Calendar size={48} className="opacity-20" />
+                    <div className="text-center">
+                        <p className="font-bold">Nenhuma audiência agendada</p>
+                    </div>
                 </div>
-            </div>
+            ) : (
+                hearings.map(hearing => (
+                    <div 
+                        key={hearing.id}
+                        className="bg-slate-900 border border-slate-800 rounded-xl p-4 hover:border-federal-500/50 transition-colors relative overflow-hidden group cursor-default"
+                    >
+                        <div className="absolute top-0 left-0 w-1 h-full bg-federal-500"></div>
+                        <div className="pl-4">
+                            <div className="flex justify-between items-start mb-2">
+                                <span className="text-xs font-bold text-federal-400 uppercase tracking-wider">
+                                    {new Date(hearing.date_time).toLocaleString()}
+                                </span>
+                                <span className={clsx(
+                                    "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full",
+                                    hearing.status === 'scheduled' && "bg-blue-500/10 text-blue-400",
+                                    hearing.status === 'concluded' && "bg-green-500/10 text-green-400",
+                                    hearing.status === 'cancelled' && "bg-red-500/10 text-red-400"
+                                )}>
+                                    {hearing.status === 'scheduled' ? 'Agendada' : hearing.status === 'concluded' ? 'Realizada' : 'Cancelada'}
+                                </span>
+                            </div>
+                            <h3 className="text-white font-bold text-sm mb-1">{hearing.target_name}</h3>
+                            <p className="text-xs text-slate-400 mb-2">
+                                <span className="text-slate-500">Tipo:</span> {hearing.type === 'custody' ? 'Custódia' : hearing.type === 'instruction' ? 'Instrução' : 'Outros'}
+                            </p>
+                        </div>
+                    </div>
+                ))
+            )
           ) : (
-            <div className="flex flex-col items-center justify-center py-10 text-slate-500 gap-4">
-                <FileSignature size={48} className="opacity-20" />
-                <div className="text-center">
-                    <p className="font-bold">Nenhum alvará emitido</p>
-                    <p className="text-xs mt-1">O sistema de emissão de alvarás estará disponível em breve.</p>
+            releases.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-slate-500 gap-4">
+                    <FileSignature size={48} className="opacity-20" />
+                    <div className="text-center">
+                        <p className="font-bold">Nenhum alvará emitido</p>
+                    </div>
                 </div>
-            </div>
+            ) : (
+                releases.map(release => (
+                    <div 
+                        key={release.id}
+                        className="bg-slate-900 border border-slate-800 rounded-xl p-4 hover:border-green-500/50 transition-colors group cursor-default"
+                    >
+                        <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-2">
+                                <FileSignature size={14} className="text-green-500" />
+                                <span className="text-[10px] font-mono text-slate-500">
+                                    {new Date(release.created_at).toLocaleDateString()}
+                                </span>
+                            </div>
+                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-green-500/10 text-green-400">
+                                Ativo
+                            </span>
+                        </div>
+                        <h3 className="text-white font-bold text-sm mb-1">{release.prisoner_name}</h3>
+                        <p className="text-xs text-slate-400 mb-2">ID: {release.prisoner_id || 'N/A'}</p>
+                        <p className="text-xs text-slate-500 italic">"{release.reason}"</p>
+                    </div>
+                ))
+            )
           )}
         </div>
       </div>
