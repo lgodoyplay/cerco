@@ -17,6 +17,7 @@ import { routeLoaders } from './routes/routeLoaders';
 const Rules = React.lazy(() => lazyImport(routeLoaders.Rules));
 const HowToJoin = React.lazy(() => lazyImport(routeLoaders.HowToJoin));
 const Login = React.lazy(() => lazyImport(routeLoaders.Login));
+const PenalCode = React.lazy(() => lazyImport(routeLoaders.PenalCode));
 const SearchAndInvestigations = React.lazy(() => lazyImport(routeLoaders.SearchAndInvestigations));
 const WeaponsLicense = React.lazy(() => lazyImport(routeLoaders.WeaponsLicense));
 
