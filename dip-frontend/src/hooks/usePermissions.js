@@ -41,6 +41,7 @@ const PERMISSIONS = {
 // This could be moved to a database or separate config file
 const ROLE_PERMISSIONS = {
   'Comandante Geral': Object.values(PERMISSIONS),
+  'Diretor': Object.values(PERMISSIONS),
   'Coronel': Object.values(PERMISSIONS),
   'Major': Object.values(PERMISSIONS),
   'Capitão': Object.values(PERMISSIONS),

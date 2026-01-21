@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
+import { usePermissions } from '../../../hooks/usePermissions';
 import { User, FileText, Scale, Search, Gavel, FileSignature, Send, AlertTriangle, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 const LawyerDashboard = () => {
   const { user } = useAuth();
+  const { can } = usePermissions();
+  const canManage = true; // Lawyers can always manage their own petitions in their dashboard
   const [activeTab, setActiveTab] = useState('clients'); // clients, processes, petitions
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
