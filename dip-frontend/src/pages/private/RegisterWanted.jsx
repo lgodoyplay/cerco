@@ -28,6 +28,7 @@ const RegisterWanted = () => {
     document: '',
     reason: '',
     dangerLevel: 'Baixa',
+    reward: '',
     officer: '',
     observations: '',
   });
@@ -112,7 +113,8 @@ const RegisterWanted = () => {
           observacoes: formData.observations,
           status: 'Procurado',
           foto_principal: publicUrl,
-          created_by: user?.id
+          created_by: user?.id,
+          recompensa: formData.reward
         }]);
 
       if (insertError) throw insertError;
@@ -135,6 +137,7 @@ const RegisterWanted = () => {
             fields: [
               { name: "Periculosidade", value: formData.dangerLevel, inline: true },
               { name: "Motivo", value: formData.reason, inline: true },
+              { name: "Recompensa", value: formData.reward ? `$ ${formData.reward}` : 'Não informada', inline: true },
               { name: "Documento", value: formData.document },
               { name: "Observações", value: formData.observations || 'Nenhuma' },
               { name: "Policial Responsável", value: formData.officer }
@@ -304,6 +307,22 @@ const RegisterWanted = () => {
                     <option value="Alta">Alta</option>
                     <option value="Extrema">Extrema</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Recompensa */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Recompensa ($)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-3.5 text-slate-600 font-bold">$</span>
+                  <input
+                    type="text"
+                    name="reward"
+                    value={formData.reward}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                    placeholder="Valor da recompensa (opcional)"
+                  />
                 </div>
               </div>
 
