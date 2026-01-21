@@ -67,6 +67,7 @@ const WantedList = () => {
     navigate('/dashboard/arrest', { 
       state: { 
         wantedPerson: {
+          id: selectedPerson.id,
           name: selectedPerson.name,
           document: selectedPerson.document,
           reason: selectedPerson.crime || selectedPerson.reason,

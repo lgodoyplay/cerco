@@ -129,6 +129,24 @@ const RegisterArrest = () => {
         }]);
       }
 
+      // 3.1 If this was a wanted person, remove from wanted list
+      if (prefillData?.id) {
+        const { error: deleteError } = await supabase
+          .from('procurados')
+          .delete()
+          .eq('id', prefillData.id);
+
+        if (deleteError) {
+          console.error('Error removing from wanted list:', deleteError);
+        } else if (user) {
+          await supabase.from('system_logs').insert([{
+            user_id: user.id,
+            action: 'Procurado Preso',
+            details: `Procurado ${formData.name} removido da lista após prisão.`
+          }]);
+        }
+      }
+
       // 4. Send Discord Notification
       if (discordConfig?.arrestsWebhook) {
         try {
