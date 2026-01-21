@@ -24,7 +24,8 @@ import {
   Gavel,
   Car,
   Scale,
-  GraduationCap
+  GraduationCap,
+  Package
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
