@@ -37,17 +37,17 @@ const InvestigationList = () => {
         <div>
           <h2 className="text-3xl font-bold text-white flex items-center gap-3">
             <FolderOpen className="text-federal-500" size={32} />
-            Investigações
+            {title || 'Investigações'}
           </h2>
           <p className="text-slate-400 mt-2">Gerencie inquéritos, provas e relatórios do departamento.</p>
         </div>
         {canManage && (
           <Link 
-            to="/dashboard/investigations/new" 
+            to={category === 'financial' ? "/dashboard/investigations/new?category=financial" : "/dashboard/investigations/new"}
             className="bg-federal-600 hover:bg-federal-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-federal-900/50 transition-all hover:-translate-y-0.5"
           >
             <Plus size={20} />
-            Nova Investigação
+            {category === 'financial' ? 'Nova Investigação Financeira' : 'Nova Investigação'}
           </Link>
         )}
       </div>

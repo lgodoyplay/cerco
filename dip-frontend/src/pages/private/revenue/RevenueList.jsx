@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Folder, DollarSign, Calendar, ChevronRight, Briefcase, User } from 'lucide-react';
+import { Plus, Search, Folder, DollarSign, Calendar, ChevronRight, Briefcase, User, FileText, FolderOpen } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { usePermissions } from '../../../hooks/usePermissions';
+import InvestigationList from '../investigations/InvestigationList';
 import clsx from 'clsx';
 
 const RevenueList = () => {
+  const [activeTab, setActiveTab] = useState('assets'); // 'assets' | 'investigations'
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -119,81 +121,109 @@ const RevenueList = () => {
         )}
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-        <input 
-          type="text" 
-          placeholder="Buscar por nome do jogador..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors"
-        />
+      {/* Tabs */}
+      <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 w-fit mb-6">
+        <button
+          onClick={() => handleTabChange('assets')}
+          className={clsx(
+            "px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
+            activeTab === 'assets' ? "bg-slate-800 text-white shadow" : "text-slate-400 hover:text-slate-200"
+          )}
+        >
+          <Folder size={16} /> Patrimônio
+        </button>
+        <button
+          onClick={() => handleTabChange('investigations')}
+          className={clsx(
+            "px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
+            activeTab === 'investigations' ? "bg-slate-800 text-white shadow" : "text-slate-400 hover:text-slate-200"
+          )}
+        >
+          <FolderOpen size={16} /> Investigações Financeiras
+        </button>
       </div>
 
-      {/* Grid */}
-      {loading ? (
-        <div className="text-center py-12 text-slate-500">Carregando...</div>
-      ) : filteredRecords.length === 0 ? (
-        <div className="text-center py-12 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
-          <Folder size={48} className="mx-auto text-slate-600 mb-3" />
-          <h3 className="text-lg font-medium text-slate-300">Nenhuma pasta encontrada</h3>
-          <p className="text-slate-500">Crie uma nova pasta para começar a monitorar.</p>
-        </div>
+      {activeTab === 'investigations' ? (
+        <InvestigationList category="financial" title="Investigações Financeiras" />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredRecords.map(record => (
-            <Link 
-              key={record.id} 
-              to={`/dashboard/revenue/${record.id}`}
-              className="group bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-5 transition-all hover:bg-slate-800/80 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                {record.type === 'PJ' ? <Briefcase size={80} /> : <Folder size={80} />}
-              </div>
-              
-              <div className="relative z-10">
-                <div className="flex justify-between items-start mb-4">
-                  <div className={clsx(
-                      "w-12 h-12 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110",
-                      record.type === 'PJ' ? "bg-blue-500/10 text-blue-500" : "bg-emerald-500/10 text-emerald-500"
-                  )}>
-                    {record.type === 'PJ' ? <Briefcase size={24} /> : <User size={24} />}
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                      <span className="text-xs font-mono text-slate-500 bg-slate-950 px-2 py-1 rounded border border-slate-800">
-                        {new Date(record.created_at).toLocaleDateString()}
-                      </span>
-                      {record.type === 'PJ' && (
-                          <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Pessoa Jurídica</span>
-                      )}
-                  </div>
-                </div>
-                
-                <h3 className="text-lg font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors truncate">
-                  {record.displayName}
-                </h3>
-                {record.type === 'PJ' && (
-                    <p className="text-xs text-slate-400 font-mono mb-2">CNPJ: {record.cnpj}</p>
-                )}
-                
-                <div className="flex items-baseline gap-1 mb-4">
-                  <span className="text-sm text-slate-500">Patrimônio:</span>
-                  <span className="text-xl font-bold text-emerald-400">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(record.totalValue)}
-                  </span>
-                </div>
+        <>
+          {/* Search */}
+          <div className="relative mb-6">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
+            <input 
+              type="text" 
+              placeholder="Buscar por nome do jogador..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors"
+            />
+          </div>
 
-                <div className="flex items-center justify-between text-xs text-slate-500 border-t border-slate-800 pt-3">
-                  <span>{record.itemCount} itens registrados</span>
-                  <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform text-emerald-500/80">
-                    Abrir <ChevronRight size={14} />
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+          {/* Grid */}
+          {loading ? (
+            <div className="text-center py-12 text-slate-500">Carregando...</div>
+          ) : filteredRecords.length === 0 ? (
+            <div className="text-center py-12 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
+              <Folder size={48} className="mx-auto text-slate-600 mb-3" />
+              <h3 className="text-lg font-medium text-slate-300">Nenhuma pasta encontrada</h3>
+              <p className="text-slate-500">Crie uma nova pasta para começar a monitorar.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredRecords.map(record => (
+                <Link 
+                  key={record.id} 
+                  to={`/dashboard/revenue/${record.id}`}
+                  className="group bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-5 transition-all hover:bg-slate-800/80 relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    {record.type === 'PJ' ? <Briefcase size={80} /> : <Folder size={80} />}
+                  </div>
+                  
+                  <div className="relative z-10">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className={clsx(
+                          "w-12 h-12 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110",
+                          record.type === 'PJ' ? "bg-blue-500/10 text-blue-500" : "bg-emerald-500/10 text-emerald-500"
+                      )}>
+                        {record.type === 'PJ' ? <Briefcase size={24} /> : <User size={24} />}
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                          <span className="text-xs font-mono text-slate-500 bg-slate-950 px-2 py-1 rounded border border-slate-800">
+                            {new Date(record.created_at).toLocaleDateString()}
+                          </span>
+                          {record.type === 'PJ' && (
+                              <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Pessoa Jurídica</span>
+                          )}
+                      </div>
+                    </div>
+                    
+                    <h3 className="text-lg font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors truncate">
+                      {record.displayName}
+                    </h3>
+                    {record.type === 'PJ' && (
+                        <p className="text-xs text-slate-400 font-mono mb-2">CNPJ: {record.cnpj}</p>
+                    )}
+                    
+                    <div className="flex items-baseline gap-1 mb-4">
+                      <span className="text-sm text-slate-500">Patrimônio:</span>
+                      <span className="text-xl font-bold text-emerald-400">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(record.totalValue)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-slate-500 border-t border-slate-800 pt-3">
+                      <span>{record.itemCount} itens registrados</span>
+                      <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform text-emerald-500/80">
+                        Abrir <ChevronRight size={14} />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Modal */}

@@ -89,6 +89,7 @@ export const useInvestigations = () => {
     try {
       const payload = {
         titulo: data.title,
+        categoria: data.category || 'criminal',
         descricao: data.description,
         envolvidos: data.involved,
         prioridade: data.priority,

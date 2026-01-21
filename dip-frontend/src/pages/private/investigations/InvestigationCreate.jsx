@@ -1,18 +1,28 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useInvestigations } from '../../../hooks/useInvestigations';
-import { Save, ArrowLeft, FolderPlus, AlertCircle } from 'lucide-react';
+import { Save, ArrowLeft, FolderPlus, AlertCircle, DollarSign } from 'lucide-react';
 import clsx from 'clsx';
 
 const InvestigationCreate = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get('category');
+  
   const { addInvestigation } = useInvestigations();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     involved: '',
-    priority: 'Média'
+    priority: 'Média',
+    category: categoryParam || 'criminal'
   });
+
+  useEffect(() => {
+    if (categoryParam) {
+      setFormData(prev => ({ ...prev, category: categoryParam }));
+    }
+  }, [categoryParam]);
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -24,6 +34,9 @@ const InvestigationCreate = () => {
     
     try {
       const id = await addInvestigation(formData);
+      // Navigate based on category? No, detail view is same.
+      // But maybe we want to go back to list?
+      // Usually we go to detail view.
       navigate(`/dashboard/investigations/${id}`);
     } catch (error) {
       console.error('Erro ao criar investigação:', error);
@@ -31,22 +44,29 @@ const InvestigationCreate = () => {
     }
   };
 
+  const isFinancial = formData.category === 'financial';
+  const backLink = isFinancial ? '/dashboard/revenue' : '/dashboard/investigations';
+
   return (
     <div className="max-w-3xl mx-auto pb-10">
       <button 
-        onClick={() => navigate('/dashboard/investigations')}
+        onClick={() => navigate(backLink)}
         className="mb-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-wider"
       >
-        <ArrowLeft size={16} /> Voltar
+        <ArrowLeft size={16} /> Voltar para {isFinancial ? 'Receita' : 'Investigações'}
       </button>
 
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl">
         <div className="mb-8 border-b border-slate-800 pb-6">
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            <FolderPlus className="text-federal-500" size={28} />
-            Nova Investigação
+            {isFinancial ? <DollarSign className="text-emerald-500" size={28} /> : <FolderPlus className="text-federal-500" size={28} />}
+            {isFinancial ? 'Nova Investigação Financeira' : 'Nova Investigação'}
           </h2>
-          <p className="text-slate-400 mt-2">Preencha os dados iniciais para abrir um novo inquérito.</p>
+          <p className="text-slate-400 mt-2">
+            {isFinancial 
+              ? 'Abra um novo inquérito para apurar crimes financeiros.' 
+              : 'Preencha os dados iniciais para abrir um novo inquérito.'}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
