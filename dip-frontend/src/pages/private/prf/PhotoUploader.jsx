@@ -1,6 +1,6 @@
 import React from 'react';
 import { Camera, X } from 'lucide-react';
-import { supabase } from '../../../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 
 const PhotoUploader = ({ photos, setPhotos }) => {
   const handleUpload = async (e) => {
