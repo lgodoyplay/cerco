@@ -38,6 +38,9 @@ export const routeLoaders = {
   // Judiciary
   JudiciaryManager: () => import('../pages/private/judiciary/JudiciaryManager'),
 
+  // PRF
+  PRFIntegration: () => import('../pages/private/prf/PRFIntegration'),
+
   // Settings
   SettingsLayout: () => import('../pages/private/settings/SettingsLayout'),
   UsersSettings: () => import('../pages/private/settings/UsersSettings'),

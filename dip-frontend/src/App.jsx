@@ -44,6 +44,7 @@ const RevenueDetail = React.lazy(() => lazyImport(routeLoaders.RevenueDetail));
 
 const WeaponsManager = React.lazy(() => lazyImport(routeLoaders.WeaponsManager));
 const JudiciaryManager = React.lazy(() => lazyImport(routeLoaders.JudiciaryManager));
+const PRFIntegration = React.lazy(() => lazyImport(routeLoaders.PRFIntegration));
 
 // Settings Pages - Eagerly loaded for better UX
 import SecurityConfig from './pages/private/settings/SecurityConfig';
@@ -91,7 +92,7 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   // Debug log to verify version
-  console.log('App Version: 2026-01-13 v2 - SessionMonitor Fix');
+  console.log('App Version: 2026-01-21 v1 - PRF Integration');
 
   return (
     <AuthProvider>
@@ -182,6 +183,9 @@ function App() {
                 <JudiciaryManager />
               </PermissionGuard>
             } />
+
+            {/* PRF Routes */}
+            <Route path="prf" element={<PRFIntegration />} />
 
             {/* Profile Route */}
             <Route path="profile" element={<ProfilePage />} />
