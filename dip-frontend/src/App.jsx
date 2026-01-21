@@ -8,9 +8,7 @@ import PublicLayout from './components/PublicLayout';
 import PrivateLayout from './components/PrivateLayout';
 import ComingSoon from './components/ComingSoon';
 import Home from './pages/public/Home';
-import CursoDPFF from './pages/publicCurfmD/F';c/Landing';
-RublcR
-import Landingport } from './uublic/Lsnding';
+import Landing from './pages/public/Landing';
 import { routeLoaders } from './routes/routeLoaders';
 
 // Public Pages
@@ -23,6 +21,8 @@ const WeaponsLicense = React.lazy(() => lazyImport(routeLoaders.WeaponsLicense))
 
 // Private Pages
 const DashboardHome = React.lazy(() => lazyImport(routeLoaders.DashboardHome));
+const CursoDPF = React.lazy(() => lazyImport(routeLoaders.CursoDPF));
+const CursoPRF = React.lazy(() => lazyImport(routeLoaders.CursoPRF));
 const ProfilePage = React.lazy(() => lazyImport(routeLoaders.ProfilePage));
 const RegisterArrest = React.lazy(() => lazyImport(routeLoaders.RegisterArrest));
 const RegisterBO = React.lazy(() => lazyImport(routeLoaders.RegisterBO));
