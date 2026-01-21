@@ -41,6 +41,7 @@ export const routeLoaders = {
   PRFIntegration: () => import('../pages/private/prf/PRFIntegration'),
   LawyerDashboard: () => import('../pages/private/lawyers/LawyerDashboard'),
   ANPStudentDashboard: () => import('../pages/private/anp/ANPStudentDashboard'),
+  LogisticsDashboard: () => import('../pages/private/logistics/LogisticsDashboard'),
 
   // Settings
   SettingsLayout: () => import('../pages/private/settings/SettingsLayout'),

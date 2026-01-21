@@ -48,6 +48,7 @@ const WeaponsManager = React.lazy(() => lazyImport(routeLoaders.WeaponsManager))
 const JudiciaryManager = React.lazy(() => lazyImport(routeLoaders.JudiciaryManager));
 const PRFIntegration = React.lazy(() => lazyImport(routeLoaders.PRFIntegration));
 const LawyerDashboard = React.lazy(() => lazyImport(routeLoaders.LawyerDashboard));
+const LogisticsDashboard = React.lazy(() => lazyImport(routeLoaders.LogisticsDashboard));
 const ANPStudentDashboard = React.lazy(() => lazyImport(routeLoaders.ANPStudentDashboard));
 
 // Settings Pages - Eagerly loaded for better UX
@@ -253,6 +254,8 @@ function App() {
                 <LawyerDashboard />
               </PermissionGuard>
             } />
+
+            <Route path="logistics" element={<LogisticsDashboard />} />
 
             {/* ANP Student Route */}
             <Route path="anp-student" element={<ANPStudentDashboard />} />
