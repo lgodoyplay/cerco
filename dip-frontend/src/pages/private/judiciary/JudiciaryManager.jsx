@@ -222,8 +222,6 @@ const WarrantDocument = ({ warrant, onClose, onUpdateStatus }) => {
 
 // --- Main Component ---
 
-import { usePermissions } from '../../../hooks/usePermissions';
-
 const JudiciaryManager = () => {
   const { discordConfig } = useSettings();
   const { user } = useAuth();
