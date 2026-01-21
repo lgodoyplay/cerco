@@ -389,7 +389,7 @@ const UsersSettings = () => {
 
             {/* Tabs */}
             {editingUser && (
-              <div className="flex border-b border-slate-800 px-6 overflow-x-auto">
+              <div className="flex border-b border-slate-800 px-6 overflow-x-auto flex-shrink-0">
                 <button
                   onClick={() => setActiveTab('profile')}
                   className={clsx(
@@ -420,7 +420,7 @@ const UsersSettings = () => {
               </div>
             )}
             
-            <div className="overflow-y-auto p-6">
+            <div className="overflow-y-auto p-6 flex-1 min-h-0">
               {activeTab === 'profile' ? (
                 <form id="user-form" onSubmit={handleSubmit} className="space-y-6">
                   <div className="flex justify-center mb-6">
