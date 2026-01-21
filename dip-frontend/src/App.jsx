@@ -9,6 +9,7 @@ import PrivateLayout from './components/PrivateLayout';
 import ComingSoon from './components/ComingSoon';
 import Home from './pages/public/Home';
 import CursoDPF from './pages/public/CursoDPF';
+import CursoPRF from './pages/public/CursoPRF';
 import Landing from './pages/public/Landing';
 
 import { lazyImport } from './utils/lazyImport';
