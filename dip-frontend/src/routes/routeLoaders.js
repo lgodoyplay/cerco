@@ -2,6 +2,7 @@
 export const routeLoaders = {
   // Public
   Login: () => import('../pages/public/Login'),
+  PenalCode: () => import('../pages/public/PenalCode'),
   Rules: () => import('../pages/public/Rules'),
   HowToJoin: () => import('../pages/public/HowToJoin'),
   SearchAndInvestigations: () => import('../pages/public/SearchAndInvestigations'),
@@ -37,6 +38,7 @@ export const routeLoaders = {
   JudiciaryManager: () => import('../pages/private/judiciary/JudiciaryManager'),
   PRFIntegration: () => import('../pages/private/prf/PRFIntegration'),
   LawyerDashboard: () => import('../pages/private/lawyers/LawyerDashboard'),
+  ANPStudentDashboard: () => import('../pages/private/anp/ANPStudentDashboard'),
 
   // Settings
   SettingsLayout: () => import('../pages/private/settings/SettingsLayout'),

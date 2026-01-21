@@ -117,6 +117,7 @@ const PublicLayout = () => {
             <div>
               <h3 className="font-semibold text-white mb-4">Links Rápidos</h3>
               <ul className="space-y-2 text-sm text-slate-500">
+                <li><Link to="/codigo-penal" className="hover:text-federal-400 transition-colors">Código Penal</Link></li>
                 <li><Link to="/rules" className="hover:text-federal-400 transition-colors">Regulamento</Link></li>
                 <li><Link to="/join" className="hover:text-federal-400 transition-colors">Recrutamento</Link></li>
                 <li><Link to="/login" className="hover:text-federal-400 transition-colors">Painel Administrativo</Link></li>

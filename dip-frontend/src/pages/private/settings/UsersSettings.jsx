@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../../hooks/useSettings';
 import { supabase } from '../../../lib/supabase';
-import { Plus, Edit2, Trash2, Shield, User, Users, Power, Search, Check, X, BookOpen, GraduationCap } from 'lucide-react';
+import { Plus, Edit2, Trash2, Shield, User, Users, Power, Search, Check, X, BookOpen, GraduationCap, Mail, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
 import AvatarUpload from '../../../components/AvatarUpload';
 import { getInitials } from '../../../utils/stringUtils';
@@ -11,23 +11,32 @@ const UsersSettings = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('profile'); // profile, courses
+  const [activeTab, setActiveTab] = useState('profile'); // profile, courses, anp
   
   // Dados do formulário
   const [formData, setFormData] = useState({
     name: '',
     username: '',
-    password: '', // Novo campo para senha
-    passport_id: '', // Novo campo para funcional
+    password: '',
+    passport_id: '',
     role: '',
     permissions: [],
     avatar_url: null
   });
 
+  // Novo Email
+  const [newEmail, setNewEmail] = useState('');
+  const [updatingEmail, setUpdatingEmail] = useState(false);
+
   // Dados de cursos
   const [userCourses, setUserCourses] = useState([]);
   const [allCourses, setAllCourses] = useState([]);
   const [selectedCourseToAdd, setSelectedCourseToAdd] = useState('');
+
+  // Dados ANP
+  const [anpStages, setAnpStages] = useState([]);
+  const [userANPProgress, setUserANPProgress] = useState({});
+  const [loadingANP, setLoadingANP] = useState(false);
 
   const permissionModules = [
     { id: 'judiciary', label: 'Jurídico' },
@@ -51,12 +60,15 @@ const UsersSettings = () => {
     }
   }, [isModalOpen]);
 
-  // Carregar cursos do usuário quando editar
+  // Carregar dados específicos quando editar usuário
   useEffect(() => {
     if (editingUser) {
       fetchUserCourses(editingUser.id);
+      if (activeTab === 'anp') {
+        fetchANPData(editingUser.id);
+      }
     }
-  }, [editingUser]);
+  }, [editingUser, activeTab]);
 
   const fetchCourses = async () => {
     try {
@@ -82,6 +94,25 @@ const UsersSettings = () => {
     }
   };
 
+  const fetchANPData = async (userId) => {
+    try {
+      setLoadingANP(true);
+      // Stages
+      const { data: stages } = await supabase.from('anp_stages').select('*').order('order');
+      setAnpStages(stages || []);
+
+      // Progress
+      const { data: progress } = await supabase.from('user_anp_progress').select('*').eq('user_id', userId);
+      const progressMap = {};
+      (progress || []).forEach(p => progressMap[p.stage_id] = p.status);
+      setUserANPProgress(progressMap);
+    } catch (error) {
+      console.error('Error fetching ANP data:', error);
+    } finally {
+      setLoadingANP(false);
+    }
+  };
+
   const handleOpenModal = (user = null) => {
     setActiveTab('profile');
     if (user) {
@@ -89,14 +120,13 @@ const UsersSettings = () => {
       setFormData({
         name: user.name,
         username: user.username,
-        password: '', // Não carregamos a senha
+        password: '',
         passport_id: user.passport_id || '', 
         role: user.role,
         permissions: user.permissions,
         avatar_url: user.avatar_url
       });
-      // Avatar url pode não vir do hook useSettings dependendo da implementação
-      // Vamos buscar o profile completo para garantir
+      setNewEmail(''); // Reset email field
       fetchProfileDetails(user.id);
     } else {
       setEditingUser(null);
@@ -129,6 +159,31 @@ const UsersSettings = () => {
       addUser(formData);
     }
     setIsModalOpen(false);
+  };
+
+  const handleEmailUpdate = async () => {
+    if (!newEmail || !editingUser) return;
+    if (!window.confirm(`Tem certeza que deseja alterar o email para ${newEmail}?`)) return;
+
+    try {
+      setUpdatingEmail(true);
+      // Call RPC to update email
+      const { error } = await supabase.rpc('admin_update_user_email', {
+        target_user_id: editingUser.id,
+        new_email: newEmail
+      });
+
+      if (error) throw error;
+      
+      alert('Email atualizado com sucesso!');
+      setNewEmail('');
+      refreshUsers();
+    } catch (error) {
+      console.error('Error updating email:', error);
+      alert('Erro ao atualizar email: ' + error.message);
+    } finally {
+      setUpdatingEmail(false);
+    }
   };
 
   const togglePermission = (permId) => {
@@ -173,10 +228,54 @@ const UsersSettings = () => {
 
   const handleAvatarUpdate = async (url) => {
     setFormData(prev => ({ ...prev, avatar_url: url }));
-    // Se estiver editando, já salva no banco pra agilizar
     if (editingUser) {
       await supabase.from('profiles').update({ avatar_url: url }).eq('id', editingUser.id);
       if (refreshUsers) refreshUsers();
+    }
+  };
+
+  const handleToggleANPStage = async (stageId, currentStatus) => {
+    if (!editingUser) return;
+    
+    const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
+    
+    try {
+      if (currentStatus === 'completed') {
+        // Remove or set to pending
+        await supabase.from('user_anp_progress')
+          .update({ status: 'pending', completed_at: null, completed_by: null })
+          .eq('user_id', editingUser.id)
+          .eq('stage_id', stageId);
+      } else {
+        // Upsert to completed
+        const { error } = await supabase.from('user_anp_progress').upsert({
+          user_id: editingUser.id,
+          stage_id: stageId,
+          status: 'completed',
+          completed_at: new Date(),
+          completed_by: (await supabase.auth.getUser()).data.user.id
+        }, { onConflict: 'user_id, stage_id' });
+        
+        if (error) throw error;
+      }
+      
+      fetchANPData(editingUser.id);
+    } catch (error) {
+      console.error('Error toggling ANP stage:', error);
+    }
+  };
+
+  const handlePromoteToAgent = async () => {
+    if (!editingUser) return;
+    if (!window.confirm('Deseja promover este usuário a Agente DPF? Isso dará acesso às funções básicas.')) return;
+
+    try {
+      await updateUser(editingUser.id, { ...formData, role: 'Agente DPF' });
+      setFormData(prev => ({ ...prev, role: 'Agente DPF' }));
+      alert('Usuário promovido com sucesso!');
+    } catch (error) {
+      console.error('Error promoting user:', error);
+      alert('Erro ao promover usuário.');
     }
   };
 
@@ -290,11 +389,11 @@ const UsersSettings = () => {
 
             {/* Tabs */}
             {editingUser && (
-              <div className="flex border-b border-slate-800 px-6">
+              <div className="flex border-b border-slate-800 px-6 overflow-x-auto">
                 <button
                   onClick={() => setActiveTab('profile')}
                   className={clsx(
-                    "px-4 py-3 text-sm font-medium border-b-2 transition-colors",
+                    "px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                     activeTab === 'profile' ? "border-federal-500 text-white" : "border-transparent text-slate-400 hover:text-slate-200"
                   )}
                 >
@@ -303,11 +402,20 @@ const UsersSettings = () => {
                 <button
                   onClick={() => setActiveTab('courses')}
                   className={clsx(
-                    "px-4 py-3 text-sm font-medium border-b-2 transition-colors",
+                    "px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                     activeTab === 'courses' ? "border-federal-500 text-white" : "border-transparent text-slate-400 hover:text-slate-200"
                   )}
                 >
                   Cursos e Especializações
+                </button>
+                <button
+                  onClick={() => setActiveTab('anp')}
+                  className={clsx(
+                    "px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+                    activeTab === 'anp' ? "border-federal-500 text-white" : "border-transparent text-slate-400 hover:text-slate-200"
+                  )}
+                >
+                  Gestão ANP
                 </button>
               </div>
             )}
@@ -373,6 +481,33 @@ const UsersSettings = () => {
                       )}
                     </div>
 
+                    {/* Email Change Section for Admins */}
+                    {editingUser && (
+                      <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700">
+                        <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2 mb-2">
+                          <Mail size={12} /> Alterar Email (Avançado)
+                        </label>
+                        <div className="flex gap-2">
+                          <input 
+                            type="email" 
+                            value={newEmail}
+                            onChange={e => setNewEmail(e.target.value)}
+                            placeholder="Novo email..."
+                            className="flex-1 px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white focus:border-federal-500 outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleEmailUpdate}
+                            disabled={!newEmail || updatingEmail}
+                            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-3 py-2 rounded-lg text-sm font-bold whitespace-nowrap"
+                          >
+                            {updatingEmail ? '...' : 'Alterar'}
+                          </button>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">Atenção: Isso alterará o login de acesso do usuário.</p>
+                      </div>
+                    )}
+
                     <div>
                       <label className="text-xs font-bold text-slate-400 uppercase">Cargo / Patente</label>
                       <select 
@@ -431,7 +566,7 @@ const UsersSettings = () => {
                       </div>
                     </div>
                 </form>
-              ) : (
+              ) : activeTab === 'courses' ? (
                 <div className="space-y-6">
                   <div className="flex gap-2">
                     <select
@@ -477,6 +612,61 @@ const UsersSettings = () => {
                       ))
                     )}
                   </div>
+                </div>
+              ) : (
+                // ANP TAB
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center bg-slate-800/30 p-4 rounded-lg">
+                    <div>
+                      <h4 className="font-bold text-white">Progresso da Academia</h4>
+                      <p className="text-sm text-slate-400">Marque os módulos concluídos pelo aluno.</p>
+                    </div>
+                    {formData.role !== 'Agente DPF' && (
+                      <button
+                        onClick={handlePromoteToAgent}
+                        className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg"
+                      >
+                        <Shield size={16} />
+                        Promover a Agente
+                      </button>
+                    )}
+                  </div>
+
+                  {loadingANP ? (
+                     <div className="text-center py-8 text-slate-500">Carregando dados...</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {anpStages.map(stage => {
+                        const isCompleted = userANPProgress[stage.id] === 'completed';
+                        return (
+                          <div 
+                            key={stage.id}
+                            onClick={() => handleToggleANPStage(stage.id, userANPProgress[stage.id])}
+                            className={clsx(
+                              "flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all",
+                              isCompleted 
+                                ? "bg-federal-900/20 border-federal-500/50" 
+                                : "bg-slate-950 border-slate-800 hover:border-slate-600"
+                            )}
+                          >
+                            <div>
+                              <h5 className={clsx("font-bold", isCompleted ? "text-white" : "text-slate-300")}>{stage.title}</h5>
+                              <p className="text-xs text-slate-500">{stage.description}</p>
+                            </div>
+                            <div className={clsx(
+                              "w-6 h-6 rounded-full flex items-center justify-center border",
+                              isCompleted ? "bg-federal-500 border-federal-500 text-white" : "border-slate-600"
+                            )}>
+                              {isCompleted && <Check size={14} />}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {anpStages.length === 0 && (
+                        <p className="text-center text-slate-500">Nenhuma etapa cadastrada no sistema.</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

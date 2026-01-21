@@ -46,6 +46,7 @@ const WeaponsManager = React.lazy(() => lazyImport(routeLoaders.WeaponsManager))
 const JudiciaryManager = React.lazy(() => lazyImport(routeLoaders.JudiciaryManager));
 const PRFIntegration = React.lazy(() => lazyImport(routeLoaders.PRFIntegration));
 const LawyerDashboard = React.lazy(() => lazyImport(routeLoaders.LawyerDashboard));
+const ANPStudentDashboard = React.lazy(() => lazyImport(routeLoaders.ANPStudentDashboard));
 
 // Settings Pages - Eagerly loaded for better UX
 import SecurityConfig from './pages/private/settings/SecurityConfig';
@@ -107,6 +108,7 @@ function App() {
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Landing />} />
             <Route path="/curso-dpf" element={<Home />} />
+            <Route path="/codigo-penal" element={<PenalCode />} />
             <Route path="/rules" element={<Rules />} />
             <Route path="/join" element={<HowToJoin />} />
             <Route path="/pesquisas-e-apuracoes" element={<SearchAndInvestigations />} />
@@ -246,6 +248,9 @@ function App() {
                 <LawyerDashboard />
               </PermissionGuard>
             } />
+
+            {/* ANP Student Route */}
+            <Route path="anp-student" element={<ANPStudentDashboard />} />
 
             {/* Profile Route */}
             <Route path="profile" element={<ProfilePage />} />
