@@ -21,7 +21,8 @@ import {
   FileSearch,
   Target,
   Gavel,
-  Car
+  Car,
+  Scale
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
@@ -60,6 +61,7 @@ const PrivateLayout = () => {
   const navItems = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Painel Geral', prefetchKey: 'DashboardHome' },
     { to: '/dashboard/prf', icon: Car, label: 'Integração PRF', prefetchKey: 'PRFIntegration' },
+    { to: '/dashboard/lawyers', icon: Scale, label: 'Advogados', prefetchKey: 'LawyerDashboard' },
     { to: '/dashboard/judiciary', icon: Gavel, label: 'Jurídico', prefetchKey: 'JudiciaryManager', permission: 'judiciary' },
     { to: '/dashboard/arrest', icon: UserX, label: 'Registrar Prisão', prefetchKey: 'RegisterArrest', permission: 'arrest' },
     { to: '/dashboard/arrests', icon: Shield, label: 'Registro de Prisões', prefetchKey: 'ArrestList', permission: 'arrest' },
@@ -99,24 +101,18 @@ const PrivateLayout = () => {
       {/* Sidebar */}
       <aside 
         className={clsx(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 transition-transform duration-300 md:static md:translate-x-0 flex flex-col",
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* Sidebar Header */}
-        <div className="h-16 md:h-20 flex items-center px-4 md:px-6 border-b border-slate-800 bg-slate-900/50">
+        <div className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-federal-600 flex items-center justify-center shadow-lg shadow-federal-600/20">
-              <Shield className="text-white w-5 h-5 md:w-6 md:h-6" />
+            <div className="w-8 h-8 rounded-lg bg-federal-600 flex items-center justify-center shadow-lg shadow-federal-900/50">
+               <Shield size={20} className="text-white" />
             </div>
-            <div>
-              <h1 className="font-bold text-base md:text-lg tracking-tight text-white leading-none">Policia Federal</h1>
-            </div>
+            <span className="font-bold text-lg tracking-tight">DIP Policial</span>
           </div>
-          <button 
-            className="md:hidden ml-auto p-2 text-slate-400 hover:text-white"
-            onClick={() => setIsSidebarOpen(false)}
-          >
+          <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-white">
             <X size={20} />
           </button>
         </div>
@@ -169,9 +165,10 @@ const PrivateLayout = () => {
               to={item.to}
               icon={item.icon}
               label={item.label}
-              active={location.pathname === item.to || location.pathname.startsWith(item.to + '/')}
-              onClick={() => window.innerWidth < 768 && setIsSidebarOpen(false)}
+              // Fixed active logic: explicit check for root dashboard, startsWith for others
+              active={item.to === '/dashboard' ? location.pathname === '/dashboard' : location.pathname.startsWith(item.to)}
               prefetchKey={item.prefetchKey}
+              onClick={() => setIsSidebarOpen(false)}
             />
           ))}
         </nav>

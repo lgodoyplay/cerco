@@ -1,13 +1,13 @@
 // Centralized route loaders for prefetching and lazy loading
 export const routeLoaders = {
   // Public
+  Login: () => import('../pages/public/Login'),
   Rules: () => import('../pages/public/Rules'),
   HowToJoin: () => import('../pages/public/HowToJoin'),
-  Login: () => import('../pages/public/Login'),
   SearchAndInvestigations: () => import('../pages/public/SearchAndInvestigations'),
   WeaponsLicense: () => import('../pages/public/WeaponsLicense'),
 
-  // Private - Dashboard
+  // Private
   DashboardHome: () => import('../pages/private/DashboardHome'),
   ProfilePage: () => import('../pages/private/ProfilePage'),
   RegisterArrest: () => import('../pages/private/RegisterArrest'),
@@ -17,7 +17,7 @@ export const routeLoaders = {
   ArrestList: () => import('../pages/private/ArrestList'),
   BOList: () => import('../pages/private/BOList'),
   ReportList: () => import('../pages/private/ReportList'),
-
+  
   // Investigations
   InvestigationList: () => import('../pages/private/investigations/InvestigationList'),
   InvestigationCreate: () => import('../pages/private/investigations/InvestigationCreate'),
@@ -27,19 +27,16 @@ export const routeLoaders = {
   ForensicsList: () => import('../pages/private/forensics/ForensicsList'),
   RegisterForensics: () => import('../pages/private/forensics/RegisterForensics'),
   ForensicsDetail: () => import('../pages/private/forensics/ForensicsDetail'),
-
+  
   // Revenue
   RevenueList: () => import('../pages/private/revenue/RevenueList'),
   RevenueDetail: () => import('../pages/private/revenue/RevenueDetail'),
 
-  // Weapons
+  // Specialized Managers
   WeaponsManager: () => import('../pages/private/weapons/WeaponsManager'),
-
-  // Judiciary
   JudiciaryManager: () => import('../pages/private/judiciary/JudiciaryManager'),
-
-  // PRF
   PRFIntegration: () => import('../pages/private/prf/PRFIntegration'),
+  LawyerDashboard: () => import('../pages/private/lawyers/LawyerDashboard'),
 
   // Settings
   SettingsLayout: () => import('../pages/private/settings/SettingsLayout'),
@@ -51,6 +48,7 @@ export const routeLoaders = {
   CrimesSettings: () => import('../pages/private/settings/CrimesSettings'),
   TemplatesSettings: () => import('../pages/private/settings/TemplatesSettings'),
   AppearanceSettings: () => import('../pages/private/settings/AppearanceSettings'),
+  SecurityConfig: () => import('../pages/private/settings/SecurityConfig'),
   BackupSettings: () => import('../pages/private/settings/BackupSettings'),
   SystemLogs: () => import('../pages/private/settings/SystemLogs'),
   FormsSettings: () => import('../pages/private/settings/FormsSettings'),

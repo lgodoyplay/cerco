@@ -45,6 +45,7 @@ const RevenueDetail = React.lazy(() => lazyImport(routeLoaders.RevenueDetail));
 const WeaponsManager = React.lazy(() => lazyImport(routeLoaders.WeaponsManager));
 const JudiciaryManager = React.lazy(() => lazyImport(routeLoaders.JudiciaryManager));
 const PRFIntegration = React.lazy(() => lazyImport(routeLoaders.PRFIntegration));
+const LawyerDashboard = React.lazy(() => lazyImport(routeLoaders.LawyerDashboard));
 
 // Settings Pages - Eagerly loaded for better UX
 import SecurityConfig from './pages/private/settings/SecurityConfig';
@@ -186,6 +187,7 @@ function App() {
 
             {/* PRF Routes */}
             <Route path="prf" element={<PRFIntegration />} />
+            <Route path="lawyers" element={<LawyerDashboard />} />
 
             {/* Profile Route */}
             <Route path="profile" element={<ProfilePage />} />
