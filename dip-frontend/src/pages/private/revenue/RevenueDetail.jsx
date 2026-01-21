@@ -3,12 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, DollarSign, Calendar, Save, ImageIcon } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
+import { usePermissions } from '../../../hooks/usePermissions';
 import ImageUploadArea from '../../../components/ImageUploadArea';
 
 const RevenueDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { can } = usePermissions();
+  
+  const canManage = can('revenue_manage');
   
   const [record, setRecord] = useState(null);
   const [items, setItems] = useState([]);
@@ -216,12 +220,14 @@ const RevenueDetail = () => {
             </div>
           </form>
         ) : (
-          <button
-            onClick={() => setIsAdding(true)}
-            className="w-full py-3 border-2 border-dashed border-slate-800 hover:border-emerald-500/50 hover:bg-slate-800/50 text-slate-500 hover:text-emerald-400 rounded-lg transition-all flex items-center justify-center gap-2 font-medium"
-          >
-            <Plus size={20} /> Adicionar Novo Item / Receita
-          </button>
+          canManage && (
+            <button
+              onClick={() => setIsAdding(true)}
+              className="w-full py-3 border-2 border-dashed border-slate-800 hover:border-emerald-500/50 hover:bg-slate-800/50 text-slate-500 hover:text-emerald-400 rounded-lg transition-all flex items-center justify-center gap-2 font-medium"
+            >
+              <Plus size={20} /> Adicionar Novo Item / Receita
+            </button>
+          )
         )}
       </div>
 
@@ -259,13 +265,15 @@ const RevenueDetail = () => {
                   <span className="font-mono font-bold text-emerald-400">
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.value)}
                   </span>
-                  <button
-                    onClick={() => handleDeleteItem(item.id)}
-                    className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                    title="Remover item"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  {canManage && (
+                    <button
+                      onClick={() => handleDeleteItem(item.id)}
+                      className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                      title="Remover item"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

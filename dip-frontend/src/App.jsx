@@ -124,70 +124,118 @@ function App() {
             <Route index element={<DashboardHome />} />
             
             <Route path="arrest" element={
-              <PermissionGuard permission="arrest">
+              <PermissionGuard permission="arrest_manage">
                 <RegisterArrest />
               </PermissionGuard>
             } />
             
-            <Route path="arrests" element={<ArrestList />} />
+            <Route path="arrests" element={
+              <PermissionGuard permission="arrest_view">
+                <ArrestList />
+              </PermissionGuard>
+            } />
             
             <Route path="bo" element={
-              <PermissionGuard permission="bo">
+              <PermissionGuard permission="bo_manage">
                 <RegisterBO />
               </PermissionGuard>
             } />
             
-            <Route path="bo-list" element={<BOList />} />
+            <Route path="bo-list" element={
+              <PermissionGuard permission="bo_view">
+                <BOList />
+              </PermissionGuard>
+            } />
             
             <Route path="reports" element={
-              <PermissionGuard permission="reports">
+              <PermissionGuard permission="reports_view">
                 <ReportList />
               </PermissionGuard>
             } />
             
             <Route path="register-wanted" element={
-               <PermissionGuard permission="arrest">
+               <PermissionGuard permission="wanted_manage">
                  <RegisterWanted />
                </PermissionGuard>
             } />
 
-            <Route path="wanted" element={<WantedList />} />
+            <Route path="wanted" element={
+              <PermissionGuard permission="wanted_view">
+                <WantedList />
+              </PermissionGuard>
+            } />
             
             {/* Investigations Routes */}
-            <Route path="investigations" element={<InvestigationList />} />
+            <Route path="investigations" element={
+              <PermissionGuard permission="investigations_view">
+                <InvestigationList />
+              </PermissionGuard>
+            } />
             <Route path="investigations/new" element={
-              <PermissionGuard permission="investigation">
+              <PermissionGuard permission="investigations_manage">
                 <InvestigationCreate />
               </PermissionGuard>
             } />
-            <Route path="investigations/:id" element={<InvestigationDetail />} />
+            <Route path="investigations/:id" element={
+              <PermissionGuard permission="investigations_view">
+                <InvestigationDetail />
+              </PermissionGuard>
+            } />
             
             {/* Forensics Routes */}
-            <Route path="forensics" element={<ForensicsList />} />
+            <Route path="forensics" element={
+              <PermissionGuard permission="forensics_view">
+                <ForensicsList />
+              </PermissionGuard>
+            } />
             <Route path="forensics/new" element={
-              <PermissionGuard permission="investigation">
+              <PermissionGuard permission="forensics_manage">
                 <RegisterForensics />
               </PermissionGuard>
             } />
-            <Route path="forensics/:id" element={<ForensicsDetail />} />
+            <Route path="forensics/:id" element={
+              <PermissionGuard permission="forensics_view">
+                <ForensicsDetail />
+              </PermissionGuard>
+            } />
             
             {/* Revenue Routes */}
-            <Route path="revenue" element={<RevenueList />} />
-            <Route path="revenue/:id" element={<RevenueDetail />} />
+            <Route path="revenue" element={
+              <PermissionGuard permission="revenue_view">
+                <RevenueList />
+              </PermissionGuard>
+            } />
+            <Route path="revenue/:id" element={
+              <PermissionGuard permission="revenue_view">
+                <RevenueDetail />
+              </PermissionGuard>
+            } />
 
             {/* Weapons Routes */}
-            <Route path="weapons" element={<WeaponsManager />} />
+            <Route path="weapons" element={
+              <PermissionGuard permission="weapons_view">
+                <WeaponsManager />
+              </PermissionGuard>
+            } />
             
             {/* Judiciary Routes */}
             <Route path="judiciary" element={
-              <PermissionGuard permission="judiciary">
+              <PermissionGuard permission="judiciary_view">
                 <JudiciaryManager />
               </PermissionGuard>
             } />
 
             {/* PRF Routes */}
-            <Route path="prf" element={<PRFIntegration />} />
-            <Route path="lawyers" element={<LawyerDashboard />} />
+            <Route path="prf" element={
+              <PermissionGuard permission="prf_view">
+                <PRFIntegration />
+              </PermissionGuard>
+            } />
+            <Route path="lawyers" element={
+              <PermissionGuard permission="lawyer_view">
+                <LawyerDashboard />
+              </PermissionGuard>
+            } />
 
             {/* Profile Route */}
             <Route path="profile" element={<ProfilePage />} />

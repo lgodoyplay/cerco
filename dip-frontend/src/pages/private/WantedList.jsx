@@ -4,15 +4,19 @@ import { Search, Filter, AlertTriangle, MoreVertical, ShieldAlert, Eye, FileText
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
+import { usePermissions } from '../../hooks/usePermissions';
 import { generateWantedPDF } from '../../utils/pdfGenerator';
 
 const WantedList = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { can } = usePermissions();
   const { templates } = useSettings();
   const [wantedList, setWantedList] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPerson, setSelectedPerson] = useState(null);
+
+  const canManage = can('wanted_manage');
 
   useEffect(() => {
     const fetchWanted = async () => {
@@ -82,10 +86,15 @@ const WantedList = () => {
           </h2>
           <p className="text-slate-400 mt-1">Gerenciamento e consulta de mandados de prisão ativos.</p>
         </div>
-        <button className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-red-900/20 flex items-center gap-2">
-          <ShieldAlert size={18} />
-          + Adicionar Procurado
-        </button>
+        {canManage && (
+          <button 
+            onClick={() => navigate('/dashboard/register-wanted')}
+            className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-red-900/20 flex items-center gap-2"
+          >
+            <ShieldAlert size={18} />
+            + Adicionar Procurado
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -227,16 +236,20 @@ const WantedList = () => {
                   </div>
 
                   <div className="pt-4 border-t border-slate-800 mt-auto">
-                    <button 
-                      onClick={handleArrest}
-                      className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-red-900/20 flex items-center justify-center gap-2"
-                    >
-                      <Lock size={20} />
-                      CONFIRMAR PRISÃO
-                    </button>
-                    <p className="text-center text-xs text-slate-500 mt-2">
-                      Esta ação moverá o registro para a lista de prisões e removerá dos procurados.
-                    </p>
+                    {canManage && (
+                      <button 
+                        onClick={handleArrest}
+                        className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-red-900/20 flex items-center justify-center gap-2"
+                      >
+                        <Lock size={20} />
+                        CONFIRMAR PRISÃO
+                      </button>
+                    )}
+                    {canManage && (
+                      <p className="text-center text-xs text-slate-500 mt-2">
+                        Esta ação moverá o registro para a lista de prisões e removerá dos procurados.
+                      </p>
+                    )}
                   </div>
 
                   <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">

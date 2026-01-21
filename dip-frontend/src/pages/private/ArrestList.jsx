@@ -1,16 +1,22 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, Eye, FileText, Download, Shield, User, Calendar, MapPin, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Filter, Eye, FileText, Download, Shield, User, Calendar, MapPin, X, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
+import { usePermissions } from '../../hooks/usePermissions';
 import { generateArrestPDF } from '../../utils/pdfGenerator';
 
 const ArrestList = () => {
   const { user } = useAuth();
   const { templates } = useSettings();
+  const { can } = usePermissions();
+  const navigate = useNavigate();
+
+  const canManage = can('arrest_manage');
   const [arrests, setArrests] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedArrest, setSelectedArrest] = useState(null);
@@ -90,6 +96,14 @@ const ArrestList = () => {
           </h2>
           <p className="text-slate-400 mt-1">Consulta geral de todas as prisões e detenções registradas.</p>
         </div>
+        {canManage && (
+          <button 
+            onClick={() => navigate('/dashboard/arrest')}
+            className="px-4 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg shadow-lg shadow-federal-900/20 transition-all flex items-center gap-2"
+          >
+            <Plus size={18} /> Nova Prisão
+          </button>
+        )}
       </div>
 
       {/* Filters */}

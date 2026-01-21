@@ -12,13 +12,17 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { useForensics } from '../../../hooks/useForensics';
+import { usePermissions } from '../../../hooks/usePermissions';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const ForensicsList = () => {
   const { forensics, loading, fetchForensics } = useForensics();
+  const { can } = usePermissions();
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
+  
+  const canManage = can('forensics_manage');
 
   useEffect(() => {
     fetchForensics();
@@ -50,13 +54,15 @@ const ForensicsList = () => {
           </h2>
           <p className="text-slate-400 mt-2">Gerencie relatórios de perícia técnica (Pessoas, Locais e Veículos).</p>
         </div>
-        <Link 
-          to="/dashboard/forensics/new" 
-          className="bg-federal-600 hover:bg-federal-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-federal-900/50 transition-all hover:-translate-y-0.5"
-        >
-          <Plus size={20} />
-          Nova Perícia
-        </Link>
+        {canManage && (
+          <Link 
+            to="/dashboard/forensics/new" 
+            className="bg-federal-600 hover:bg-federal-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-federal-900/50 transition-all hover:-translate-y-0.5"
+          >
+            <Plus size={20} />
+            Nova Perícia
+          </Link>
+        )}
       </div>
 
       {/* Search */}
@@ -84,13 +90,15 @@ const ForensicsList = () => {
           <FileSearch size={48} className="mx-auto text-slate-600 mb-4" />
           <h3 className="text-xl font-bold text-white mb-2">Nenhuma perícia encontrada</h3>
           <p className="text-slate-400 mb-6">Comece registrando uma nova perícia técnica.</p>
-          <Link 
-            to="/dashboard/forensics/new" 
-            className="inline-flex items-center gap-2 px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
-          >
-            <Plus size={18} />
-            Nova Perícia
-          </Link>
+          {canManage && (
+            <Link 
+              to="/dashboard/forensics/new" 
+              className="inline-flex items-center gap-2 px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+            >
+              <Plus size={18} />
+              Nova Perícia
+            </Link>
+          )}
         </div>
       ) : (
         <div className="grid gap-4">

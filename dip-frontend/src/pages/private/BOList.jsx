@@ -6,17 +6,21 @@ import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
+import { usePermissions } from '../../hooks/usePermissions';
 import { generateBOReportPDF } from '../../utils/pdfGenerator';
 
 const BOList = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { templates } = useSettings();
+  const { can } = usePermissions();
   const [boletins, setBoletins] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBO, setSelectedBO] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  
+  const canManage = can('bo_manage');
 
   useEffect(() => {
     fetchBoletins();
@@ -70,13 +74,15 @@ const BOList = () => {
           </h2>
           <p className="text-slate-400 mt-1">Consulta de ocorrências registradas no sistema.</p>
         </div>
-        <button 
-          onClick={() => navigate('/dashboard/bo')}
-          className="px-4 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-federal-900/20 flex items-center gap-2"
-        >
-          <FileText size={18} />
-          + Novo BO
-        </button>
+        {canManage && (
+          <button 
+            onClick={() => navigate('/dashboard/bo')}
+            className="px-4 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-federal-900/20 flex items-center gap-2"
+          >
+            <FileText size={18} />
+            + Novo BO
+          </button>
+        )}
       </div>
 
       {/* Filters */}

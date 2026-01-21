@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import { useSettings } from '../../../hooks/useSettings';
 import { useAuth } from '../../../context/AuthContext';
+import { usePermissions } from '../../../hooks/usePermissions';
 import { 
   Gavel, CheckCircle, XCircle, Clock, AlertTriangle, 
   FileText, Search, Filter, MoreVertical, Archive, 
@@ -220,9 +222,33 @@ const WarrantDocument = ({ warrant, onClose, onUpdateStatus }) => {
 
 // --- Main Component ---
 
+import { usePermissions } from '../../../hooks/usePermissions';
+
 const JudiciaryManager = () => {
   const { discordConfig } = useSettings();
   const { user } = useAuth();
+  const { can } = usePermissions();
+  const navigate = useNavigate();
+  
+  const canManage = can('judiciary_manage');
+  const canView = can('judiciary_view');
+
+  // Protect route
+  if (!canView && !canManage) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 text-slate-400">
+        <Shield size={48} className="mb-4 text-red-500" />
+        <h2 className="text-xl font-bold text-white">Acesso Negado</h2>
+        <p>Você não tem permissão para acessar o sistema judiciário.</p>
+        <button 
+          onClick={() => navigate('/dashboard')}
+          className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white transition-colors"
+        >
+          Voltar para Dashboard
+        </button>
+      </div>
+    );
+  }
   
   // States
   const [activeTab, setActiveTab] = useState('warrants'); // warrants, hearings, releases, petitions
@@ -529,7 +555,7 @@ const JudiciaryManager = () => {
         <WarrantDocument 
             warrant={viewingWarrant} 
             onClose={() => setViewingWarrant(null)} 
-            onUpdateStatus={updateWarrantStatus}
+            onUpdateStatus={canManage ? updateWarrantStatus : null}
         />
       )}
 
@@ -927,12 +953,14 @@ const JudiciaryManager = () => {
         <div className="space-y-2">
             {activeTab === 'warrants' && (
                 <>
-                    <button 
-                        onClick={() => setIsWarrantModalOpen(true)}
-                        className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 border-dashed rounded-xl text-slate-300 hover:text-white font-bold flex items-center justify-center gap-2 transition-all"
-                    >
-                        <Gavel size={18} /> Novo Mandado Judicial
-                    </button>
+                    {canManage && (
+                        <button 
+                            onClick={() => setIsWarrantModalOpen(true)}
+                            className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 border-dashed rounded-xl text-slate-300 hover:text-white font-bold flex items-center justify-center gap-2 transition-all"
+                        >
+                            <Gavel size={18} /> Novo Mandado Judicial
+                        </button>
+                    )}
                     
                     {/* Filters */}
                     <div className="flex gap-2 p-1 bg-slate-800/50 rounded-lg">
@@ -943,7 +971,7 @@ const JudiciaryManager = () => {
                 </>
             )}
 
-            {activeTab === 'hearings' && (
+            {activeTab === 'hearings' && canManage && (
                 <button 
                     onClick={() => setIsHearingModalOpen(true)}
                     className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 border-dashed rounded-xl text-slate-300 hover:text-white font-bold flex items-center justify-center gap-2 transition-all"
@@ -952,7 +980,7 @@ const JudiciaryManager = () => {
                 </button>
             )}
 
-            {activeTab === 'releases' && (
+            {activeTab === 'releases' && canManage && (
                 <button 
                     onClick={() => setIsReleaseModalOpen(true)}
                     className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 border-dashed rounded-xl text-slate-300 hover:text-white font-bold flex items-center justify-center gap-2 transition-all"
@@ -1146,7 +1174,7 @@ const JudiciaryManager = () => {
                   {viewingPetition.content}
               </div>
 
-              {viewingPetition.status === 'pending' && (
+              {viewingPetition.status === 'pending' && canManage && (
                   <div className="flex gap-4 pt-4 border-t border-slate-800">
                       <button 
                           onClick={() => updatePetitionStatus(viewingPetition.id, 'rejected')}
@@ -1183,7 +1211,7 @@ const JudiciaryManager = () => {
                     <p className="max-w-md text-center text-slate-500">
                         Selecione um mandado na lista para visualizar o documento oficial, imprimir ou atualizar o status.
                         <br/><br/>
-                        Clique em <strong>Novo Mandado Judicial</strong> para expedir uma nova ordem.
+                        {canManage && "Clique em Novo Mandado Judicial para expedir uma nova ordem."}
                     </p>
                 </>
             ) : activeTab === 'petitions' ? (

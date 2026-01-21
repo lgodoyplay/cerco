@@ -5,10 +5,19 @@ import clsx from 'clsx';
 import ImageUploadArea from '../../components/ImageUploadArea';
 import { supabase } from '../../lib/supabase';
 import { useSettings } from '../../hooks/useSettings';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const RegisterWanted = () => {
   const navigate = useNavigate();
   const { discordConfig } = useSettings();
+  const { can } = usePermissions();
+  
+  // Protect route
+  if (!can('wanted_manage')) {
+    navigate('/dashboard/wanted');
+    return null;
+  }
+
   const [formData, setFormData] = useState({
     name: '',
     document: '',
@@ -146,7 +155,7 @@ const RegisterWanted = () => {
 
       setTimeout(() => {
         setNotification(null);
-        navigate('/dashboard/wanted-list');
+        navigate('/dashboard/wanted');
       }, 2000);
 
     } catch (error) {

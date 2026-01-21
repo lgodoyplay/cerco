@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useInvestigations } from '../../../hooks/useInvestigations';
+import { usePermissions } from '../../../hooks/usePermissions';
 import { Search, Plus, FileText, Clock, CheckCircle, AlertTriangle, FolderOpen, Archive } from 'lucide-react';
 import clsx from 'clsx';
 
 const InvestigationList = () => {
   const { investigations } = useInvestigations();
+  const { can } = usePermissions();
   const [filter, setFilter] = useState('active'); // 'active' | 'closed'
   const [searchTerm, setSearchTerm] = useState('');
+
+  const canManage = can('investigations_manage');
 
   const filteredInvestigations = investigations.filter(inv => {
     const isClosed = inv.status === 'Encerrada' || inv.status === 'Finalizada';
@@ -37,13 +41,15 @@ const InvestigationList = () => {
           </h2>
           <p className="text-slate-400 mt-2">Gerencie inquéritos, provas e relatórios do departamento.</p>
         </div>
-        <Link 
-          to="/dashboard/investigations/new" 
-          className="bg-federal-600 hover:bg-federal-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-federal-900/50 transition-all hover:-translate-y-0.5"
-        >
-          <Plus size={20} />
-          Nova Investigação
-        </Link>
+        {canManage && (
+          <Link 
+            to="/dashboard/investigations/new" 
+            className="bg-federal-600 hover:bg-federal-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-federal-900/50 transition-all hover:-translate-y-0.5"
+          >
+            <Plus size={20} />
+            Nova Investigação
+          </Link>
+        )}
       </div>
 
       {/* Filters */}

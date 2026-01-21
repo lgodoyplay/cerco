@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Plus, Search, Folder, DollarSign, Calendar, ChevronRight, Briefcase, User } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
+import { usePermissions } from '../../../hooks/usePermissions';
 import clsx from 'clsx';
 
 const RevenueList = () => {
@@ -17,6 +18,8 @@ const RevenueList = () => {
     cnpj: ''
   });
   const { user } = useAuth();
+  const { can } = usePermissions();
+  const canManage = can('revenue_manage');
 
   const fetchRecords = async () => {
     try {
@@ -97,7 +100,7 @@ const RevenueList = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
             <DollarSign className="text-emerald-500" />
@@ -105,13 +108,15 @@ const RevenueList = () => {
           </h1>
           <p className="text-slate-400 mt-1">Gerencie o patrimônio dos cidadãos para fins fiscais.</p>
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-medium shadow-lg shadow-emerald-900/20"
-        >
-          <Plus size={20} />
-          Nova Pasta
-        </button>
+        {canManage && (
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-medium shadow-lg shadow-emerald-900/20"
+          >
+            <Plus size={20} />
+            Nova Pasta
+          </button>
+        )}
       </div>
 
       {/* Search */}

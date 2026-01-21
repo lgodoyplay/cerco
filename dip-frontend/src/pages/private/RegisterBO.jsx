@@ -3,9 +3,31 @@ import { Save, Eraser, FileText, CheckCircle, AlertCircle, Shield, MapPin, Calen
 import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
 import { useSettings } from '../../hooks/useSettings';
+import { usePermissions } from '../../hooks/usePermissions';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterBO = () => {
+  const navigate = useNavigate();
   const { logAction, discordConfig } = useSettings();
+  const { can } = usePermissions();
+
+  // Protect route
+  if (!can('bo_manage')) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 text-slate-400">
+        <Shield size={48} className="mb-4 text-red-500" />
+        <h2 className="text-xl font-bold text-white">Acesso Negado</h2>
+        <p>Você não tem permissão para registrar boletins.</p>
+        <button 
+          onClick={() => navigate('/dashboard/bo')}
+          className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white transition-colors"
+        >
+          Voltar para Lista
+        </button>
+      </div>
+    );
+  }
+
   const [formData, setFormData] = useState({
     complainant: '',
     description: '',

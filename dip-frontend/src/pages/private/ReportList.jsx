@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, AlertTriangle, Eye, MapPin, Calendar, Phone, CheckCircle, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { Search, Filter, AlertTriangle, Eye, MapPin, Calendar, Phone, CheckCircle, ChevronLeft, ChevronRight, Clock, ShieldAlert } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const ReportList = () => {
+  const { can } = usePermissions();
+  const canManage = can('report_manage');
   const [reports, setReports] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedReport, setSelectedReport] = useState(null);
@@ -229,6 +232,25 @@ const ReportList = () => {
                   {selectedReport.descricao}
                 </p>
               </div>
+
+              {canManage && (
+                <div className="pt-4 border-t border-slate-800 flex gap-3">
+                    <button 
+                        onClick={() => updateReportStatus(selectedReport.id, 'Investigando')}
+                        disabled={selectedReport.status === 'Investigando'}
+                        className="flex-1 py-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-500 border border-blue-600/20 rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Investigar
+                    </button>
+                    <button 
+                        onClick={() => updateReportStatus(selectedReport.id, 'Concluído')}
+                        disabled={selectedReport.status === 'Concluído'}
+                        className="flex-1 py-2 bg-green-600/10 hover:bg-green-600/20 text-green-500 border border-green-600/20 rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Concluir
+                    </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

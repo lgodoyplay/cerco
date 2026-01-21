@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useSettings } from '../../../hooks/useSettings';
+import { usePermissions } from '../../../hooks/usePermissions';
 import { 
   Shield, CheckCircle, XCircle, Clock, AlertTriangle, 
   FileText, Search, Filter, MoreVertical, Archive, RefreshCw, Send, Upload
@@ -366,7 +367,7 @@ const WeaponsManager = () => {
                   </>
                 )}
 
-                {selectedLicense.status === 'processing' && (
+                {selectedLicense.status === 'processing' && canManage && (
                   <>
                     <button
                       onClick={() => updateStatus(selectedLicense.id, 'approved')}
@@ -385,7 +386,7 @@ const WeaponsManager = () => {
                   </>
                 )}
 
-                {selectedLicense.status === 'approved' && (
+                {selectedLicense.status === 'approved' && canManage && (
                   <button
                     onClick={() => updateStatus(selectedLicense.id, 'revoked')}
                     className="px-4 py-2 bg-red-900/50 hover:bg-red-900 text-red-200 border border-red-800 text-sm font-bold rounded-lg flex items-center gap-2"
@@ -395,7 +396,7 @@ const WeaponsManager = () => {
                   </button>
                 )}
                 
-                {(selectedLicense.status === 'revoked' || selectedLicense.status === 'expired') && (
+                {(selectedLicense.status === 'revoked' || selectedLicense.status === 'expired') && canManage && (
                    <button
                     onClick={() => updateStatus(selectedLicense.id, 'processing')}
                     className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold rounded-lg flex items-center gap-2"
