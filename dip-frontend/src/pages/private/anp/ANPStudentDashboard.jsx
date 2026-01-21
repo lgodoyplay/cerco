@@ -11,7 +11,8 @@ import {
   Shield, 
   FileText,
   Map,
-  Radio
+  Radio,
+  Scale
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -192,33 +193,86 @@ const ANPStudentDashboard = () => {
   );
 
   const renderRulesTab = () => (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-      <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-        <Book className="text-federal-500" />
-        Regras Fundamentais
-      </h3>
-      
-      <div className="space-y-4">
-        <div className="flex gap-4">
-          <span className="font-mono text-federal-500 font-bold">01</span>
-          <p className="text-slate-300">Respeito à hierarquia é absoluto. Acate ordens de superiores sem questionar em público.</p>
+    <div className="space-y-6">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+          <Book className="text-federal-500" />
+          Regras Fundamentais da Corporação
+        </h3>
+        
+        <div className="space-y-4">
+          <div className="flex gap-4">
+            <span className="font-mono text-federal-500 font-bold">01</span>
+            <p className="text-slate-300">Respeito à hierarquia é absoluto. Acate ordens de superiores sem questionar em público.</p>
+          </div>
+          <div className="flex gap-4">
+            <span className="font-mono text-federal-500 font-bold">02</span>
+            <p className="text-slate-300">O uso da força deve ser progressivo. Arma de fogo é o último recurso.</p>
+          </div>
+          <div className="flex gap-4">
+            <span className="font-mono text-federal-500 font-bold">03</span>
+            <p className="text-slate-300">Corrupção passiva ou ativa resultará em exoneração imediata e prisão (Character Kill em casos graves).</p>
+          </div>
+          <div className="flex gap-4">
+            <span className="font-mono text-federal-500 font-bold">04</span>
+            <p className="text-slate-300">Mantenha a postura profissional. Evite gírias e brincadeiras no rádio.</p>
+          </div>
+          <div className="mt-6 p-4 bg-federal-900/20 rounded-lg border border-federal-500/20">
+            <p className="text-sm text-federal-300 text-center">
+              Consulte o Regulamento Interno completo na aba "Regras" do menu público.
+            </p>
+          </div>
         </div>
-        <div className="flex gap-4">
-          <span className="font-mono text-federal-500 font-bold">02</span>
-          <p className="text-slate-300">O uso da força deve ser progressivo. Arma de fogo é o último recurso.</p>
-        </div>
-        <div className="flex gap-4">
-          <span className="font-mono text-federal-500 font-bold">03</span>
-          <p className="text-slate-300">Corrupção passiva ou ativa resultará em exoneração imediata e prisão (Character Kill em casos graves).</p>
-        </div>
-        <div className="flex gap-4">
-          <span className="font-mono text-federal-500 font-bold">04</span>
-          <p className="text-slate-300">Mantenha a postura profissional. Evite gírias e brincadeiras no rádio.</p>
-        </div>
-        <div className="mt-6 p-4 bg-federal-900/20 rounded-lg border border-federal-500/20">
-          <p className="text-sm text-federal-300 text-center">
-            Consulte o Regulamento Interno completo na aba "Regras" do menu público.
-          </p>
+      </div>
+
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+          <Scale className="text-federal-500" />
+          Legislação Brasileira Essencial
+        </h3>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700">
+            <h4 className="font-bold text-federal-400 mb-3 border-b border-slate-700 pb-2">Constituição Federal (CF/88)</h4>
+            <ul className="space-y-3 text-sm text-slate-300">
+              <li>
+                <strong className="text-white block mb-1">Art. 5º (Direitos Individuais):</strong> 
+                Todos são iguais perante a lei. Ninguém será preso senão em flagrante delito ou por ordem escrita e fundamentada.
+              </li>
+              <li>
+                <strong className="text-white block mb-1">Art. 144 (Segurança Pública):</strong> 
+                A segurança pública, dever do Estado, direito e responsabilidade de todos, é exercida para a preservação da ordem pública.
+              </li>
+            </ul>
+          </div>
+
+          <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700">
+            <h4 className="font-bold text-federal-400 mb-3 border-b border-slate-700 pb-2">Código Penal (CP)</h4>
+            <ul className="space-y-3 text-sm text-slate-300">
+              <li><strong className="text-white">Art. 121:</strong> Homicídio (Matar alguém).</li>
+              <li><strong className="text-white">Art. 155/157:</strong> Furto (sem violência) e Roubo (com violência/ameaça).</li>
+              <li><strong className="text-white">Art. 329:</strong> Resistência (Opor-se à execução de ato legal).</li>
+              <li><strong className="text-white">Art. 331:</strong> Desacato (Desacatar funcionário público no exercício da função).</li>
+            </ul>
+          </div>
+
+          <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700">
+            <h4 className="font-bold text-federal-400 mb-3 border-b border-slate-700 pb-2">Código de Processo Penal (CPP)</h4>
+            <ul className="space-y-3 text-sm text-slate-300">
+              <li>
+                <strong className="text-white block mb-1">Art. 302 (Flagrante Delito):</strong> 
+                Considera-se em flagrante quem: está cometendo a infração; acaba de cometê-la; ou é perseguido logo após.
+              </li>
+            </ul>
+          </div>
+
+           <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700">
+            <h4 className="font-bold text-federal-400 mb-3 border-b border-slate-700 pb-2">Leis Especiais</h4>
+            <ul className="space-y-3 text-sm text-slate-300">
+              <li><strong className="text-white">Lei 11.343 (Drogas):</strong> Art. 33 (Tráfico) vs Art. 28 (Porte para consumo).</li>
+              <li><strong className="text-white">Lei 13.869 (Abuso de Autoridade):</strong> Veda o uso excessivo e injustificado de algemas (Súmula Vinc. 11) e constrangimentos ilegais.</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
