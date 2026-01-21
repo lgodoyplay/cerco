@@ -1,14 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
-import { User, FileText, Scale, Search, Gavel, FileSignature } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
+import { User, FileText, Scale, Search, Gavel, FileSignature, Send, AlertTriangle, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 const LawyerDashboard = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('clients'); // clients, processes, petitions
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState([]);
   const [processes, setProcesses] = useState([]);
+  
+  // Petition State
+  const [petitionLoading, setPetitionLoading] = useState(false);
+  const [petitionStatus, setPetitionStatus] = useState({ type: null, message: null });
+  const [petitionForm, setPetitionForm] = useState({
+    type: 'Habeas Corpus',
+    client_name: '',
+    content: ''
+  });
+
+  const petitionTypes = [
+    'Habeas Corpus',
+    'Pedido de Relaxamento de Prisão',
+    'Pedido de Visita',
+    'Juntada de Procuração',
+    'Pedido de Recesso',
+    'Julgamento',
+    'Liberdade Provisória',
+    'Progressão de Regime',
+    'Outros'
+  ];
+
 
   // Mock search for clients (Prisoners)
   const searchClients = async () => {
@@ -228,37 +252,99 @@ const LawyerDashboard = () => {
                 <div className="bg-slate-950 border border-slate-800 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                     <FileSignature size={20} className="text-yellow-500" />
-                    Nova Petição / Habeas Corpus
+                    Nova Petição / Protocolo
                   </h3>
-                  <form className="space-y-4" onSubmit={(e) => {
+
+                  {petitionStatus.message && (
+                    <div className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
+                      petitionStatus.type === 'success' 
+                        ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
+                        : 'bg-red-500/10 text-red-500 border border-red-500/20'
+                    }`}>
+                      {petitionStatus.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
+                      {petitionStatus.message}
+                    </div>
+                  )}
+
+                  <form className="space-y-4" onSubmit={async (e) => {
                     e.preventDefault();
-                    alert('Petição enviada com sucesso! (Simulação)');
+                    setPetitionLoading(true);
+                    setPetitionStatus({ type: null, message: null });
+
+                    try {
+                      const { error } = await supabase.from('petitions').insert([{
+                        type: petitionForm.type,
+                        client_name: petitionForm.client_name,
+                        content: petitionForm.content,
+                        lawyer_id: user.id,
+                        lawyer_name: user.full_name || 'Advogado', // Fallback
+                        status: 'pending'
+                      }]);
+
+                      if (error) throw error;
+
+                      setPetitionStatus({ type: 'success', message: 'Petição protocolada com sucesso! O setor jurídico foi notificado.' });
+                      setPetitionForm({
+                        type: 'Habeas Corpus',
+                        client_name: '',
+                        content: ''
+                      });
+                    } catch (err) {
+                      console.error('Error sending petition:', err);
+                      setPetitionStatus({ type: 'error', message: 'Erro ao protocolar petição. Verifique se o sistema está disponível.' });
+                    } finally {
+                      setPetitionLoading(false);
+                    }
                   }}>
                     <div>
                       <label className="block text-sm font-medium text-slate-400 mb-1">Tipo de Petição</label>
-                      <select className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-slate-100 focus:outline-none focus:border-yellow-500">
-                        <option>Habeas Corpus</option>
-                        <option>Pedido de Relaxamento de Prisão</option>
-                        <option>Pedido de Visita</option>
-                        <option>Juntada de Procuração</option>
+                      <select 
+                        value={petitionForm.type}
+                        onChange={e => setPetitionForm({...petitionForm, type: e.target.value})}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-slate-100 focus:outline-none focus:border-yellow-500"
+                      >
+                        {petitionTypes.map(type => (
+                          <option key={type} value={type}>{type}</option>
+                        ))}
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-400 mb-1">Cliente (Nome ou Passaporte)</label>
-                      <input type="text" className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-slate-100 focus:outline-none focus:border-yellow-500" placeholder="Ex: João da Silva" />
+                      <input 
+                        type="text" 
+                        value={petitionForm.client_name}
+                        onChange={e => setPetitionForm({...petitionForm, client_name: e.target.value})}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-slate-100 focus:outline-none focus:border-yellow-500" 
+                        placeholder="Ex: João da Silva" 
+                        required
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-400 mb-1">Conteúdo da Petição</label>
                       <textarea 
+                        value={petitionForm.content}
+                        onChange={e => setPetitionForm({...petitionForm, content: e.target.value})}
                         rows={8}
                         className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-slate-100 focus:outline-none focus:border-yellow-500"
                         placeholder="Escreva aqui os termos da petição..."
+                        required
                       ></textarea>
                     </div>
                     <div className="flex justify-end gap-3 pt-4">
-                      <button type="button" className="px-4 py-2 text-slate-400 hover:text-white transition-colors">Cancelar</button>
-                      <button type="submit" className="px-6 py-2 bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg font-medium transition-colors">
-                        Protocolar
+                      <button 
+                        type="button" 
+                        onClick={() => setPetitionForm({ type: 'Habeas Corpus', client_name: '', content: '' })}
+                        className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
+                      >
+                        Limpar
+                      </button>
+                      <button 
+                        type="submit" 
+                        disabled={petitionLoading}
+                        className="px-6 py-2 bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {petitionLoading ? 'Protocolando...' : 'Protocolar'}
+                        {!petitionLoading && <Send size={18} />}
                       </button>
                     </div>
                   </form>

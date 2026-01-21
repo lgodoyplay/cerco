@@ -6,7 +6,7 @@ import {
   Gavel, CheckCircle, XCircle, Clock, AlertTriangle, 
   FileText, Search, Filter, MoreVertical, Archive, 
   RefreshCw, Send, Upload, Shield, Printer, MapPin, 
-  User, Calendar, Lock, Siren, Eye
+  User, Calendar, Lock, Siren, Eye, Scale, FileSignature, Briefcase
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -14,33 +14,27 @@ import clsx from 'clsx';
 
 const StatusBadge = ({ status }) => {
   const styles = {
-    // Licenses
-    pending: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-    judiciary_approved: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-    processing: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-    approved: 'bg-green-500/10 text-green-500 border-green-500/20',
-    rejected: 'bg-red-500/10 text-red-500 border-red-500/20',
-    revoked: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
-    expired: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
-    
     // Warrants
     active: 'bg-red-500/10 text-red-500 border-red-500/20 animate-pulse',
     executed: 'bg-green-500/10 text-green-500 border-green-500/20',
+    revoked: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
+    
+    // Generic/Process
+    pending: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+    scheduled: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+    concluded: 'bg-green-500/10 text-green-500 border-green-500/20',
   };
 
   const labels = {
-    // Licenses
-    pending: 'Aguardando Jurídico',
-    judiciary_approved: 'Deferido pelo Juiz',
-    processing: 'Em Análise (PF)',
-    approved: 'Porte Ativo',
-    rejected: 'Indeferido',
-    revoked: 'Revogado',
-    expired: 'Vencido',
-
     // Warrants
     active: 'MANDADO ATIVO',
     executed: 'CUMPRIDO',
+    revoked: 'REVOGADO',
+
+    // Generic
+    pending: 'PENDENTE',
+    scheduled: 'AGENDADO',
+    concluded: 'CONCLUÍDO'
   };
 
   return (
@@ -85,7 +79,6 @@ const WarrantDocument = ({ warrant, onClose, onUpdateStatus }) => {
         {/* Header */}
         <div className="text-center mb-12 border-b-2 border-black pb-6">
           <div className="flex justify-center mb-4">
-             {/* Replace with your logo if available */}
              <div className="w-24 h-24 border-4 border-black rounded-full flex items-center justify-center">
                 <Shield size={48} />
              </div>
@@ -232,15 +225,15 @@ const JudiciaryManager = () => {
   const { user } = useAuth();
   
   // States
-  const [activeTab, setActiveTab] = useState('requests'); // requests, warrants, archive
-  const [licenses, setLicenses] = useState([]);
+  const [activeTab, setActiveTab] = useState('warrants'); // warrants, hearings, releases, petitions
   const [warrants, setWarrants] = useState([]);
+  const [petitions, setPetitions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedLicense, setSelectedLicense] = useState(null);
   
   // Warrant Logic States
   const [isWarrantModalOpen, setIsWarrantModalOpen] = useState(false);
   const [viewingWarrant, setViewingWarrant] = useState(null);
+  const [viewingPetition, setViewingPetition] = useState(null);
   const [warrantFilter, setWarrantFilter] = useState('all');
   const [warrantFile, setWarrantFile] = useState(null);
   const [warrantForm, setWarrantForm] = useState({
@@ -269,19 +262,16 @@ const JudiciaryManager = () => {
           .order('created_at', { ascending: false });
         if (error && error.code !== '42P01') throw error; // Ignore table not exists initially
         setWarrants(data || []);
-      } else {
-        let query = supabase.from('weapon_licenses').select('*, license_attachments(*)');
-        
-        if (activeTab === 'requests') {
-          query = query.eq('status', 'pending');
-        } else if (activeTab === 'archive') {
-          query = query.in('status', ['judiciary_approved', 'rejected', 'revoked', 'expired', 'approved', 'processing']);
-        }
-        
-        const { data, error } = await query.order('created_at', { ascending: false });
-        if (error) throw error;
-        setLicenses(data || []);
+      } else if (activeTab === 'petitions') {
+        const { data, error } = await supabase
+          .from('petitions')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error && error.code !== '42P01') throw error;
+        setPetitions(data || []);
       }
+      // Future: Fetch hearings and releases
     } catch (err) {
       console.error('Error fetching data:', err);
     } finally {
@@ -289,60 +279,53 @@ const JudiciaryManager = () => {
     }
   };
 
-  // --- License Logic ---
+  const updatePetitionStatus = async (id, status) => {
+    try {
+      const { error } = await supabase.from('petitions').update({ status }).eq('id', id);
+      if (error) throw error;
+      setPetitions(petitions.map(p => p.id === id ? { ...p, status } : p));
+      if (viewingPetition?.id === id) {
+        setViewingPetition({ ...viewingPetition, status });
+      }
+    } catch (err) {
+      console.error('Error updating petition:', err);
+      alert('Erro ao atualizar status da petição.');
+    }
+  };
 
-  const sendWebhookNotification = async (data, type, status) => {
-    // Determine webhook URL based on type
-    const webhookUrl = type === 'warrant' ? discordConfig?.wantedWebhook : discordConfig?.weaponsWebhook;
+  const sendWebhookNotification = async (data, status) => {
+    const webhookUrl = discordConfig?.wantedWebhook; // Use wanted webhook for warrants
     if (!webhookUrl) return;
 
     try {
       const colors = {
-        // Licenses
-        judiciary_approved: 0x8b5cf6, // Purple
-        rejected: 0xef4444,   // Red
-        // Warrants
         active: 0xdc2626, // Red (Warrant Issued)
         revoked: 0x94a3b8, // Slate
         executed: 0x22c55e // Green
       };
 
       const titles = {
-        judiciary_approved: "⚖️ Porte Deferido pelo Jurídico",
-        rejected: "⚖️ Porte Indeferido pelo Jurídico",
         active: "⚖️ NOVO MANDADO EXPEDIDO",
         revoked: "⚖️ Mandado Revogado",
         executed: "⚖️ Mandado Cumprido"
       };
 
-      let fields = [];
-      
-      if (type === 'license') {
-        fields = [
-          { name: "Solicitante", value: data.full_name, inline: true },
-          { name: "Passaporte", value: data.passport_id, inline: true },
-          { name: "Status", value: status === 'judiciary_approved' ? 'DEFERIDO' : 'INDEFERIDO', inline: true },
-          { name: "Motivo/Justificativa", value: data.reason }
-        ];
-      } else {
-        // Warrant
-        const typeLabels = {
-          search_seizure: 'Busca e Apreensão',
-          arrest: 'Prisão',
-          preventive_arrest: 'Prisão Preventiva',
-          temporary_arrest: 'Prisão Temporária',
-          breach: 'Quebra de Sigilo'
-        };
+      const typeLabels = {
+        search_seizure: 'Busca e Apreensão',
+        arrest: 'Prisão',
+        preventive_arrest: 'Prisão Preventiva',
+        temporary_arrest: 'Prisão Temporária',
+        breach: 'Quebra de Sigilo'
+      };
 
-        fields = [
-          { name: "ALVO", value: data.target_name, inline: true },
-          { name: "TIPO", value: typeLabels[data.type] || data.type, inline: true },
-          { name: "JUIZ EMISSOR", value: data.judge_name || 'Juiz Federal', inline: true },
-          { name: "PRIORIDADE", value: data.priority.toUpperCase(), inline: true },
-          { name: "ENDEREÇO", value: data.address || 'Não informado', inline: false },
-          { name: "MOTIVAÇÃO", value: data.reason }
-        ];
-      }
+      const fields = [
+        { name: "ALVO", value: data.target_name, inline: true },
+        { name: "TIPO", value: typeLabels[data.type] || data.type, inline: true },
+        { name: "JUIZ EMISSOR", value: data.judge_name || 'Juiz Federal', inline: true },
+        { name: "PRIORIDADE", value: data.priority.toUpperCase(), inline: true },
+        { name: "ENDEREÇO", value: data.address || 'Não informado', inline: false },
+        { name: "MOTIVAÇÃO", value: data.reason }
+      ];
 
       const embed = {
         title: titles[status] || "Atualização Jurídica",
@@ -359,20 +342,6 @@ const JudiciaryManager = () => {
       });
     } catch (err) {
       console.error("Erro ao enviar webhook:", err);
-    }
-  };
-
-  const updateLicenseStatus = async (id, newStatus) => {
-    try {
-      const updates = { status: newStatus };
-      const { error } = await supabase.from('weapon_licenses').update(updates).eq('id', id);
-      if (error) throw error;
-      fetchData();
-      setSelectedLicense(null);
-      sendWebhookNotification({ ...selectedLicense, ...updates }, 'license', newStatus);
-    } catch (err) {
-      console.error('Error updating status:', err);
-      alert('Erro ao atualizar status.');
     }
   };
 
@@ -430,7 +399,7 @@ const JudiciaryManager = () => {
       
       // Notify
       if (data && data[0]) {
-        sendWebhookNotification(data[0], 'warrant', 'active');
+        sendWebhookNotification(data[0], 'active');
       }
     } catch (err) {
       console.error("Erro ao criar mandado:", err);
@@ -460,12 +429,12 @@ const JudiciaryManager = () => {
         // Notify
         const warrant = warrants.find(w => w.id === id);
         if (warrant) {
-             sendWebhookNotification({ ...warrant, status: newStatus }, 'warrant', newStatus);
+             sendWebhookNotification({ ...warrant, status: newStatus }, newStatus);
         }
 
     } catch (err) {
-        console.error("Erro ao atualizar mandado:", err);
-        alert("Erro ao atualizar mandado.");
+      console.error("Erro ao atualizar mandado:", err);
+      alert("Erro ao atualizar mandado.");
     }
   };
 
@@ -638,33 +607,42 @@ const JudiciaryManager = () => {
       {/* Sidebar List */}
       <div className="w-full md:w-1/3 flex flex-col gap-4">
         {/* Tabs */}
-        <div className="flex p-1 bg-slate-900 rounded-lg border border-slate-800">
-          <button
-            onClick={() => setActiveTab('requests')}
-            className={clsx(
-                "flex-1 py-2 text-xs font-bold rounded-md transition-colors",
-                activeTab === 'requests' ? "bg-federal-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
-            )}
-          >
-            Porte de Armas
-          </button>
+        <div className="flex p-1 bg-slate-900 rounded-lg border border-slate-800 overflow-x-auto">
           <button
             onClick={() => setActiveTab('warrants')}
             className={clsx(
-                "flex-1 py-2 text-xs font-bold rounded-md transition-colors",
+                "flex-1 py-2 px-2 text-xs font-bold rounded-md transition-colors whitespace-nowrap",
                 activeTab === 'warrants' ? "bg-red-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
             )}
           >
             Mandados
           </button>
           <button
-            onClick={() => setActiveTab('archive')}
+            onClick={() => setActiveTab('hearings')}
             className={clsx(
-                "flex-1 py-2 text-xs font-bold rounded-md transition-colors",
-                activeTab === 'archive' ? "bg-federal-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
+                "flex-1 py-2 px-2 text-xs font-bold rounded-md transition-colors whitespace-nowrap",
+                activeTab === 'hearings' ? "bg-federal-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
             )}
           >
-            Arquivo (Portes)
+            Audiências
+          </button>
+          <button
+            onClick={() => setActiveTab('releases')}
+            className={clsx(
+                "flex-1 py-2 px-2 text-xs font-bold rounded-md transition-colors whitespace-nowrap",
+                activeTab === 'releases' ? "bg-federal-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
+            )}
+          >
+            Alvarás
+          </button>
+          <button
+            onClick={() => setActiveTab('petitions')}
+            className={clsx(
+                "flex-1 py-2 px-2 text-xs font-bold rounded-md transition-colors whitespace-nowrap",
+                activeTab === 'petitions' ? "bg-yellow-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
+            )}
+          >
+            Petições
           </button>
         </div>
 
@@ -733,119 +711,159 @@ const JudiciaryManager = () => {
                     </div>
                 ))
             )
-          ) : licenses.length === 0 ? (
-            <div className="text-center py-10 text-slate-500 text-sm">Nenhum registro encontrado.</div>
-          ) : (
-            licenses.map(lic => (
-                <div 
-                    key={lic.id}
-                    onClick={() => setSelectedLicense(lic)}
-                    className={`bg-slate-900 border border-slate-800 rounded-xl p-4 cursor-pointer transition-all hover:border-federal-500/50 hover:bg-slate-800 ${selectedLicense?.id === lic.id ? 'border-federal-500 ring-1 ring-federal-500' : ''}`}
-                >
-                    <div className="flex justify-between items-start mb-3">
-                        <StatusBadge status={lic.status} />
-                        <span className="text-xs text-slate-500">
-                        {new Date(lic.created_at).toLocaleDateString()}
-                        </span>
+          ) : activeTab === 'petitions' ? (
+            petitions.length === 0 ? (
+                <div className="text-center py-10 text-slate-500 text-sm">Nenhuma petição encontrada.</div>
+            ) : (
+                petitions.map(petition => (
+                    <div 
+                        key={petition.id}
+                        onClick={() => setViewingPetition(petition)}
+                        className={clsx(
+                            "p-3 rounded-lg border cursor-pointer transition-all hover:scale-[1.02]",
+                            viewingPetition?.id === petition.id ? "bg-slate-800 border-yellow-500/50 shadow-lg" : "bg-slate-900 border-slate-800 hover:border-slate-700"
+                        )}
+                    >
+                        <div className="flex justify-between items-start mb-2">
+                            <span className={clsx(
+                                "px-1.5 py-0.5 rounded text-[10px] font-bold uppercase border",
+                                petition.status === 'pending' ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" : 
+                                petition.status === 'approved' ? "bg-green-500/10 text-green-500 border-green-500/20" : 
+                                "bg-red-500/10 text-red-500 border-red-500/20"
+                            )}>
+                                {petition.status === 'pending' ? 'PENDENTE' : petition.status === 'approved' ? 'DEFERIDO' : 'INDEFERIDO'}
+                            </span>
+                            <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                                <Clock size={10} /> {new Date(petition.created_at).toLocaleDateString()}
+                            </span>
+                        </div>
+                        <h3 className="font-bold text-slate-200 text-sm mb-1">{petition.type}</h3>
+                        <p className="text-xs text-slate-400 mb-2 line-clamp-2">{petition.content}</p>
+                        
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-800/50 text-[10px] text-slate-500">
+                            <div className="flex items-center gap-1">
+                                <User size={10} /> {petition.client_name}
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <Briefcase size={10} /> {petition.lawyer_name || 'Advogado'}
+                            </div>
+                        </div>
                     </div>
-                    <h3 className="font-bold text-white mb-1">{lic.full_name}</h3>
-                    <p className="text-xs text-slate-400 mb-2">ID: {lic.passport_id}</p>
-                    <p className="text-xs text-slate-500 line-clamp-2">{lic.reason}</p>
+                ))
+            )
+          ) : activeTab === 'hearings' ? (
+            <div className="flex flex-col items-center justify-center py-10 text-slate-500 gap-4">
+                <Calendar size={48} className="opacity-20" />
+                <div className="text-center">
+                    <p className="font-bold">Nenhuma audiência agendada</p>
+                    <p className="text-xs mt-1">O sistema de agendamento de audiências estará disponível em breve.</p>
                 </div>
-            ))
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 text-slate-500 gap-4">
+                <FileSignature size={48} className="opacity-20" />
+                <div className="text-center">
+                    <p className="font-bold">Nenhum alvará emitido</p>
+                    <p className="text-xs mt-1">O sistema de emissão de alvarás estará disponível em breve.</p>
+                </div>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Detail View (Licenses Only - Warrants use Modal) */}
+      {/* Detail View Placeholder (Warrants use Modal, others are placeholders for now) */}
       <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-6 overflow-y-auto hidden md:block">
-        {activeTab === 'warrants' ? (
-            <div className="h-full flex flex-col items-center justify-center text-slate-500">
-                <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-6">
-                    <Gavel size={48} className="opacity-50 text-red-500" />
-                </div>
-                <h2 className="text-2xl font-bold text-slate-300 mb-2">Gestão de Mandados</h2>
-                <p className="max-w-md text-center text-slate-500">
-                    Selecione um mandado na lista para visualizar o documento oficial, imprimir ou atualizar o status.
-                    <br/><br/>
-                    Clique em <strong>Novo Mandado Judicial</strong> para expedir uma nova ordem.
-                </p>
-            </div>
-        ) : selectedLicense ? (
-          <div className="space-y-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <h2 className="text-2xl font-bold text-white">{selectedLicense.full_name}</h2>
-                <div className="flex items-center gap-4 mt-2 text-sm text-slate-400">
-                  <span>Passaporte: {selectedLicense.passport_id}</span>
-                  <span>•</span>
-                  <span>Tel: {selectedLicense.phone}</span>
-                </div>
+        {activeTab === 'petitions' && viewingPetition ? (
+           <div className="h-full flex flex-col">
+              <div className="flex justify-between items-start mb-6 border-b border-slate-800 pb-4">
+                  <div>
+                      <h2 className="text-2xl font-bold text-white mb-1">{viewingPetition.type}</h2>
+                      <div className="flex items-center gap-4 text-sm text-slate-400">
+                          <span className="flex items-center gap-1"><User size={14} /> {viewingPetition.client_name}</span>
+                          <span className="flex items-center gap-1"><Briefcase size={14} /> {viewingPetition.lawyer_name || 'Advogado'}</span>
+                          <span className="flex items-center gap-1"><Clock size={14} /> {new Date(viewingPetition.created_at).toLocaleString()}</span>
+                      </div>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${
+                      viewingPetition.status === 'pending' ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" : 
+                      viewingPetition.status === 'approved' ? "bg-green-500/10 text-green-500 border-green-500/20" : 
+                      "bg-red-500/10 text-red-500 border-red-500/20"
+                  }`}>
+                      {viewingPetition.status === 'pending' ? 'PENDENTE' : viewingPetition.status === 'approved' ? 'DEFERIDO' : 'INDEFERIDO'}
+                  </div>
               </div>
-              <StatusBadge status={selectedLicense.status} />
-            </div>
 
-            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
-              <h3 className="text-sm font-bold text-slate-300 mb-2">Motivo da Solicitação</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">{selectedLicense.reason}</p>
-            </div>
-
-            {selectedLicense.license_attachments?.length > 0 && (
-              <div>
-                <h3 className="text-sm font-bold text-slate-300 mb-3">Documentos Anexados</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {selectedLicense.license_attachments.map(att => (
-                    <a 
-                      key={att.id} 
-                      href={att.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 bg-slate-800 rounded-lg border border-slate-700 hover:border-federal-500 transition-colors"
-                    >
-                      <FileText className="text-federal-400" size={20} />
-                      <span className="text-xs text-slate-300 truncate">{att.file_name}</span>
-                    </a>
-                  ))}
-                </div>
+              <div className="flex-1 bg-slate-950 rounded-xl p-6 border border-slate-800 font-serif text-lg leading-relaxed text-slate-300 overflow-y-auto mb-6 whitespace-pre-wrap">
+                  {viewingPetition.content}
               </div>
-            )}
 
-            {/* Actions */}
-            <div className="pt-6 border-t border-slate-800">
-              <h3 className="text-sm font-bold text-white mb-4">Decisão Judicial</h3>
-              <div className="flex flex-wrap gap-3">
-                {selectedLicense.status === 'pending' && (
-                  <>
-                    <button
-                      onClick={() => updateLicenseStatus(selectedLicense.id, 'judiciary_approved')}
-                      className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold rounded-lg flex items-center gap-2"
-                    >
-                      <CheckCircle size={16} />
-                      Deferir (Enviar para PF)
-                    </button>
-                    <button
-                      onClick={() => updateLicenseStatus(selectedLicense.id, 'rejected')}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-bold rounded-lg flex items-center gap-2"
-                    >
-                      <XCircle size={16} />
-                      Indeferir
-                    </button>
-                  </>
-                )}
-                
-                {selectedLicense.status !== 'pending' && (
-                    <p className="text-sm text-slate-500">
-                        Esta solicitação já foi processada pelo jurídico ou está em outra fase.
-                    </p>
-                )}
-              </div>
-            </div>
-          </div>
+              {viewingPetition.status === 'pending' && (
+                  <div className="flex gap-4 pt-4 border-t border-slate-800">
+                      <button 
+                          onClick={() => updatePetitionStatus(viewingPetition.id, 'rejected')}
+                          className="flex-1 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-xl font-bold transition-colors"
+                      >
+                          INDEFERIR
+                      </button>
+                      <button 
+                          onClick={() => updatePetitionStatus(viewingPetition.id, 'approved')}
+                          className="flex-1 py-3 bg-green-500/10 hover:bg-green-500/20 text-green-500 border border-green-500/20 rounded-xl font-bold transition-colors"
+                      >
+                          DEFERIR
+                      </button>
+                  </div>
+              )}
+           </div>
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-slate-500">
-            <Shield size={48} className="mb-4 opacity-20" />
-            <p>Selecione uma solicitação para ver os detalhes</p>
-          </div>
+        <div className="h-full flex flex-col items-center justify-center text-slate-500">
+            <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                {activeTab === 'warrants' ? (
+                    <Gavel size={48} className="opacity-50 text-red-500" />
+                ) : activeTab === 'petitions' ? (
+                    <FileSignature size={48} className="opacity-50 text-yellow-500" />
+                ) : activeTab === 'hearings' ? (
+                    <Calendar size={48} className="opacity-50 text-federal-500" />
+                ) : (
+                    <FileSignature size={48} className="opacity-50 text-green-500" />
+                )}
+            </div>
+            
+            {activeTab === 'warrants' ? (
+                <>
+                    <h2 className="text-2xl font-bold text-slate-300 mb-2">Gestão de Mandados</h2>
+                    <p className="max-w-md text-center text-slate-500">
+                        Selecione um mandado na lista para visualizar o documento oficial, imprimir ou atualizar o status.
+                        <br/><br/>
+                        Clique em <strong>Novo Mandado Judicial</strong> para expedir uma nova ordem.
+                    </p>
+                </>
+            ) : activeTab === 'petitions' ? (
+                <>
+                    <h2 className="text-2xl font-bold text-slate-300 mb-2">Gestão de Petições</h2>
+                    <p className="max-w-md text-center text-slate-500">
+                        Selecione uma petição na lista para analisar o conteúdo e emitir um parecer (Deferir/Indeferir).
+                    </p>
+                </>
+            ) : activeTab === 'hearings' ? (
+                <>
+                    <h2 className="text-2xl font-bold text-slate-300 mb-2">Pauta de Audiências</h2>
+                    <p className="max-w-md text-center text-slate-500">
+                        Gerencie a pauta de audiências de custódia e instrução.
+                        <br/>
+                        Em breve: Integração com calendário e notificações.
+                    </p>
+                </>
+            ) : (
+                <>
+                    <h2 className="text-2xl font-bold text-slate-300 mb-2">Alvarás de Soltura</h2>
+                    <p className="max-w-md text-center text-slate-500">
+                        Emissão e consulta de alvarás de soltura para o sistema prisional.
+                        <br/>
+                        Em breve: Assinatura digital e envio automático.
+                    </p>
+                </>
+            )}
+        </div>
         )}
       </div>
     </div>
