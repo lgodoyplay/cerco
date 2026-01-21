@@ -23,6 +23,12 @@ const RevenueList = () => {
   const { can } = usePermissions();
   const canManage = can('revenue_manage');
 
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    // Optional: Sync with URL if needed, but simple state is fine for now
+    // setSearchParams({ tab }); 
+  };
+
   const fetchRecords = async () => {
     try {
       const { data, error } = await supabase
