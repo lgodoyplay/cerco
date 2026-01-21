@@ -42,17 +42,27 @@ const LawyerDashboard = () => {
     setLoading(true);
     try {
       let query = supabase
-        .from('arrests')
+        .from('prisoes')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (searchTerm) {
-        query = query.ilike('prisoner_name', `%${searchTerm}%`);
+        query = query.ilike('nome', `%${searchTerm}%`);
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      setClients(data || []);
+      
+      const formattedData = data?.map(item => ({
+        id: item.id,
+        prisoner_name: item.nome,
+        prisoner_id: item.documento,
+        articles: item.artigo ? [item.artigo] : [],
+        status: item.status === 'Preso' ? 'detained' : 'released',
+        created_at: item.data_prisao || item.created_at
+      })) || [];
+
+      setClients(formattedData);
     } catch (error) {
       console.error('Error fetching clients:', error);
     } finally {
@@ -70,8 +80,8 @@ const LawyerDashboard = () => {
         .order('created_at', { ascending: false });
 
       if (searchTerm) {
-        // Search by ID or description
-        query = query.or(`descricao.ilike.%${searchTerm}%, tipo.ilike.%${searchTerm}%`);
+        // Search by description or location
+        query = query.or(`descricao.ilike.%${searchTerm}%, localizacao.ilike.%${searchTerm}%`);
       }
 
       const { data, error } = await query;
@@ -80,9 +90,9 @@ const LawyerDashboard = () => {
       // Map boletins to process format
       const formattedData = data?.map(item => ({
         id: item.id,
-        type: item.tipo,
+        type: 'Boletim de Ocorrência', // Default type since table doesn't have it
         description: item.descricao,
-        officer_name: item.created_by_name || 'Agente', // We might need to fetch this or it's in the view
+        officer_name: item.policial_responsavel || 'Agente', 
         created_at: item.created_at
       })) || [];
       
