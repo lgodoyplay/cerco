@@ -85,6 +85,14 @@ const PrivateLayout = () => {
     return (user?.permissions || []).includes(item.permission);
   });
 
+  const isActive = (path) => {
+    if (path === '/dashboard') {
+      return location.pathname === '/dashboard';
+    }
+    // Strict match or sub-route match (ensure slash follows prefix)
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
+
   return (
     <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
       {/* Force Password Change Modal */}
@@ -166,7 +174,7 @@ const PrivateLayout = () => {
               icon={item.icon}
               label={item.label}
               // Fixed active logic: explicit check for root dashboard, startsWith for others
-              active={item.to === '/dashboard' ? location.pathname === '/dashboard' : location.pathname.startsWith(item.to)}
+              active={isActive(item.to)}
               prefetchKey={item.prefetchKey}
               onClick={() => setIsSidebarOpen(false)}
             />
