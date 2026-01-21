@@ -93,7 +93,7 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   // Debug log to verify version
-  console.log('App Version: 2026-01-21 v1 - PRF Integration');
+  console.log('App Version: 2026-01-21 v2 - Fixes');
 
   return (
     <AuthProvider>
