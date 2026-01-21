@@ -110,6 +110,7 @@ function App() {
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/curso-dpf" element={<CursoDPF />} />
+            <Route path="/curso-prf" element={<CursoPRF />} />
             <Route path="/landing" element={<Landing />} />
             <Route path="/codigo-penal" element={<PenalCode />} />
             <Route path="/rules" element={<Rules />} />

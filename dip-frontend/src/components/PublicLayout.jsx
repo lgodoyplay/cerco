@@ -10,6 +10,7 @@ const PublicLayout = () => {
   const navItems = [
     { name: 'Início', path: '/' },
     { name: 'Curso DPF', path: '/curso-dpf' },
+    { name: 'Curso PRF', path: '/curso-prf' },
     { name: 'Pesquisas', path: '/pesquisas-e-apuracoes' },
     { name: 'Porte de Armas', path: '/porte-de-armas' },
     { name: 'Regras', path: '/rules' },
