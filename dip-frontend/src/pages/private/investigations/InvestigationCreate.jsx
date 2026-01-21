@@ -34,10 +34,12 @@ const InvestigationCreate = () => {
     
     try {
       const id = await addInvestigation(formData);
-      // Navigate based on category? No, detail view is same.
-      // But maybe we want to go back to list?
-      // Usually we go to detail view.
-      navigate(`/dashboard/investigations/${id}`);
+      
+      if (formData.category === 'financial') {
+        navigate(`/dashboard/revenue/investigations/${id}`);
+      } else {
+        navigate(`/dashboard/investigations/${id}`);
+      }
     } catch (error) {
       console.error('Erro ao criar investigação:', error);
       // Optional: Add notification handling here

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useInvestigations } from '../../../hooks/useInvestigations';
 import { useAuth } from '../../../context/AuthContext';
 import { useSettings } from '../../../hooks/useSettings';
@@ -23,6 +23,7 @@ import clsx from 'clsx';
 const InvestigationDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); // Add useLocation
   const { user } = useAuth();
   const { templates } = useSettings();
   const { getInvestigation, addProof, closeInvestigation } = useInvestigations();
@@ -31,18 +32,21 @@ const InvestigationDetail = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
+  // Determine back link based on URL path or investigation category
+  const isRevenueRoute = location.pathname.includes('/revenue/');
+  
   // Load data
   useEffect(() => {
     const fetchDetail = async () => {
       const data = await getInvestigation(id);
       if (!data) {
-        navigate('/dashboard/investigations');
+        navigate(isRevenueRoute ? '/dashboard/revenue' : '/dashboard/investigations');
         return;
       }
       setInvestigation(data);
     };
     fetchDetail();
-  }, [id, getInvestigation, navigate, isModalOpen]); // Reload when modal closes (potentially adds proof)
+  }, [id, getInvestigation, navigate, isModalOpen, isRevenueRoute]); // Reload when modal closes (potentially adds proof)
 
   if (!investigation) return null;
 
@@ -85,10 +89,10 @@ const InvestigationDetail = () => {
       
       {/* Top Nav */}
       <button 
-        onClick={() => navigate('/dashboard/investigations')}
+        onClick={() => navigate(isRevenueRoute ? '/dashboard/revenue' : '/dashboard/investigations')}
         className="mb-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-wider"
       >
-        <ArrowLeft size={16} /> Voltar para Lista
+        <ArrowLeft size={16} /> Voltar para {isRevenueRoute ? 'Receita' : 'Lista'}
       </button>
 
       {/* Header Card */}

@@ -205,6 +205,16 @@ function App() {
                 <RevenueList />
               </PermissionGuard>
             } />
+            <Route path="revenue/investigations/new" element={
+              <PermissionGuard permission="revenue_manage">
+                <InvestigationCreate />
+              </PermissionGuard>
+            } />
+            <Route path="revenue/investigations/:id" element={
+              <PermissionGuard permission="revenue_view">
+                <InvestigationDetail />
+              </PermissionGuard>
+            } />
             <Route path="revenue/:id" element={
               <PermissionGuard permission="revenue_view">
                 <RevenueDetail />

@@ -45,7 +45,7 @@ const InvestigationList = ({ category = 'criminal', title }) => {
         </div>
         {canManage && (
           <Link 
-            to={category === 'financial' ? "/dashboard/investigations/new?category=financial" : "/dashboard/investigations/new"}
+            to={category === 'financial' ? "/dashboard/revenue/investigations/new?category=financial" : "/dashboard/investigations/new"}
             className="bg-federal-600 hover:bg-federal-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-federal-900/50 transition-all hover:-translate-y-0.5"
           >
             <Plus size={20} />
