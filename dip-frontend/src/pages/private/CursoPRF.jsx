@@ -340,6 +340,8 @@ const CursoPRF = () => {
   const [examScore, setExamScore] = useState(0);
   const [examStatus, setExamStatus] = useState('idle');
   const [examError, setExamError] = useState('');
+  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [modulesFinished, setModulesFinished] = useState(true);
 
   const handleOpenExam = () => {
     setShowExam(true);
