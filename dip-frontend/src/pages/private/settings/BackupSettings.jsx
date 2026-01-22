@@ -70,24 +70,29 @@ const BackupSettings = () => {
               const { error } = await supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
               
               if (error) {
-                // Se der erro de sintaxe para BigInt (22P02), tenta deletar usando filtro numérico
-                if (error.code === '22P02') {
-                  // console.log(`Tabela ${table} usa ID numérico, tentando método alternativo...`);
-                  const { error: intError } = await supabase.from(table).delete().gt('id', 0);
-                  if (intError) throw intError;
-                  return;
-                }
-                
                 // Ignora erro se a tabela não existir (42P01 ou 404 do PostgREST)
                 if (error.code === '42P01' || error.message?.includes('Could not find the table') || error.code === 'PGRST200') {
                   console.warn(`Tabela ${table} não encontrada ou inacessível. Ignorando.`);
                   return;
                 }
 
-                throw error;
+                // Se houver qualquer outro erro (incluindo erro de tipo UUID vs Int), tenta o método numérico
+                // O erro 22P02 é o padrão, mas às vezes pode vir diferente.
+                // console.log(`Tentando método alternativo (numérico) para tabela ${table}...`);
+                const { error: intError } = await supabase.from(table).delete().gt('id', 0);
+                
+                if (intError) {
+                    // Se falhar o numérico, tenta deletar checando se não é nulo (funciona para ambos se permitido)
+                    // console.log(`Tentando método alternativo (not null) para tabela ${table}...`);
+                    // const { error: nullError } = await supabase.from(table).delete().not('id', 'is', null);
+                    // if (nullError) throw error; // Lança o erro original se todos falharem
+                    throw error;
+                }
+                return;
               }
             } catch (err) {
               console.warn(`Erro ao limpar tabela ${table}:`, err.message);
+              // Não relançamos o erro para permitir que o loop continue tentando outras tabelas
             }
           };
 
