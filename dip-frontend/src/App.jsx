@@ -59,6 +59,7 @@ const UsersSettings = React.lazy(() => lazyImport(routeLoaders.UsersSettings));
 const CoursesSettings = React.lazy(() => lazyImport(routeLoaders.CoursesSettings));
 const WebhookSettings = React.lazy(() => lazyImport(routeLoaders.WebhookSettings));
 const CorporationSettings = React.lazy(() => lazyImport(routeLoaders.CorporationSettings));
+const SystemHealth = React.lazy(() => lazyImport(routeLoaders.SystemHealth));
 const RolesSettings = React.lazy(() => lazyImport(routeLoaders.RolesSettings));
 const CrimesSettings = React.lazy(() => lazyImport(routeLoaders.CrimesSettings));
 const TemplatesSettings = React.lazy(() => lazyImport(routeLoaders.TemplatesSettings));
@@ -270,6 +271,7 @@ function App() {
               </PermissionGuard>
             }>
               <Route index element={<Navigate to="courses" replace />} />
+              <Route path="health" element={<SystemHealth />} />
               <Route path="users" element={<UsersSettings />} />
               <Route path="courses" element={<CoursesSettings />} />
               <Route path="webhooks" element={<WebhookSettings />} />

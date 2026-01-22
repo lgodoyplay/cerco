@@ -14,7 +14,8 @@ import {
   Inbox,
   BookOpen,
   Share2,
-  CheckSquare
+  CheckSquare,
+  Activity
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -32,6 +33,7 @@ const SettingsLayout = () => {
     { to: '/dashboard/settings/appearance', icon: Palette, label: 'Aparência' },
     { to: '/dashboard/settings/security', icon: Shield, label: 'Segurança' },
     { to: '/dashboard/settings/backup', icon: Database, label: 'Backup & Dados' },
+    { to: '/dashboard/settings/health', icon: Activity, label: 'Diagnóstico do Sistema' },
     { to: '/dashboard/settings/logs', icon: ScrollText, label: 'Logs do Sistema' },
   ];
 

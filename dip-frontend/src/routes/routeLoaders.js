@@ -50,6 +50,7 @@ export const routeLoaders = {
   CoursesSettings: () => import('../pages/private/settings/CoursesSettings'),
   WebhookSettings: () => import('../pages/private/settings/WebhookSettings'),
   CorporationSettings: () => import('../pages/private/settings/CorporationSettings'),
+  SystemHealth: () => import('../pages/private/settings/SystemHealth'),
   RolesSettings: () => import('../pages/private/settings/RolesSettings'),
   CrimesSettings: () => import('../pages/private/settings/CrimesSettings'),
   TemplatesSettings: () => import('../pages/private/settings/TemplatesSettings'),

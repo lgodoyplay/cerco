@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { Database, Download, Upload, RefreshCw, AlertOctagon, CheckCircle, Loader } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
+import { Link } from 'react-router-dom';
 
 const BackupSettings = () => {
   const { logAction } = useSettings();
@@ -180,8 +181,11 @@ const BackupSettings = () => {
           <div className="flex items-center justify-between p-6 bg-red-950/20 rounded-xl border border-red-900/20">
             <div>
               <h4 className="font-bold text-white">Resetar Sistema</h4>
-              <p className="text-sm text-red-300/70">
+              <p className="text-sm text-red-300/70 mb-2">
                 Apaga todos os registros, usuários e configurações. Esta ação é irreversível.
+              </p>
+              <p className="text-xs text-slate-400">
+                Problemas com o reset? <Link to="/dashboard/settings/health" className="underline hover:text-white">Execute o Diagnóstico</Link>
               </p>
             </div>
             <button 
