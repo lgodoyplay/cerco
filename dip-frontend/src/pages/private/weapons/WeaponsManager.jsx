@@ -259,7 +259,7 @@ const WeaponsManager = () => {
             onClick={() => setActiveTab('archive')}
             className={`flex-1 py-2 text-xs font-bold rounded-md transition-colors ${activeTab === 'archive' ? 'bg-federal-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
           >
-            Arquivo
+            Histórico
           </button>
         </div>
 

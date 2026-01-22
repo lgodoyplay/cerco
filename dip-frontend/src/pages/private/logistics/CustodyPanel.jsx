@@ -45,10 +45,7 @@ const CustodyPanel = () => {
     try {
       let query = supabase
         .from('logistics_custody')
-        .select(`
-          *,
-          officer:officer_id(full_name, passport_id)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -264,7 +261,7 @@ const CustodyPanel = () => {
                         {item.location || '-'}
                       </td>
                       <td className="py-3 text-slate-400 text-xs">
-                        {item.officer?.full_name}
+                        {item.officer?.full_name || `ID: ${item.officer_id?.slice(0, 8)}...`}
                       </td>
                       <td className="py-3 text-slate-500 text-xs">
                         {item.created_at ? format(new Date(item.created_at), 'dd/MM/yy') : '-'}
