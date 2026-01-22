@@ -235,6 +235,7 @@ function App() {
                 <WeaponsManager />
               </PermissionGuard>
             } />
+            <Route path="weapons/request" element={<RequestWeaponLicense />} />
             
             {/* Judiciary Routes */}
             <Route path="judiciary" element={

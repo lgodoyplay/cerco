@@ -84,6 +84,7 @@ const PrivateLayout = () => {
     { to: '/dashboard/investigations', icon: Search, label: 'Investigações', prefetchKey: 'InvestigationList', permission: 'investigations_view' },
     { to: '/dashboard/forensics', icon: FileSearch, label: 'Perícias', prefetchKey: 'ForensicsList', permission: 'forensics_view' },
     { to: '/dashboard/weapons', icon: Target, label: 'Porte de Armas', prefetchKey: 'WeaponsManager', permission: 'weapons_view' },
+    { to: '/dashboard/weapons/request', icon: FileText, label: 'Solicitar Porte', prefetchKey: 'RequestWeaponLicense' },
     { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList', permission: 'revenue_view' },
     { to: '/dashboard/settings', icon: Settings, label: 'Configurações', prefetchKey: 'SettingsLayout', permission: 'settings_view' },
   ];

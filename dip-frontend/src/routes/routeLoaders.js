@@ -37,6 +37,7 @@ export const routeLoaders = {
 
   // Specialized Managers
   WeaponsManager: () => import('../pages/private/weapons/WeaponsManager'),
+  RequestWeaponLicense: () => import('../pages/private/weapons/RequestWeaponLicense'),
   JudiciaryManager: () => import('../pages/private/judiciary/JudiciaryManager'),
   PRFIntegration: () => import('../pages/private/prf/PRFIntegration'),
   LawyerDashboard: () => import('../pages/private/lawyers/LawyerDashboard'),
