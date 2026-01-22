@@ -45,6 +45,11 @@ const BackupSettings = () => {
           
           // Ordem específica para evitar erros de Foreign Key (tabelas dependentes primeiro)
           const tablesToDelete = [
+            'license_attachments', 'weapon_licenses',
+            'logistics_custody', 'logistics_requisitions',
+            'financial_assets', 'financial_records',
+            'prf_photos', 'prf_seizures', 'prf_fines',
+            'hearings', 'release_orders', 'petitions',
             'provas',             // Depende de investigacoes
             'cursos_policiais',   // Depende de cursos e profiles
             'investigacoes',
