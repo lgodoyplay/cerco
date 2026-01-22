@@ -45,7 +45,10 @@ const CustodyPanel = () => {
     try {
       let query = supabase
         .from('logistics_custody')
-        .select('*')
+        .select(`
+          *,
+          officer:officer_id(full_name, passport_id)
+        `)
         .order('created_at', { ascending: false })
         .limit(50);
 

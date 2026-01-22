@@ -66,29 +66,25 @@ const BackupSettings = () => {
           // Função auxiliar para limpar tabela lidando com diferentes tipos de ID (UUID vs BigInt)
           const clearTable = async (table) => {
             try {
-              // Tenta primeiro assumindo UUID (padrão antigo/comum)
-              const { error } = await supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+              // Tenta deletar verificando se ID não é nulo (funciona para UUID e Int)
+              const { error } = await supabase.from(table).delete().not('id', 'is', null);
               
               if (error) {
-                // Ignora erro se a tabela não existir (42P01 ou 404 do PostgREST)
+                // Se falhar (ex: tabela sem coluna id, ou erro de permissão), tenta estratégia específica
+                // console.warn(`Tentativa genérica falhou para ${table}, tentando UUID...`);
+                
                 if (error.code === '42P01' || error.message?.includes('Could not find the table') || error.code === 'PGRST200') {
                   console.warn(`Tabela ${table} não encontrada ou inacessível. Ignorando.`);
                   return;
                 }
 
-                // Se houver qualquer outro erro (incluindo erro de tipo UUID vs Int), tenta o método numérico
-                // O erro 22P02 é o padrão, mas às vezes pode vir diferente.
-                // console.log(`Tentando método alternativo (numérico) para tabela ${table}...`);
+                // Tenta assumindo UUID explicitamente
+                const { error: uuidError } = await supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+                if (!uuidError) return;
+
+                // Tenta assumindo Int explicitamente
                 const { error: intError } = await supabase.from(table).delete().gt('id', 0);
-                
-                if (intError) {
-                    // Se falhar o numérico, tenta deletar checando se não é nulo (funciona para ambos se permitido)
-                    // console.log(`Tentando método alternativo (not null) para tabela ${table}...`);
-                    // const { error: nullError } = await supabase.from(table).delete().not('id', 'is', null);
-                    // if (nullError) throw error; // Lança o erro original se todos falharem
-                    throw error;
-                }
-                return;
+                if (intError) throw error; // Lança o erro original se todos falharem
               }
             } catch (err) {
               console.warn(`Erro ao limpar tabela ${table}:`, err.message);
