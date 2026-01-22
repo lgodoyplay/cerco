@@ -104,6 +104,12 @@ const Home = () => {
               >
                 Como Fazer Parte
               </Link>
+              <Link
+                to="/porte-de-armas"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm tracking-wide shadow-lg transition-transform hover:-translate-y-0.5 border border-slate-700"
+              >
+                Solicitar Porte
+              </Link>
               <a
                 href="#regra-de-ouro"
                 className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-800 text-slate-100 font-semibold text-sm tracking-wide transition-colors"

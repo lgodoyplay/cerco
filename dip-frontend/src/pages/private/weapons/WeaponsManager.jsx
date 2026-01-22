@@ -56,8 +56,8 @@ const WeaponsManager = () => {
         .select('*, license_attachments(*)');
 
       if (activeTab === 'requests') {
-        // Police sees only what Judiciary approved
-        query = query.eq('status', 'judiciary_approved');
+        // Show both pending and judiciary_approved requests
+        query = query.in('status', ['pending', 'judiciary_approved']);
       } else if (activeTab === 'process') {
         query = query.eq('status', 'processing');
       } else if (activeTab === 'archive') {

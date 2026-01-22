@@ -45,7 +45,6 @@ const RevenueList = React.lazy(() => lazyImport(routeLoaders.RevenueList));
 const RevenueDetail = React.lazy(() => lazyImport(routeLoaders.RevenueDetail));
 
 const WeaponsManager = React.lazy(() => lazyImport(routeLoaders.WeaponsManager));
-const RequestWeaponLicense = React.lazy(() => lazyImport(routeLoaders.RequestWeaponLicense));
 const JudiciaryManager = React.lazy(() => lazyImport(routeLoaders.JudiciaryManager));
 const PRFIntegration = React.lazy(() => lazyImport(routeLoaders.PRFIntegration));
 const LawyerDashboard = React.lazy(() => lazyImport(routeLoaders.LawyerDashboard));
@@ -236,7 +235,6 @@ function App() {
                 <WeaponsManager />
               </PermissionGuard>
             } />
-            <Route path="weapons/request" element={<RequestWeaponLicense />} />
             
             {/* Judiciary Routes */}
             <Route path="judiciary" element={
