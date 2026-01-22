@@ -6,18 +6,31 @@ const CorporationSettings = () => {
   const { corporation, updateCorporation } = useSettings();
   const [activeTab, setActiveTab] = useState('departments'); // departments | divisions | sectors
   const [newItem, setNewItem] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleAddItem = (e) => {
+  const handleAddItem = async (e) => {
     e.preventDefault();
     if (!newItem.trim()) return;
-    const currentList = corporation[activeTab] || [];
-    updateCorporation(activeTab, [...currentList, newItem]);
-    setNewItem('');
+    
+    setLoading(true);
+    try {
+      const currentList = corporation[activeTab] || [];
+      await updateCorporation(activeTab, [...currentList, newItem]);
+      setNewItem('');
+    } catch (error) {
+      console.error('Erro ao adicionar item:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRemoveItem = (item) => {
-    const currentList = corporation[activeTab] || [];
-    updateCorporation(activeTab, currentList.filter(i => i !== item));
+  const handleRemoveItem = async (item) => {
+    try {
+      const currentList = corporation[activeTab] || [];
+      await updateCorporation(activeTab, currentList.filter(i => i !== item));
+    } catch (error) {
+      console.error('Erro ao remover item:', error);
+    }
   };
 
   const tabs = [
