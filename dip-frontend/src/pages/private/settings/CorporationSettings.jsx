@@ -65,10 +65,11 @@ const CorporationSettings = () => {
           />
           <button 
             type="submit"
-            className="bg-federal-600 hover:bg-federal-500 text-white px-6 rounded-xl font-bold flex items-center gap-2 transition-all"
+            disabled={loading}
+            className="bg-federal-600 hover:bg-federal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 rounded-xl font-bold flex items-center gap-2 transition-all"
           >
-            <Plus size={20} />
-            Adicionar
+            {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Plus size={20} />}
+            {loading ? 'Salvando...' : 'Adicionar'}
           </button>
         </form>
 

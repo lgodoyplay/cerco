@@ -263,9 +263,9 @@ export const SettingsProvider = ({ children }) => {
     }
   };
 
-  const updateCorporation = (type, list) => {
+  const updateCorporation = async (type, list) => {
     const newCorporation = { ...corporation, [type]: list };
-    saveSetting('corporation', newCorporation);
+    await saveSetting('corporation', newCorporation);
   };
 
   const updateRoles = (newRoles) => saveSetting('roles', newRoles);
