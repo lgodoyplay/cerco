@@ -35,6 +35,10 @@ const PERMISSIONS = {
 
   // Admin/Settings
   ADMIN_ACCESS: 'admin_access',
+
+  // Weapons (Porte de Armas)
+  WEAPONS_VIEW: 'weapons_view',
+  WEAPONS_MANAGE: 'weapons_manage',
 };
 
 // Role to Permission Mapping

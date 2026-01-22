@@ -37,6 +37,8 @@ const StatusBadge = ({ status }) => {
 
 const WeaponsManager = () => {
   const { discordConfig } = useSettings();
+  const { can } = usePermissions();
+  const canManage = can('weapons_manage');
   const [activeTab, setActiveTab] = useState('requests'); // requests, process, archive
   const [licenses, setLicenses] = useState([]);
   const [loading, setLoading] = useState(true);
