@@ -242,60 +242,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* NEWS SECTION */}
-      {newsList.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/40 border border-federal-700/50 text-federal-300 text-xs font-semibold uppercase tracking-wider mb-2">
-                <Newspaper size={14} />
-                <span>Jornal da Federal</span>
-              </div>
-              <h2 className="text-3xl font-bold text-white">Últimas Notícias e Apreensões</h2>
-            </div>
-          </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {newsList.map((news) => (
-              <div 
-                key={news.id} 
-                className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden group hover:border-federal-500/50 transition-all cursor-pointer"
-                onClick={() => setSelectedNews(news)}
-              >
-                <div className="h-48 overflow-hidden relative">
-                  {news.image_url ? (
-                    <img 
-                      src={news.image_url} 
-                      alt={news.title} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                      <Shield size={48} className="text-slate-700" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-2 text-xs text-federal-400 mb-2">
-                    <Calendar size={12} />
-                    {new Date(news.created_at).toLocaleDateString()}
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-federal-400 transition-colors">
-                    {news.title}
-                  </h3>
-                  <p className="text-slate-400 text-sm line-clamp-3 mb-4">
-                    {news.content}
-                  </p>
-                  <div className="flex items-center text-federal-400 text-sm font-semibold group-hover:translate-x-1 transition-transform">
-                    Ler mais <ChevronRight size={16} />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* NEWS MODAL */}
       {selectedNews && (
@@ -592,6 +539,61 @@ const Home = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* NEWS SECTION */}
+          {newsList.length > 0 && (
+            <div className="space-y-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/40 border border-federal-700/50 text-federal-300 text-xs font-semibold uppercase tracking-wider mb-2">
+                    <Newspaper size={14} />
+                    <span>Jornal da Federal</span>
+                  </div>
+                  <h2 className="text-3xl font-bold text-white">Últimas Notícias e Apreensões</h2>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {newsList.map((news) => (
+                  <div 
+                    key={news.id} 
+                    className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden group hover:border-federal-500/50 transition-all cursor-pointer"
+                    onClick={() => setSelectedNews(news)}
+                  >
+                    <div className="h-48 overflow-hidden relative">
+                      {news.image_url ? (
+                        <img 
+                          src={news.image_url} 
+                          alt={news.title} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                          <Shield size={48} className="text-slate-700" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center gap-2 text-xs text-federal-400 mb-2">
+                        <Calendar size={12} />
+                        {new Date(news.created_at).toLocaleDateString()}
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-federal-400 transition-colors">
+                        {news.title}
+                      </h3>
+                      <p className="text-slate-400 text-sm line-clamp-3 mb-4">
+                        {news.content}
+                      </p>
+                      <div className="flex items-center text-federal-400 text-sm font-semibold group-hover:translate-x-1 transition-transform">
+                        Ler mais <ChevronRight size={16} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
