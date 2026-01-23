@@ -151,6 +151,9 @@ export const AuthProvider = ({ children }) => {
       
       console.log('Login bem sucedido! Sessão:', data.session?.user?.id);
       
+      // Carrega a sessão manualmente pois o listener ignora durante isLoggingIn=true
+      await loadUserSession(data.session);
+
       return true;
     } catch (error) {
       console.error('Login error:', error.message);
