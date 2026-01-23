@@ -19,7 +19,7 @@ const UsersSettings = () => {
     username: '',
     password: '',
     passport_id: '',
-    role: 'Aluno ANP',
+    role: 'Aluno',
     permissions: [],
     avatar_url: null
   });
