@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Minimize2, Maximize2, X, Mic, MicOff, Video, VideoOff } from 'lucide-react';
 
-const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize }) => {
+const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, className }) => {
     const jitsiContainerRef = useRef(null);
     const jitsiApiRef = useRef(null);
 
