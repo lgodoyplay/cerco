@@ -15,8 +15,12 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
             if (!jitsiContainerRef.current) return;
 
             const domain = 'meet.jit.si';
+            // Use room ID for unique, safe room names, or sanitize name robustly
+            // Prefixing with 'DPF_' to avoid collisions with common names on public Jitsi
+            const safeRoomName = `DPF_${room.id.replace(/-/g, '')}`; 
+            
             const options = {
-                roomName: room.name.replace(/[^a-zA-Z0-9]/g, ''), // Remove spaces and special chars for better URL compatibility
+                roomName: safeRoomName,
                 width: '100%',
                 height: '100%',
                 parentNode: jitsiContainerRef.current,
@@ -25,22 +29,23 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
                     email: user.email,
                     avatarUrl: user.avatar_url?.startsWith('http') 
                         ? user.avatar_url 
-                        : supabase.storage.from('avatars').getPublicUrl(user.avatar_url).data.publicUrl // Resolve full URL
+                        : supabase.storage.from('avatars').getPublicUrl(user.avatar_url).data.publicUrl
                 },
                 configOverwrite: {
                     startWithAudioMuted: false,
                     startWithVideoMuted: true,
                     prejoinPageEnabled: false,
                     disableDeepLinking: true,
-                    enableWelcomePage: false, // Disable welcome page
-                    enableClosePage: false, // Disable close page
+                    enableWelcomePage: false,
+                    enableClosePage: false,
                     enableNoAudioDetection: true,
-                    enableNoisyMicDetection: true
+                    enableNoisyMicDetection: true,
+                    // Force new implementation might help or disable features causing issues
                 },
                 interfaceConfigOverwrite: {
                     TOOLBAR_BUTTONS: [
                         'microphone', 'hangup', 'tileview', 
-                        'settings', 'raisehand'
+                        'settings', 'raisehand', 'fullscreen', 'videoquality'
                     ],
                     SHOW_JITSI_WATERMARK: false,
                     SHOW_WATERMARK_FOR_GUESTS: false,
@@ -65,18 +70,20 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
 
                 try {
                     jitsiApiRef.current = new window.JitsiMeetExternalAPI(domain, options);
+                    
+                    // Add listeners to debug connection state
+                    jitsiApiRef.current.addEventListeners({
+                        videoConferenceLeft: () => onClose(),
+                        readyToClose: () => onClose(),
+                        videoConferenceJoined: (e) => console.log('Joined conference:', e),
+                        videoConferenceFailed: (e) => console.error('Conference failed:', e),
+                        errorOccurred: (e) => console.error('Jitsi Error:', e)
+                    });
+                } catch (err) {
+                    console.error("Failed to initialize Jitsi:", err);
                 } finally {
                     console.error = originalError;
                 }
-                
-                jitsiApiRef.current.addEventListeners({
-                    videoConferenceLeft: () => {
-                        onClose();
-                    },
-                    readyToClose: () => {
-                        onClose();
-                    }
-                });
             }
         };
 
