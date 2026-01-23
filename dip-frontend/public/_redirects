@@ -1,6 +1,2 @@
-# Ensure assets return 404 if not found (prevents MIME type mismatch on SPA)
-/assets/*  404
-/src/*  404
-
 # SPA Catch-all
-/*  /index.html  200
+/* /index.html 200
