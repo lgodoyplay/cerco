@@ -15,7 +15,7 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
 
             const domain = 'meet.jit.si';
             const options = {
-                roomName: `dip-policia-system-${room.id}`, // Unique prefix
+                roomName: room.name, // Using the database name which has FIVEM- prefix
                 width: '100%',
                 height: '100%',
                 parentNode: jitsiContainerRef.current,
@@ -24,20 +24,20 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
                     email: user.email 
                 },
                 configOverwrite: {
-                    startWithAudioMuted: true,
-                    startWithVideoMuted: true,
+                    startWithAudioMuted: false, // Start with audio ON
+                    startWithVideoMuted: true,  // Start with video OFF
                     prejoinPageEnabled: false,
                     disableDeepLinking: true // Prevent opening app on mobile
                 },
                 interfaceConfigOverwrite: {
                     TOOLBAR_BUTTONS: [
-                        'microphone', 'camera', 'desktop', 'fullscreen',
-                        'fodeviceselection', 'hangup', 'chat', 
-                        'tileview', 'videoquality', 'filmstrip'
+                        'microphone', 'hangup', 'tileview', 
+                        'settings', 'raisehand'
                     ],
                     SHOW_JITSI_WATERMARK: false,
                     SHOW_WATERMARK_FOR_GUESTS: false,
-                    MOBILE_APP_PROMO: false
+                    MOBILE_APP_PROMO: false,
+                    DEFAULT_BACKGROUND: '#0f172a' // Slate-900 match
                 }
             };
 

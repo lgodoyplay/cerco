@@ -4,12 +4,14 @@ import RoomList from './RoomList';
 import ChatArea from './ChatArea';
 import MemberList from './MemberList';
 import CreateRoomModal from './CreateRoomModal';
+import RoomPasswordModal from './RoomPasswordModal';
 import VoiceCall from './VoiceCall';
 import { useAuth } from '../../../context/AuthContext';
 
 const CommunicationHub = () => {
   const { user } = useAuth();
   const [selectedRoom, setSelectedRoom] = useState(null);
+  const [passwordRoom, setPasswordRoom] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showMobileMembers, setShowMobileMembers] = useState(false);
@@ -17,6 +19,30 @@ const CommunicationHub = () => {
   // Voice State
   const [isInCall, setIsInCall] = useState(false);
   const [isCallMinimized, setIsCallMinimized] = useState(false);
+
+  const handleSelectRoom = (room) => {
+    // Se for o dono, entra direto
+    if (room.owner_id === user.id) {
+        setSelectedRoom(room);
+        setShowMobileSidebar(false);
+        return;
+    }
+
+    // Se tiver senha, pede
+    if (room.password) {
+        setPasswordRoom(room);
+    } else {
+        // Sem senha (não deve acontecer com a nova regra, mas ok)
+        setSelectedRoom(room);
+        setShowMobileSidebar(false);
+    }
+  };
+
+  const handlePasswordSuccess = () => {
+      setSelectedRoom(passwordRoom);
+      setPasswordRoom(null);
+      setShowMobileSidebar(false);
+  };
 
   return (
     <div className="flex h-full bg-slate-900 text-white overflow-hidden rounded-xl shadow-2xl border border-slate-800">
@@ -29,10 +55,7 @@ const CommunicationHub = () => {
       `}>
           <RoomList 
             selectedRoom={selectedRoom} 
-            onSelectRoom={(room) => {
-                setSelectedRoom(room);
-                setShowMobileSidebar(false);
-            }}
+            onSelectRoom={handleSelectRoom}
             onCreateRoom={() => setIsCreateModalOpen(true)}
           />
       </div>
@@ -121,6 +144,14 @@ const CommunicationHub = () => {
                   setSelectedRoom(room);
                   setIsCreateModalOpen(false);
               }} 
+          />
+      )}
+
+      {passwordRoom && (
+          <RoomPasswordModal
+              room={passwordRoom}
+              onClose={() => setPasswordRoom(null)}
+              onSuccess={handlePasswordSuccess}
           />
       )}
     </div>

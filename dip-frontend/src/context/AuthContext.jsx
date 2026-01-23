@@ -124,6 +124,12 @@ export const AuthProvider = ({ children }) => {
           
           if (error) {
             console.warn('Erro ao resolver ID (verifique se update_login_capabilities.sql foi executado):', error);
+            // Se o erro for 500 ou 404 na RPC, tentamos continuar se parecer um email
+            if (email.includes('@')) {
+                // É um email, ignora o erro da RPC e tenta logar direto
+            } else {
+                throw new Error("Erro no sistema de login (RPC falhou). Tente logar com seu E-MAIL completo.");
+            }
           }
           
           if (data) {
