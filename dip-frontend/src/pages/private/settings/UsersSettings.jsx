@@ -139,8 +139,8 @@ const UsersSettings = () => {
         username: '',
         password: '',
         passport_id: '',
-        role: roles[0]?.title || '',
-        permissions: [],
+        role: 'Aluno',
+        permissions: ['communication_view', 'logistics_view'],
         avatar_url: null
       });
       setUserCourses([]);

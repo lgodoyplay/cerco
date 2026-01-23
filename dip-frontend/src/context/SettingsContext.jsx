@@ -14,6 +14,7 @@ const DEFAULT_ROLES = [
   { id: 2, title: 'Coordenador', hierarchy: 2 },
   { id: 3, title: 'Escrivão', hierarchy: 3 },
   { id: 4, title: 'Agente', hierarchy: 4 },
+  { id: 5, title: 'Aluno', hierarchy: 5 },
 ];
 
 const DEFAULT_APPEARANCE = {
@@ -207,13 +208,19 @@ export const SettingsProvider = ({ children }) => {
     try {
       console.log('Adding user with data:', userData);
       
+      // Force default permissions for Aluno if not specified
+      let permissionsToSave = userData.permissions || [];
+      if (userData.role === 'Aluno' && permissionsToSave.length === 0) {
+          permissionsToSave = ['communication_view', 'logistics_view'];
+      }
+
       const payload = {
         p_email: userData.username,
         p_password: userData.password,
         p_full_name: userData.name,
         p_passport_id: userData.passport_id || '',
         p_role: userData.role,
-        p_permissions: userData.permissions || []
+        p_permissions: permissionsToSave
       };
 
       const { data, error } = await supabase.rpc('create_user_command', payload);
