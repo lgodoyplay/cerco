@@ -38,6 +38,7 @@ const CoursesSettings = () => {
   const [assignments, setAssignments] = useState([]);
 
   useEffect(() => {
+    console.log('CoursesSettings mounted - v2026-01-22');
     fetchUserRole();
     fetchCourses();
   }, []);
