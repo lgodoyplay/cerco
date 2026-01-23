@@ -12,15 +12,18 @@ import {
   FileText,
   Map,
   Radio,
-  Scale
+  Scale,
+  PlayCircle,
+  AlertTriangle
 } from 'lucide-react';
 import clsx from 'clsx';
 
 const ANPStudentDashboard = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('progress'); // progress, tablet, rules
+  const [activeTab, setActiveTab] = useState('progress'); // progress, tablet, rules, exam
   const [stages, setStages] = useState([]);
   const [userProgress, setUserProgress] = useState({});
+  const [extraCourses, setExtraCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -54,6 +57,24 @@ const ANPStudentDashboard = () => {
           progressMap[p.stage_id] = p.status;
         });
         setUserProgress(progressMap);
+
+        // Fetch Extra Courses
+        const { data: coursesData, error: coursesError } = await supabase
+          .from('cursos_policiais')
+          .select(`
+            id,
+            certificado_url,
+            cursos (
+              id,
+              nome,
+              descricao
+            )
+          `)
+          .eq('policial_id', user.id);
+          
+        if (!coursesError) {
+          setExtraCourses(coursesData || []);
+        }
       }
     } catch (error) {
       console.error('Error fetching ANP data:', error);
@@ -68,12 +89,24 @@ const ANPStudentDashboard = () => {
     return Math.round((completedCount / stages.length) * 100);
   };
 
+  const checkReadyForExam = () => {
+    if (stages.length === 0) return false;
+    // Filter out the exam stage itself if it exists (assuming it's named 'Prova Final')
+    const learningStages = stages.filter(s => s.title !== 'Prova Final');
+    if (learningStages.length === 0) return false;
+    
+    // Check if all learning stages are completed
+    return learningStages.every(s => userProgress[s.id] === 'completed');
+  };
+
+  const isReadyForExam = checkReadyForExam();
+
   const renderProgressTab = () => (
     <div className="space-y-6">
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <GraduationCap className="text-federal-500" />
-          Progresso do Curso
+          Progresso da Formação
         </h3>
         
         <div className="mb-6">
@@ -92,6 +125,9 @@ const ANPStudentDashboard = () => {
         <div className="space-y-4">
           {stages.map((stage) => {
             const isCompleted = userProgress[stage.id] === 'completed';
+            // Highlight 'Prova Final' differently if ready
+            const isExamStage = stage.title === 'Prova Final';
+            
             return (
               <div 
                 key={stage.id} 
@@ -99,7 +135,9 @@ const ANPStudentDashboard = () => {
                   "flex items-start gap-4 p-4 rounded-lg border transition-all",
                   isCompleted 
                     ? "bg-federal-900/20 border-federal-500/30" 
-                    : "bg-slate-800/30 border-slate-700"
+                    : isExamStage && isReadyForExam
+                      ? "bg-federal-900/10 border-federal-500/50 animate-pulse"
+                      : "bg-slate-800/30 border-slate-700"
                 )}
               >
                 <div className={clsx(
@@ -117,6 +155,14 @@ const ANPStudentDashboard = () => {
                     <span className="inline-block mt-2 text-xs font-medium text-federal-400 bg-federal-900/50 px-2 py-1 rounded">
                       Concluído
                     </span>
+                  )}
+                  {isExamStage && isReadyForExam && !isCompleted && (
+                    <button 
+                      onClick={() => setActiveTab('exam')}
+                      className="mt-2 text-xs font-bold text-federal-400 hover:text-federal-300 underline"
+                    >
+                      CLIQUE AQUI PARA INICIAR A PROVA
+                    </button>
                   )}
                 </div>
               </div>
@@ -323,6 +369,84 @@ const ANPStudentDashboard = () => {
     </div>
   );
 
+  const renderExamTab = () => (
+    <div className="space-y-6">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+          <GraduationCap className="text-federal-500" />
+          Prova Final - Curso de Formação
+        </h3>
+
+        <div className="bg-federal-900/20 border border-federal-500/30 rounded-lg p-4 mb-8">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="text-federal-400 shrink-0 mt-1" />
+            <div>
+              <h4 className="font-bold text-federal-400 mb-1">Atenção, Recruta!</h4>
+              <p className="text-sm text-federal-200">
+                Você completou todos os módulos preparatórios. A Prova Final definirá sua aptidão para ingressar na corporação.
+                Revise os pontos abaixo antes de iniciar.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-slate-800/30 p-5 rounded-lg border border-slate-700">
+            <h4 className="font-bold text-white mb-4 flex items-center gap-2">
+              <Shield size={18} className="text-federal-500" />
+              Dicas: Procedimentos e Ética
+            </h4>
+            <ul className="space-y-3 text-sm text-slate-400">
+              <li className="flex items-start gap-2">
+                <CheckCircle size={14} className="text-federal-500 mt-1 shrink-0" />
+                <span><strong>Hierarquia e Disciplina:</strong> Pilares fundamentais. Respeito irrestrito a superiores.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle size={14} className="text-federal-500 mt-1 shrink-0" />
+                <span><strong>Uso da Força:</strong> Sempre progressivo. Verbalização &gt; Controle Físico &gt; Arma não letal &gt; Letal.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle size={14} className="text-federal-500 mt-1 shrink-0" />
+                <span><strong>Abordagem:</strong> Segurança em primeiro lugar. Jamais aborde sem vantagem tática.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="bg-slate-800/30 p-5 rounded-lg border border-slate-700">
+            <h4 className="font-bold text-white mb-4 flex items-center gap-2">
+              <Scale size={18} className="text-federal-500" />
+              Dicas: Legislação Penal
+            </h4>
+            <ul className="space-y-3 text-sm text-slate-400">
+              <li className="flex items-start gap-2">
+                <CheckCircle size={14} className="text-federal-500 mt-1 shrink-0" />
+                <span><strong>Art. 121 (Homicídio):</strong> Matar alguém. Pena varia se for qualificado.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle size={14} className="text-federal-500 mt-1 shrink-0" />
+                <span><strong>Art. 157 (Roubo):</strong> Subtrair coisa alheia móvel mediante grave ameaça ou violência.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle size={14} className="text-federal-500 mt-1 shrink-0" />
+                <span><strong>Art. 331 (Desacato):</strong> Desacatar funcionário público no exercício da função.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <button 
+            onClick={() => alert('Sistema de Prova Final em desenvolvimento. Solicite a aplicação ao seu instrutor!')}
+            className="group relative px-8 py-4 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-federal-500/25 flex items-center gap-3 text-lg"
+          >
+            <PlayCircle size={24} className="group-hover:scale-110 transition-transform" />
+            INICIAR PROVA FINAL
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -340,11 +464,11 @@ const ANPStudentDashboard = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-slate-800">
+      <div className="flex border-b border-slate-800 overflow-x-auto">
         <button
           onClick={() => setActiveTab('progress')}
           className={clsx(
-            "px-6 py-3 text-sm font-medium transition-colors border-b-2",
+            "px-6 py-3 text-sm font-medium transition-colors border-b-2 whitespace-nowrap",
             activeTab === 'progress' 
               ? "border-federal-500 text-federal-400" 
               : "border-transparent text-slate-400 hover:text-white"
@@ -352,10 +476,30 @@ const ANPStudentDashboard = () => {
         >
           Meu Progresso
         </button>
+        
+        {isReadyForExam && (
+          <button
+            onClick={() => setActiveTab('exam')}
+            className={clsx(
+              "px-6 py-3 text-sm font-medium transition-colors border-b-2 whitespace-nowrap flex items-center gap-2",
+              activeTab === 'exam' 
+                ? "border-federal-500 text-federal-400" 
+                : "border-transparent text-federal-400 hover:text-federal-300"
+            )}
+          >
+            <GraduationCap size={16} />
+            Prova Final
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-federal-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-federal-500"></span>
+            </span>
+          </button>
+        )}
+
         <button
           onClick={() => setActiveTab('tablet')}
           className={clsx(
-            "px-6 py-3 text-sm font-medium transition-colors border-b-2",
+            "px-6 py-3 text-sm font-medium transition-colors border-b-2 whitespace-nowrap",
             activeTab === 'tablet' 
               ? "border-federal-500 text-federal-400" 
               : "border-transparent text-slate-400 hover:text-white"
@@ -366,7 +510,7 @@ const ANPStudentDashboard = () => {
         <button
           onClick={() => setActiveTab('rules')}
           className={clsx(
-            "px-6 py-3 text-sm font-medium transition-colors border-b-2",
+            "px-6 py-3 text-sm font-medium transition-colors border-b-2 whitespace-nowrap",
             activeTab === 'rules' 
               ? "border-federal-500 text-federal-400" 
               : "border-transparent text-slate-400 hover:text-white"
@@ -385,6 +529,7 @@ const ANPStudentDashboard = () => {
         ) : (
           <>
             {activeTab === 'progress' && renderProgressTab()}
+            {activeTab === 'exam' && renderExamTab()}
             {activeTab === 'tablet' && renderTabletTab()}
             {activeTab === 'rules' && renderRulesTab()}
           </>
