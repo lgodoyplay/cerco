@@ -283,6 +283,7 @@ const NewsManager = () => {
             </form>
           </div>
         </div>
+      </div>
       )}
     </div>
   );
