@@ -9,18 +9,11 @@ const CommunicationHub = () => {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [showMobileMembers, setShowMobileMembers] = useState(false);
 
   return (
     <div className="flex h-[calc(100vh-4rem)] md:h-full bg-slate-900 text-white overflow-hidden -m-4 md:-m-8">
-      {/* Mobile Toggle for Room List */}
-      <div className="md:hidden fixed top-20 left-4 z-40">
-        <button 
-            onClick={() => setShowMobileSidebar(!showMobileSidebar)} 
-            className="p-2 bg-slate-800 rounded-md shadow-lg text-slate-200"
-        >
-           <Menu size={20} />
-        </button>
-      </div>
+      {/* Mobile Toggle for Room List is now in ChatArea Header or handled below */}
 
       {/* Left Sidebar - Rooms */}
       <div className={`
@@ -40,9 +33,22 @@ const CommunicationHub = () => {
       {/* Center - Chat */}
       <div className="flex-1 flex flex-col min-w-0 bg-slate-800/50 relative">
         {selectedRoom ? (
-            <ChatArea room={selectedRoom} />
+            <ChatArea 
+                room={selectedRoom} 
+                onOpenRooms={() => setShowMobileSidebar(true)}
+                onOpenMembers={() => setShowMobileMembers(true)}
+            />
         ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-8 text-center">
+                <div className="md:hidden absolute top-4 left-4">
+                     <button 
+                        onClick={() => setShowMobileSidebar(true)}
+                        className="p-2 bg-slate-800 rounded-md text-white"
+                     >
+                        <Menu size={20} />
+                     </button>
+                </div>
+
                 <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-4">
                     <Menu size={48} className="opacity-20" />
                 </div>
@@ -54,18 +60,31 @@ const CommunicationHub = () => {
         )}
       </div>
 
-      {/* Right Sidebar - Members */}
+      {/* Right Sidebar - Members (Desktop) */}
       {selectedRoom && (
           <div className="hidden lg:flex w-60 border-l border-slate-800 bg-slate-950 flex-col">
               <MemberList room={selectedRoom} />
           </div>
       )}
 
-      {/* Overlay for mobile sidebar */}
-      {showMobileSidebar && (
+      {/* Right Sidebar - Members (Mobile/Tablet Drawer) */}
+      {selectedRoom && (
+        <div className={`
+            fixed inset-y-0 right-0 z-50 w-72 bg-slate-950 border-l border-slate-800 transform transition-transform duration-300 ease-in-out lg:hidden
+            ${showMobileMembers ? 'translate-x-0' : 'translate-x-full'}
+        `}>
+            <MemberList room={selectedRoom} />
+        </div>
+      )}
+
+      {/* Overlay for mobile sidebars */}
+      {(showMobileSidebar || showMobileMembers) && (
         <div 
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
-            onClick={() => setShowMobileSidebar(false)}
+            className="fixed inset-0 bg-black/50 z-40 md:hidden lg:hidden"
+            onClick={() => {
+                setShowMobileSidebar(false);
+                setShowMobileMembers(false);
+            }}
         />
       )}
 

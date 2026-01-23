@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { Send, Hash, Phone } from 'lucide-react';
+import { Send, Hash, Phone, Menu, Users } from 'lucide-react';
 
-const ChatArea = ({ room }) => {
+const ChatArea = ({ room, onOpenRooms, onOpenMembers }) => {
     const { user } = useAuth();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -118,6 +118,14 @@ const ChatArea = ({ room }) => {
             {/* Header */}
             <div className="h-14 border-b border-slate-700 flex items-center justify-between px-4 bg-slate-800 shadow-sm z-10">
                 <div className="flex items-center gap-2">
+                    {/* Mobile Menu Button */}
+                    <button 
+                        onClick={onOpenRooms}
+                        className="md:hidden mr-1 text-slate-400 hover:text-white"
+                    >
+                        <Menu size={20} />
+                    </button>
+                    
                     <Hash className="text-slate-400" size={24} />
                     <div>
                         <h3 className="font-bold text-white">{room.name}</h3>
@@ -135,6 +143,14 @@ const ChatArea = ({ room }) => {
                             <span className="hidden sm:inline">Entrar na Call</span>
                         </button>
                     )}
+                    
+                    {/* Mobile Members Toggle */}
+                    <button 
+                        onClick={onOpenMembers}
+                        className="lg:hidden p-2 text-slate-400 hover:text-white"
+                    >
+                        <Users size={20} />
+                    </button>
                 </div>
             </div>
 
