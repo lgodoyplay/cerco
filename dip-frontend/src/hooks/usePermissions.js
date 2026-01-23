@@ -39,6 +39,34 @@ const PERMISSIONS = {
   // Weapons (Porte de Armas)
   WEAPONS_VIEW: 'weapons_view',
   WEAPONS_MANAGE: 'weapons_manage',
+
+  // Logistics
+  LOGISTICS_VIEW: 'logistics_view',
+  LOGISTICS_MANAGE: 'logistics_manage',
+
+  // Communication
+  COMMUNICATION_VIEW: 'communication_view',
+  COMMUNICATION_MANAGE: 'communication_manage',
+
+  // PRF Integration
+  PRF_VIEW: 'prf_view',
+  PRF_MANAGE: 'prf_manage',
+
+  // Lawyers
+  LAWYER_VIEW: 'lawyer_view',
+  LAWYER_MANAGE: 'lawyer_manage',
+
+  // Courses
+  COURSES_VIEW: 'courses_view',
+  COURSES_MANAGE: 'courses_manage',
+
+  // ANP
+  ANP_VIEW: 'anp_view',
+  ANP_MANAGE: 'anp_manage',
+
+  // Settings
+  SETTINGS_VIEW: 'settings_view',
+  SETTINGS_MANAGE: 'settings_manage',
 };
 
 // Role to Permission Mapping
@@ -50,6 +78,12 @@ const ROLE_PERMISSIONS = {
   'Major': Object.values(PERMISSIONS),
   'Capitão': Object.values(PERMISSIONS),
   'Tenente': Object.values(PERMISSIONS),
+  
+  'Aluno': [
+    PERMISSIONS.COMMUNICATION_VIEW,
+    PERMISSIONS.LOGISTICS_VIEW,
+    // Aluno has limited access
+  ],
   
   'Sargento': [
     PERMISSIONS.BO_VIEW, PERMISSIONS.BO_MANAGE,

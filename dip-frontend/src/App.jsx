@@ -257,27 +257,39 @@ function App() {
               </PermissionGuard>
             } />
 
-            <Route path="logistics" element={<LogisticsDashboard />} />
+            <Route path="logistics" element={
+              <PermissionGuard permission="logistics_view">
+                <LogisticsDashboard />
+              </PermissionGuard>
+            } />
 
             {/* ANP Student Route */}
             <Route path="anp-student" element={<ANPStudentDashboard />} />
 
             {/* Communication Hub */}
-            <Route path="communication" element={<CommunicationHub />} />
+            <Route path="communication" element={
+              <PermissionGuard permission="communication_view">
+                <CommunicationHub />
+              </PermissionGuard>
+            } />
 
             {/* Profile Route */}
             <Route path="profile" element={<ProfilePage />} />
 
             {/* Settings Routes */}
             <Route path="settings" element={
-              <PermissionGuard permission="settings">
+              <PermissionGuard permission="settings_view">
                 <SettingsLayout />
               </PermissionGuard>
             }>
               <Route index element={<Navigate to="courses" replace />} />
               <Route path="health" element={<SystemHealth />} />
               <Route path="users" element={<UsersSettings />} />
-              <Route path="courses" element={<CoursesSettings />} />
+              <Route path="courses" element={
+                <PermissionGuard permission="courses_view">
+                  <CoursesSettings />
+                </PermissionGuard>
+              } />
               <Route path="webhooks" element={<WebhookSettings />} />
               <Route path="forms" element={<FormsSettings />} />
               <Route path="exams" element={<ExamResultsSettings />} />

@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { usePermissions } from '../../../hooks/usePermissions';
 import { 
   Users, 
   Building, 
@@ -20,9 +21,11 @@ import {
 import clsx from 'clsx';
 
 const SettingsLayout = () => {
+  const { can } = usePermissions();
+
   const menuItems = [
     { to: '/dashboard/settings/users', icon: Users, label: 'Usuários & Permissões' },
-    { to: '/dashboard/settings/courses', icon: BookOpen, label: 'Gestão de Cursos' },
+    { to: '/dashboard/settings/courses', icon: BookOpen, label: 'Gestão de Cursos', permission: 'courses_view' },
     { to: '/dashboard/settings/webhooks', icon: Share2, label: 'Webhooks & Integrações' },
     { to: '/dashboard/settings/forms', icon: Inbox, label: 'Formulários Recebidos' },
     { to: '/dashboard/settings/exams', icon: CheckSquare, label: 'Resultados de Prova' },
@@ -36,6 +39,8 @@ const SettingsLayout = () => {
     { to: '/dashboard/settings/health', icon: Activity, label: 'Diagnóstico do Sistema' },
     { to: '/dashboard/settings/logs', icon: ScrollText, label: 'Logs do Sistema' },
   ];
+
+  const filteredItems = menuItems.filter(item => !item.permission || can(item.permission));
 
   return (
     <div className="max-w-7xl mx-auto h-[calc(100vh-120px)] flex flex-col md:flex-row gap-6 pb-6">
@@ -54,7 +59,7 @@ const SettingsLayout = () => {
           </div>
 
           <nav className="space-y-1">
-            {menuItems.map((item) => (
+            {filteredItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
