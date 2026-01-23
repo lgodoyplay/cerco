@@ -52,13 +52,19 @@ const SystemHealth = () => {
 
       // 2. Check Tables Existence/Access
       for (const table of tablesToCheck) {
-        const { error: tableError } = await supabase.from(table).select('id').limit(1);
+        // Use select('*') instead of 'id' because some tables (like system_settings) don't have an 'id' column
+        // limit(1) ensures we don't fetch too much data
+        const { error: tableError } = await supabase.from(table).select('*').limit(1);
+        
         // Error code 42P01 is "undefined_table"
         // Error 404 can also happen if RLS blocks everything or table missing
-        if (tableError && (tableError.code === '42P01' || tableError.message?.includes('does not exist'))) {
+        if (tableError && (tableError.code === '42P01' || tableError.message?.includes('does not exist') || tableError.code === '404')) {
           results.tables[table] = 'missing';
         } else if (tableError) {
-           // Might be empty or RLS, but table exists
+           console.warn(`Health check error for ${table}:`, tableError);
+           // If it's a 400 error, it might be a column issue, but usually implies table exists. 
+           // We'll mark as OK if it's just a column permission thing, but 'error' otherwise.
+           // Actually, for system_settings, select('*') should work if table exists.
            results.tables[table] = 'error';
         } else {
           results.tables[table] = 'ok';
