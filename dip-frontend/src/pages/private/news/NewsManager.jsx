@@ -200,30 +200,28 @@ const NewsManager = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl animate-scale-in max-h-[90vh] overflow-y-auto relative">
-             <button 
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+            <button 
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-1 hover:bg-slate-800 rounded-full z-10"
+              className="absolute top-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
             >
               <X size={20} />
             </button>
             
-            <div className="p-6 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                {editingId ? <Edit size={20} className="text-federal-500" /> : <Plus size={20} className="text-federal-500" />}
-                {editingId ? 'Editar Notícia' : 'Nova Notícia'}
-              </h3>
-            </div>
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+              {editingId ? <Edit size={24} className="text-federal-500" /> : <Plus size={24} className="text-federal-500" />}
+              {editingId ? 'Editar Notícia' : 'Nova Notícia'}
+            </h2>
             
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Título</label>
+                <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Título</label>
                 <input 
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none focus:ring-1 focus:ring-federal-500/50 transition-all placeholder:text-slate-600"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
                   placeholder="Título da notícia ou apreensão..."
                   required
                 />
@@ -241,40 +239,40 @@ const NewsManager = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Conteúdo</label>
+                <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Conteúdo</label>
                 <textarea 
                   value={formData.content}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none focus:ring-1 focus:ring-federal-500/50 transition-all placeholder:text-slate-600 h-32 resize-none"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none h-32 resize-none"
                   placeholder="Descreva os detalhes..."
                   required
                 />
               </div>
 
-              <div className="flex items-center gap-3 p-3 bg-slate-950/50 rounded-xl border border-slate-800">
+              <div className="flex items-center gap-3 p-3 bg-slate-950/50 rounded-lg border border-slate-800">
                 <input 
                   type="checkbox"
                   id="is_public"
                   checked={formData.is_public}
                   onChange={(e) => setFormData({...formData, is_public: e.target.checked})}
-                  className="w-5 h-5 rounded bg-slate-900 border-slate-700 text-federal-600 focus:ring-federal-500 focus:ring-offset-0 cursor-pointer"
+                  className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-federal-600 focus:ring-federal-500 focus:ring-offset-0 cursor-pointer"
                 />
                 <label htmlFor="is_public" className="text-sm font-medium text-slate-300 cursor-pointer select-none flex-1">
                   Publicar na Home (Visível para todos)
                 </label>
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="pt-4 border-t border-slate-800 flex justify-end gap-3">
                 <button 
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors font-semibold"
+                  className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
                 >
                   Cancelar
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 px-4 py-3 bg-federal-600 hover:bg-federal-500 text-white rounded-xl transition-colors font-bold shadow-lg shadow-federal-900/20"
+                  className="px-6 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg shadow-lg shadow-federal-900/20 transition-all flex items-center gap-2"
                 >
                   {editingId ? 'Salvar Alterações' : 'Publicar Notícia'}
                 </button>
