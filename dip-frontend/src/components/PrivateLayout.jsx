@@ -129,7 +129,7 @@ const PrivateLayout = () => {
             <div className="w-8 h-8 rounded-lg bg-federal-600 flex items-center justify-center shadow-lg shadow-federal-900/50">
                <Shield size={20} className="text-white" />
             </div>
-            <span className="font-bold text-lg tracking-tight">DIP Policial</span>
+            <span className="font-bold text-lg tracking-tight">DPF Policial</span>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-white">
             <X size={20} />
