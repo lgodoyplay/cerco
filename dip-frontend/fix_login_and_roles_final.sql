@@ -8,6 +8,7 @@ DO $$
 DECLARE
     r RECORD;
 BEGIN
+    -- Drop Functions
     FOR r IN 
         SELECT oid::regprocedure::text as sig
         FROM pg_proc 
@@ -17,6 +18,24 @@ BEGIN
         EXECUTE 'DROP FUNCTION ' || r.sig;
         RAISE NOTICE 'Dropped existing function: %', r.sig;
     END LOOP;
+
+    -- Drop Triggers on auth.users (Cleanup "zombie" triggers that might block login)
+    -- We specifically target triggers that might have been created by previous versions of this project
+    -- Common names: on_auth_user_created, on_user_login, sync_profile, handle_new_user_trigger
+    DECLARE
+        t text;
+        trigger_names text[] := ARRAY['on_auth_user_created', 'on_user_login', 'sync_profile', 'handle_new_user_trigger', 'on_auth_user_updated'];
+    BEGIN
+        FOREACH t IN ARRAY trigger_names
+        LOOP
+            BEGIN
+                EXECUTE 'DROP TRIGGER IF EXISTS ' || t || ' ON auth.users';
+                RAISE NOTICE 'Dropped trigger if exists: %', t;
+            EXCEPTION WHEN OTHERS THEN
+                RAISE NOTICE 'Could not drop trigger % (might not exist or permission denied)', t;
+            END;
+        END LOOP;
+    END;
 END $$;
 
 -- Drop other helper functions just in case
@@ -25,6 +44,15 @@ DROP FUNCTION IF EXISTS public.get_email_by_identifier(text);
 -- 2. EXTENSIONS & TABLES
 -- IMPORTANT: Create extensions in public schema to avoid permission issues
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+-- Fix Permissions for Auth Admin (Crucial for "Database error querying schema" 500 error)
+DO $$
+BEGIN
+    GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role, supabase_auth_admin, dashboard_user;
+    GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, anon, authenticated, service_role, supabase_auth_admin, dashboard_user;
+    GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO postgres, anon, authenticated, service_role, supabase_auth_admin, dashboard_user;
+    GRANT ALL ON ALL ROUTINES IN SCHEMA public TO postgres, anon, authenticated, service_role, supabase_auth_admin, dashboard_user;
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
 
 DO $$
 BEGIN
