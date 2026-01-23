@@ -71,11 +71,15 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize }) => {
     return (
         <div 
             className={`
-                fixed z-[60] transition-all duration-300 shadow-2xl overflow-hidden bg-slate-900 border border-slate-700
+                transition-all duration-300 overflow-hidden bg-slate-900 
                 ${isMinimized 
-                    ? 'bottom-20 right-4 w-64 h-48 rounded-lg md:absolute md:bottom-0 md:left-0 md:w-64 md:h-48 md:right-auto md:top-auto md:border-t md:border-r md:border-slate-700' 
-                    : 'inset-0 md:inset-4 md:rounded-xl'
+                    ? 'rounded-lg border border-slate-700 shadow-2xl' 
+                    : ''
                 }
+                ${className || (isMinimized 
+                    ? 'fixed bottom-20 right-4 w-64 h-48 z-[60]' 
+                    : 'fixed inset-0 z-[60] md:inset-4 md:rounded-xl md:border md:border-slate-700 md:shadow-2xl'
+                )}
             `}
         >
             {/* Custom Header for Drag/Minimize */}

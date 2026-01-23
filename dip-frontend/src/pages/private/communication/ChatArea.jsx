@@ -35,7 +35,7 @@ const ChatArea = ({ room, onOpenRooms, onOpenMembers, onJoinVoice }) => {
                 .from('communication_messages')
                 .select(`
                     *,
-                    profiles:user_id ( full_name, username, avatar_url )
+                    profiles ( full_name, username, avatar_url )
                 `)
                 .eq('room_id', room.id)
                 .order('created_at', { ascending: true }); // Oldest first

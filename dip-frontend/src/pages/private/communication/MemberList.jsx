@@ -36,7 +36,7 @@ const MemberList = ({ room }) => {
             .select(`
                 user_id,
                 joined_at,
-                profiles:user_id ( id, full_name, username, avatar_url, role, passport_id )
+                profiles ( id, full_name, username, avatar_url, role, passport_id )
             `)
             .eq('room_id', room.id)
             .order('joined_at', { ascending: true });
