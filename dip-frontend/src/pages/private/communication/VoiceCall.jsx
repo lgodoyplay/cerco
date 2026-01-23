@@ -15,9 +15,10 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
             if (!jitsiContainerRef.current) return;
 
             const domain = 'meet.jit.si';
-            // Use room ID for unique, safe room names, or sanitize name robustly
+            // Use room ID for unique, safe room names
             // Prefixing with 'DPF_' to avoid collisions with common names on public Jitsi
-            const safeRoomName = `DPF_${room.id.replace(/-/g, '')}`; 
+            // Using a simple format as requested: DPF-RoomID
+            const safeRoomName = `DPF-${room.id.substring(0, 8).toUpperCase()}`; 
             
             const options = {
                 roomName: safeRoomName,
@@ -40,7 +41,14 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
                     enableClosePage: false,
                     enableNoAudioDetection: true,
                     enableNoisyMicDetection: true,
-                    // Force new implementation might help or disable features causing issues
+                    // Critical settings for "Discord-like" instant join
+                    enableLobby: false, // Disable lobby
+                    requireDisplayName: true,
+                    startAudioOnly: false,
+                    fileRecordingsEnabled: false,
+                    liveStreamingEnabled: false,
+                    // Security settings
+                    disableThirdPartyRequests: true,
                 },
                 interfaceConfigOverwrite: {
                     TOOLBAR_BUTTONS: [
@@ -53,7 +61,10 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
                     DEFAULT_BACKGROUND: '#0f172a',
                     showBrandWatermark: false,
                     brandWatermarkLink: '',
-                    appname: 'DPF System'
+                    appname: 'DPF System',
+                    // UI Tweaks
+                    DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+                    filmStripOnly: false,
                 }
             };
 
