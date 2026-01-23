@@ -52,6 +52,8 @@ const UsersSettings = () => {
     { id: 'revenue', label: 'Receita' },
     { id: 'prf', label: 'Integração PRF' },
     { id: 'lawyer', label: 'Advogados' },
+    { id: 'courses', label: 'Cursos/Ensino' },
+    { id: 'anp', label: 'Gestão ANP' },
     { id: 'settings', label: 'Configurações' },
   ];
 
