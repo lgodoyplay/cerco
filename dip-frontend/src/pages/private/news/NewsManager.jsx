@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { Newspaper, Plus, Search, Calendar, Trash2, Edit, Image as ImageIcon, Eye, X } from 'lucide-react';
+import { 
+  Newspaper, 
+  Plus, 
+  Search, 
+  Calendar, 
+  Trash2, 
+  Edit, 
+  Image as ImageIcon, 
+  Eye, 
+  X,
+  Save,
+  RotateCcw
+} from 'lucide-react';
 import clsx from 'clsx';
 import ImageUploadArea from '../../../components/ImageUploadArea';
 
@@ -9,7 +21,6 @@ const NewsManager = () => {
   const { user } = useAuth();
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -17,6 +28,7 @@ const NewsManager = () => {
     image_url: '',
     is_public: true
   });
+  const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
     fetchNews();
@@ -44,6 +56,7 @@ const NewsManager = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSuccessMsg('');
     try {
       if (editingId) {
         const { error } = await supabase
@@ -54,6 +67,7 @@ const NewsManager = () => {
           })
           .eq('id', editingId);
         if (error) throw error;
+        setSuccessMsg('Notícia atualizada com sucesso!');
       } else {
         const { error } = await supabase
           .from('news')
@@ -62,11 +76,14 @@ const NewsManager = () => {
             author_id: user.id
           }]);
         if (error) throw error;
+        setSuccessMsg('Notícia publicada com sucesso!');
       }
 
-      setIsModalOpen(false);
       resetForm();
       fetchNews();
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMsg(''), 3000);
     } catch (error) {
       console.error('Error saving news:', error);
       alert('Erro ao salvar notícia.');
@@ -79,6 +96,7 @@ const NewsManager = () => {
       const { error } = await supabase.from('news').delete().eq('id', id);
       if (error) throw error;
       fetchNews();
+      if (editingId === id) resetForm();
     } catch (error) {
       console.error('Error deleting news:', error);
     }
@@ -92,7 +110,7 @@ const NewsManager = () => {
       is_public: item.is_public
     });
     setEditingId(item.id);
-    setIsModalOpen(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resetForm = () => {
@@ -131,156 +149,181 @@ const NewsManager = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Newspaper className="text-federal-500" />
-            Gerenciador de Notícias
-          </h2>
-          <p className="text-slate-400">Publique notícias e apreensões para o portal público.</p>
+    <div className="min-h-screen bg-slate-950 pb-20">
+      {/* Header */}
+      <div className="bg-slate-900 border-b border-slate-800 pt-8 pb-4 px-4 sm:px-6 lg:px-8 mb-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-federal-600/20 border border-federal-500/30 flex items-center justify-center">
+              <Newspaper className="text-federal-400" size={24} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">Gerenciador de Notícias</h1>
+              <p className="text-slate-400 text-sm">Publique e gerencie notícias do portal</p>
+            </div>
+          </div>
         </div>
-        <button 
-          onClick={() => { resetForm(); setIsModalOpen(true); }}
-          className="px-4 py-2 bg-federal-600 hover:bg-federal-700 text-white rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-federal-900/20"
-        >
-          <Plus size={18} />
-          Nova Notícia
-        </button>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-        {loading ? (
-           <div className="p-8 text-center text-slate-500">Carregando...</div>
-        ) : news.length === 0 ? (
-           <div className="p-8 text-center text-slate-500">Nenhuma notícia publicada.</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-            {news.map((item) => (
-              <div key={item.id} className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col group">
-                <div className="h-48 bg-slate-800 relative overflow-hidden">
-                  {item.image_url ? (
-                    <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-700">
-                      <ImageIcon size={48} />
-                    </div>
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Formulário (Esquerda) */}
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sticky top-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                {editingId ? <Edit className="text-federal-500" /> : <Plus className="text-federal-500" />}
+                {editingId ? 'Editar Notícia' : 'Nova Notícia'}
+              </h3>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-1">Título</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Título da notícia..."
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
+                  />
+                </div>
+
+                <div>
+                  <ImageUploadArea
+                    label="Imagem de Capa"
+                    id="news-image"
+                    image={formData.image_url}
+                    onUpload={handleImageUpload}
+                    onRemove={() => setFormData(prev => ({ ...prev, image_url: '' }))}
+                    aspect={16/9}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-1">Conteúdo</label>
+                  <textarea
+                    required
+                    rows="6"
+                    placeholder="Descreva os detalhes..."
+                    value={formData.content}
+                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500 resize-none"
+                  />
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-slate-950/50 rounded-lg border border-slate-800">
+                  <input 
+                    type="checkbox"
+                    id="is_public"
+                    checked={formData.is_public}
+                    onChange={(e) => setFormData({...formData, is_public: e.target.checked})}
+                    className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-federal-600 focus:ring-federal-500 focus:ring-offset-0 cursor-pointer"
+                  />
+                  <label htmlFor="is_public" className="text-sm font-medium text-slate-300 cursor-pointer select-none flex-1">
+                    Publicar na Home
+                  </label>
+                </div>
+
+                {successMsg && (
+                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 text-sm text-center">
+                    {successMsg}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  {editingId && (
+                    <button
+                      type="button"
+                      onClick={resetForm}
+                      className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all"
+                    >
+                      Cancelar
+                    </button>
                   )}
-                  <div className="absolute top-2 right-2 flex gap-1">
-                    <button 
-                      onClick={() => handleEdit(item)}
-                      className="p-2 bg-slate-900/80 text-white hover:bg-federal-600 rounded-lg backdrop-blur-sm transition-colors"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 bg-slate-900/80 text-white hover:bg-red-600 rounded-lg backdrop-blur-sm transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 py-3 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-federal-900/20 disabled:opacity-50 flex justify-center items-center gap-2"
+                  >
+                    {loading ? 'Salvando...' : (editingId ? 'Salvar Alterações' : 'Publicar')}
+                  </button>
                 </div>
-                <div className="p-4 flex-1 flex flex-col">
-                  <h3 className="text-lg font-bold text-white mb-2 line-clamp-2">{item.title}</h3>
-                  <p className="text-slate-400 text-sm line-clamp-3 mb-4 flex-1">{item.content}</p>
-                  <div className="flex justify-between items-center text-xs text-slate-500 mt-auto pt-4 border-t border-slate-800">
-                    <span className="flex items-center gap-1">
-                      <Calendar size={12} />
-                      {new Date(item.created_at).toLocaleDateString()}
-                    </span>
-                    <span>{item.author?.full_name}</span>
-                  </div>
+              </form>
+            </div>
+          </div>
+
+          {/* Lista de Notícias (Direita) */}
+          <div className="lg:col-span-2">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 min-h-[500px]">
+              <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                <Newspaper className="text-federal-500" />
+                Notícias Publicadas
+              </h3>
+
+              {loading && !news.length ? (
+                <div className="text-center py-10 text-slate-500">Carregando...</div>
+              ) : news.length === 0 ? (
+                <div className="text-center py-10 text-slate-500">Nenhuma notícia encontrada.</div>
+              ) : (
+                <div className="space-y-4">
+                  {news.map((item) => (
+                    <div key={item.id} className="group bg-slate-950 border border-slate-800 hover:border-federal-500/50 rounded-xl p-4 flex gap-4 transition-all hover:shadow-lg hover:shadow-federal-900/10">
+                      {/* Thumbnail */}
+                      <div className="w-24 h-24 shrink-0 rounded-lg bg-slate-900 overflow-hidden border border-slate-800">
+                        {item.image_url ? (
+                          <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-700">
+                            <ImageIcon size={24} />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 flex flex-col">
+                        <div className="flex justify-between items-start gap-2">
+                          <h4 className="font-bold text-white line-clamp-1">{item.title}</h4>
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button 
+                              onClick={() => handleEdit(item)}
+                              className="p-1.5 hover:bg-federal-600/20 text-slate-400 hover:text-federal-400 rounded-lg transition-colors"
+                              title="Editar"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(item.id)}
+                              className="p-1.5 hover:bg-red-500/10 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
+                              title="Excluir"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <p className="text-sm text-slate-400 line-clamp-2 mt-1 mb-auto">
+                          {item.content}
+                        </p>
+
+                        <div className="flex items-center justify-between text-xs text-slate-500 mt-2 pt-2 border-t border-slate-800/50">
+                          <span className="flex items-center gap-1">
+                            <Calendar size={12} />
+                            {new Date(item.created_at).toLocaleDateString()}
+                          </span>
+                          <span>{item.author?.full_name}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-2xl p-8 shadow-2xl relative animate-in fade-in zoom-in duration-200 my-8">
-            <button 
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-6 right-6 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
-            >
-              <X size={24} />
-            </button>
-            
-            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3 pb-4 border-b border-slate-800">
-              {editingId ? <Edit size={32} className="text-federal-500" /> : <Plus size={32} className="text-federal-500" />}
-              {editingId ? 'Editar Notícia' : 'Nova Notícia'}
-            </h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Título</label>
-                <input 
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none"
-                  placeholder="Título da notícia ou apreensão..."
-                  required
-                />
-              </div>
-
-              <div>
-                <ImageUploadArea
-                  label="Imagem / Documento"
-                  id="news-image"
-                  image={formData.image_url}
-                  onUpload={handleImageUpload}
-                  onRemove={() => setFormData(prev => ({ ...prev, image_url: '' }))}
-                  aspect={16/9}
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Conteúdo</label>
-                <textarea 
-                  value={formData.content}
-                  onChange={(e) => setFormData({...formData, content: e.target.value})}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-federal-500 outline-none h-32 resize-none"
-                  placeholder="Descreva os detalhes..."
-                  required
-                />
-              </div>
-
-              <div className="flex items-center gap-3 p-3 bg-slate-950/50 rounded-lg border border-slate-800">
-                <input 
-                  type="checkbox"
-                  id="is_public"
-                  checked={formData.is_public}
-                  onChange={(e) => setFormData({...formData, is_public: e.target.checked})}
-                  className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-federal-600 focus:ring-federal-500 focus:ring-offset-0 cursor-pointer"
-                />
-                <label htmlFor="is_public" className="text-sm font-medium text-slate-300 cursor-pointer select-none flex-1">
-                  Publicar na Home (Visível para todos)
-                </label>
-              </div>
-
-              <div className="pt-4 border-t border-slate-800 flex justify-end gap-3">
-                <button 
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit"
-                  className="px-6 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg shadow-lg shadow-federal-900/20 transition-all flex items-center gap-2"
-                >
-                  {editingId ? 'Salvar Alterações' : 'Publicar Notícia'}
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
