@@ -5,7 +5,6 @@ import { supabase } from '../lib/supabase';
 import { prefetchRoute } from '../routes/routeLoaders';
 import ChangePasswordModal from './ChangePasswordModal';
 import { 
-  Book, 
   LayoutDashboard, 
   FileText, 
   UserX, 
@@ -64,12 +63,6 @@ const PrivateLayout = () => {
 
   const navItems = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Painel Geral', prefetchKey: 'DashboardHome' },
-    { 
-      to: user?.passport_id?.startsWith('PRF') ? '/dashboard/curso-prf' : '/dashboard/curso-dpf', 
-      icon: Book, 
-      label: 'Curso de Formação', 
-      prefetchKey: 'CursoDPF' 
-    },
     { to: '/dashboard/anp-student', icon: GraduationCap, label: 'Área do Aluno', prefetchKey: 'ANPStudentDashboard' },
     { to: '/dashboard/communication', icon: Radio, label: 'Comunicação', prefetchKey: 'CommunicationHub', permission: 'communication_view' },
     { to: '/dashboard/logistics', icon: Package, label: 'Logística', prefetchKey: 'LogisticsDashboard', permission: 'logistics_view' },
