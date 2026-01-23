@@ -195,7 +195,11 @@ export const SettingsProvider = ({ children }) => {
       logAction(`Configuração atualizada: ${key}`);
     } catch (error) {
       console.error(`Error saving setting ${key}:`, error);
-      alert('Erro ao salvar configuração.');
+      if (error.code === '42P01' || error.message?.includes('system_settings')) {
+        alert('ERRO CRÍTICO: Tabela de configurações não encontrada. Vá em "Diagnóstico do Sistema" e execute o script de correção.');
+      } else {
+        alert('Erro ao salvar configuração.');
+      }
     }
   };
 
