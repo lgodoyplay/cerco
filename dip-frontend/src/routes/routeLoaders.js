@@ -43,6 +43,7 @@ export const routeLoaders = {
   LawyerDashboard: () => import('../pages/private/lawyers/LawyerDashboard'),
   ANPStudentDashboard: () => import('../pages/private/anp/ANPStudentDashboard'),
   LogisticsDashboard: () => import('../pages/private/logistics/LogisticsDashboard'),
+  CommunicationHub: () => import('../pages/private/communication/CommunicationHub'),
 
   // Settings
   SettingsLayout: () => import('../pages/private/settings/SettingsLayout'),

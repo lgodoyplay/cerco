@@ -25,7 +25,8 @@ import {
   Car,
   Scale,
   GraduationCap,
-  Package
+  Package,
+  Radio
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
@@ -70,6 +71,7 @@ const PrivateLayout = () => {
       prefetchKey: 'CursoDPF' 
     },
     { to: '/dashboard/anp-student', icon: GraduationCap, label: 'Área do Aluno', prefetchKey: 'ANPStudentDashboard' },
+    { to: '/dashboard/communication', icon: Radio, label: 'Comunicação', prefetchKey: 'CommunicationHub' },
     { to: '/dashboard/logistics', icon: Package, label: 'Logística', prefetchKey: 'LogisticsDashboard' },
     { to: '/dashboard/prf', icon: Car, label: 'Integração PRF', prefetchKey: 'PRFIntegration', permission: 'prf_view' },
     { to: '/dashboard/lawyers', icon: Scale, label: 'Advogados', prefetchKey: 'LawyerDashboard', permission: 'lawyer_view' },
@@ -234,7 +236,7 @@ const PrivateLayout = () => {
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto p-4 md:p-8 relative z-10">
+        <div className={clsx("flex-1 overflow-auto relative z-10", location.pathname.startsWith('/dashboard/communication') ? "p-0" : "p-4 md:p-8")}>
           <Outlet />
         </div>
       </main>

@@ -50,6 +50,7 @@ const PRFIntegration = React.lazy(() => lazyImport(routeLoaders.PRFIntegration))
 const LawyerDashboard = React.lazy(() => lazyImport(routeLoaders.LawyerDashboard));
 const LogisticsDashboard = React.lazy(() => lazyImport(routeLoaders.LogisticsDashboard));
 const ANPStudentDashboard = React.lazy(() => lazyImport(routeLoaders.ANPStudentDashboard));
+const CommunicationHub = React.lazy(() => lazyImport(routeLoaders.CommunicationHub));
 
 // Settings Pages - Eagerly loaded for better UX
 import SecurityConfig from './pages/private/settings/SecurityConfig';
@@ -260,6 +261,9 @@ function App() {
 
             {/* ANP Student Route */}
             <Route path="anp-student" element={<ANPStudentDashboard />} />
+
+            {/* Communication Hub */}
+            <Route path="communication" element={<CommunicationHub />} />
 
             {/* Profile Route */}
             <Route path="profile" element={<ProfilePage />} />
