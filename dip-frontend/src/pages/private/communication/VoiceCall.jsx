@@ -54,7 +54,20 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
 
             // Initialize API
             if (window.JitsiMeetExternalAPI) {
-                jitsiApiRef.current = new window.JitsiMeetExternalAPI(domain, options);
+                // Suppress specific Jitsi warning about speaker-selection
+                const originalError = console.error;
+                console.error = (...args) => {
+                    if (args[0] && typeof args[0] === 'string' && args[0].includes("Unrecognized feature: 'speaker-selection'")) {
+                        return;
+                    }
+                    originalError.apply(console, args);
+                };
+
+                try {
+                    jitsiApiRef.current = new window.JitsiMeetExternalAPI(domain, options);
+                } finally {
+                    console.error = originalError;
+                }
                 
                 jitsiApiRef.current.addEventListeners({
                     videoConferenceLeft: () => {
