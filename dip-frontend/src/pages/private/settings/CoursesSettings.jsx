@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
+import { useSettings } from '../../../hooks/useSettings';
 import { 
   BookOpen, 
   Plus, 
@@ -19,10 +20,12 @@ import { getInitials } from '../../../utils/stringUtils';
 
 const CoursesSettings = () => {
   const { user } = useAuth();
+  const { roles: systemRoles } = useSettings();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [userPermissions, setUserPermissions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   
   // Modal states
@@ -54,12 +57,13 @@ const CoursesSettings = () => {
       if (!user) return;
       const { data, error } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, permissions')
         .eq('id', user.id)
         .single();
       
       if (error) throw error;
       setUserRole(data?.role);
+      setUserPermissions(data?.permissions || []);
     } catch (error) {
       console.error('Error fetching role:', error);
     }
@@ -234,7 +238,18 @@ const CoursesSettings = () => {
 
   // Permissões: Diretor, Coordenador, Escrivão e Agente (todos podem gerenciar para testes)
   const userRoleLower = (userRole || '').toLowerCase();
-  const isManager = ['diretor', 'coordenador', 'escrivão', 'agente'].some(role => userRoleLower.includes(role));
+  
+  // 1. Check Permissions
+  const hasPermission = userPermissions.includes('courses_manage') || userPermissions.includes('admin_access');
+  
+  // 2. Check Hierarchy (Agente = 4, anything higher/smaller number is manager)
+  const roleObj = systemRoles?.find(r => r.title === userRole || r.title.toLowerCase() === userRoleLower);
+  const isHighRank = roleObj ? roleObj.hierarchy <= 4 : false;
+  
+  // 3. Fallback for legacy hardcoded strings
+  const isLegacyManager = ['diretor', 'coordenador', 'escrivão', 'agente'].some(role => userRoleLower.includes(role));
+
+  const isManager = hasPermission || isHighRank || isLegacyManager;
 
   const filteredCourses = courses.filter(course => 
     (course.nome || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
