@@ -123,35 +123,33 @@ export const AuthProvider = ({ children }) => {
           const { data, error } = await supabase.rpc('get_email_by_identifier', { identifier: email });
           
           if (error) {
-            console.warn('Erro ao resolver ID (verifique se update_login_capabilities.sql foi executado):', error);
-            // Se o erro for 500 ou 404 na RPC, tentamos continuar se parecer um email
-            if (email.includes('@')) {
-                // É um email, ignora o erro da RPC e tenta logar direto
-            } else {
-                throw new Error("Erro no sistema de login (RPC falhou). Tente logar com seu E-MAIL completo.");
-            }
-          }
-          
-          if (data) {
-              console.log('Email resolvido:', data);
+            console.error('CRITICAL: RPC get_email_by_identifier falhou:', error);
+            // Se falhar a RPC, tentamos construir o email padrão do sistema como fallback
+            const fallbackEmail = `${email.toLowerCase()}@dip.system`;
+            console.log(`RPC falhou. Tentando fallback para email padrão: ${fallbackEmail}`);
+            email = fallbackEmail;
+          } else if (data) {
+              console.log('Email resolvido via RPC:', data);
               email = data;
           } else {
-              console.log('Nenhum email encontrado para este ID.');
-              // Se não encontrou email e não tem @, não adianta tentar logar
-              throw new Error("ID Funcional não encontrado ou sistema de login desatualizado. Por favor, entre com seu E-MAIL.");
+              console.log('Nenhum email encontrado via RPC. Tentando fallback padrão.');
+              const fallbackEmail = `${email.toLowerCase()}@dip.system`;
+              email = fallbackEmail;
           }
       }
 
+      console.log(`Tentando login com email: ${email}`);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
-      
-      if (data.session) {
-        await loadUserSession(data.session);
+      if (error) {
+        console.error('CRITICAL: signInWithPassword falhou:', error);
+        throw error;
       }
+      
+      console.log('Login bem sucedido! Sessão:', data.session?.user?.id);
       
       return true;
     } catch (error) {
