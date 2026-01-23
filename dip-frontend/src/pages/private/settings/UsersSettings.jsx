@@ -47,6 +47,8 @@ const UsersSettings = () => {
     { id: 'investigations', label: 'Investigações' },
     { id: 'forensics', label: 'Perícias' },
     { id: 'weapons', label: 'Porte de Armas' },
+    { id: 'logistics', label: 'Logística' },
+    { id: 'communication', label: 'Comunicação' },
     { id: 'revenue', label: 'Receita' },
     { id: 'prf', label: 'Integração PRF' },
     { id: 'lawyer', label: 'Advogados' },
