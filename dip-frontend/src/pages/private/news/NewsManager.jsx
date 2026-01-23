@@ -200,9 +200,8 @@ const NewsManager = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 py-8">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl animate-scale-in relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl animate-scale-in max-h-[90vh] overflow-y-auto relative">
              <button 
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-1 hover:bg-slate-800 rounded-full z-10"
@@ -210,7 +209,7 @@ const NewsManager = () => {
               <X size={20} />
             </button>
             
-            <div className="p-6 border-b border-slate-800">
+            <div className="p-6 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 {editingId ? <Edit size={20} className="text-federal-500" /> : <Plus size={20} className="text-federal-500" />}
                 {editingId ? 'Editar Notícia' : 'Nova Notícia'}
@@ -283,7 +282,6 @@ const NewsManager = () => {
             </form>
           </div>
         </div>
-      </div>
       )}
     </div>
   );

@@ -17,24 +17,33 @@ export const AuthProvider = ({ children }) => {
 
     try {
       if (session?.user) {
-        // Busca perfil para obter role e username
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profileError && profileError.code !== 'PGRST116') {
-           console.warn("Auth: Erro ao carregar perfil.", profileError);
+        let profile = null;
+        
+        // Tenta buscar o perfil, mas não falha o login se der erro de rede
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (error && error.code !== 'PGRST116') {
+             console.warn("Auth: Erro ao carregar perfil.", error);
+          }
+          profile = data;
+        } catch (profileErr) {
+          console.warn("Auth: Exceção ao buscar perfil (rede?):", profileErr);
+          // Não fazemos nada, profile continua null e seguimos o fluxo
         }
 
         if (isMounted.current) {
-          setUser({ 
+          setUser(prev => ({ 
+            ...(prev || {}), // Mantém dados anteriores se existirem
             ...session.user, 
             ...(profile || {}), 
             username: profile?.full_name || session.user.email,
-            role: profile?.role || 'Agente'
-          });
+            role: profile?.role || prev?.role || 'Agente'
+          }));
         }
       } else {
         // Só limpamos o usuário se NÃO estivermos no meio de um login manual
@@ -44,15 +53,9 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       console.error("Erro crítico ao carregar sessão:", err);
-      if (isMounted.current && !isLoggingIn.current) setUser(null);
-      
-      // Tenta limpar sessão inválida para evitar loop de erro
-      try {
-        await supabase.auth.signOut();
-        localStorage.removeItem('sb-' + import.meta.env.VITE_SUPABASE_URL?.split('.')[0]?.split('//')[1] + '-auth-token');
-      } catch (e) {
-        // Ignora erro de logout
-      }
+      // Se tivermos um erro crítico aqui, evitamos deslogar imediatamente se já tivermos um usuário
+      // Apenas se não tiver user nenhum é que forçamos null
+      if (isMounted.current && !isLoggingIn.current && !user) setUser(null);
     } finally {
       if (isMounted.current) setLoading(false);
     }
