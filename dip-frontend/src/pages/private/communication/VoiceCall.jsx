@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { supabase } from '../../../lib/supabase';
 import { Minimize2, Maximize2, X, Mic, MicOff, Video, VideoOff } from 'lucide-react';
 
 const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, className }) => {

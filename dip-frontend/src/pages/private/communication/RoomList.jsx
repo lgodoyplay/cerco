@@ -40,7 +40,17 @@ const RoomList = ({ selectedRoom, onSelectRoom, onCreateRoom }) => {
         e.stopPropagation();
         if(!confirm('Tem certeza que deseja fechar esta frequência?')) return;
         
-        await supabase.from('communication_rooms').delete().eq('id', roomId);
+        try {
+            const { error } = await supabase.from('communication_rooms').delete().eq('id', roomId);
+            
+            if (error) {
+                console.error('Error deleting room:', error);
+                alert('Erro ao excluir frequência: ' + error.message);
+            }
+        } catch (err) {
+            console.error('Exception deleting room:', err);
+            alert('Erro inesperado ao excluir frequência.');
+        }
     };
 
     return (
