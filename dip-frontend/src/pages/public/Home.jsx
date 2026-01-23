@@ -13,13 +13,18 @@ import {
   Send,
   User,
   FileText,
-  X
+  X,
+  Newspaper,
+  Calendar,
+  ChevronRight
 } from 'lucide-react';
 import clsx from 'clsx';
 
 const Home = () => {
   const [wantedList, setWantedList] = useState([]);
+  const [newsList, setNewsList] = useState([]);
   const [loadingWanted, setLoadingWanted] = useState(false);
+  const [selectedNews, setSelectedNews] = useState(null);
   const [tipForm, setTipForm] = useState({
     target: '',
     details: '',
@@ -30,7 +35,27 @@ const Home = () => {
 
   useEffect(() => {
     fetchWanted();
+    fetchNews();
   }, []);
+
+  const fetchNews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('news')
+        .select(`
+          *,
+          author:author_id(full_name)
+        `)
+        .eq('is_public', true)
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (error && error.code !== '42P01') throw error;
+      setNewsList(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar notícias:', error);
+    }
+  };
 
   const fetchWanted = async () => {
     setLoadingWanted(true);
@@ -216,6 +241,120 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* NEWS SECTION */}
+      {newsList.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/40 border border-federal-700/50 text-federal-300 text-xs font-semibold uppercase tracking-wider mb-2">
+                <Newspaper size={14} />
+                <span>Jornal da Federal</span>
+              </div>
+              <h2 className="text-3xl font-bold text-white">Últimas Notícias e Apreensões</h2>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {newsList.map((news) => (
+              <div 
+                key={news.id} 
+                className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden group hover:border-federal-500/50 transition-all cursor-pointer"
+                onClick={() => setSelectedNews(news)}
+              >
+                <div className="h-48 overflow-hidden relative">
+                  {news.image_url ? (
+                    <img 
+                      src={news.image_url} 
+                      alt={news.title} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                      <Shield size={48} className="text-slate-700" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center gap-2 text-xs text-federal-400 mb-2">
+                    <Calendar size={12} />
+                    {new Date(news.created_at).toLocaleDateString()}
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-federal-400 transition-colors">
+                    {news.title}
+                  </h3>
+                  <p className="text-slate-400 text-sm line-clamp-3 mb-4">
+                    {news.content}
+                  </p>
+                  <div className="flex items-center text-federal-400 text-sm font-semibold group-hover:translate-x-1 transition-transform">
+                    Ler mais <ChevronRight size={16} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* NEWS MODAL */}
+      {selectedNews && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedNews(null)}>
+          <div 
+            className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative h-64 sm:h-80 w-full overflow-hidden">
+              {selectedNews.image_url ? (
+                <img 
+                  src={selectedNews.image_url} 
+                  alt={selectedNews.title} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                  <Shield size={64} className="text-slate-700" />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+              <button 
+                onClick={() => setSelectedNews(null)}
+                className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-md transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="p-8">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400 mb-4">
+                <span className="flex items-center gap-1.5 text-federal-400">
+                  <Calendar size={14} />
+                  {new Date(selectedNews.created_at).toLocaleDateString()}
+                </span>
+                <span className="w-1 h-1 rounded-full bg-slate-700" />
+                <span>Por: {selectedNews.author?.full_name || 'Assessoria de Comunicação'}</span>
+              </div>
+              
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6 leading-tight">
+                {selectedNews.title}
+              </h2>
+              
+              <div className="prose prose-invert prose-lg max-w-none text-slate-300 whitespace-pre-wrap">
+                {selectedNews.content}
+              </div>
+
+              <div className="mt-8 pt-8 border-t border-slate-800 flex justify-end">
+                <button 
+                  onClick={() => setSelectedNews(null)}
+                  className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-colors"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section
         id="regra-de-ouro"

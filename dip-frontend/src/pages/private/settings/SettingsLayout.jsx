@@ -16,7 +16,8 @@ import {
   BookOpen,
   Share2,
   CheckSquare,
-  Activity
+  Activity,
+  AlertTriangle
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -25,6 +26,7 @@ const SettingsLayout = () => {
 
   const menuItems = [
     { to: '/dashboard/settings/users', icon: Users, label: 'Usuários & Permissões' },
+    { to: '/dashboard/settings/warnings', icon: AlertTriangle, label: 'Advertências', permission: 'warnings_manage' },
     { to: '/dashboard/settings/courses', icon: BookOpen, label: 'Gestão de Cursos', permission: 'courses_view' },
     { to: '/dashboard/settings/webhooks', icon: Share2, label: 'Webhooks & Integrações' },
     { to: '/dashboard/settings/forms', icon: Inbox, label: 'Formulários Recebidos' },

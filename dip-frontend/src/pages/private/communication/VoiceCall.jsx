@@ -15,19 +15,26 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
 
             const domain = 'meet.jit.si';
             const options = {
-                roomName: room.name, // Using the database name which has FIVEM- prefix
+                roomName: room.name.replace(/[^a-zA-Z0-9]/g, ''), // Remove spaces and special chars for better URL compatibility
                 width: '100%',
                 height: '100%',
                 parentNode: jitsiContainerRef.current,
                 userInfo: {
                     displayName: user.full_name,
-                    email: user.email 
+                    email: user.email,
+                    avatarUrl: user.avatar_url?.startsWith('http') 
+                        ? user.avatar_url 
+                        : supabase.storage.from('avatars').getPublicUrl(user.avatar_url).data.publicUrl // Resolve full URL
                 },
                 configOverwrite: {
-                    startWithAudioMuted: false, // Start with audio ON
-                    startWithVideoMuted: true,  // Start with video OFF
+                    startWithAudioMuted: false,
+                    startWithVideoMuted: true,
                     prejoinPageEnabled: false,
-                    disableDeepLinking: true // Prevent opening app on mobile
+                    disableDeepLinking: true,
+                    enableWelcomePage: false, // Disable welcome page
+                    enableClosePage: false, // Disable close page
+                    enableNoAudioDetection: true,
+                    enableNoisyMicDetection: true
                 },
                 interfaceConfigOverwrite: {
                     TOOLBAR_BUTTONS: [
@@ -37,7 +44,10 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
                     SHOW_JITSI_WATERMARK: false,
                     SHOW_WATERMARK_FOR_GUESTS: false,
                     MOBILE_APP_PROMO: false,
-                    DEFAULT_BACKGROUND: '#0f172a' // Slate-900 match
+                    DEFAULT_BACKGROUND: '#0f172a',
+                    showBrandWatermark: false,
+                    brandWatermarkLink: '',
+                    appname: 'DPF System'
                 }
             };
 

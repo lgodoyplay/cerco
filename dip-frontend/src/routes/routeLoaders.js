@@ -44,10 +44,12 @@ export const routeLoaders = {
   ANPStudentDashboard: () => import('../pages/private/anp/ANPStudentDashboard'),
   LogisticsDashboard: () => import('../pages/private/logistics/LogisticsDashboard'),
   CommunicationHub: () => import('../pages/private/communication/CommunicationHub'),
+  NewsManager: () => import('../pages/private/news/NewsManager'),
 
   // Settings
   SettingsLayout: () => import('../pages/private/settings/SettingsLayout'),
   UsersSettings: () => import('../pages/private/settings/UsersSettings'),
+  WarningsSettings: () => import('../pages/private/settings/WarningsSettings'),
   CoursesSettings: () => import('../pages/private/settings/CoursesSettings'),
   WebhookSettings: () => import('../pages/private/settings/WebhookSettings'),
   CorporationSettings: () => import('../pages/private/settings/CorporationSettings'),

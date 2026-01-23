@@ -3,6 +3,8 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
 import { UserMinus } from 'lucide-react';
 
+import { getInitials } from '../../../utils/stringUtils';
+
 const MemberList = ({ room }) => {
     const { user } = useAuth();
     const [members, setMembers] = useState([]);
@@ -98,9 +100,26 @@ const MemberList = ({ room }) => {
                         <div className="relative">
                             <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-600 group-hover:border-slate-500 transition-colors">
                                 {member.profiles?.avatar_url ? (
-                                    <img src={member.profiles.avatar_url} className="w-full h-full object-cover" alt="Avatar" />
+                                    <img 
+                                        src={member.profiles.avatar_url?.startsWith('http') 
+                                            ? member.profiles.avatar_url 
+                                            : supabase.storage.from('avatars').getPublicUrl(member.profiles.avatar_url).data.publicUrl
+                                        } 
+                                        className="w-full h-full object-cover" 
+                                        alt="Avatar" 
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.style.display = 'none';
+                                            e.target.parentElement.classList.add('flex', 'items-center', 'justify-center');
+                                            // Create a span element for initials
+                                            const span = document.createElement('span');
+                                            span.className = 'text-sm font-bold text-slate-300';
+                                            span.innerText = getInitials(member.profiles?.full_name);
+                                            e.target.parentElement.appendChild(span);
+                                        }}
+                                    />
                                 ) : (
-                                    <span className="text-sm font-bold text-slate-300">{member.profiles?.full_name?.[0]}</span>
+                                    <span className="text-sm font-bold text-slate-300">{getInitials(member.profiles?.full_name)}</span>
                                 )}
                             </div>
                             <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-950 rounded-full"></div>

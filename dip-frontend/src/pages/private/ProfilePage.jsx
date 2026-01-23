@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import AvatarUpload from '../../components/AvatarUpload';
-import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText } from 'lucide-react';
+import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText, AlertTriangle } from 'lucide-react';
 import clsx from 'clsx';
 
 const ProfilePage = () => {
@@ -11,12 +11,14 @@ const ProfilePage = () => {
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState(null);
   const [courses, setCourses] = useState([]);
+  const [warnings, setWarnings] = useState([]);
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
     if (user) {
       getProfile();
       getMyCourses();
+      getMyWarnings();
     }
   }, [user]);
 
@@ -57,6 +59,24 @@ const ProfilePage = () => {
       setCourses(data || []);
     } catch (error) {
       console.error('Error loading courses:', error.message);
+    }
+  };
+
+  const getMyWarnings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('warnings')
+        .select(`
+          *,
+          issuer:issued_by(full_name)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error && error.code !== '42P01') throw error; // Ignore table missing error
+      setWarnings(data || []);
+    } catch (error) {
+      console.error('Error loading warnings:', error.message);
     }
   };
 
@@ -250,11 +270,53 @@ const ProfilePage = () => {
             </form>
           </div>
 
+          {/* Warnings Section */}
+          {warnings.length > 0 && (
+            <div className="bg-slate-900/50 border border-red-500/30 rounded-2xl p-6 shadow-lg">
+              <h3 className="text-lg font-bold text-red-400 mb-4 flex items-center gap-2">
+                <AlertTriangle size={20} />
+                Advertências e Punições
+              </h3>
+              
+              <div className="space-y-3">
+                {warnings.map((warning) => (
+                  <div key={warning.id} className="bg-slate-950/50 border border-slate-800 rounded-xl p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className={clsx(
+                        "px-2 py-0.5 rounded text-xs border font-bold uppercase",
+                        warning.severity === 'critical' ? 'bg-red-900/40 text-red-500 border-red-500/60' :
+                        warning.severity === 'high' ? 'bg-red-500/20 text-red-400 border-red-500/40' :
+                        warning.severity === 'medium' ? 'bg-orange-500/20 text-orange-400 border-orange-500/40' :
+                        'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
+                      )}>
+                        {warning.severity === 'low' ? 'Leve' :
+                         warning.severity === 'medium' ? 'Média' :
+                         warning.severity === 'high' ? 'Grave' : 'Gravíssima'}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        {new Date(warning.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-white font-medium">{warning.reason}</p>
+                    {warning.details && (
+                      <p className="text-sm text-slate-400 mt-1 bg-slate-900 p-2 rounded border border-slate-800/50">
+                        {warning.details}
+                      </p>
+                    )}
+                    <p className="text-xs text-slate-600 mt-2">
+                      Aplicada por: {warning.issuer?.full_name || 'Sistema'}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Courses List */}
           <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-lg">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <BookOpen size={20} className="text-federal-500" />
-              Meus Cursos e Especializações
+              Meus Cursos
             </h3>
 
             {courses.length === 0 ? (

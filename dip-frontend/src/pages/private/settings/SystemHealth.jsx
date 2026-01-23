@@ -30,7 +30,10 @@ const SystemHealth = () => {
     'cursos_policiais',
     'weapon_licenses',
     'hearings',
-    'release_orders'
+    'release_orders',
+    'warnings',
+    'news',
+    'communication_room_members'
   ];
 
   const functionsToCheck = [
@@ -97,13 +100,13 @@ const SystemHealth = () => {
   }, []);
 
   const copySqlScript = () => {
-    const sql = `-- SCRIPT DE CORREÇÃO COMPLETA DO BANCO DE DADOS
--- Execute este script no SQL Editor do Supabase para corrigir todos os erros de Reset, Logística e Configurações.
+    const sql = `-- SCRIPT DE CORREÇÃO COMPLETA DO BANCO DE DADOS (ATUALIZADO v7)
+-- Execute este script no SQL Editor do Supabase para corrigir todos os erros.
 
 -- 0. Habilitar extensão para UUID
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 1. CORREÇÃO DA LOGÍSTICA (Recria tabelas com relacionamentos corretos)
+-- 1. CORREÇÃO DA LOGÍSTICA
 DROP TABLE IF EXISTS logistics_requisitions CASCADE;
 CREATE TABLE logistics_requisitions (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -140,8 +143,60 @@ CREATE POLICY "Logistics Requisitions All" ON logistics_requisitions FOR ALL TO 
 DROP POLICY IF EXISTS "Logistics Custody All" ON logistics_custody;
 CREATE POLICY "Logistics Custody All" ON logistics_custody FOR ALL TO authenticated USING (true);
 
+-- 2. CRIAÇÃO DE TABELAS FALTANTES
 
--- 2. CRIAÇÃO DE TABELAS QUE PODEM ESTAR FALTANDO (Erro 404/400)
+-- Warnings (Advertências)
+CREATE TABLE IF NOT EXISTS public.warnings (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  issued_by UUID REFERENCES public.profiles(id),
+  reason TEXT NOT NULL,
+  details TEXT,
+  severity TEXT NOT NULL CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  acknowledged BOOLEAN DEFAULT FALSE,
+  acknowledged_at TIMESTAMPTZ
+);
+ALTER TABLE public.warnings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Warnings access" ON public.warnings;
+CREATE POLICY "Warnings access" ON public.warnings FOR ALL TO authenticated USING (true);
+
+-- News (Notícias)
+CREATE TABLE IF NOT EXISTS public.news (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  image_url TEXT,
+  author_id UUID REFERENCES public.profiles(id),
+  is_public BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.news ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "News access" ON public.news;
+CREATE POLICY "News access" ON public.news FOR ALL TO authenticated USING (true);
+
+-- Communication Rooms
+CREATE TABLE IF NOT EXISTS public.communication_rooms (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT DEFAULT 'voice',
+    owner_id UUID REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS public.communication_room_members (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    room_id UUID REFERENCES public.communication_rooms(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    joined_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(room_id, user_id)
+);
+ALTER TABLE public.communication_rooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.communication_room_members ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Comm Rooms access" ON public.communication_rooms;
+CREATE POLICY "Comm Rooms access" ON public.communication_rooms FOR ALL TO authenticated USING (true);
+DROP POLICY IF EXISTS "Comm Members access" ON public.communication_room_members;
+CREATE POLICY "Comm Members access" ON public.communication_room_members FOR ALL TO authenticated USING (true);
 
 -- Tabela Notifications
 CREATE TABLE IF NOT EXISTS public.notifications (
@@ -179,7 +234,7 @@ ALTER TABLE public.system_logs ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Logs access" ON public.system_logs;
 CREATE POLICY "Logs access" ON public.system_logs FOR ALL TO authenticated USING (true);
 
--- Tabela Cursos (se não existir)
+-- Tabela Cursos
 CREATE TABLE IF NOT EXISTS public.cursos (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     nome TEXT NOT NULL,
@@ -190,7 +245,7 @@ ALTER TABLE public.cursos ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Cursos access" ON public.cursos;
 CREATE POLICY "Cursos access" ON public.cursos FOR ALL TO authenticated USING (true);
 
--- Tabela Cursos Policiais (Vinculação)
+-- Tabela Cursos Policiais
 CREATE TABLE IF NOT EXISTS public.cursos_policiais (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     curso_id UUID REFERENCES public.cursos(id) ON DELETE CASCADE,
@@ -203,70 +258,49 @@ ALTER TABLE public.cursos_policiais ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Cursos policiais access" ON public.cursos_policiais;
 CREATE POLICY "Cursos policiais access" ON public.cursos_policiais FOR ALL TO authenticated USING (true);
 
-
 -- 3. CORREÇÃO DA FUNÇÃO DE RESET (RPC)
--- Agora a função é capaz de lidar com erros e garantir a limpeza
 CREATE OR REPLACE FUNCTION reset_system_data()
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-  -- Tentativa de limpeza em massa (mais rápida)
   BEGIN
     TRUNCATE TABLE
-      license_attachments,
-      weapon_licenses,
-      logistics_custody,
-      logistics_requisitions,
-      financial_assets,
-      financial_records,
-      prf_photos,
-      prf_seizures,
-      prf_fines,
-      hearings,
-      release_orders,
-      petitions,
-      provas,
-      cursos_policiais,
-      investigacoes,
-      prisoes,
-      procurados,
-      boletins,
-      candidatos,
-      cursos,
-      denuncias,
-      notifications,
-      system_logs,
-      system_settings
+      license_attachments, weapon_licenses, logistics_custody, logistics_requisitions,
+      financial_assets, financial_records, prf_photos, prf_seizures, prf_fines,
+      hearings, release_orders, petitions, provas, cursos_policiais, investigacoes,
+      prisoes, procurados, boletins, candidatos, cursos, denuncias, notifications,
+      system_logs, system_settings, warnings, news
     CASCADE;
   EXCEPTION WHEN OTHERS THEN
-    -- Se falhar (ex: alguma tabela não existe), tenta deletar individualmente
-    -- Usamos blocos BEGIN/EXCEPTION individuais para garantir que uma falha não pare as outras
-    BEGIN DELETE FROM public.license_attachments; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.weapon_licenses; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.logistics_custody; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.logistics_requisitions; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.financial_assets; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.financial_records; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.prf_photos; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.prf_seizures; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.prf_fines; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.hearings; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.release_orders; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.petitions; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.provas; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.cursos_policiais; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.investigacoes; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.prisoes; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.procurados; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.boletins; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.candidatos; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.cursos; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.denuncias; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.notifications; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.system_logs; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DELETE FROM public.system_settings; EXCEPTION WHEN OTHERS THEN NULL; END;
+    -- Fallback para delete individual
+    DELETE FROM public.license_attachments;
+    DELETE FROM public.weapon_licenses;
+    DELETE FROM public.logistics_custody;
+    DELETE FROM public.logistics_requisitions;
+    DELETE FROM public.financial_assets;
+    DELETE FROM public.financial_records;
+    DELETE FROM public.prf_photos;
+    DELETE FROM public.prf_seizures;
+    DELETE FROM public.prf_fines;
+    DELETE FROM public.hearings;
+    DELETE FROM public.release_orders;
+    DELETE FROM public.petitions;
+    DELETE FROM public.provas;
+    DELETE FROM public.cursos_policiais;
+    DELETE FROM public.investigacoes;
+    DELETE FROM public.prisoes;
+    DELETE FROM public.procurados;
+    DELETE FROM public.boletins;
+    DELETE FROM public.candidatos;
+    DELETE FROM public.cursos;
+    DELETE FROM public.denuncias;
+    DELETE FROM public.notifications;
+    DELETE FROM public.system_logs;
+    DELETE FROM public.system_settings;
+    DELETE FROM public.warnings;
+    DELETE FROM public.news;
   END;
 END;
 $$;

@@ -25,7 +25,8 @@ import {
   Scale,
   GraduationCap,
   Package,
-  Radio
+  Radio,
+  Newspaper
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
@@ -66,6 +67,7 @@ const PrivateLayout = () => {
     // Only show Student Area if user is strictly 'Aluno'
     ...(user?.role === 'Aluno' ? [{ to: '/dashboard/anp-student', icon: GraduationCap, label: 'Área do Aluno', prefetchKey: 'ANPStudentDashboard' }] : []),
     { to: '/dashboard/communication', icon: Radio, label: 'Comunicação', prefetchKey: 'CommunicationHub', permission: 'communication_view' },
+    { to: '/dashboard/news', icon: Newspaper, label: 'Notícias', permission: 'news_manage' },
     { to: '/dashboard/logistics', icon: Package, label: 'Logística', prefetchKey: 'LogisticsDashboard', permission: 'logistics_view' },
     { to: '/dashboard/prf', icon: Car, label: 'Integração PRF', prefetchKey: 'PRFIntegration', permission: 'prf_view' },
     { to: '/dashboard/lawyers', icon: Scale, label: 'Advogados', prefetchKey: 'LawyerDashboard', permission: 'lawyer_view' },

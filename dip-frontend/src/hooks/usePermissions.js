@@ -67,6 +67,14 @@ const PERMISSIONS = {
   // Settings
   SETTINGS_VIEW: 'settings_view',
   SETTINGS_MANAGE: 'settings_manage',
+
+  // Warnings (Advertências)
+  WARNINGS_VIEW: 'warnings_view',
+  WARNINGS_MANAGE: 'warnings_manage',
+
+  // News (Notícias)
+  NEWS_VIEW: 'news_view',
+  NEWS_MANAGE: 'news_manage',
 };
 
 // Role to Permission Mapping
@@ -93,6 +101,7 @@ const ROLE_PERMISSIONS = {
     PERMISSIONS.INVESTIGATIONS_VIEW, PERMISSIONS.INVESTIGATIONS_MANAGE,
     PERMISSIONS.FORENSICS_VIEW,
     PERMISSIONS.REVENUE_VIEW,
+    PERMISSIONS.NEWS_VIEW, PERMISSIONS.NEWS_MANAGE,
   ],
   
   'Cabo': [
@@ -101,6 +110,7 @@ const ROLE_PERMISSIONS = {
     PERMISSIONS.WANTED_VIEW,
     PERMISSIONS.REPORTS_VIEW,
     PERMISSIONS.INVESTIGATIONS_VIEW,
+    PERMISSIONS.NEWS_VIEW, PERMISSIONS.NEWS_MANAGE,
   ],
   
   'Agente': [
@@ -108,6 +118,7 @@ const ROLE_PERMISSIONS = {
     PERMISSIONS.ARREST_VIEW, PERMISSIONS.ARREST_MANAGE,
     PERMISSIONS.WANTED_VIEW,
     PERMISSIONS.REPORTS_VIEW,
+    PERMISSIONS.NEWS_VIEW, PERMISSIONS.NEWS_MANAGE,
   ],
   
   'Recruta': [
@@ -142,8 +153,10 @@ export const usePermissions = () => {
     // Handle aliases/typos from existing code
     if (permission === 'report_manage') permission = PERMISSIONS.REPORTS_MANAGE;
 
-    const userPermissions = ROLE_PERMISSIONS[user.role] || [];
-    return userPermissions.includes(permission);
+    const rolePermissions = ROLE_PERMISSIONS[user.role] || [];
+    const dynamicPermissions = user.permissions || [];
+    
+    return rolePermissions.includes(permission) || dynamicPermissions.includes(permission);
   };
 
   const hasRole = (roleName) => {

@@ -51,12 +51,14 @@ const LawyerDashboard = React.lazy(() => lazyImport(routeLoaders.LawyerDashboard
 const LogisticsDashboard = React.lazy(() => lazyImport(routeLoaders.LogisticsDashboard));
 const ANPStudentDashboard = React.lazy(() => lazyImport(routeLoaders.ANPStudentDashboard));
 const CommunicationHub = React.lazy(() => lazyImport(routeLoaders.CommunicationHub));
+const NewsManager = React.lazy(() => lazyImport(routeLoaders.NewsManager));
 
 // Settings Pages - Eagerly loaded for better UX
 import SecurityConfig from './pages/private/settings/SecurityConfig';
 
 const SettingsLayout = React.lazy(() => lazyImport(routeLoaders.SettingsLayout));
 const UsersSettings = React.lazy(() => lazyImport(routeLoaders.UsersSettings));
+const WarningsSettings = React.lazy(() => lazyImport(routeLoaders.WarningsSettings));
 const CoursesSettings = React.lazy(() => lazyImport(routeLoaders.CoursesSettings));
 const WebhookSettings = React.lazy(() => lazyImport(routeLoaders.WebhookSettings));
 const CorporationSettings = React.lazy(() => lazyImport(routeLoaders.CorporationSettings));
@@ -272,6 +274,12 @@ function App() {
                 <CommunicationHub />
               </PermissionGuard>
             } />
+            
+            <Route path="news" element={
+              <PermissionGuard permission="news_manage">
+                <NewsManager />
+              </PermissionGuard>
+            } />
 
             {/* Profile Route */}
             <Route path="profile" element={<ProfilePage />} />
@@ -285,6 +293,11 @@ function App() {
               <Route index element={<Navigate to="courses" replace />} />
               <Route path="health" element={<SystemHealth />} />
               <Route path="users" element={<UsersSettings />} />
+              <Route path="warnings" element={
+                <PermissionGuard permission="warnings_manage">
+                  <WarningsSettings />
+                </PermissionGuard>
+              } />
               <Route path="courses" element={
                 <PermissionGuard permission="courses_view">
                   <CoursesSettings />
