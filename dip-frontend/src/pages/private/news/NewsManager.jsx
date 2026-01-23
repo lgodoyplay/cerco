@@ -201,16 +201,16 @@ const NewsManager = () => {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-2xl p-8 shadow-2xl relative animate-in fade-in zoom-in duration-200 my-8">
             <button 
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+              className="absolute top-6 right-6 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
             >
-              <X size={20} />
+              <X size={24} />
             </button>
             
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-              {editingId ? <Edit size={24} className="text-federal-500" /> : <Plus size={24} className="text-federal-500" />}
+            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3 pb-4 border-b border-slate-800">
+              {editingId ? <Edit size={32} className="text-federal-500" /> : <Plus size={32} className="text-federal-500" />}
               {editingId ? 'Editar Notícia' : 'Nova Notícia'}
             </h2>
             

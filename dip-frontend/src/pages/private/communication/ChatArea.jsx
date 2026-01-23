@@ -209,7 +209,14 @@ const ChatArea = ({ room, onOpenRooms, onOpenMembers, onJoinVoice }) => {
                                     {showHeader ? (
                                         <div className="w-10 h-10 rounded-full bg-slate-700 flex-shrink-0 overflow-hidden mt-0.5">
                                              {msg.profiles?.avatar_url ? (
-                                                 <img src={msg.profiles.avatar_url} className="w-full h-full object-cover" alt="Avatar" />
+                                                 <img 
+                                                    src={msg.profiles.avatar_url.startsWith('http') 
+                                                        ? msg.profiles.avatar_url 
+                                                        : supabase.storage.from('avatars').getPublicUrl(msg.profiles.avatar_url).data.publicUrl
+                                                    } 
+                                                    className="w-full h-full object-cover" 
+                                                    alt="Avatar" 
+                                                 />
                                              ) : (
                                                  <div className="w-full h-full flex items-center justify-center font-bold text-slate-300">
                                                      {msg.profiles?.full_name?.[0] || '?'}
