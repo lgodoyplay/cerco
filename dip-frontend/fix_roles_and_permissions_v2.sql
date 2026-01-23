@@ -1,4 +1,4 @@
--- FIX ROLES AND PERMISSIONS V2 (FINAL)
+-- FIX ROLES AND PERMISSIONS V2 (FINAL + BACKWARD COMPATIBILITY)
 -- 1. Remove constraints on profiles.role to allow dynamic roles from Settings
 DO $$ 
 BEGIN
@@ -14,9 +14,10 @@ EXCEPTION
 END $$;
 
 -- 2. Drop existing function to avoid "cannot change name of input parameter" error
+-- We drop both signatures to be safe and clean
 DROP FUNCTION IF EXISTS public.create_user_command(text, text, text, text, text, jsonb);
 
--- 3. Create the function with p_ prefixes to avoid ambiguity
+-- 3. Create the function with p_ prefixes to avoid ambiguity (THE MAIN FUNCTION)
 CREATE OR REPLACE FUNCTION public.create_user_command(
   p_email text,
   p_password text,
@@ -109,6 +110,32 @@ BEGIN
 END;
 $$;
 
--- 4. Grant permissions
-GRANT EXECUTE ON FUNCTION public.create_user_command TO authenticated;
-GRANT EXECUTE ON FUNCTION public.create_user_command TO service_role;
+-- 4. Create Backward Compatibility Wrapper (for cached frontends sending old params)
+-- This function accepts the OLD parameter names and calls the NEW function
+CREATE OR REPLACE FUNCTION public.create_user_command(
+  email text,
+  password text,
+  full_name text,
+  passport_id text,
+  role text,
+  permissions jsonb DEFAULT '[]'::jsonb
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  RETURN public.create_user_command(
+    p_email := email,
+    p_password := password,
+    p_full_name := full_name,
+    p_passport_id := passport_id,
+    p_role := role,
+    p_permissions := permissions
+  );
+END;
+$$;
+
+-- 5. Grant permissions for BOTH functions
+GRANT EXECUTE ON FUNCTION public.create_user_command(text, text, text, text, text, jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.create_user_command(text, text, text, text, text, jsonb) TO service_role;
