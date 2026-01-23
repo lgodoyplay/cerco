@@ -46,7 +46,7 @@ const CommunicationHub = () => {
                 onOpenMembers={() => setShowMobileMembers(true)}
                 onJoinVoice={() => {
                     setIsInCall(true);
-                    setIsCallMinimized(false);
+                    setIsCallMinimized(true); // Start minimized so it doesn't cover chat
                 }}
             />
         ) : (
@@ -68,6 +68,21 @@ const CommunicationHub = () => {
                     Selecione uma sala no menu à esquerda para entrar na frequência ou crie uma nova sala para sua equipe.
                 </p>
             </div>
+        )}
+
+        {/* Voice Call Overlay - Now Inside Center Column */}
+        {isInCall && selectedRoom && (
+            <VoiceCall 
+                room={selectedRoom} 
+                user={user}
+                onClose={() => setIsInCall(false)}
+                isMinimized={isCallMinimized}
+                onToggleMinimize={() => setIsCallMinimized(!isCallMinimized)}
+                className={isCallMinimized 
+                    ? 'absolute top-16 right-4 w-64 h-48 z-40' // Minimized: Top-Right (below header) to avoid input
+                    : 'absolute inset-0 z-40' // Maximized: Full Chat Area
+                }
+            />
         )}
       </div>
 

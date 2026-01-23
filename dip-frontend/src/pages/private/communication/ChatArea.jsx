@@ -31,16 +31,42 @@ const ChatArea = ({ room, onOpenRooms, onOpenMembers, onJoinVoice }) => {
             }
 
             // 2. Fetch Messages
-            const { data, error } = await supabase
+            const { data: messagesData, error: messagesError } = await supabase
                 .from('communication_messages')
-                .select(`
-                    *,
-                    profiles ( full_name, username, avatar_url )
-                `)
+                .select('*')
                 .eq('room_id', room.id)
-                .order('created_at', { ascending: true }); // Oldest first
+                .order('created_at', { ascending: true });
             
-            if (data) setMessages(data);
+            if (messagesData) {
+                // Fetch profiles for these messages
+                const userIds = [...new Set(messagesData.map(m => m.user_id))];
+                
+                if (userIds.length > 0) {
+                    const { data: profilesData } = await supabase
+                        .from('profiles')
+                        .select('id, full_name, username, avatar_url')
+                        .in('id', userIds);
+                    
+                    if (profilesData) {
+                        const profilesMap = profilesData.reduce((acc, p) => {
+                            acc[p.id] = p;
+                            return acc;
+                        }, {});
+
+                        const messagesWithProfiles = messagesData.map(msg => ({
+                            ...msg,
+                            profiles: profilesMap[msg.user_id]
+                        }));
+                        
+                        setMessages(messagesWithProfiles);
+                    } else {
+                        setMessages(messagesData);
+                    }
+                } else {
+                    setMessages(messagesData);
+                }
+            }
+            
             setLoading(false);
             scrollToBottom();
 

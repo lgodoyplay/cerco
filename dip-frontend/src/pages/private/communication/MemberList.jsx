@@ -31,19 +31,49 @@ const MemberList = ({ room }) => {
     }, [room.id]);
 
     const fetchMembers = async () => {
-        const { data, error } = await supabase
+        // 1. Fetch members first
+        const { data: membersData, error: membersError } = await supabase
             .from('communication_room_members')
-            .select(`
-                user_id,
-                joined_at,
-                profiles ( id, full_name, username, avatar_url, role, passport_id )
-            `)
+            .select('user_id, joined_at')
             .eq('room_id', room.id)
             .order('joined_at', { ascending: true });
         
-        if (data) {
-            setMembers(data);
+        if (membersError) {
+            console.error('Error fetching members:', membersError);
+            return;
         }
+
+        if (!membersData || membersData.length === 0) {
+            setMembers([]);
+            return;
+        }
+
+        // 2. Extract user IDs
+        const userIds = membersData.map(m => m.user_id);
+
+        // 3. Fetch profiles
+        const { data: profilesData, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, full_name, username, avatar_url, role, passport_id')
+            .in('id', userIds);
+
+        if (profilesError) {
+            console.error('Error fetching profiles:', profilesError);
+            return;
+        }
+
+        // 4. Map profiles to members
+        const profilesMap = profilesData.reduce((acc, profile) => {
+            acc[profile.id] = profile;
+            return acc;
+        }, {});
+
+        const combinedData = membersData.map(member => ({
+            ...member,
+            profiles: profilesMap[member.user_id] || null
+        }));
+
+        setMembers(combinedData);
     };
 
     const handleKick = async (memberUserId) => {
