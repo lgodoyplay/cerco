@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { Newspaper, Plus, Search, Calendar, Trash2, Edit, Image as ImageIcon, Eye } from 'lucide-react';
+import { Newspaper, Plus, Search, Calendar, Trash2, Edit, Image as ImageIcon, Eye, X } from 'lucide-react';
 import clsx from 'clsx';
+import ImageUploadArea from '../../../components/ImageUploadArea';
 
 const NewsManager = () => {
   const { user } = useAuth();
@@ -104,6 +105,31 @@ const NewsManager = () => {
     setEditingId(null);
   };
 
+  const handleImageUpload = async (id, base64, file) => {
+    if (!file) return;
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('news')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('news')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Erro ao fazer upload da imagem: ' + error.message);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex justify-between items-center">
@@ -174,72 +200,83 @@ const NewsManager = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-6 shadow-2xl animate-scale-in max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-white mb-4">
-              {editingId ? 'Editar Notícia' : 'Nova Notícia'}
-            </h3>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl animate-scale-in max-h-[90vh] overflow-y-auto relative">
+             <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-1 hover:bg-slate-800 rounded-full"
+            >
+              <X size={20} />
+            </button>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="p-6 border-b border-slate-800">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                {editingId ? <Edit size={20} className="text-federal-500" /> : <Plus size={20} className="text-federal-500" />}
+                {editingId ? 'Editar Notícia' : 'Nova Notícia'}
+              </h3>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Título</label>
+                <label className="block text-sm font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Título</label>
                 <input 
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:border-federal-500 focus:outline-none"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none focus:ring-1 focus:ring-federal-500/50 transition-all placeholder:text-slate-600"
                   placeholder="Título da notícia ou apreensão..."
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">URL da Imagem</label>
-                <input 
-                  type="text"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:border-federal-500 focus:outline-none"
-                  placeholder="https://..."
+                <ImageUploadArea
+                  label="Imagem / Documento"
+                  id="news-image"
+                  image={formData.image_url}
+                  onUpload={handleImageUpload}
+                  onRemove={() => setFormData(prev => ({ ...prev, image_url: '' }))}
+                  aspect={16/9}
                 />
-                <p className="text-xs text-slate-500 mt-1">Use um link direto para a imagem (Imgur, Discord, etc).</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Conteúdo</label>
+                <label className="block text-sm font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Conteúdo</label>
                 <textarea 
                   value={formData.content}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:border-federal-500 focus:outline-none h-48 resize-none"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none focus:ring-1 focus:ring-federal-500/50 transition-all placeholder:text-slate-600 h-32 resize-none"
                   placeholder="Descreva os detalhes..."
                   required
                 />
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 p-3 bg-slate-950/50 rounded-xl border border-slate-800">
                 <input 
                   type="checkbox"
                   id="is_public"
                   checked={formData.is_public}
                   onChange={(e) => setFormData({...formData, is_public: e.target.checked})}
-                  className="rounded bg-slate-950 border-slate-800 text-federal-600 focus:ring-federal-500"
+                  className="w-5 h-5 rounded bg-slate-900 border-slate-700 text-federal-600 focus:ring-federal-500 focus:ring-offset-0 cursor-pointer"
                 />
-                <label htmlFor="is_public" className="text-sm text-slate-300">Visível ao público (Home)</label>
+                <label htmlFor="is_public" className="text-sm font-medium text-slate-300 cursor-pointer select-none flex-1">
+                  Publicar na Home (Visível para todos)
+                </label>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-2">
                 <button 
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
+                  className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors font-semibold"
                 >
                   Cancelar
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-federal-600 hover:bg-federal-700 text-white rounded-lg transition-colors font-bold"
+                  className="flex-1 px-4 py-3 bg-federal-600 hover:bg-federal-500 text-white rounded-xl transition-colors font-bold shadow-lg shadow-federal-900/20"
                 >
-                  Salvar Notícia
+                  {editingId ? 'Salvar Alterações' : 'Publicar Notícia'}
                 </button>
               </div>
             </form>

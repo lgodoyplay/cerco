@@ -93,14 +93,14 @@ export const AuthProvider = ({ children }) => {
       }
     });
 
-    // Timeout de segurança
+    // Timeout de segurança (Aumentado para 30s para evitar logouts em conexões lentas)
     timeoutRef.current = setTimeout(() => {
         if (isMounted.current && loading) {
-            console.warn("Auth timeout forçado.");
+            console.warn("Auth timeout forçado (30s).");
             setLoading(false);
             if (!isLoggingIn.current) setUser(null);
         }
-    }, 10000); 
+    }, 30000); 
 
     return () => {
         mounted = false;

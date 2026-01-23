@@ -258,6 +258,30 @@ ALTER TABLE public.cursos_policiais ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Cursos policiais access" ON public.cursos_policiais;
 CREATE POLICY "Cursos policiais access" ON public.cursos_policiais FOR ALL TO authenticated USING (true);
 
+-- 2.1 Storage Bucket for News
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('news', 'news', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Policy to allow authenticated users to upload news images
+CREATE POLICY "News Images Upload" ON storage.objects
+FOR INSERT TO authenticated
+WITH CHECK (bucket_id = 'news');
+
+-- Policy to allow public to view news images
+CREATE POLICY "News Images Public View" ON storage.objects
+FOR SELECT TO public
+USING (bucket_id = 'news');
+
+-- Policy to allow authenticated users to delete/update their own uploads (or admins)
+CREATE POLICY "News Images Manage" ON storage.objects
+FOR DELETE TO authenticated
+USING (bucket_id = 'news');
+
+CREATE POLICY "News Images Update" ON storage.objects
+FOR UPDATE TO authenticated
+USING (bucket_id = 'news');
+
 -- 3. CORREÇÃO DA FUNÇÃO DE RESET (RPC)
 CREATE OR REPLACE FUNCTION reset_system_data()
 RETURNS void

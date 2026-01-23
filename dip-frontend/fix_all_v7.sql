@@ -98,3 +98,28 @@ CREATE POLICY "Manage rooms" ON public.communication_rooms FOR ALL TO authentica
 CREATE POLICY "View members" ON public.communication_room_members FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Manage members" ON public.communication_room_members FOR ALL TO authenticated USING (true); -- Simplification
 
+-- 4. Storage Bucket for News
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('news', 'news', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Policy to allow authenticated users to upload news images
+CREATE POLICY "News Images Upload" ON storage.objects
+FOR INSERT TO authenticated
+WITH CHECK (bucket_id = 'news');
+
+-- Policy to allow public to view news images
+CREATE POLICY "News Images Public View" ON storage.objects
+FOR SELECT TO public
+USING (bucket_id = 'news');
+
+-- Policy to allow authenticated users to delete/update their own uploads (or admins)
+CREATE POLICY "News Images Manage" ON storage.objects
+FOR DELETE TO authenticated
+USING (bucket_id = 'news');
+
+CREATE POLICY "News Images Update" ON storage.objects
+FOR UPDATE TO authenticated
+USING (bucket_id = 'news');
+
+
