@@ -64,9 +64,9 @@ const MemberList = ({ room }) => {
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
                 {members.map((member) => (
-                    <div key={member.user_id} className="flex items-center gap-3 p-2 rounded hover:bg-slate-800 transition-colors cursor-pointer group opacity-90 hover:opacity-100">
+                    <div key={member.user_id} className="flex items-center gap-3 p-3 rounded hover:bg-slate-800 transition-colors cursor-pointer group opacity-90 hover:opacity-100">
                         <div className="relative">
-                            <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-600 group-hover:border-slate-500 transition-colors">
+                            <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-600 group-hover:border-slate-500 transition-colors">
                                 {member.profiles?.avatar_url ? (
                                     <img src={member.profiles.avatar_url} className="w-full h-full object-cover" alt="Avatar" />
                                 ) : (

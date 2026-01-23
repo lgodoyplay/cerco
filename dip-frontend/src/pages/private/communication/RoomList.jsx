@@ -57,7 +57,7 @@ const RoomList = ({ selectedRoom, onSelectRoom, onCreateRoom }) => {
                         key={room.id}
                         onClick={() => onSelectRoom(room)}
                         className={`
-                            group flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors
+                            group flex items-center justify-between px-4 py-3 rounded-md cursor-pointer transition-colors
                             ${selectedRoom?.id === room.id ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'}
                         `}
                     >

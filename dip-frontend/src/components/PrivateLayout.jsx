@@ -107,7 +107,7 @@ const PrivateLayout = () => {
   };
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
+    <div className="flex h-[100dvh] bg-slate-950 text-slate-100 overflow-hidden font-sans">
       {/* Force Password Change Modal */}
       {user?.must_change_password && <ChangePasswordModal />}
 
@@ -236,7 +236,7 @@ const PrivateLayout = () => {
           </div>
         </header>
 
-        <div className={clsx("flex-1 overflow-auto relative z-10", location.pathname.startsWith('/dashboard/communication') ? "p-0" : "p-4 md:p-8")}>
+        <div className={clsx("flex-1 overflow-auto relative z-10", location.pathname.startsWith('/dashboard/communication') ? "p-0 overflow-hidden" : "p-4 md:p-8")}>
           <Outlet />
         </div>
       </main>

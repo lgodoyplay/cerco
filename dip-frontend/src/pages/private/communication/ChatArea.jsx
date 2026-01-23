@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
-import { Send, Hash, Phone, Menu, Users } from 'lucide-react';
+import { Send, Hash, Phone, Menu, Users, Mic } from 'lucide-react';
 
-const ChatArea = ({ room, onOpenRooms, onOpenMembers }) => {
+const ChatArea = ({ room, onOpenRooms, onOpenMembers, onJoinVoice }) => {
     const { user } = useAuth();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -134,13 +134,22 @@ const ChatArea = ({ room, onOpenRooms, onOpenMembers }) => {
                 </div>
                 
                 <div className="flex items-center gap-2">
+                    <button 
+                        onClick={onJoinVoice}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium transition-colors"
+                    >
+                        <Mic size={16} />
+                        <span className="hidden sm:inline">Entrar na Voz</span>
+                    </button>
+
                     {room.discord_call_link && (
                         <button 
                             onClick={handleCall}
                             className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium transition-colors"
+                            title="Abrir Discord Externo"
                         >
                             <Phone size={16} />
-                            <span className="hidden sm:inline">Entrar na Call</span>
+                            <span className="hidden sm:inline">Discord</span>
                         </button>
                     )}
                     
