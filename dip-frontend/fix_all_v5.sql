@@ -39,6 +39,26 @@ UPDATE auth.users
 SET confirmation_token = '' 
 WHERE confirmation_token IS NULL;
 
+UPDATE auth.users 
+SET email_change = '' 
+WHERE email_change IS NULL;
+
+UPDATE auth.users 
+SET email_change_token_new = '' 
+WHERE email_change_token_new IS NULL;
+
+UPDATE auth.users 
+SET recovery_token = '' 
+WHERE recovery_token IS NULL;
+
+UPDATE auth.users 
+SET phone_change = '' 
+WHERE phone_change IS NULL;
+
+UPDATE auth.users 
+SET phone_change_token = '' 
+WHERE phone_change_token IS NULL;
+
 -- 2. RECREATE CORE FUNCTIONS WITH SECURITY & FIXES
 
 -- A. Create User Command (Fixes Login 500 by inserting empty confirmation_token)
@@ -90,13 +110,14 @@ BEGIN
     INSERT INTO auth.users (
         instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
         raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
-        is_super_admin, confirmation_token
+        is_super_admin, confirmation_token,
+        email_change, email_change_token_new, recovery_token
     ) VALUES (
         v_instance_id, new_user_id, 'authenticated', 'authenticated', final_email, crypt(v_password, gen_salt('bf')), now(),
         jsonb_build_object('provider', 'email', 'providers', ARRAY['email'], 'role', v_role), 
         jsonb_build_object('full_name', v_full_name, 'role', v_role, 'passport_id', v_passport_id, 'permissions', v_permissions),
         now(), now(),
-        FALSE, '' -- FIX: Empty string instead of NULL
+        FALSE, '', '', '', '' -- FIX: Empty strings for all nullable text columns
     );
 
     -- INSERT IDENTITY
@@ -260,6 +281,7 @@ CREATE TABLE IF NOT EXISTS public.candidatos (
 ALTER TABLE public.candidatos ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Enable read access for all users" ON public.candidatos;
+DROP POLICY IF EXISTS "Acesso a Candidatos" ON public.candidatos;
 CREATE POLICY "Acesso a Candidatos" ON public.candidatos
 FOR ALL TO authenticated
 USING (
@@ -280,7 +302,10 @@ DROP POLICY IF EXISTS "Enable read access for all users" ON public.cursos;
 DROP POLICY IF EXISTS "Enable insert access for all users" ON public.cursos;
 DROP POLICY IF EXISTS "Enable update access for all users" ON public.cursos;
 
+DROP POLICY IF EXISTS "Ver Cursos" ON public.cursos;
 CREATE POLICY "Ver Cursos" ON public.cursos FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Gerenciar Cursos" ON public.cursos;
 CREATE POLICY "Gerenciar Cursos" ON public.cursos FOR ALL TO authenticated USING (
   EXISTS (
     SELECT 1 FROM public.profiles

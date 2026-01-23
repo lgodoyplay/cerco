@@ -124,6 +124,51 @@ const ANPStudentDashboard = () => {
           })}
         </div>
       </div>
+
+      {/* Extra Courses Section */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <Book className="text-federal-500" />
+          Cursos e Especializações Extras
+        </h3>
+        
+        {extraCourses.length === 0 ? (
+          <div className="text-center py-6 text-slate-500 border border-dashed border-slate-800 rounded-lg">
+            <p>Nenhum curso extra atribuído.</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {extraCourses.map((item) => (
+              <div 
+                key={item.id} 
+                className="flex items-center justify-between p-4 bg-slate-800/30 border border-slate-700 rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-federal-900/20 flex items-center justify-center border border-federal-500/20 text-federal-400">
+                    <CheckCircle size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-200 text-sm">{item.cursos?.nome}</h4>
+                    <p className="text-xs text-slate-500 line-clamp-1">{item.cursos?.descricao || 'Curso Oficial'}</p>
+                  </div>
+                </div>
+
+                {item.certificado_url && (
+                  <a 
+                    href={item.certificado_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-2 text-slate-400 hover:text-federal-400 transition-colors bg-slate-900 rounded-lg border border-slate-800 hover:border-federal-500/30"
+                    title="Ver Certificado"
+                  >
+                    <FileText size={18} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 
