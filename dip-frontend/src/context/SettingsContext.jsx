@@ -208,12 +208,12 @@ export const SettingsProvider = ({ children }) => {
       console.log('Adding user with data:', userData);
       
       const payload = {
-        email: userData.username,
-        password: userData.password,
-        full_name: userData.name,
-        passport_id: userData.passport_id || '',
-        role: userData.role,
-        permissions: userData.permissions || []
+        p_email: userData.username,
+        p_password: userData.password,
+        p_full_name: userData.name,
+        p_passport_id: userData.passport_id || '',
+        p_role: userData.role,
+        p_permissions: userData.permissions || []
       };
 
       const { data, error } = await supabase.rpc('create_user_command', payload);
