@@ -90,13 +90,21 @@ const CommunicationHub = () => {
 
       {/* Voice Call Overlay */}
       {isInCall && selectedRoom && (
-        <VoiceCall 
-            room={selectedRoom} 
-            user={user}
-            onClose={() => setIsInCall(false)}
-            isMinimized={isCallMinimized}
-            onToggleMinimize={() => setIsCallMinimized(!isCallMinimized)}
-        />
+        <div className={`
+             transition-all duration-300 z-[60]
+             ${isCallMinimized 
+                ? 'absolute bottom-0 left-0 w-64 h-48 border-t border-r border-slate-700 shadow-xl z-50' 
+                : 'fixed inset-0 md:absolute md:inset-0 z-50'
+             }
+        `}>
+            <VoiceCall 
+                room={selectedRoom} 
+                user={user}
+                onClose={() => setIsInCall(false)}
+                isMinimized={isCallMinimized}
+                onToggleMinimize={() => setIsCallMinimized(!isCallMinimized)}
+            />
+        </div>
       )}
 
       {/* Overlay for mobile sidebars */}

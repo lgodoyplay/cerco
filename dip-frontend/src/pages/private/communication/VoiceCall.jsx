@@ -73,7 +73,7 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize }) => {
             className={`
                 fixed z-[60] transition-all duration-300 shadow-2xl overflow-hidden bg-slate-900 border border-slate-700
                 ${isMinimized 
-                    ? 'bottom-20 right-4 w-64 h-48 rounded-lg' 
+                    ? 'bottom-20 right-4 w-64 h-48 rounded-lg md:absolute md:bottom-0 md:left-0 md:w-64 md:h-48 md:right-auto md:top-auto md:border-t md:border-r md:border-slate-700' 
                     : 'inset-0 md:inset-4 md:rounded-xl'
                 }
             `}
@@ -110,7 +110,7 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize }) => {
             {/* Overlay when minimized to prevent iframe stealing clicks but allow drag if implemented */}
             {isMinimized && (
                 <div 
-                    className="absolute inset-0 top-10 cursor-pointer bg-transparent"
+                    className="absolute inset-0 top-8 cursor-pointer bg-transparent"
                     onClick={onToggleMinimize}
                     title="Clique para expandir"
                 />
