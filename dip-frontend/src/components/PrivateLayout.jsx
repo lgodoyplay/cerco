@@ -236,7 +236,7 @@ const PrivateLayout = () => {
           </div>
         </header>
 
-        <div className={clsx("flex-1 overflow-auto relative z-10", location.pathname.startsWith('/dashboard/communication') ? "p-0 overflow-hidden" : "p-4 md:p-8")}>
+        <div className={clsx("flex-1 overflow-auto relative z-10", "p-4 md:p-8")}>
           <Outlet />
         </div>
       </main>

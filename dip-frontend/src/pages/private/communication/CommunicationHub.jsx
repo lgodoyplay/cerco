@@ -4,15 +4,22 @@ import RoomList from './RoomList';
 import ChatArea from './ChatArea';
 import MemberList from './MemberList';
 import CreateRoomModal from './CreateRoomModal';
+import VoiceCall from './VoiceCall';
+import { useAuth } from '../../../context/AuthContext';
 
 const CommunicationHub = () => {
+  const { user } = useAuth();
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showMobileMembers, setShowMobileMembers] = useState(false);
+  
+  // Voice State
+  const [isInCall, setIsInCall] = useState(false);
+  const [isCallMinimized, setIsCallMinimized] = useState(false);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] md:h-full bg-slate-900 text-white overflow-hidden -m-4 md:-m-8">
+    <div className="flex h-full bg-slate-900 text-white overflow-hidden rounded-xl shadow-2xl border border-slate-800">
       {/* Mobile Toggle for Room List is now in ChatArea Header or handled below */}
 
       {/* Left Sidebar - Rooms */}
@@ -37,6 +44,10 @@ const CommunicationHub = () => {
                 room={selectedRoom} 
                 onOpenRooms={() => setShowMobileSidebar(true)}
                 onOpenMembers={() => setShowMobileMembers(true)}
+                onJoinVoice={() => {
+                    setIsInCall(true);
+                    setIsCallMinimized(false);
+                }}
             />
         ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-8 text-center">
