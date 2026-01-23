@@ -205,23 +205,30 @@ export const SettingsProvider = ({ children }) => {
 
   const addUser = async (userData) => {
     try {
-      const { data, error } = await supabase.rpc('create_user_command', {
+      console.log('Adding user with data:', userData);
+      
+      const payload = {
         email: userData.username,
         password: userData.password,
         full_name: userData.name,
-        passport_id: userData.passport_id,
+        passport_id: userData.passport_id || '',
         role: userData.role,
-        permissions: userData.permissions
-      });
+        permissions: userData.permissions || []
+      };
 
-      if (error) throw error;
+      const { data, error } = await supabase.rpc('create_user_command', payload);
+
+      if (error) {
+        console.error('RPC Error details:', JSON.stringify(error, null, 2));
+        throw error;
+      }
 
       await fetchUsers();
       logAction(`Novo usuário criado: ${userData.name}`);
       alert('Usuário criado com sucesso!');
     } catch (error) {
       console.error('Error adding user:', error);
-      alert('Erro ao criar usuário: ' + error.message);
+      alert('Erro ao criar usuário: ' + (error.message || 'Erro desconhecido'));
     }
   };
 
