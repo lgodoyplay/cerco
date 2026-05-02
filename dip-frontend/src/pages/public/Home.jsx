@@ -137,7 +137,7 @@ const Home = () => {
               DENARC
             </h1>
             <p className="text-lg text-slate-300 max-w-2xl">
-              Departamento Estadual de Investigação de Narcóticos do Estado da Euforia.
+              DENARC - INVESTIGATIVA DO ESTADO DA EUFORIA.
               Unidade especializada da Polícia Civil, atuando na preservação da ordem pública.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
