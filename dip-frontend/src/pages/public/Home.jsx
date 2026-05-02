@@ -16,7 +16,11 @@ import {
   X,
   Newspaper,
   Calendar,
-  ChevronRight
+  ChevronRight,
+  Target,
+  Search,
+  Database,
+  Cpu
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -127,13 +131,14 @@ const Home = () => {
           <div className="flex-1 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/60 border border-federal-700/70 text-federal-200 text-xs font-semibold uppercase tracking-[0.18em]">
               <Shield size={16} className="text-federal-400" />
-              <span>Institucional</span>
+              <span>Polícia Civil Estadual</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white">
               DENARC
             </h1>
             <p className="text-lg text-slate-300 max-w-2xl">
-              Órgão permanente de Estado, organizado e mantido pelo Estado da Euforia, atuando na preservação da ordem pública e da incolumidade das pessoas e do patrimônio.
+              Departamento Estadual de Investigação de Narcóticos do Estado da Euforia.
+              Unidade especializada da Polícia Civil, atuando na preservação da ordem pública.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
@@ -169,20 +174,20 @@ const Home = () => {
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-[0.18em] text-slate-400 font-semibold">
-                        Euforia Roleplay
+                        Estado da Euforia
                       </p>
                       <p className="text-sm font-medium text-slate-100">
-                        DENARC - Investigativa do Estado da Euforia
+                        DENARC - Polícia Civil Estadual
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="mt-4 space-y-3 text-sm text-slate-300">
                   <p>
-                    A DENARC exerce as funções de polícia judiciária do Estado da Euforia.
+                    A DENARC é uma unidade especializada da Polícia Civil do Estado da Euforia.
                   </p>
                   <p>
-                    Atua no combate ao crime organizado, tráfico de drogas, corrupção, crimes cibernéticos e ambientais, entre outros crimes de competência estadual.
+                    Atua exclusivamente na investigação de tráfico de drogas, facções criminosas locais e crimes relacionados.
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs text-slate-300 pt-2 border-t border-slate-800">
@@ -231,39 +236,45 @@ const Home = () => {
               O que é a DENARC
             </h2>
             <p className="text-slate-300 text-base leading-relaxed">
-              A DENARC é a instituição de excelência responsável por apurar
-              infrações penais contra a ordem política e social ou em detrimento de bens, serviços e interesses do Estado da Euforia.
+              O DENARC é o Departamento Estadual de Investigação de Narcóticos,
+              uma unidade especializada da Polícia Civil do Estado da Euforia,
+              responsável por apurar infrações penais relacionadas ao tráfico de drogas
+              e crime organizado dentro do território estadual.
             </p>
             <p className="text-slate-300 text-base leading-relaxed">
               Sua missão é atuar com rigor técnico e científico, garantindo a preservação de provas e a elucidação
-              de crimes, mantendo a ordem e a segurança pública em Euforia Roleplay.
+              de crimes, mantendo a ordem e a segurança pública no Estado da Euforia.
             </p>
           </div>
           <div className="space-y-6">
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
               <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-[0.18em] mb-3">
-                Ocorrências típicas da DENARC
+                Atribuições Principais
               </h3>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-200">
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
-                  Crimes Federais
+                  Tráfico de Drogas
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
-                  Tráfico Internacional
+                  Facções Criminosas
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
-                  Corrupção
+                  Inteligência Operacional
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
-                  Crimes Cibernéticos
+                  Monitoramento
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
-                  Crimes Ambientais
+                  Apreensões
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
+                  Mandados Judiciais
                 </li>
               </ul>
             </div>
@@ -272,14 +283,53 @@ const Home = () => {
                 Frase de referência
               </p>
               <p className="text-lg font-semibold text-federal-50">
-                “Descobrir o que aconteceu, como aconteceu, por que aconteceu e quem fez.”
+                “Investigar, elucidar e combater o crime organizado no Estado da Euforia.”
               </p>
             </div>
           </div>
         </div>
       </section>
 
-
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-federal-600/20 border border-federal-500/60 flex items-center justify-center">
+                <Target className="text-federal-400" size={22} />
+              </div>
+              <h3 className="text-lg font-bold text-white">Combate ao Tráfico</h3>
+            </div>
+            <p className="text-sm text-slate-300">
+              Investigação e repressão ao tráfico de drogas dentro do território estadual,
+              com foco na desarticulação de redes de distribuição.
+            </p>
+          </div>
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-federal-600/20 border border-federal-500/60 flex items-center justify-center">
+                <Search className="text-federal-400" size={22} />
+              </div>
+              <h3 className="text-lg font-bold text-white">Inteligência</h3>
+            </div>
+            <p className="text-sm text-slate-300">
+              Operações de inteligência, monitoramento de suspeitos e infiltração
+              em organizações criminosas locais.
+            </p>
+          </div>
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-federal-600/20 border border-federal-500/60 flex items-center justify-center">
+                <Database className="text-federal-400" size={22} />
+              </div>
+              <h3 className="text-lg font-bold text-white">Apoio Operacional</h3>
+            </div>
+            <p className="text-sm text-slate-300">
+              Apoio a outras unidades da Polícia Civil, produção de relatórios investigativos
+              e cumprimento de mandados judiciais estaduais.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* NEWS MODAL */}
       {selectedNews && (
@@ -364,10 +414,10 @@ const Home = () => {
                 O que define o Agente DENARC?
               </p>
               <ul className="space-y-1 text-sm font-semibold text-federal-100">
-                <li>LEALDADE À CONSTITUIÇÃO.</li>
+                <li>LEALDADE À CONSTITUIÇÃO E AO ESTADO DA EUFORIA.</li>
                 <li>ÉTICA PROFISSIONAL INEGOCIÁVEL.</li>
                 <li>DISCIPLINA E HIERARQUIA.</li>
-                <li>EFICIÊNCIA NO SERVIÇO PÚBLICO.</li>
+                <li>EFICIÊNCIA NO SERVIÇO PÚBLICO ESTADUAL.</li>
               </ul>
             </div>
             <div className="grid md:grid-cols-3 gap-6 text-sm text-slate-100">
@@ -376,7 +426,7 @@ const Home = () => {
                   Legalidade
                 </p>
                 <p className="text-slate-200">
-                  Toda ação policial deve estar estritamente amparada na lei. O Agente DENARC é, antes de tudo, um garantidor de direitos.
+                  Toda ação policial deve estar estritamente amparada na lei estadual. O Agente DENARC é, antes de tudo, um garantidor de direitos.
                 </p>
               </div>
               <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4">
@@ -409,7 +459,7 @@ const Home = () => {
               </div>
               <div>
                 <p className="text-xs font-semibold text-red-200 uppercase tracking-[0.2em]">
-                  Regime Disciplinar (Lei 4.878/65)
+                  Regime Disciplinar
                 </p>
                 <p className="text-sm text-red-100">
                   Infrações que atentam contra o decoro e a eficácia da DENARC.
@@ -465,7 +515,7 @@ const Home = () => {
             <div className="space-y-3 text-sm text-slate-100">
               <div className="flex items-start gap-3">
                 <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
-                <span>Servir e proteger a sociedade com dedicação e coragem.</span>
+                <span>Servir e proteger a sociedade do Estado da Euforia com dedicação e coragem.</span>
               </div>
               <div className="flex items-start gap-3">
                 <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
@@ -473,7 +523,7 @@ const Home = () => {
               </div>
               <div className="flex items-start gap-3">
                 <CheckSquare size={18} className="text-emerald-400 mt-0.5" />
-                <span>Atuar com imparcialidade, legalidade e isenção.</span>
+                <span>Atuar com imparcialidade, legalidade e isenção dentro do território estadual.</span>
               </div>
             </div>
           </div>
@@ -481,21 +531,21 @@ const Home = () => {
             <div className="flex items-center gap-3 mb-4">
               <Gavel size={24} className="text-federal-400" />
               <h2 className="text-2xl font-bold text-white">
-                Legislação Essencial
+                Jurisdição
               </h2>
             </div>
             <div className="space-y-4 text-sm text-slate-100">
               <div className="border-l-2 border-federal-500 pl-3">
-                <p className="font-bold text-federal-200">CF/88, Art. 144</p>
-                <p className="text-xs text-slate-300">Define a DENARC como órgão permanente, organizado e mantido pela União.</p>
+                <p className="font-bold text-federal-200">Competência Estadual</p>
+                <p className="text-xs text-slate-300">A DENARC atua exclusivamente dentro do Estado da Euforia, sob jurisdição estadual.</p>
               </div>
               <div className="border-l-2 border-federal-500 pl-3">
-                <p className="font-bold text-federal-200">Lei 12.830/2013</p>
-                <p className="text-xs text-slate-300">Investigação criminal conduzida pelo Delegado de Polícia.</p>
+                <p className="font-bold text-federal-200">Polícia Civil</p>
+                <p className="text-xs text-slate-300">Unidade especializada da Polícia Civil Estadual.</p>
               </div>
               <div className="border-l-2 border-federal-500 pl-3">
-                <p className="font-bold text-federal-200">Lei 12.850/2013</p>
-                <p className="text-xs text-slate-300">Combate às Organizações Criminosas e meios de obtenção de prova.</p>
+                <p className="font-bold text-federal-200">Contato de Emergência</p>
+                <p className="text-xs text-slate-300">Em caso de emergência, dirija-se à DP Euforia da Praia.</p>
               </div>
             </div>
           </div>
@@ -513,7 +563,7 @@ const Home = () => {
               <Siren className="text-red-600 animate-pulse sm:hidden" size={32} />
             </h2>
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Ajude a DENARC a localizar criminosos perigosos. Sua identidade será mantida em absoluto sigilo.
+              Ajude a DENARC a localizar criminosos perigosos no Estado da Euforia. Sua identidade será mantida em absoluto sigilo.
             </p>
           </div>
 
@@ -586,9 +636,9 @@ const Home = () => {
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/40 border border-federal-700/50 text-federal-300 text-xs font-semibold uppercase tracking-wider mb-2">
                     <Newspaper size={14} />
-                    <span>Jornal da Federal</span>
+                    <span>Boletim DENARC</span>
                   </div>
-                  <h2 className="text-3xl font-bold text-white">Últimas Notícias e Apreensões</h2>
+                  <h2 className="text-3xl font-bold text-white">Últimas Notícias e Operações</h2>
                 </div>
               </div>
 
@@ -647,8 +697,8 @@ const Home = () => {
                    Denúncia Anônima
                  </h3>
                  <p className="text-slate-300 text-lg mb-6 leading-relaxed">
-                   Sua colaboração é fundamental. Se você tem informações sobre qualquer procurado ou crime federal, 
-                   utilize este canal. 
+                   Sua colaboração é fundamental. Se você tem informações sobre tráfico de drogas,
+                   facções criminosas ou qualquer crime no Estado da Euforia, utilize este canal.
                    <strong className="block mt-2 text-white">Não exigimos identificação. O sigilo é garantido.</strong>
                  </p>
                  
