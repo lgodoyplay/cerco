@@ -32,8 +32,7 @@ export const generateInvestigationPDF = (investigation, user) => {
     doc.setTextColor(0, 0, 0);
     doc.text('ESTADO DA EUFORIA', pageWidth / 2, 20, { align: 'center' });
     doc.text('SECRETARIA DE SEGURANÇA PÚBLICA', pageWidth / 2, 25, { align: 'center' });
-    doc.text('DENARC', pageWidth / 2, 30, { align: 'center' });
-    doc.text('DENARC - Investigativa do Estado da Euforia', pageWidth / 2, 35, { align: 'center' });
+    doc.text('DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', pageWidth / 2, 30, { align: 'center' });
     
     // Linha separadora
     doc.setLineWidth(0.5);
@@ -47,7 +46,7 @@ export const generateInvestigationPDF = (investigation, user) => {
     
     // ABNT: Paginação no canto superior direito é comum, mas rodapé centralizado também é aceito em documentos oficiais internos.
     // Vamos manter no rodapé conforme padrão anterior, mas com fonte correta.
-    const footerText = `Inquérito Policial Nº ${investigation.id} - Confidencial`;
+    const footerText = `RELATÓRIO Nº ${investigation.id} - Confidencial`;
     doc.text(footerText, marginLeft, pageHeight - 15);
     doc.text(`Página ${pageNumber} de ${totalPages}`, pageWidth - marginRight, pageHeight - 15, { align: 'right' });
   };
@@ -70,12 +69,12 @@ export const generateInvestigationPDF = (investigation, user) => {
   // Título do Documento
   doc.setFont(fontBold, 'bold');
   doc.setFontSize(fontSizeTitle);
-  doc.text('RELATÓRIO FINAL DE INQUÉRITO POLICIAL', pageWidth / 2, yPos, { align: 'center' });
+  doc.text('RELATÓRIO DE INVESTIGAÇÃO', pageWidth / 2, yPos, { align: 'center' });
   yPos += 10;
   
-  const formattedId = `DPF - ${investigation.id.toString().padStart(3, '0')}`;
+  const formattedId = `DENARC - ${investigation.id.toString().padStart(3, '0')}`;
   doc.setFontSize(fontSizeBody);
-  doc.text(`INQUÉRITO Nº: ${formattedId}/${new Date().getFullYear()}`, pageWidth / 2, yPos, { align: 'center' });
+  doc.text(`PROTOCOLO Nº: ${formattedId}/${new Date().getFullYear()}`, pageWidth / 2, yPos, { align: 'center' });
   yPos += 20;
 
   // --- DADOS DA INVESTIGAÇÃO (TABELA SIMULADA) ---
@@ -84,7 +83,7 @@ export const generateInvestigationPDF = (investigation, user) => {
   doc.setFillColor(240, 240, 240);
   doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 35, 'F');
   doc.setDrawColor(0, 0, 0); // Preto para ficar mais sóbrio
-  doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 35);
+  doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 35;
 
   let dataY = yPos + 8;
   const col1 = marginLeft + 5;
@@ -124,7 +123,7 @@ export const generateInvestigationPDF = (investigation, user) => {
   // Tenta usar o nome do investigador vindo do objeto (se implementado join) ou do usuário logado
   let officerName = 'AGENTE RESPONSÁVEL';
   let officerBadge = '000.000';
-  let officerRole = 'Agente de Polícia Federal';
+  let officerRole = 'Investigador DENARC';
 
   if (investigation.investigator) {
       officerName = investigation.investigator.nome.toUpperCase();
@@ -201,7 +200,7 @@ export const generateInvestigationPDF = (investigation, user) => {
       doc.setFontSize(fontSizeBody);
       
       const proofTitle = proof.title ? `${proof.title} - ` : '';
-      const proofDescText = `${proofTitle}${proof.description || 'Sem descrição adicional.'}`;
+      const proofDescText = `${proofTitle}${proof.description || 'Sem descrição adicional.'`;
       const proofLines = doc.splitTextToSize(proofDescText, pageWidth - (marginLeft + marginRight));
       
       doc.text(proofLines, marginLeft, yPos);
@@ -254,7 +253,7 @@ export const generateInvestigationPDF = (investigation, user) => {
   yPos += 8;
   
   doc.setFont(fontNormal, 'normal');
-  const conclusionText = "Diante do exposto, encaminha-se o presente Inquérito Policial para apreciação da autoridade competente, contendo o relato detalhado das diligências realizadas e evidências coletadas, dando-se por encerradas as atividades investigativas desta fase.";
+  const conclusionText = "Diante do exposto, encaminha-se o presente relatório para apreciação da autoridade competente, contendo o relato detalhado das diligências realizadas e evidências coletadas, dando-se por encerradas as atividades investigativas desta fase.";
   const conclusionLines = doc.splitTextToSize(conclusionText, pageWidth - (marginLeft + marginRight));
   doc.text(conclusionLines, marginLeft, yPos);
   yPos += (conclusionLines.length * 6) + 30;
@@ -285,7 +284,7 @@ export const generateInvestigationPDF = (investigation, user) => {
     drawFooter(i, totalPages);
   }
 
-  doc.save(`Inquerito_Policial_${investigation.id}.pdf`);
+  doc.save(`Relatorio_Investigacao_${investigation.id}.pdf`);
 };
 
 function fillTemplate(templateStr, variables) {
@@ -321,9 +320,9 @@ export const generateBOReportPDF = (bo, user, templateStr) => {
     doc.setFont(fontBold, "bold");
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text("REPÚBLICA FEDERATIVA DO BRASIL", pageWidth / 2, 20, { align: "center" });
-    doc.text("MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA", pageWidth / 2, 25, { align: "center" });
-    doc.text("POLICIA CIVIL", pageWidth / 2, 30, { align: "center" });
+    doc.text("ESTADO DA EUFORIA", pageWidth / 2, 20, { align: "center" });
+    doc.text("SECRETARIA DE SEGURANÇA PÚBLICA", pageWidth / 2, 25, { align: "center" });
+    doc.text("DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS", pageWidth / 2, 30, { align: "center" });
     doc.setLineWidth(0.5);
     doc.line(marginLeft, 40, pageWidth - marginRight, 40);
   };
@@ -369,7 +368,7 @@ export const generateBOReportPDF = (bo, user, templateStr) => {
   const ocorrenciaText = [
     `Local: ${bo.localizacao || "Não informado"}`,
     `Comunicante: ${bo.comunicante || "Anônimo"}`,
-    `Data/Hora: ${bo.created_at ? new Date(bo.created_at).toLocaleString("pt-BR") : "Não informada"}`
+    `Data/Hora: ${bo.created_at ? new Date(bo.created_at).toLocaleString("pt-BR") : "Não informada"}"
   ].join("\n");
   let lines = doc.splitTextToSize(ocorrenciaText, width);
   doc.text(lines, marginLeft, yPos);
@@ -420,7 +419,7 @@ export const generateBOReportPDF = (bo, user, templateStr) => {
   yPos += 5;
   doc.setFont(fontNormal, "normal");
   doc.setFontSize(9);
-  doc.text("AGENTE DE POLICIA CIVIL", pageWidth / 2, yPos, { align: "center" });
+  doc.text("AGENTE DA DENARC", pageWidth / 2, yPos, { align: "center" });
   doc.text(`Matrícula: ${officerBadge}`, pageWidth / 2, yPos + 4, { align: "center" });
 
   const totalPages = doc.internal.getNumberOfPages();
@@ -451,9 +450,9 @@ export const generateArrestPDF = (arrest, user, templateStr) => {
     doc.setFont(fontBold, "bold");
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text("REPÚBLICA FEDERATIVA DO BRASIL", pageWidth / 2, 20, { align: "center" });
-    doc.text("MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA", pageWidth / 2, 25, { align: "center" });
-    doc.text("POLICIA CIVIL", pageWidth / 2, 30, { align: "center" });
+    doc.text("ESTADO DA EUFORIA", pageWidth / 2, 20, { align: "center" });
+    doc.text("SECRETARIA DE SEGURANÇA PÚBLICA", pageWidth / 2, 25, { align: "center" });
+    doc.text("DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS", pageWidth / 2, 30, { align: "center" });
     doc.setLineWidth(0.5);
     doc.line(marginLeft, 40, pageWidth - marginRight, 40);
   };
@@ -499,7 +498,7 @@ export const generateArrestPDF = (arrest, user, templateStr) => {
   const detidoText = [
     `Nome: ${arrest.name || "Não informado"}`,
     `Documento: ${arrest.passport || "Não informado"}`,
-    `Artigos/Crime: ${arrest.articles || arrest.reason || "Não especificado"}`
+    `Artigos/Crime: ${arrest.articles || arrest.reason || "Não especificado"}"
   ].join("\n");
   let lines = doc.splitTextToSize(detidoText, width);
   doc.text(lines, marginLeft, yPos);
@@ -548,7 +547,7 @@ export const generateArrestPDF = (arrest, user, templateStr) => {
   yPos += 5;
   doc.setFont(fontNormal, "normal");
   doc.setFontSize(9);
-  doc.text("AGENTE DE POLICIA CIVIL", pageWidth / 2, yPos, { align: "center" });
+  doc.text("AGENTE DA DENARC", pageWidth / 2, yPos, { align: "center" });
   doc.text(`Matrícula: ${officerBadge}`, pageWidth / 2, yPos + 4, { align: "center" });
 
   const totalPages = doc.internal.getNumberOfPages();
@@ -579,9 +578,9 @@ export const generateWantedPDF = (person, user, templateStr) => {
     doc.setFont(fontBold, "bold");
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text("REPÚBLICA FEDERATIVA DO BRASIL", pageWidth / 2, 20, { align: "center" });
-    doc.text("MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA", pageWidth / 2, 25, { align: "center" });
-    doc.text("POLICIA CIVIL", pageWidth / 2, 30, { align: "center" });
+    doc.text("ESTADO DA EUFORIA", pageWidth / 2, 20, { align: "center" });
+    doc.text("SECRETARIA DE SEGURANÇA PÚBLICA", pageWidth / 2, 25, { align: "center" });
+    doc.text("DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS", pageWidth / 2, 30, { align: "center" });
     doc.setLineWidth(0.5);
     doc.line(marginLeft, 40, pageWidth - marginRight, 40);
   };
@@ -636,7 +635,7 @@ export const generateWantedPDF = (person, user, templateStr) => {
   const dadosText = [
     `Crime/Motivo: ${person.crime || person.reason || "Não especificado"}`,
     `Periculosidade: ${(person.dangerLevel || person.status || "Desconhecida").toString()}`,
-    `Registro: ${person.date || person.created_at ? new Date(person.date || person.created_at).toLocaleDateString("pt-BR") : "Não informado"}`
+    `Registro: ${person.date || person.created_at ? new Date(person.date || person.created_at).toLocaleDateString("pt-BR") : "Não informado"}"
   ].join("\n");
   let lines = doc.splitTextToSize(dadosText, width);
   doc.text(lines, marginLeft, yPos);
@@ -658,7 +657,7 @@ export const generateWantedPDF = (person, user, templateStr) => {
   yPos += 8;
 
   doc.setFont(fontNormal, "normal");
-  const bodyText = templateText || "Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades.";
+  const bodyText = templateText || "Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades da DENARC.";
   lines = doc.splitTextToSize(bodyText, width);
   doc.text(lines, marginLeft, yPos);
   yPos += lines.length * 6 + 20;

@@ -126,7 +126,6 @@ const formatDate = (dateStr) => {
 };
 
 // Gerar Brasão (Placeholder Base64 - Imagem Transparente de 1x1 pixel para evitar erro)
-// O anterior estava corrompido
 const coatOfArmsBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 // Gerar Documento
@@ -182,6 +181,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         // Definição de Variáveis e Conteúdo Padrão baseada no Tipo
         let variables = {};
         let standardContent = [];
+        let docTitle = '';
+        let docRef = '';
         // --- HEADER PADRÃO ---
         const officialHeader = [
             (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
@@ -189,13 +190,13 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             } : null,
             { text: 'ESTADO DA EUFORIA', style: 'headerText' },
             { text: 'SECRETARIA DE SEGURANÇA PÚBLICA', style: 'headerText' },
-            { text: 'DENARC - Investigativa do Estado da Euforia', style: 'headerText' },
+            { text: 'DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', style: 'headerText' },
             { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1 }], margin: [0, 5, 0, 10] }
         ];
 
         if (type === 'investigation') {
-            docTitle = 'INQUÉRITO POLICIAL';
-            docRef = `IP Nº ${data.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`;
+            docTitle = 'RELATÓRIO DE INVESTIGAÇÃO';
+            docRef = `PROTOCOLO Nº ${data.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`;
             
             variables = {
                 '{numero_inquerito}': data.id,
@@ -213,7 +214,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 '{relato_fatos}': data.description || 'Ver seção de provas.',
                 '{conclusao}': 'Conforme relatório de provas em anexo.',
                 '{assinatura_agente}': user?.nome || 'Agente',
-                '{cargo_agente}': 'Agente da DENARC'
+                '{cargo_agente}': 'Investigador DENARC'
             };
 
             standardContent = [
@@ -228,8 +229,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                     table: {
                         widths: ['25%', '75%'],
                         body: [
-                            [{ text: 'UNIDADE:', style: 'tableHeader' }, { text: 'DEPARTAMENTO DE INVESTIGAÇÕES', style: 'tableCell' }],
-                            [{ text: 'NATUREZA:', style: 'tableHeader' }, { text: 'Inquérito Policial', style: 'tableCell' }],
+                            [{ text: 'UNIDADE:', style: 'tableHeader' }, { text: 'DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', style: 'tableCell' }],
+                            [{ text: 'NATUREZA:', style: 'tableHeader' }, { text: 'Investigação Criminal', style: 'tableCell' }],
                             [{ text: 'STATUS:', style: 'tableHeader' }, { text: data.status.toUpperCase(), style: 'tableCell', bold: true }],
                             [{ text: 'PRIORIDADE:', style: 'tableHeader' }, { text: data.priority.toUpperCase(), style: 'tableCell' }],
                             [{ text: 'RESPONSÁVEL:', style: 'tableHeader' }, { text: data.investigator ? data.investigator.nome.toUpperCase() : (user?.nome || 'NÃO ATRIBUÍDO').toUpperCase(), style: 'tableCell' }],
@@ -257,7 +258,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
 
                 // --- DILIGÊNCIAS ---
                 { text: '4. HISTÓRICO E DILIGÊNCIAS', style: 'sectionTitle' },
-                { ul: [`Abertura do inquérito em ${formatDate(data.createdAt)}.`, `Análise inicial das evidências.`, data.status === 'Finalizada' ? `Encerramento e conclusão em ${formatDate(data.closedAt)}.` : 'Investigação em andamento.'], style: 'normalText', margin: [10, 0, 0, 0] }
+                { ul: [`Abertura da investigação em ${formatDate(data.createdAt)}.`, `Análise inicial das evidências.`, data.status === 'Finalizada' ? `Encerramento e conclusão em ${formatDate(data.closedAt)}.` : 'Investigação em andamento.'], style: 'normalText', margin: [10, 0, 0, 0] }
             ];
 
         } else if (type === 'bo') {
@@ -308,8 +309,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             ];
 
         } else if (type === 'arrest') {
-            docTitle = 'AUTO DE PRISÃO EM FLAGRANTE';
-            docRef = `APF Nº ${data.id}/${new Date().getFullYear()}`;
+            docTitle = 'AUTO DE PRISÃO';
+            docRef = `AP Nº ${data.id}/${new Date().getFullYear()}`;
             
             variables = {
                 '{numero_inquerito}': data.id,
@@ -373,8 +374,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 '{recompensa}': data.reward || 'Não informada',
                 '{periculosidade}': data.dangerLevel || data.status || 'Desconhecida',
                 '{data_registro}': formatDate(data.date || data.created_at),
-                '{assinatura_agente}': user?.nome || 'Departamento de Polícia Federal',
-                '{cargo_agente}': 'Polícia Federal'
+                '{assinatura_agente}': user?.nome || 'DENARC',
+                '{cargo_agente}': 'Investigador DENARC'
             };
 
             standardContent = [
@@ -416,7 +417,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 },
 
                 { text: '\n\n', fontSize: 1 },
-                { text: 'Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades.', style: 'normalText', alignment: 'center', italics: true }
+                { text: 'Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades da DENARC.', style: 'normalText', alignment: 'center', italics: true }
             ].filter(Boolean);
             
             validImages = []; // Evitar duplicação
@@ -452,9 +453,9 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             header: () => {
                 return {
                     stack: [
-                        { text: 'REPÚBLICA FEDERATIVA DO BRASIL', alignment: 'center', fontSize: 10, bold: true, margin: [0, 15, 0, 0] },
-            { text: 'MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA', alignment: 'center', fontSize: 10, bold: true },
-            { text: 'POLÍCIA FEDERAL', alignment: 'center', fontSize: 10, bold: true },
+                        { text: 'ESTADO DA EUFORIA', alignment: 'center', fontSize: 10, bold: true, margin: [0, 15, 0, 0] },
+                        { text: 'SECRETARIA DE SEGURANÇA PÚBLICA', alignment: 'center', fontSize: 10, bold: true },
+                        { text: 'DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', alignment: 'center', fontSize: 10, bold: true },
                         { canvas: [{ type: 'line', x1: 85, y1: 5, x2: 538, y2: 5, lineWidth: 1 }] }
                     ]
                 };
@@ -464,8 +465,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             footer: (currentPage, pageCount) => {
                 return {
                     columns: [
-                        { text: `${docTitle} Nº ${data.id} - Confidencial`, alignment: 'left', fontSize: 10, margin: [85, 0, 0, 0] },
-                        { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 10, margin: [0, 0, 57, 0] }
+                        { text: `Documento Oficial - Uso Interno | ${docTitle} Nº ${data.id}`, alignment: 'left', fontSize: 10, margin: [85, 0, 0, 0] },
+                        { text: `Emitido em: ${new Date().toLocaleDateString('pt-BR')} | Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 10, margin: [0, 0, 57, 0] }
                     ]
                 };
             },
@@ -534,10 +535,10 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                     { text: variables['{conclusao}'], style: 'normalText' },
                     { text: "Sendo o que cumpria relatar, submeto à consideração superior.", style: 'normalText', margin: [0, 10, 0, 0] },
 
-                    { text: '___________________________________________________', style: 'signatureLine' },
+                    { text: '___________________________________________________', style: 'signatureLine', margin: [0, 40, 0, 0] },
                     { text: variables['{assinatura_agente}'].toUpperCase(), alignment: 'center', bold: true, fontSize: 12 },
-                    { text: 'AGENTE DE POLÍCIA FEDERAL', alignment: 'center', fontSize: 10 },
-                    { text: `MATRÍCULA: ${user?.badge || 'DPF-000'}`, alignment: 'center', fontSize: 10 }
+                    { text: 'INVESTIGADOR DENARC', alignment: 'center', fontSize: 10 },
+                    { text: `MATRÍCULA: ${user?.badge || 'DENARC-000'}`, alignment: 'center', fontSize: 10 }
                 ])
             ],
 
