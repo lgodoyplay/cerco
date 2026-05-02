@@ -18,7 +18,7 @@ const HowToJoin = React.lazy(() => lazyImport(routeLoaders.HowToJoin));
 const Login = React.lazy(() => lazyImport(routeLoaders.Login));
 const PenalCode = React.lazy(() => lazyImport(routeLoaders.PenalCode));
 const SearchAndInvestigations = React.lazy(() => lazyImport(routeLoaders.SearchAndInvestigations));
-const WeaponsLicense = React.lazy(() => lazyImport(routeLoaders.WeaponsLicense));
+// const WeaponsLicense = React.lazy(() => lazyImport(routeLoaders.WeaponsLicense));
 
 // Private Pages
 const DashboardHome = React.lazy(() => lazyImport(routeLoaders.DashboardHome));
@@ -119,7 +119,7 @@ function App() {
             <Route path="/rules" element={<Rules />} />
             <Route path="/join" element={<HowToJoin />} />
             <Route path="/pesquisas-e-apuracoes" element={<SearchAndInvestigations />} />
-            <Route path="/porte-de-armas" element={<WeaponsLicense />} />
+            {/* <Route path="/porte-de-armas" element={<WeaponsLicense />} /> */}
           </Route>
 
           <Route path="/login" element={<Login />} />

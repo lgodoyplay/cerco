@@ -1,19 +1,11 @@
 import React from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { usePermissions } from '../../hooks/usePermissions';
 import { ShieldAlert } from 'lucide-react';
 
 const PermissionGuard = ({ permission, children, fallback }) => {
-  const { user } = useAuth();
+  const { can } = usePermissions();
 
-  // Se o usuário não estiver carregado ainda, não mostramos nada (ou loading)
-  // Mas como isso vai rodar dentro de ProtectedRoute, o usuário deve existir.
-  
-  // Verifica se o usuário tem a permissão necessária
-  // Diretores sempre têm acesso total (bypass)
-  const isDirector = user?.role?.toLowerCase().includes('diretor');
-  const hasPermission = isDirector || user?.permissions?.includes(permission);
-
-  if (!hasPermission) {
+  if (!can(permission)) {
     if (fallback) return fallback;
     
     return (

@@ -25,6 +25,7 @@ const Home = () => {
   const [newsList, setNewsList] = useState([]);
   const [loadingWanted, setLoadingWanted] = useState(false);
   const [selectedNews, setSelectedNews] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [tipForm, setTipForm] = useState({
     target: '',
     details: '',
@@ -33,9 +34,21 @@ const Home = () => {
   });
   const [tipStatus, setTipStatus] = useState('idle'); // idle, submitting, success, error
 
+  const images = [
+    '/imagem1.jpg',
+    '/imagem2.jpg',
+    '/imagem3.jpg'
+  ];
+
   useEffect(() => {
     fetchWanted();
     fetchNews();
+    
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const fetchNews = async () => {
@@ -120,7 +133,7 @@ const Home = () => {
               DENARC
             </h1>
             <p className="text-lg text-slate-300 max-w-2xl">
-              Órgão permanente de Estado, organizado e mantido pela União, atuando na preservação da ordem pública e da incolumidade das pessoas e do patrimônio.
+              Órgão permanente de Estado, organizado e mantido pelo Estado da Euforia, atuando na preservação da ordem pública e da incolumidade das pessoas e do patrimônio.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
@@ -129,12 +142,14 @@ const Home = () => {
               >
                 Como Fazer Parte
               </Link>
+              {/* Botão Solicitar Porte temporariamente ocultado - para reativar, remova os comentários
               <Link
                 to="/porte-de-armas"
                 className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm tracking-wide shadow-lg transition-transform hover:-translate-y-0.5 border border-slate-700"
               >
                 Solicitar Porte
               </Link>
+              */}
               <a
                 href="#regra-de-ouro"
                 className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-800 text-slate-100 font-semibold text-sm tracking-wide transition-colors"
@@ -143,7 +158,7 @@ const Home = () => {
               </a>
             </div>
           </div>
-          <div className="flex-1 w-full max-w-md lg:max-w-lg">
+          <div className="flex-1 w-full max-w-md lg:max-w-lg space-y-6">
             <div className="relative rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-federal-900 shadow-2xl overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.35),transparent_60%)]" />
               <div className="relative p-6 space-y-4">
@@ -154,7 +169,7 @@ const Home = () => {
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-[0.18em] text-slate-400 font-semibold">
-                        República Federativa do Brasil
+                        Euforia Roleplay
                       </p>
                       <p className="text-sm font-medium text-slate-100">
                         DENARC - Investigativa do Estado da Euforia
@@ -164,22 +179,44 @@ const Home = () => {
                 </div>
                 <div className="mt-4 space-y-3 text-sm text-slate-300">
                   <p>
-                    A DENARC exerce, com exclusividade, as funções de polícia judiciária da União.
+                    A DENARC exerce as funções de polícia judiciária do Estado da Euforia.
                   </p>
                   <p>
-                    Atua no combate ao crime organizado, tráfico de drogas, corrupção, crimes cibernéticos e ambientais, entre outros crimes de competência federal.
+                    Atua no combate ao crime organizado, tráfico de drogas, corrupção, crimes cibernéticos e ambientais, entre outros crimes de competência estadual.
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs text-slate-300 pt-2 border-t border-slate-800">
                   <div className="flex flex-col gap-1">
                     <span className="text-slate-500 font-semibold uppercase tracking-wide">Sede</span>
-                    <span>Brasília, DF</span>
+                    <span>Euforia Roleplay</span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-slate-500 font-semibold uppercase tracking-wide">Atuação</span>
-                    <span>Território Nacional</span>
+                    <span>Toda Euforia Roleplay</span>
                   </div>
                 </div>
+              </div>
+            </div>
+            
+            <div className="relative rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden aspect-video">
+              {images.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`Imagem ${index + 1} - Euforia Roleplay`}
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
+                />
+              ))}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                {images.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentImageIndex ? 'bg-federal-400 w-6' : 'bg-slate-500'}`}
+                  />
+                ))}
+              </div>
+              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-white font-semibold">
+                Ambiente de Jogo
               </div>
             </div>
           </div>
@@ -195,11 +232,11 @@ const Home = () => {
             </h2>
             <p className="text-slate-300 text-base leading-relaxed">
               A DENARC é a instituição de excelência responsável por apurar
-              infrações penais contra a ordem política e social ou em detrimento de bens, serviços e interesses da União.
+              infrações penais contra a ordem política e social ou em detrimento de bens, serviços e interesses do Estado da Euforia.
             </p>
             <p className="text-slate-300 text-base leading-relaxed">
               Sua missão é atuar com rigor técnico e científico, garantindo a preservação de provas e a elucidação
-              de crimes federais, mantendo a ordem e a segurança pública.
+              de crimes, mantendo a ordem e a segurança pública em Euforia Roleplay.
             </p>
           </div>
           <div className="space-y-6">
