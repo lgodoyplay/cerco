@@ -83,7 +83,7 @@ export const generateInvestigationPDF = (investigation, user) => {
   doc.setFillColor(240, 240, 240);
   doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 35, 'F');
   doc.setDrawColor(0, 0, 0); // Preto para ficar mais sóbrio
-  doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 35;
+  doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 35);
 
   let dataY = yPos + 8;
   const col1 = marginLeft + 5;
@@ -200,7 +200,7 @@ export const generateInvestigationPDF = (investigation, user) => {
       doc.setFontSize(fontSizeBody);
       
       const proofTitle = proof.title ? `${proof.title} - ` : '';
-      const proofDescText = `${proofTitle}${proof.description || 'Sem descrição adicional.'`;
+      const proofDescText = `${proofTitle}${proof.description || 'Sem descrição adicional.'}`;
       const proofLines = doc.splitTextToSize(proofDescText, pageWidth - (marginLeft + marginRight));
       
       doc.text(proofLines, marginLeft, yPos);
@@ -368,7 +368,7 @@ export const generateBOReportPDF = (bo, user, templateStr) => {
   const ocorrenciaText = [
     `Local: ${bo.localizacao || "Não informado"}`,
     `Comunicante: ${bo.comunicante || "Anônimo"}`,
-    `Data/Hora: ${bo.created_at ? new Date(bo.created_at).toLocaleString("pt-BR") : "Não informada"}"
+    `Data/Hora: ${bo.created_at ? new Date(bo.created_at).toLocaleString("pt-BR") : "Não informada"}`
   ].join("\n");
   let lines = doc.splitTextToSize(ocorrenciaText, width);
   doc.text(lines, marginLeft, yPos);
@@ -498,7 +498,7 @@ export const generateArrestPDF = (arrest, user, templateStr) => {
   const detidoText = [
     `Nome: ${arrest.name || "Não informado"}`,
     `Documento: ${arrest.passport || "Não informado"}`,
-    `Artigos/Crime: ${arrest.articles || arrest.reason || "Não especificado"}"
+    `Artigos/Crime: ${arrest.articles || arrest.reason || "Não especificado"}`
   ].join("\n");
   let lines = doc.splitTextToSize(detidoText, width);
   doc.text(lines, marginLeft, yPos);
@@ -635,7 +635,7 @@ export const generateWantedPDF = (person, user, templateStr) => {
   const dadosText = [
     `Crime/Motivo: ${person.crime || person.reason || "Não especificado"}`,
     `Periculosidade: ${(person.dangerLevel || person.status || "Desconhecida").toString()}`,
-    `Registro: ${person.date || person.created_at ? new Date(person.date || person.created_at).toLocaleDateString("pt-BR") : "Não informado"}"
+    `Registro: ${person.date || person.created_at ? new Date(person.date || person.created_at).toLocaleDateString("pt-BR") : "Não informado"}`
   ].join("\n");
   let lines = doc.splitTextToSize(dadosText, width);
   doc.text(lines, marginLeft, yPos);
