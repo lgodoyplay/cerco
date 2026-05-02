@@ -157,7 +157,7 @@ const SearchAndInvestigations = () => {
                   type="text"
                   value={verifyCode}
                   onChange={(e) => setVerifyCode(e.target.value.toUpperCase())}
-                  placeholder="Ex: PF-123456"
+                  placeholder="Ex: DENARC-123456"
                   className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-6 py-4 text-center text-2xl font-mono tracking-widest text-white placeholder:text-slate-700 focus:outline-none focus:border-federal-500 transition-colors uppercase"
                 />
                 <button
@@ -221,7 +221,7 @@ const SearchAndInvestigations = () => {
               </div>
               <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/50">
                 <FileText className="mx-auto mb-2 opacity-50" size={20} />
-                Registro oficial DPF
+                Registro oficial DENARC
               </div>
             </div>
           </div>

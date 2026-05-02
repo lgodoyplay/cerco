@@ -117,7 +117,7 @@ const Home = () => {
               <span>Institucional</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white">
-              Polícia Federal
+              DENARC
             </h1>
             <p className="text-lg text-slate-300 max-w-2xl">
               Órgão permanente de Estado, organizado e mantido pela União, atuando na preservação da ordem pública e da incolumidade das pessoas e do patrimônio.
@@ -157,14 +157,14 @@ const Home = () => {
                         República Federativa do Brasil
                       </p>
                       <p className="text-sm font-medium text-slate-100">
-                        Departamento de Polícia Federal
+                        DENARC - Investigativa do Estado da Euforia
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="mt-4 space-y-3 text-sm text-slate-300">
                   <p>
-                    A Polícia Federal exerce, com exclusividade, as funções de polícia judiciária da União.
+                    A DENARC exerce, com exclusividade, as funções de polícia judiciária da União.
                   </p>
                   <p>
                     Atua no combate ao crime organizado, tráfico de drogas, corrupção, crimes cibernéticos e ambientais, entre outros crimes de competência federal.
@@ -191,10 +191,10 @@ const Home = () => {
           <div className="space-y-4">
             <h2 className="text-3xl sm:text-4xl font-bold text-white flex items-center gap-3">
               <Shield size={30} className="text-federal-400" />
-              O que é o DPF
+              O que é a DENARC
             </h2>
             <p className="text-slate-300 text-base leading-relaxed">
-              O Departamento de Polícia Federal é a instituição de excelência responsável por apurar
+              A DENARC é a instituição de excelência responsável por apurar
               infrações penais contra a ordem política e social ou em detrimento de bens, serviços e interesses da União.
             </p>
             <p className="text-slate-300 text-base leading-relaxed">
@@ -205,7 +205,7 @@ const Home = () => {
           <div className="space-y-6">
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
               <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-[0.18em] mb-3">
-                Ocorrências típicas do DPF
+                Ocorrências típicas da DENARC
               </h3>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-200">
                 <li className="flex items-center gap-2">
@@ -324,7 +324,7 @@ const Home = () => {
           <div className="px-6 sm:px-8 py-8 space-y-6">
             <div className="space-y-2">
               <p className="text-lg font-bold text-white">
-                O que define o Policial Federal?
+                O que define o Agente DENARC?
               </p>
               <ul className="space-y-1 text-sm font-semibold text-federal-100">
                 <li>LEALDADE À CONSTITUIÇÃO.</li>
@@ -339,7 +339,7 @@ const Home = () => {
                   Legalidade
                 </p>
                 <p className="text-slate-200">
-                  Toda ação policial deve estar estritamente amparada na lei. O Policial Federal é, antes de tudo, um garantidor de direitos.
+                  Toda ação policial deve estar estritamente amparada na lei. O Agente DENARC é, antes de tudo, um garantidor de direitos.
                 </p>
               </div>
               <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4">
@@ -375,7 +375,7 @@ const Home = () => {
                   Regime Disciplinar (Lei 4.878/65)
                 </p>
                 <p className="text-sm text-red-100">
-                  Infrações que atentam contra o decoro e a eficácia da Polícia Federal.
+                  Infrações que atentam contra o decoro e a eficácia da DENARC.
                 </p>
               </div>
             </div>
@@ -423,7 +423,7 @@ const Home = () => {
               </h2>
             </div>
             <p className="text-sm text-slate-300 mb-4">
-              O que se espera de todo integrante da Polícia Federal no exercício de suas funções.
+              O que se espera de todo integrante da DENARC no exercício de suas funções.
             </p>
             <div className="space-y-3 text-sm text-slate-100">
               <div className="flex items-start gap-3">
@@ -450,7 +450,7 @@ const Home = () => {
             <div className="space-y-4 text-sm text-slate-100">
               <div className="border-l-2 border-federal-500 pl-3">
                 <p className="font-bold text-federal-200">CF/88, Art. 144</p>
-                <p className="text-xs text-slate-300">Define a PF como órgão permanente, organizado e mantido pela União.</p>
+                <p className="text-xs text-slate-300">Define a DENARC como órgão permanente, organizado e mantido pela União.</p>
               </div>
               <div className="border-l-2 border-federal-500 pl-3">
                 <p className="font-bold text-federal-200">Lei 12.830/2013</p>
@@ -476,7 +476,7 @@ const Home = () => {
               <Siren className="text-red-600 animate-pulse sm:hidden" size={32} />
             </h2>
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Ajude a Polícia Federal a localizar criminosos perigosos. Sua identidade será mantida em absoluto sigilo.
+              Ajude a DENARC a localizar criminosos perigosos. Sua identidade será mantida em absoluto sigilo.
             </p>
           </div>
 

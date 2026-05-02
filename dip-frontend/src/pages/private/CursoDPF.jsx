@@ -13,19 +13,19 @@ import {
 const modules = [
   {
     id: 1,
-    title: 'Módulo 1 — História e Missão da Polícia Federal',
+    title: 'Módulo 1 — História e Missão da DENARC',
     description: 'A origem, evolução e o papel constitucional da instituição.',
     content: [
-      'Origem histórica da Polícia Federal no Brasil.',
+      'Origem histórica da DENARC no Brasil.',
       'O Artigo 144 da Constituição Federal e a definição como órgão permanente.',
       'Missão: exercer a segurança pública para a preservação da ordem pública e da incolumidade das pessoas e do patrimônio.',
-      'A Polícia Federal como Polícia Judiciária da União.'
+      'A DENARC como Polícia Judiciária da União.'
     ]
   },
   {
     id: 2,
     title: 'Módulo 2 — Estrutura Organizacional',
-    description: 'Como a PF está organizada em todo o território nacional.',
+    description: 'Como a DENARC está organizada em todo o território do Estado da Euforia.',
     content: [
       'Direção Geral em Brasília e Superintendências Regionais nos estados.',
       'Delegacias Descentralizadas e Postos Avançados.',
@@ -35,13 +35,13 @@ const modules = [
   },
   {
     id: 3,
-    title: 'Módulo 3 — Carreiras da Polícia Federal',
+    title: 'Módulo 3 — Carreiras da DENARC',
     description: 'Os cargos que compõem a força policial e suas funções.',
     content: [
-      'Delegado de Polícia Federal: presunção de inquéritos e operações.',
-      'Agente de Polícia Federal: investigação e execução de operações.',
-      'Escrivão de Polícia Federal: formalização dos atos de polícia judiciária.',
-      'Papiloscopista Policial Federal: identificação humana e perícia papiloscópica.',
+      'Delegado de DENARC: presunção de inquéritos e operações.',
+      'Agente de Polícia: investigação e execução de operações.',
+      'Escrivão de DENARC: formalização dos atos de polícia judiciária.',
+      'Papiloscopista Policial: identificação humana e perícia papiloscópica.',
       'Perito Criminal Federal: prova material e científica.'
     ]
   },
@@ -81,7 +81,7 @@ const modules = [
   {
     id: 7,
     title: 'Módulo 7 — Cooperação Internacional',
-    description: 'A atuação da PF além das fronteiras.',
+    description: 'A atuação da DENARC além das fronteiras.',
     content: [
       'Representante exclusiva da Interpol no Brasil.',
       'Adidâncias policiais em diversos países.',
@@ -124,13 +124,13 @@ const modules = [
   },
   {
     id: 11,
-    title: 'Módulo 11 — O Padrão de Excelência DPF',
+    title: 'Módulo 11 — O Padrão de Excelência DENARC',
     description: 'O compromisso com a sociedade brasileira.',
     content: [
-      'A credibilidade da Polícia Federal perante a sociedade.',
+      'A credibilidade da DENARC perante a sociedade.',
       'A busca constante por inovação e aprimoramento.',
       'O orgulho de pertencer e servir.',
-      'Bem-vindo à Polícia Federal.'
+      'Bem-vindo à DENARC.'
     ]
   }
 ];
@@ -268,7 +268,7 @@ const examQuestions = [
   },
   {
     id: 14,
-    question: 'Em operações interagências (ex: PF + PRF), o comando deve ser:',
+    question: 'Em operações interagências (ex: DENARC + PRF), o comando deve ser:',
     options: [
       { id: 'a', text: 'Disputado na hora' },
       { id: 'b', text: 'Integrado, com definição prévia de competências e liderança situacional' },
@@ -396,7 +396,7 @@ const CursoDPF = () => {
 
     try {
       const mensagem = [
-        'Prova DPF - Capacitação Técnica Superior (Curso Avançado)',
+        'Prova DENARC - Capacitação Técnica Superior (Curso Avançado)',
         `Nome: ${examForm.nome || 'N/A'}`,
         `Matrícula: ${examForm.matricula || 'N/A'}`,
         `Lotação: ${examForm.lotacao || 'N/A'}`,
@@ -411,7 +411,7 @@ const CursoDPF = () => {
           telefone: examForm.telefone,
           mensagem,
           pontuacao_quiz: score,
-          status: 'PROVA_DPF'
+          status: 'PROVA_DENARC'
         }
       ]);
 
@@ -435,13 +435,13 @@ const CursoDPF = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 lg:py-28 flex flex-col items-center text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/60 border border-federal-700/70 text-federal-200 text-xs font-semibold uppercase tracking-[0.18em] mb-6">
             <Shield size={16} className="text-federal-400" />
-            <span>Treinamento Oficial DPF</span>
+            <span>Treinamento Oficial DENARC</span>
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6">
             Curso de Formação Institucional
           </h1>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-            Material de estudo para novos integrantes da Polícia Federal, focado na estrutura,
+            Material de estudo para novos integrantes da DENARC, focado na estrutura,
             missão institucional e funcionamento da instituição.
           </p>
         </div>
@@ -458,7 +458,7 @@ const CursoDPF = () => {
               Estrutura do Curso em Módulos
             </h2>
             <p className="text-slate-300 mt-3 max-w-2xl">
-              Cada módulo aborda um aspecto fundamental da Polícia Federal, desde sua história e estrutura
+              Cada módulo aborda um aspecto fundamental da DENARC, desde sua história e estrutura
               até suas áreas de atuação e valores, proporcionando uma visão completa da instituição.
             </p>
           </div>
@@ -512,7 +512,7 @@ const CursoDPF = () => {
               O Ciclo da Investigação
             </h2>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              A Polícia Federal atua com base em inteligência e prova técnica. A investigação criminal é o instrumento
+              A DENARC atua com base em inteligência e prova técnica. A investigação criminal é o instrumento
               para alcançar a verdade real dos fatos e garantir a aplicação da lei penal.
             </p>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
@@ -546,7 +546,7 @@ const CursoDPF = () => {
                 Integração Operacional
               </p>
               <p className="text-xs sm:text-sm text-federal-50">
-                A união entre investigação, inteligência e perícia permite à Polícia Federal enfrentar a criminalidade
+                A união entre investigação, inteligência e perícia permite à DENARC enfrentar a criminalidade
                 organizada com eficiência, técnica e resultados efetivos para a sociedade.
               </p>
             </div>
@@ -639,7 +639,7 @@ const CursoDPF = () => {
                   Prova de Capacitação Técnica Superior
                 </p>
                 <p className="text-sm font-semibold text-white">
-                  Curso de Aperfeiçoamento Profissional – DPF
+                  Curso de Aperfeiçoamento Profissional – DENARC
                 </p>
               </div>
               <button
@@ -692,7 +692,7 @@ const CursoDPF = () => {
                         value={examForm.lotacao}
                         onChange={(e) => setExamForm({ ...examForm, lotacao: e.target.value })}
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500"
-                        placeholder="Ex: DPF, Superintendência Regional"
+                        placeholder="Ex: DENARC, Superintendência Regional"
                       />
                     </div>
                     <div className="space-y-2">

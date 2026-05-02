@@ -19,7 +19,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
   const quizQuestions = [
     {
       id: 1,
-      question: 'Qual é a principal missão de um Policial Federal?',
+      question: 'Qual é a principal missão de um Agente DENARC?',
       options: [
         { id: 'a', text: 'Ganhar muito dinheiro e ter poder' },
         { id: 'b', text: 'Servir e proteger a sociedade, cumprindo a lei' },
@@ -179,7 +179,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
     },
     {
       id: 17,
-      question: 'A quem a Polícia Federal se subordina?',
+      question: 'A quem a DENARC se subordina?',
       options: [
         { id: 'a', text: 'Ao Exército' },
         { id: 'b', text: 'Ao Ministério da Justiça e Segurança Pública' },
@@ -303,7 +303,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
           { name: "✅ Pontuação Quiz", value: `${score}/10` || 'N/A', inline: true },
           { name: "📄 Motivação", value: formData.mensagem || 'N/A' }
         ],
-        footer: { text: "Sistema de Recrutamento Polícia Federal" },
+        footer: { text: "Sistema de Recrutamento DENARC" },
         timestamp: new Date().toISOString()
       };
 
@@ -371,7 +371,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
           {!showQuiz ? (
             <>
               <div className="text-center mb-10">
-                <h2 className="text-3xl font-bold text-white mb-4">Candidatura à Polícia Federal</h2>
+                <h2 className="text-3xl font-bold text-white mb-4">Candidatura à DENARC</h2>
                 <p className="text-slate-400">
                   Preencha o formulário e faça o teste de admissão para demonstrar seu interesse em fazer parte da 
                   nossa equipe de elite.
@@ -405,7 +405,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte da Polícia Federal?</label>
+                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte da DENARC?</label>
                   <textarea 
                     required
                     value={candidateForm.mensagem}

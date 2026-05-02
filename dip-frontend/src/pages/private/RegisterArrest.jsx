@@ -161,7 +161,7 @@ const RegisterArrest = () => {
               { name: "Motivo", value: formData.reason },
               { name: "Oficial Responsável", value: formData.officer, inline: true }
             ],
-            footer: { text: "Sistema Prisional Polícia Federal" },
+            footer: { text: "Sistema Prisional DENARC" },
             timestamp: new Date().toISOString()
           };
           

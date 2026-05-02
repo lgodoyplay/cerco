@@ -59,7 +59,7 @@ const FormsSettings = () => {
           { name: "Status", value: "Conectado", inline: true },
           { name: "Origem", value: "Painel Administrativo", inline: true }
         ],
-        footer: { text: "Sistema de Recrutamento Polícia Federal" },
+        footer: { text: "Sistema de Recrutamento DENARC" },
         timestamp: new Date().toISOString()
       };
 

@@ -23,11 +23,9 @@ const PublicLayout = () => {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-federal-900 border border-federal-700 group-hover:border-federal-500 transition-colors shadow-[0_0_15px_rgba(30,58,138,0.3)]">
-                <Shield className="w-6 h-6 text-federal-400 group-hover:text-federal-300 transition-colors" />
-              </div>
+              <img src="/LOGO.gif" alt="Logo DENARC" className="relative flex items-center justify-center w-10 h-10 rounded-lg border border-federal-700 group-hover:border-federal-500 transition-colors shadow-[0_0_15px_rgba(30,58,138,0.3)] object-cover" />
               <div className="flex flex-col justify-center">
-                <span className="text-lg font-bold tracking-tight text-white uppercase leading-none">Policia Federal</span>
+                <span className="text-lg font-bold tracking-tight text-white uppercase leading-none">DENARC</span>
               </div>
             </Link>
 
@@ -105,11 +103,11 @@ const PublicLayout = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Shield className="w-6 h-6 text-federal-600" />
-                <span className="font-bold text-lg text-white">DPF</span>
+                <img src="/LOGO.gif" alt="Logo DENARC" className="w-6 h-6 object-cover" />
+                <span className="font-bold text-lg text-white">DENARC</span>
               </div>
               <p className="text-slate-500 text-sm leading-relaxed">
-                Departamento de Polícia Federal.<br/>
+                DENARC - Investigativa do Estado da Euforia.<br/>
                 Compromisso com a verdade e a justiça.
               </p>
             </div>
@@ -129,7 +127,7 @@ const PublicLayout = () => {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-slate-900 text-center text-slate-600 text-xs">
-            &copy; {new Date().getFullYear()} Departamento de Polícia Federal (Roleplay). Este ambiente faz parte de um jogo (RP) e não possui vínculo com a instituição real.
+            &copy; {new Date().getFullYear()} DENARC - Investigativa do Estado da Euforia (Roleplay). Este ambiente faz parte de um jogo (RP) e não possui vínculo com a instituição real.
           </div>
         </div>
       </footer>

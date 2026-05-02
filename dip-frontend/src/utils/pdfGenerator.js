@@ -30,10 +30,10 @@ export const generateInvestigationPDF = (investigation, user) => {
     doc.setFont(fontBold, 'bold');
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text('REPÚBLICA FEDERATIVA DO BRASIL', pageWidth / 2, 20, { align: 'center' });
-    doc.text('MINISTÉRIO DA JUSTIÇA E SEGURANÇA PÚBLICA', pageWidth / 2, 25, { align: 'center' });
-    doc.text('POLÍCIA FEDERAL', pageWidth / 2, 30, { align: 'center' });
-    doc.text('DEPARTAMENTO DE POLÍCIA FEDERAL', pageWidth / 2, 35, { align: 'center' });
+    doc.text('ESTADO DA EUFORIA', pageWidth / 2, 20, { align: 'center' });
+    doc.text('SECRETARIA DE SEGURANÇA PÚBLICA', pageWidth / 2, 25, { align: 'center' });
+    doc.text('DENARC', pageWidth / 2, 30, { align: 'center' });
+    doc.text('DENARC - Investigativa do Estado da Euforia', pageWidth / 2, 35, { align: 'center' });
     
     // Linha separadora
     doc.setLineWidth(0.5);

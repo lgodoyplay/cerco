@@ -124,10 +124,8 @@ const PrivateLayout = () => {
       >
         <div className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-federal-600 flex items-center justify-center shadow-lg shadow-federal-900/50">
-               <Shield size={20} className="text-white" />
-            </div>
-            <span className="font-bold text-lg tracking-tight">DPF Policial</span>
+            <img src="/LOGO.gif" alt="Logo DENARC" className="w-8 h-8 rounded-lg shadow-lg shadow-federal-900/50 object-cover" />
+            <span className="font-bold text-lg tracking-tight">DENARC Policial</span>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-white">
             <X size={20} />

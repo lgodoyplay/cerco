@@ -26,7 +26,7 @@ const WeaponsLicense = () => {
 
   const steps = [
     "Preencher este formulário de solicitação.",
-    "Aguardar a análise inicial da Polícia Federal (acompanhe pelo Discord/Email).",
+    "Aguardar a análise inicial da DENARC (acompanhe pelo Discord/Email).",
     "Se aprovado na triagem, comparecer à delegacia para entrevista.",
     "Realizar o pagamento da taxa de emissão.",
     "Receber a carteira de porte de armas (validade de 30 dias)."
@@ -334,7 +334,7 @@ const WeaponsLicense = () => {
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Solicitação Enviada!</h2>
             <p className="text-slate-400 mb-8">
-              Sua solicitação foi registrada com sucesso. A Polícia Federal analisará seus dados e entrará em contato em breve.
+              Sua solicitação foi registrada com sucesso. A DENARC analisará seus dados e entrará em contato em breve.
             </p>
             <button
               onClick={() => {

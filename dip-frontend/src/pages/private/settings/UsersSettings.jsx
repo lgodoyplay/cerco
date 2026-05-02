@@ -271,11 +271,11 @@ const UsersSettings = () => {
 
   const handlePromoteToAgent = async () => {
     if (!editingUser) return;
-    if (!window.confirm('Deseja promover este usuário a Agente DPF? Isso dará acesso às funções básicas.')) return;
+    if (!window.confirm('Deseja promover este usuário a Agente DENARC? Isso dará acesso às funções básicas.')) return;
 
     try {
-      await updateUser(editingUser.id, { ...formData, role: 'Agente DPF' });
-      setFormData(prev => ({ ...prev, role: 'Agente DPF' }));
+      await updateUser(editingUser.id, { ...formData, role: 'Agente DENARC' });
+      setFormData(prev => ({ ...prev, role: 'Agente DENARC' }));
       alert('Usuário promovido com sucesso!');
     } catch (error) {
       console.error('Error promoting user:', error);
@@ -625,7 +625,7 @@ const UsersSettings = () => {
                       <h4 className="font-bold text-white">Progresso da Academia</h4>
                       <p className="text-sm text-slate-400">Marque os módulos concluídos pelo aluno.</p>
                     </div>
-                    {formData.role !== 'Agente DPF' && (
+                    {formData.role !== 'Agente DENARC' && (
                       <button
                         onClick={handlePromoteToAgent}
                         className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg"

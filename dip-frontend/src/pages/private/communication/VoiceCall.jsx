@@ -16,9 +16,9 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
 
             const domain = 'meet.jit.si';
             // Use room ID for unique, safe room names
-            // Prefixing with 'DPF_' to avoid collisions with common names on public Jitsi
-            // Using a simple format as requested: DPF-RoomID
-            const safeRoomName = `DPF-${room.id.substring(0, 8).toUpperCase()}`; 
+            // Prefixing with 'DENARC_' to avoid collisions with common names on public Jitsi
+            // Using a simple format as requested: DENARC-RoomID
+            const safeRoomName = `DENARC-${room.id.substring(0, 8).toUpperCase()}`; 
             
             const options = {
                 roomName: safeRoomName,
@@ -61,7 +61,7 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
                     DEFAULT_BACKGROUND: '#0f172a',
                     showBrandWatermark: false,
                     brandWatermarkLink: '',
-                    appname: 'DPF System',
+                    appname: 'DENARC System',
                     // UI Tweaks
                     DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
                     filmStripOnly: false,
