@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, Eraser, FileText, CheckCircle, AlertCircle, Shield, MapPin, Calendar, User } from 'lucide-react';
+import { Save, Eraser, FileText, CheckCircle, AlertCircle, Shield, MapPin, Calendar, User, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
 import { useSettings } from '../../hooks/useSettings';
@@ -10,6 +10,7 @@ const RegisterBO = () => {
   const navigate = useNavigate();
   const { logAction, discordConfig } = useSettings();
   const { can } = usePermissions();
+  const [reformulating, setReformulating] = useState(false);
 
   // Protect route
   if (!can('bo_manage')) {
@@ -27,6 +28,51 @@ const RegisterBO = () => {
       </div>
     );
   }
+
+  // Function to reformulate text with AI
+  const reformulateDescription = async () => {
+    if (!formData.description.trim()) return;
+    try {
+      setReformulating(true);
+      const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+      if (!OPENAI_API_KEY) {
+        alert('Chave da API OpenAI não configurada!');
+        return;
+      }
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: 'Você é um assistente de polícia que reformula descrições de ocorrências para serem mais adequadas a registros oficiais de boletim de ocorrência. Use linguagem formal, clara e detalhada.'
+            },
+            {
+              role: 'user',
+              content: `Reformule a seguinte descrição para um registro de BO:\n\n${formData.description}`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 500
+        })
+      });
+
+      if (!response.ok) throw new Error('Erro na API de IA');
+      const data = await response.json();
+      const reformulated = data.choices[0]?.message?.content || formData.description;
+      setFormData(prev => ({ ...prev, description: reformulated }));
+    } catch (error) {
+      console.error('Erro ao reformular:', error);
+      alert('Erro ao reformular a descrição. Tente novamente.');
+    } finally {
+      setReformulating(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
     complainant: '',
@@ -211,7 +257,18 @@ const RegisterBO = () => {
 
           {/* Descrição */}
           <div className="md:col-span-2">
-            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Descrição da Ocorrência</label>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Descrição da Ocorrência</label>
+              <button
+                type="button"
+                onClick={reformulateDescription}
+                disabled={reformulating || !formData.description.trim()}
+                className="flex items-center gap-2 text-xs font-bold text-federal-400 hover:text-federal-300 disabled:text-slate-600 transition-colors"
+              >
+                <RefreshCw size={14} className={clsx(reformulating && "animate-spin")} />
+                {reformulating ? 'Reformulando...' : 'Reformular Resposta'}
+              </button>
+            </div>
             <textarea
               name="description"
               value={formData.description}

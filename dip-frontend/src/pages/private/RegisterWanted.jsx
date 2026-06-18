@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, Eraser, User, FileText, Camera, CheckCircle, AlertCircle, Shield, Siren, AlertTriangle } from 'lucide-react';
+import { Save, Eraser, User, FileText, Camera, CheckCircle, AlertCircle, Shield, Siren, AlertTriangle, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import ImageUploadArea from '../../components/ImageUploadArea';
 import { supabase } from '../../lib/supabase';
@@ -11,6 +11,7 @@ const RegisterWanted = () => {
   const navigate = useNavigate();
   const { discordConfig } = useSettings();
   const { can } = usePermissions();
+  const [reformulating, setReformulating] = useState(false);
   
   // Protect route
   useEffect(() => {
@@ -22,6 +23,51 @@ const RegisterWanted = () => {
   if (!can('wanted_manage')) {
     return null;
   }
+
+  // Function to reformulate text with AI
+  const reformulateDescription = async () => {
+    if (!formData.description.trim()) return;
+    try {
+      setReformulating(true);
+      const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+      if (!OPENAI_API_KEY) {
+        alert('Chave da API OpenAI não configurada!');
+        return;
+      }
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: 'Você é um assistente de polícia que reformula descrições de procurados para serem mais adequadas a registros oficiais. Use linguagem formal, clara e detalhada.'
+            },
+            {
+              role: 'user',
+              content: `Reformule a seguinte descrição para um registro oficial:\n\n${formData.observations}`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 500
+        })
+      });
+
+      if (!response.ok) throw new Error('Erro na API de IA');
+      const data = await response.json();
+      const reformulated = data.choices[0]?.message?.content || formData.observations;
+      setFormData(prev => ({ ...prev, observations: reformulated }));
+    } catch (error) {
+      console.error('Erro ao reformular:', error);
+      alert('Erro ao reformular a descrição. Tente novamente.');
+    } finally {
+      setReformulating(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -357,9 +403,20 @@ const RegisterWanted = () => {
                 />
               </div>
 
-              {/* Observações */}
+              {/* Descrição */}
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Observações</label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Descrição</label>
+                  <button
+                    type="button"
+                    onClick={reformulateDescription}
+                    disabled={reformulating || !formData.observations.trim()}
+                    className="flex items-center gap-2 text-xs font-bold text-federal-400 hover:text-federal-300 disabled:text-slate-600 transition-colors"
+                  >
+                    <RefreshCw size={14} className={clsx(reformulating && "animate-spin")} />
+                    {reformulating ? 'Reformulando...' : 'Reformular Resposta'}
+                  </button>
+                </div>
                 <textarea
                   name="observations"
                   value={formData.observations}

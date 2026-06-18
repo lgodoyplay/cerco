@@ -8,7 +8,7 @@ import {
   Gavel, CheckCircle, XCircle, Clock, AlertTriangle, 
   FileText, Search, Filter, MoreVertical, Archive, 
   RefreshCw, Send, Upload, Shield, Printer, MapPin, 
-  User, Calendar, Lock, Siren, Eye, Scale, FileSignature, Briefcase
+  User, Calendar, Lock, Siren, Eye, Scale, FileSignature, Briefcase, ArrowLeft
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -562,13 +562,14 @@ const JudiciaryManager = () => {
 
       {/* Create Warrant Modal */}
       {isWarrantModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl p-6 shadow-2xl relative animate-fade-in-up">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
+            <div className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl p-6 shadow-2xl relative animate-fade-in-up my-8">
                 <button 
                     onClick={() => setIsWarrantModalOpen(false)}
-                    className="absolute top-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+                    className="mb-4 flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
                 >
-                    <XCircle size={20} />
+                    <ArrowLeft size={18} />
+                    Voltar
                 </button>
 
                 <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
@@ -717,13 +718,14 @@ const JudiciaryManager = () => {
 
       {/* Hearing Modal */}
       {isHearingModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative animate-fade-in-up">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
+            <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative animate-fade-in-up my-8">
                 <button 
                     onClick={() => setIsHearingModalOpen(false)}
-                    className="absolute top-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+                    className="mb-4 flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
                 >
-                    <XCircle size={20} />
+                    <ArrowLeft size={18} />
+                    Voltar
                 </button>
 
                 <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
@@ -826,13 +828,14 @@ const JudiciaryManager = () => {
 
       {/* Release Modal */}
       {isReleaseModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative animate-fade-in-up">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto">
+            <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative animate-fade-in-up my-8">
                 <button 
                     onClick={() => setIsReleaseModalOpen(false)}
-                    className="absolute top-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+                    className="mb-4 flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
                 >
-                    <XCircle size={20} />
+                    <ArrowLeft size={18} />
+                    Voltar
                 </button>
 
                 <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
