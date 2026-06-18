@@ -290,20 +290,20 @@ const Home = () => {
                     className="bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden hover:border-red-500/40 transition-all"
                   >
                     {/* Profile Card */}
-                    <div className="p-6 border-b border-slate-800 flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full overflow-hidden border border-slate-700">
-                        {stream.user?.avatar_url ? (
-                          <img
-                            src={stream.user.avatar_url}
-                            alt={stream.user.full_name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                            <User size={32} className="text-slate-500" />
-                          </div>
-                        )}
-                      </div>
+            <div className="p-6 border-b border-slate-800 flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full overflow-hidden border border-slate-700">
+                {stream.user?.avatar_url ? (
+                  <img
+                    src={stream.user.avatar_url.startsWith('http') ? stream.user.avatar_url : supabase.storage.from('avatars').getPublicUrl(stream.user.avatar_url).data.publicUrl}
+                    alt={stream.user.full_name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                    <User size={32} className="text-slate-500" />
+                  </div>
+                )}
+              </div>
                       <div>
                         <h3 className="text-xl font-bold text-white">
                           {stream.user?.full_name || 'Usuário'}
