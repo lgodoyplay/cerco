@@ -13,34 +13,34 @@ import {
 const modules = [
   {
     id: 1,
-    title: 'Módulo 1 — História e Missão da Polícia Rodoviária Federal',
+    title: 'Módulo 1 — História e Missão da Polícia Militar',
     description: 'A origem, evolução e o papel constitucional da instituição.',
     content: [
-      'Origem histórica da Polícia Rodoviária Federal no Brasil (1928).',
-      'O Artigo 144 da Constituição Federal: Patrulhamento ostensivo das rodovias federais.',
-      'Missão: Proteger a vida, garantir a fluidez do trânsito e combater o crime nas rodovias.',
-      'A Polícia Rodoviária Federal como órgão permanente e de carreira única.'
+      'Origem histórica da Polícia Militar no Brasil.',
+      'O Artigo 144 da Constituição Federal: Patrulhamento ostensivo.',
+      'Missão: Proteger a vida, garantir a ordem pública e combater o crime.',
+      'A Polícia Militar como órgão permanente e de carreira.'
     ]
   },
   {
     id: 2,
     title: 'Módulo 2 — Estrutura Organizacional',
-    description: 'Como a PRF está organizada em todo o território nacional.',
+    description: 'Como a PM está organizada em todo o território nacional.',
     content: [
-      'Direção Geral em Brasília e Superintendências Regionais nos estados.',
-      'Delegacias e Unidades Operacionais (UOPs).',
+      'Comando Geral e Batalhões nos estados.',
+      'Companhias e Pelotões.',
       'Divisão de áreas de atuação e circunscrições.',
-      'A capilaridade e a presença em todas as rodovias federais.'
+      'A capilaridade e a presença em todo o estado.'
     ]
   },
   {
     id: 3,
-    title: 'Módulo 3 — Carreira da Polícia Rodoviária Federal',
-    description: 'A carreira única e suas funções.',
+    title: 'Módulo 3 — Carreira da Polícia Militar',
+    description: 'A carreira e suas funções.',
     content: [
-      'Policial Rodoviário Federal: Cargo único, com diversas classes e padrões.',
-      'Atribuições: Fiscalização de trânsito, combate ao crime, atendimento a acidentes.',
-      'Possibilidade de especialização (motopoliciamento, operações aéreas, etc.).',
+      'Cargos de Soldado, Cabo, Sargento, Tenente, Capitão, Major, Tenente-Coronel e Coronel.',
+      'Atribuições: Fiscalização de trânsito, combate ao crime, atendimento a ocorrências.',
+      'Possibilidade de especialização (Táticas, Operações Especiais, etc.).',
       'A importância da uniformidade e disciplina.'
     ]
   },
@@ -58,9 +58,9 @@ const modules = [
   {
     id: 5,
     title: 'Módulo 5 — Combate ao Crime',
-    description: 'A atuação da PRF no enfrentamento à criminalidade.',
+    description: 'A atuação da PM no enfrentamento à criminalidade.',
     content: [
-      'Combate ao tráfico de drogas e armas em rodovias.',
+      'Combate ao tráfico de drogas e armas.',
       'Recuperação de veículos roubados e furtados.',
       'Enfrentamento ao contrabando e descaminho.',
       'Crimes ambientais e exploração sexual de crianças e adolescentes.'
@@ -69,12 +69,12 @@ const modules = [
   {
     id: 6,
     title: 'Módulo 6 — Grupos Especializados',
-    description: 'As unidades de elite e apoio operacional da PRF.',
+    description: 'As unidades de elite e apoio operacional da PM.',
     content: [
-      'GRR (Grupo de Resposta Rápida).',
-      'NOE (Núcleo de Operações Especiais).',
-      'DOA (Divisão de Operações Aéreas).',
-      'GOC (Grupo de Operações com Cães).'
+      'Táticas de Intervenção Policial.',
+      'Operações Especiais.',
+      'Operações Aéreas.',
+      'Operações com Cães.'
     ]
   },
   {
@@ -82,10 +82,10 @@ const modules = [
     title: 'Módulo 7 — Inteligência Policial',
     description: 'O uso da informação estratégica.',
     content: [
-      'Sistemas de monitoramento e câmeras (OCR).',
+      'Sistemas de monitoramento e câmeras.',
       'Integração com outros órgãos de segurança.',
       'Análise criminal e planejamento operacional.',
-      'Produção de conhecimento para a segurança viária.'
+      'Produção de conhecimento para a segurança pública.'
     ]
   },
   {
@@ -93,32 +93,32 @@ const modules = [
     title: 'Módulo 8 — Direitos Humanos e Cidadania',
     description: 'A atuação policial pautada no respeito ao cidadão.',
     content: [
-      'Atendimento humanizado em acidentes.',
+      'Atendimento humanizado em ocorrências.',
       'Respeito aos direitos fundamentais.',
       'Uso diferenciado da força.',
-      'A PRF como polícia cidadã.'
+      'A PM como polícia cidadã.'
     ]
   },
   {
     id: 9,
     title: 'Módulo 9 — Ética e Disciplina',
-    description: 'Os valores institucionais da PRF.',
+    description: 'Os valores institucionais da PM.',
     content: [
       'Transparência, integridade e profissionalismo.',
       'Hierarquia e disciplina funcionais.',
-      'O Código de Ética e Disciplina da PRF.',
+      'O Código de Ética e Disciplina da PM.',
       'Compromisso com o serviço público.'
     ]
   },
   {
     id: 10,
-    title: 'Módulo 10 — O Orgulho de Ser PRF',
+    title: 'Módulo 10 — O Orgulho de Ser PM',
     description: 'O espírito de corpo e a identidade institucional.',
     content: [
-      'A farda cáqui e seus significados.',
-      'O lema: "Polícia Rodoviária Federal, o Brasil caminha com segurança".',
-      'A importância da PRF para a integração nacional.',
-      'Bem-vindo à Polícia Rodoviária Federal.'
+      'A farda e seus significados.',
+      'O lema: "Polícia Militar, segurança para todos".',
+      'A importância da PM para a integração nacional.',
+      'Bem-vindo à Polícia Militar.'
     ]
   }
 ];
@@ -126,59 +126,59 @@ const modules = [
 const examQuestions = [
   {
     id: 1,
-    question: 'Qual é a principal atribuição constitucional da Polícia Rodoviária Federal (Art. 144 CF)?',
+    question: 'Qual é a principal atribuição constitucional da Polícia Militar (Art. 144 CF)?',
     options: [
       { id: 'a', text: 'Investigação de crimes federais' },
-      { id: 'b', text: 'Patrulhamento ostensivo das rodovias federais' },
+      { id: 'b', text: 'Patrulhamento ostensivo e manutenção da ordem pública' },
       { id: 'c', text: 'Policiamento marítimo e aeroportuário' }
     ],
     correct: 'b'
   },
   {
     id: 2,
-    question: 'Sobre a estrutura de carreira da PRF, é correto afirmar:',
+    question: 'Sobre a estrutura de carreira da PM, é correto afirmar:',
     options: [
       { id: 'a', text: 'Possui cargos de Delegado, Agente e Escrivão' },
-      { id: 'b', text: 'É organizada em carreira única de Policial Rodoviário Federal' },
-      { id: 'c', text: 'É dividida em oficiais e praças, como a PM' }
+      { id: 'b', text: 'É organizada em praças e oficiais' },
+      { id: 'c', text: 'É dividida em carreira única' }
     ],
     correct: 'b'
   },
   {
     id: 3,
-    question: 'O que significa a sigla UOP na estrutura da PRF?',
+    question: 'O que significa a sigla BO na estrutura da PM?',
     options: [
-      { id: 'a', text: 'Unidade de Operações Policiais' },
-      { id: 'b', text: 'Unidade Operacional (Posto PRF)' },
-      { id: 'c', text: 'União dos Oficiais de Polícia' }
+      { id: 'a', text: 'Batalhão de Operações' },
+      { id: 'b', text: 'Boletim de Ocorrência' },
+      { id: 'c', text: 'Batalhão de Ordem' }
     ],
     correct: 'b'
   },
   {
     id: 4,
-    question: 'Qual destes grupos especializados pertence à PRF?',
+    question: 'Qual destes grupos especializados pertence à PM?',
     options: [
       { id: 'a', text: 'COT (Comando de Operações Táticas)' },
       { id: 'b', text: 'NOE (Núcleo de Operações Especiais)' },
       { id: 'c', text: 'GATE (Grupo de Ações Táticas Especiais)' }
     ],
-    correct: 'b'
+    correct: 'a'
   },
   {
     id: 5,
-    question: 'No combate ao crime, a PRF atua frequentemente na repressão de:',
+    question: 'No combate ao crime, a PM atua frequentemente na repressão de:',
     options: [
       { id: 'a', text: 'Crimes contra a honra na internet' },
-      { id: 'b', text: 'Tráfico de drogas, armas e contrabando em rodovias' },
+      { id: 'b', text: 'Tráfico de drogas, armas e contrabando' },
       { id: 'c', text: 'Crimes eleitorais' }
     ],
     correct: 'b'
   },
   {
     id: 6,
-    question: 'Qual sistema é amplamente utilizado pela PRF para leitura de placas?',
+    question: 'Qual sistema é amplamente utilizado pela PM para monitoramento?',
     options: [
-      { id: 'a', text: 'OCR (Optical Character Recognition)' },
+      { id: 'a', text: 'Câmeras de segurança' },
       { id: 'b', text: 'GPS (Global Positioning System)' },
       { id: 'c', text: 'HTML (HyperText Markup Language)' }
     ],
@@ -186,17 +186,17 @@ const examQuestions = [
   },
   {
     id: 7,
-    question: 'A PRF foi criada no ano de:',
+    question: 'A PM tem como principal missão:',
     options: [
-      { id: 'a', text: '1988' },
-      { id: 'b', text: '1928' },
-      { id: 'c', text: '1964' }
+      { id: 'a', text: 'Investigar crimes' },
+      { id: 'b', text: 'Manter a ordem pública e segurança' },
+      { id: 'c', text: 'Aplicar multas de trânsito apenas' }
     ],
     correct: 'b'
   },
   {
     id: 8,
-    question: 'O atendimento a acidentes de trânsito pela PRF visa principalmente:',
+    question: 'O atendimento a acidentes de trânsito pela PM visa principalmente:',
     options: [
       { id: 'a', text: 'Multar os envolvidos' },
       { id: 'b', text: 'Garantir a fluidez, segurança e socorro às vítimas' },
@@ -206,7 +206,7 @@ const examQuestions = [
   },
   {
     id: 9,
-    question: 'Sobre o uso da força pela PRF:',
+    question: 'Sobre o uso da força pela PM:',
     options: [
       { id: 'a', text: 'Deve ser sempre letal' },
       { id: 'b', text: 'Deve seguir os princípios da necessidade, proporcionalidade e legalidade' },
@@ -216,7 +216,7 @@ const examQuestions = [
   },
   {
     id: 10,
-    question: 'A fiscalização de trânsito pela PRF baseia-se fundamentalmente:',
+    question: 'A fiscalização de trânsito pela PM baseia-se fundamentalmente:',
     options: [
       { id: 'a', text: 'No Código Penal' },
       { id: 'b', text: 'No Código de Trânsito Brasileiro (CTB)' },
@@ -226,27 +226,27 @@ const examQuestions = [
   },
   {
     id: 11,
-    question: 'O combate à exploração sexual de crianças e adolescentes nas rodovias é:',
+    question: 'O combate à exploração sexual de crianças e adolescentes é:',
     options: [
       { id: 'a', text: 'Uma atribuição exclusiva do Conselho Tutelar' },
-      { id: 'b', text: 'Uma das pautas de direitos humanos defendidas e fiscalizadas pela PRF' },
-      { id: 'c', text: 'Irrelevante para a segurança viária' }
+      { id: 'b', text: 'Uma das pautas de direitos humanos defendidas e fiscalizadas pela PM' },
+      { id: 'c', text: 'Irrelevante para a segurança pública' }
     ],
     correct: 'b'
   },
   {
     id: 12,
-    question: 'A competência territorial da PRF abrange:',
+    question: 'A competência territorial da PM abrange:',
     options: [
       { id: 'a', text: 'Apenas as capitais dos estados' },
-      { id: 'b', text: 'Todas as rodovias e estradas federais' },
+      { id: 'b', text: 'Todo o território do estado' },
       { id: 'c', text: 'Apenas as fronteiras secas' }
     ],
     correct: 'b'
   },
   {
     id: 13,
-    question: 'Em caso de crime flagrante em rodovia federal, a PRF deve:',
+    question: 'Em caso de crime flagrante, a PM deve:',
     options: [
       { id: 'a', text: 'Ignorar e chamar a Polícia Civil' },
       { id: 'b', text: 'Realizar a prisão e encaminhar à Polícia Judiciária competente' },
@@ -256,7 +256,7 @@ const examQuestions = [
   },
   {
     id: 14,
-    question: 'O "Sinal de Pare" emanado por um PRF:',
+    question: 'O "Sinal de Pare" emanado por um PM:',
     options: [
       { id: 'a', text: 'É apenas uma sugestão' },
       { id: 'b', text: 'É ordem legal e deve ser obedecida imediatamente' },
@@ -279,17 +279,17 @@ const examQuestions = [
     question: 'O transporte de produtos perigosos sem autorização é:',
     options: [
       { id: 'a', text: 'Permitido à noite' },
-      { id: 'b', text: 'Infração e crime ambiental passível de fiscalização pela PRF' },
+      { id: 'b', text: 'Infração e crime ambiental passível de fiscalização pela PM' },
       { id: 'c', text: 'Problema apenas da empresa transportadora' }
     ],
     correct: 'b'
   },
   {
     id: 17,
-    question: 'A PRF pode atuar fora das rodovias federais?',
+    question: 'A PM pode atuar em apoio a outros órgãos?',
     options: [
       { id: 'a', text: 'Nunca' },
-      { id: 'b', text: 'Sim, em situações excepcionais, apoio a outros órgãos ou interesse da União' },
+      { id: 'b', text: 'Sim, em situações excepcionais e interesse da segurança pública' },
       { id: 'c', text: 'Sim, mas apenas em dias de feriado' }
     ],
     correct: 'b'
@@ -302,11 +302,11 @@ const examQuestions = [
       { id: 'b', text: 'Polícia Rodoviária Federal' },
       { id: 'c', text: 'Guarda Municipal' }
     ],
-    correct: 'b'
+    correct: 'a'
   },
   {
     id: 19,
-    question: 'Qual documento é obrigatório para condutores e fiscalizado pela PRF?',
+    question: 'Qual documento é obrigatório para condutores e fiscalizado pela PM?',
     options: [
       { id: 'a', text: 'Título de Eleitor' },
       { id: 'b', text: 'CNH (Carteira Nacional de Habilitação)' },
@@ -316,7 +316,7 @@ const examQuestions = [
   },
   {
     id: 20,
-    question: 'A PRF é uma instituição de Estado, o que significa que:',
+    question: 'A PM é uma instituição de Estado, o que significa que:',
     options: [
       { id: 'a', text: 'Serve aos interesses do governo de plantão' },
       { id: 'b', text: 'Serve à sociedade e ao Estado brasileiro, independente de governos' },
@@ -326,7 +326,7 @@ const examQuestions = [
   }
 ];
 
-const CursoPRF = () => {
+const CursoPM = () => {
   const [selectedModule, setSelectedModule] = useState(null);
   const [showExam, setShowExam] = useState(false);
   const [examStep, setExamStep] = useState('form');
@@ -384,7 +384,7 @@ const CursoPRF = () => {
 
     try {
       const mensagem = [
-        'Prova PRF - Curso de Formação Profissional (CFP)',
+        'Prova PM - Curso de Formação Profissional (CFP)',
         `Nome: ${examForm.nome || 'N/A'}`,
         `Matrícula: ${examForm.matricula || 'N/A'}`,
         `Lotação: ${examForm.lotacao || 'N/A'}`,
@@ -399,7 +399,7 @@ const CursoPRF = () => {
           telefone: examForm.telefone,
           mensagem,
           pontuacao_quiz: score,
-          status: 'PROVA_PRF' // Distinct status for PRF
+          status: 'PROVA_PM' // Distinct status for PM
         }
       ]);
 
@@ -418,18 +418,18 @@ const CursoPRF = () => {
   return (
     <div className="space-y-20 pb-20">
       <section className="relative overflow-hidden bg-slate-950">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900" /> {/* Blue for PRF (traditionally yellow/blue) - keeping dark theme consistent but slightly blue-ish */}
-        <div className="absolute inset-x-0 -top-32 h-64 bg-gradient-to-b from-yellow-500/20 to-transparent blur-3xl" /> {/* Yellow accent for PRF */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900" /> {/* Blue for PM - keeping dark theme consistent but slightly blue-ish */}
+        <div className="absolute inset-x-0 -top-32 h-64 bg-gradient-to-b from-yellow-500/20 to-transparent blur-3xl" /> {/* Yellow accent for PM */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 lg:py-28 flex flex-col items-center text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/60 border border-yellow-500/50 text-yellow-500 text-xs font-semibold uppercase tracking-[0.18em] mb-6">
             <Shield size={16} className="text-yellow-500" />
-            <span>Treinamento Oficial PRF</span>
+            <span>Treinamento Oficial PM</span>
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6">
-            Curso de Formação PRF
+            Curso de Formação PM
           </h1>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-            Material de estudo para novos integrantes da Polícia Rodoviária Federal, focado na
+            Material de estudo para novos integrantes da Polícia Militar, focado na
             legislação de trânsito, combate ao crime e valores institucionais.
           </p>
         </div>
@@ -443,7 +443,7 @@ const CursoPRF = () => {
           <div>
             <h2 className="text-3xl sm:text-4xl font-bold text-white flex items-center gap-3">
               <GraduationCap size={30} className="text-yellow-500" />
-              Módulos de Ensino PRF
+              Módulos de Ensino PM
             </h2>
             <p className="text-slate-300 mt-3 max-w-2xl">
               Conteúdo programático essencial para o desempenho das atividades de policiamento
@@ -464,7 +464,7 @@ const CursoPRF = () => {
                   {String(module.id).padStart(2, '0')}
                 </span>
                 <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 group-hover:text-yellow-500">
-                  Módulo PRF
+                  Módulo PM
                 </span>
               </div>
               <div className="space-y-2 flex-1">
@@ -500,9 +500,9 @@ const CursoPRF = () => {
               Excelência na Rodovia
             </h2>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              A Polícia Rodoviária Federal é referência em policiamento ostensivo e segurança viária.
+              A Polícia Militar é referência em policiamento ostensivo e segurança pública.
               Sua atuação vai além do trânsito, sendo fundamental no combate ao tráfico de drogas,
-              armas e seres humanos nas fronteiras e corredores logísticos do país.
+              armas e crimes no território estadual.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
@@ -528,7 +528,7 @@ const CursoPRF = () => {
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center pb-12">
         <div className="bg-gradient-to-r from-blue-900/40 to-yellow-600/20 border border-yellow-500/30 rounded-3xl p-8 sm:p-12 space-y-6">
           <h2 className="text-3xl sm:text-4xl font-bold text-white">
-            Prova de Capacitação PRF
+            Prova de Capacitação PM
           </h2>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
             São 20 questões objetivas focadas na estrutura, história e funcionamento da instituição.
@@ -545,7 +545,7 @@ const CursoPRF = () => {
               onClick={handleOpenExam}
               className="px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-blue-950 font-black rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-yellow-500/20"
             >
-              INICIAR PROVA PRF
+              INICIAR PROVA PM
             </button>
           ) : (
             <div className="flex flex-col items-center gap-2 p-6 bg-yellow-500/5 border border-yellow-500/10 rounded-2xl">
@@ -615,7 +615,7 @@ const CursoPRF = () => {
             <div className="p-6 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900 rounded-t-2xl z-10">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <CheckSquare className="text-yellow-500" />
-                Prova de Capacitação PRF
+                Prova de Capacitação PM
               </h3>
               {examStep !== 'result' && (
                  <button onClick={handleCloseExam} className="text-slate-400 hover:text-white">
@@ -781,4 +781,4 @@ const CursoPRF = () => {
   );
 };
 
-export default CursoPRF;
+export default CursoPM;

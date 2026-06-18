@@ -6,9 +6,9 @@ import FineForm from './FineForm';
 import SeizureList from './SeizureList';
 import FineList from './FineList';
 
-const PRFIntegration = () => {
+const PMIntegration = () => {
   const { can } = usePermissions();
-  // const canManage = can('prf_manage');
+  // const canManage = can('pm_manage');
   const canManage = true; // Force enable for debugging/fixing user issue
   const [activeTab, setActiveTab] = useState(canManage ? 'seizure' : 'history'); // Default to history if no manage permission
 
@@ -18,7 +18,7 @@ const PRFIntegration = () => {
         <div>
           <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
             <Car className="text-blue-500" />
-            Integração PRF
+            Integração PM
           </h1>
           <p className="text-slate-400 mt-1">Gestão de Apreensões e Multas Rodoviárias</p>
         </div>
@@ -81,4 +81,4 @@ const PRFIntegration = () => {
   );
 };
 
-export default PRFIntegration;
+export default PMIntegration;

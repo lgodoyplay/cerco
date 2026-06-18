@@ -48,9 +48,13 @@ const PERMISSIONS = {
   COMMUNICATION_VIEW: 'communication_view',
   COMMUNICATION_MANAGE: 'communication_manage',
 
-  // PRF Integration
-  PRF_VIEW: 'prf_view',
-  PRF_MANAGE: 'prf_manage',
+  // PM Integration
+  PM_VIEW: 'pm_view',
+  PM_MANAGE: 'pm_manage',
+
+  // Laudos Médicos
+  LAUDOS_VIEW: 'laudos_view',
+  LAUDOS_MANAGE: 'laudos_manage',
 
   // Lawyers
   LAWYER_VIEW: 'lawyer_view',

@@ -11,7 +11,7 @@ export const routeLoaders = {
   // Private
   DashboardHome: () => import('../pages/private/DashboardHome'),
   CursoDPF: () => import('../pages/private/CursoDPF'),
-  CursoPRF: () => import('../pages/private/CursoPRF'),
+  CursoPM: () => import('../pages/private/CursoPM'),
   ProfilePage: () => import('../pages/private/ProfilePage'),
   RegisterArrest: () => import('../pages/private/RegisterArrest'),
   RegisterBO: () => import('../pages/private/RegisterBO'),
@@ -40,11 +40,16 @@ export const routeLoaders = {
   AlvaraCreate: () => import('../pages/private/alvaras/AlvaraCreate'),
   AlvaraDetail: () => import('../pages/private/alvaras/AlvaraDetail'),
   
+  // Laudos Médicos
+  LaudosList: () => import('../pages/private/laudos/LaudosList'),
+  LaudoCreate: () => import('../pages/private/laudos/LaudoCreate'),
+  LaudoDetail: () => import('../pages/private/laudos/LaudoDetail'),
+  
   // Specialized Managers
   WeaponsManager: () => import('../pages/private/weapons/WeaponsManager'),
   RequestWeaponLicense: () => import('../pages/private/weapons/RequestWeaponLicense'),
   JudiciaryManager: () => import('../pages/private/judiciary/JudiciaryManager'),
-  PRFIntegration: () => import('../pages/private/prf/PRFIntegration'),
+  PMIntegration: () => import('../pages/private/pm/PMIntegration'),
   LawyerDashboard: () => import('../pages/private/lawyers/LawyerDashboard'),
   ANPStudentDashboard: () => import('../pages/private/anp/ANPStudentDashboard'),
   LogisticsDashboard: () => import('../pages/private/logistics/LogisticsDashboard'),

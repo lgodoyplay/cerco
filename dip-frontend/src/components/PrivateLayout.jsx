@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { usePermissions } from '../hooks/usePermissions';
 import { supabase } from '../lib/supabase';
 import { prefetchRoute } from '../routes/routeLoaders';
 import ChangePasswordModal from './ChangePasswordModal';
@@ -27,7 +28,8 @@ import {
   Package,
   Radio,
   Newspaper,
-  Building2
+  Building2,
+  Stethoscope
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
@@ -54,6 +56,7 @@ const SidebarItem = ({ to, icon: Icon, label, active, onClick, prefetchKey }) =>
 
 const PrivateLayout = () => {
   const { logout, user } = useAuth();
+  const { can } = usePermissions();
   const location = useLocation();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
@@ -70,7 +73,7 @@ const PrivateLayout = () => {
     { to: '/dashboard/communication', icon: Radio, label: 'Comunicação', prefetchKey: 'CommunicationHub', permission: 'communication_view' },
     { to: '/dashboard/news', icon: Newspaper, label: 'Notícias', permission: 'news_manage' },
     { to: '/dashboard/logistics', icon: Package, label: 'Logística', prefetchKey: 'LogisticsDashboard', permission: 'logistics_view' },
-    { to: '/dashboard/prf', icon: Car, label: 'Integração PRF', prefetchKey: 'PRFIntegration', permission: 'prf_view' },
+    { to: '/dashboard/pm', icon: Car, label: 'Integração PM', prefetchKey: 'PMIntegration', permission: 'pm_view' },
     { to: '/dashboard/lawyers', icon: Scale, label: 'Advogados', prefetchKey: 'LawyerDashboard', permission: 'lawyer_view' },
     { to: '/dashboard/judiciary', icon: Gavel, label: 'Jurídico', prefetchKey: 'JudiciaryManager', permission: 'judiciary_view' },
     { to: '/dashboard/arrest', icon: UserX, label: 'Registrar Prisão', prefetchKey: 'RegisterArrest', permission: 'arrest_manage' },
@@ -85,6 +88,7 @@ const PrivateLayout = () => {
     { to: '/dashboard/weapons', icon: Target, label: 'Porte de Armas', prefetchKey: 'WeaponsManager', permission: 'weapons_view' },
     { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList', permission: 'revenue_view' },
     { to: '/dashboard/alvaras', icon: Building2, label: 'Alvarás', prefetchKey: 'AlvaraList' },
+    { to: '/dashboard/laudos', icon: Stethoscope, label: 'Laudos Médicos', prefetchKey: 'LaudosList', permission: 'laudos_view' },
     { to: '/dashboard/settings', icon: Settings, label: 'Configurações', prefetchKey: 'SettingsLayout', permission: 'settings_view' },
   ];
 
@@ -93,7 +97,7 @@ const PrivateLayout = () => {
     if (user?.role?.toLowerCase().includes('diretor')) return true;
     
     if (!item.permission) return true;
-    return (user?.permissions || []).includes(item.permission);
+    return can(item.permission);
   });
 
   const isActive = (path) => {

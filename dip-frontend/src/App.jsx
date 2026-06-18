@@ -23,7 +23,7 @@ const SearchAndInvestigations = React.lazy(() => lazyImport(routeLoaders.SearchA
 // Private Pages
 const DashboardHome = React.lazy(() => lazyImport(routeLoaders.DashboardHome));
 const CursoDPF = React.lazy(() => lazyImport(routeLoaders.CursoDPF));
-const CursoPRF = React.lazy(() => lazyImport(routeLoaders.CursoPRF));
+const CursoPM = React.lazy(() => lazyImport(routeLoaders.CursoPM));
 const ProfilePage = React.lazy(() => lazyImport(routeLoaders.ProfilePage));
 const RegisterArrest = React.lazy(() => lazyImport(routeLoaders.RegisterArrest));
 const RegisterBO = React.lazy(() => lazyImport(routeLoaders.RegisterBO));
@@ -42,6 +42,10 @@ const AlvaraList = React.lazy(() => lazyImport(routeLoaders.AlvaraList));
 const AlvaraCreate = React.lazy(() => lazyImport(routeLoaders.AlvaraCreate));
 const AlvaraDetail = React.lazy(() => lazyImport(routeLoaders.AlvaraDetail));
 
+const LaudosList = React.lazy(() => lazyImport(routeLoaders.LaudosList));
+const LaudoCreate = React.lazy(() => lazyImport(routeLoaders.LaudoCreate));
+const LaudoDetail = React.lazy(() => lazyImport(routeLoaders.LaudoDetail));
+
 const ForensicsList = React.lazy(() => lazyImport(routeLoaders.ForensicsList));
 const RegisterForensics = React.lazy(() => lazyImport(routeLoaders.RegisterForensics));
 const ForensicsDetail = React.lazy(() => lazyImport(routeLoaders.ForensicsDetail));
@@ -51,7 +55,7 @@ const RevenueDetail = React.lazy(() => lazyImport(routeLoaders.RevenueDetail));
 
 const WeaponsManager = React.lazy(() => lazyImport(routeLoaders.WeaponsManager));
 const JudiciaryManager = React.lazy(() => lazyImport(routeLoaders.JudiciaryManager));
-const PRFIntegration = React.lazy(() => lazyImport(routeLoaders.PRFIntegration));
+const PMIntegration = React.lazy(() => lazyImport(routeLoaders.PMIntegration));
 const LawyerDashboard = React.lazy(() => lazyImport(routeLoaders.LawyerDashboard));
 const LogisticsDashboard = React.lazy(() => lazyImport(routeLoaders.LogisticsDashboard));
 const ANPStudentDashboard = React.lazy(() => lazyImport(routeLoaders.ANPStudentDashboard));
@@ -144,7 +148,7 @@ function App() {
             } />
             
             <Route path="curso-dpf" element={<CursoDPF />} />
-            <Route path="curso-prf" element={<CursoPRF />} />
+            <Route path="curso-pm" element={<CursoPM />} />
 
             <Route path="arrests" element={
               <PermissionGuard permission="arrest_view">
@@ -204,6 +208,23 @@ function App() {
             <Route path="alvaras/new" element={<AlvaraCreate />} />
             <Route path="alvaras/:id" element={<AlvaraDetail />} />
             
+            {/* Laudos Médicos Routes */}
+            <Route path="laudos" element={
+              <PermissionGuard permission="laudos_view">
+                <LaudosList />
+              </PermissionGuard>
+            } />
+            <Route path="laudos/new" element={
+              <PermissionGuard permission="laudos_manage">
+                <LaudoCreate />
+              </PermissionGuard>
+            } />
+            <Route path="laudos/:id" element={
+              <PermissionGuard permission="laudos_view">
+                <LaudoDetail />
+              </PermissionGuard>
+            } />
+            
             {/* Forensics Routes */}
             <Route path="forensics" element={
               <PermissionGuard permission="forensics_view">
@@ -257,10 +278,10 @@ function App() {
               </PermissionGuard>
             } />
 
-            {/* PRF Routes */}
-            <Route path="prf" element={
-              <PermissionGuard permission="prf_view">
-                <PRFIntegration />
+            {/* PM Routes */}
+            <Route path="pm" element={
+              <PermissionGuard permission="pm_view">
+                <PMIntegration />
               </PermissionGuard>
             } />
             <Route path="lawyers" element={
