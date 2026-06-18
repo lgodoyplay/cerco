@@ -114,6 +114,7 @@ const PrivateLayout = () => {
     { 
       label: 'Outros',
       items: [
+        { to: '/dashboard/corregedoria', icon: ShieldAlert, label: 'Corregedoria', prefetchKey: 'CorregedoriaList' },
         { to: '/dashboard/pm', icon: Car, label: 'Integração PM', prefetchKey: 'PMIntegration', permission: 'pm_view' },
         { to: '/dashboard/news', icon: Newspaper, label: 'Notícias', permission: 'news_manage' },
         { to: '/dashboard/communication', icon: Radio, label: 'Comunicação', prefetchKey: 'CommunicationHub', permission: 'communication_view' },

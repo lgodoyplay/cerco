@@ -29,6 +29,15 @@ ALTER TABLE public.procurados ADD COLUMN IF NOT EXISTS bo_id UUID REFERENCES pub
 ALTER TABLE public.boletins ADD COLUMN IF NOT EXISTS nome_policial_prisao TEXT;
 ALTER TABLE public.boletins ADD COLUMN IF NOT EXISTS id_policial_prisao TEXT;
 
+-- Adicionar tabela de denúncias da corregedoria
+CREATE TABLE IF NOT EXISTS public.corregedoria (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    nome TEXT,
+    detalhes TEXT NOT NULL,
+    arquivos TEXT[] DEFAULT '{}'::text[],
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- 3. Garantir que a categoria pode ser 'search_and_seizure'
 -- Noop - já permite qualquer texto
 

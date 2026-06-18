@@ -18,6 +18,7 @@ const HowToJoin = React.lazy(() => lazyImport(routeLoaders.HowToJoin));
 const Login = React.lazy(() => lazyImport(routeLoaders.Login));
 const PenalCode = React.lazy(() => lazyImport(routeLoaders.PenalCode));
 const SearchAndInvestigations = React.lazy(() => lazyImport(routeLoaders.SearchAndInvestigations));
+const Corregedoria = React.lazy(() => lazyImport(routeLoaders.Corregedoria));
 // const WeaponsLicense = React.lazy(() => lazyImport(routeLoaders.WeaponsLicense));
 
 // Private Pages
@@ -32,6 +33,7 @@ const WantedList = React.lazy(() => lazyImport(routeLoaders.WantedList));
 const ArrestList = React.lazy(() => lazyImport(routeLoaders.ArrestList));
 const BOList = React.lazy(() => lazyImport(routeLoaders.BOList));
 const ReportList = React.lazy(() => lazyImport(routeLoaders.ReportList));
+const CorregedoriaList = React.lazy(() => lazyImport(routeLoaders.CorregedoriaList));
 
 const InvestigationList = React.lazy(() => lazyImport(routeLoaders.InvestigationList));
 const InvestigationCreate = React.lazy(() => lazyImport(routeLoaders.InvestigationCreate));
@@ -130,6 +132,7 @@ function App() {
             <Route path="/codigo-penal" element={<PenalCode />} />
             <Route path="/rules" element={<Rules />} />
             <Route path="/join" element={<HowToJoin />} />
+            <Route path="/corregedoria" element={<Corregedoria />} />
             <Route path="/pesquisas-e-apuracoes" element={<SearchAndInvestigations />} />
             {/* <Route path="/porte-de-armas" element={<WeaponsLicense />} /> */}
           </Route>
@@ -175,6 +178,10 @@ function App() {
               <PermissionGuard permission="reports_view">
                 <ReportList />
               </PermissionGuard>
+            } />
+            
+            <Route path="corregedoria" element={
+              <CorregedoriaList />
             } />
             
             <Route path="register-wanted" element={

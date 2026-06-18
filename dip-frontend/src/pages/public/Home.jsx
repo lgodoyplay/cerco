@@ -147,6 +147,12 @@ const Home = () => {
               >
                 Como Fazer Parte
               </Link>
+              <Link
+                to="/corregedoria"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-red-700 hover:bg-red-600 text-white font-bold text-sm tracking-wide shadow-lg shadow-red-900/40 transition-transform hover:-translate-y-0.5"
+              >
+                Corregedoria
+              </Link>
               {/* Botão Solicitar Porte temporariamente ocultado - para reativar, remova os comentários
               <Link
                 to="/porte-de-armas"

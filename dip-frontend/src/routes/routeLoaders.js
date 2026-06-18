@@ -7,6 +7,7 @@ export const routeLoaders = {
   HowToJoin: () => import('../pages/public/HowToJoin'),
   SearchAndInvestigations: () => import('../pages/public/SearchAndInvestigations'),
   WeaponsLicense: () => import('../pages/public/WeaponsLicense'),
+  Corregedoria: () => import('../pages/public/Corregedoria'),
 
   // Private
   DashboardHome: () => import('../pages/private/DashboardHome'),
@@ -20,6 +21,7 @@ export const routeLoaders = {
   ArrestList: () => import('../pages/private/ArrestList'),
   BOList: () => import('../pages/private/BOList'),
   ReportList: () => import('../pages/private/ReportList'),
+  CorregedoriaList: () => import('../pages/private/CorregedoriaList'),
   
   // Investigations
   InvestigationList: () => import('../pages/private/investigations/InvestigationList'),
