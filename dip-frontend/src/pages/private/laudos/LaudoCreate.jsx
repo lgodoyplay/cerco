@@ -3,9 +3,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { 
   Stethoscope, 
   ArrowLeft,
-  Save
+  Save,
+  File,
+  X,
+  Image as ImageIcon,
+  FileText
 } from 'lucide-react';
 import { useLaudos } from '../../../hooks/useLaudos';
+import ImageUploadArea from '../../../components/ImageUploadArea';
 
 const LaudoCreate = () => {
   const navigate = useNavigate();
@@ -16,14 +21,35 @@ const LaudoCreate = () => {
     tipo_laudo: '',
     conteudo: ''
   });
+  const [arquivos, setArquivos] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const handleImageUpload = (id, dataUrl, file) => {
+    setArquivos(prev => [...prev, { id: Date.now(), dataUrl, file, descricao: '', tipo: 'imagem' }]);
+  };
+
+  const handleFileUpload = (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      setArquivos(prev => [...prev, { id: Date.now() + Math.random(), file, descricao: '', tipo: file.type === 'application/pdf' ? 'pdf' : 'outro' }]);
+    });
+    e.target.value = '';
+  };
+
+  const handleRemoveArquivo = (id) => {
+    setArquivos(prev => prev.filter(arquivo => arquivo.id !== id));
+  };
+
+  const handleDescricaoChange = (id, descricao) => {
+    setArquivos(prev => prev.map(arquivo => arquivo.id === id ? { ...arquivo, descricao } : arquivo));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      await addLaudo(formData);
+      await addLaudo(formData, arquivos);
       navigate('/dashboard/laudos');
     } catch (error) {
       console.error('Erro ao criar laudo:', error);
@@ -53,38 +79,38 @@ const LaudoCreate = () => {
       <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
         {/* Paciente Nome */}
         <div>
-          <label className="block text-sm font-semibold text-slate-300 mb-2">Nome do Paciente *</label>
+          <label className="block text-sm font-bold text-slate-300 mb-2">Nome do Paciente *</label>
           <input
             type="text"
             required
             value={formData.paciente_nome}
             onChange={(e) => setFormData({...formData, paciente_nome: e.target.value})}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
             placeholder="Nome completo do paciente"
           />
         </div>
 
         {/* Documento */}
         <div>
-          <label className="block text-sm font-semibold text-slate-300 mb-2">Documento do Paciente *</label>
+          <label className="block text-sm font-bold text-slate-300 mb-2">Documento do Paciente *</label>
           <input
             type="text"
             required
             value={formData.paciente_documento}
             onChange={(e) => setFormData({...formData, paciente_documento: e.target.value})}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
             placeholder="Passaporte, RG, CPF, etc."
           />
         </div>
 
         {/* Tipo de Laudo */}
         <div>
-          <label className="block text-sm font-semibold text-slate-300 mb-2">Tipo de Laudo *</label>
+          <label className="block text-sm font-bold text-slate-300 mb-2">Tipo de Laudo *</label>
           <select
             required
             value={formData.tipo_laudo}
             onChange={(e) => setFormData({...formData, tipo_laudo: e.target.value})}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
           >
             <option value="">Selecione um tipo</option>
             <option value="Psicológico">Psicológico</option>
@@ -94,15 +120,86 @@ const LaudoCreate = () => {
           </select>
         </div>
 
+        {/* Arquivos Upload */}
+        <div>
+          <label className="block text-sm font-bold text-slate-300 mb-2">Arquivos (Fotos e PDFs)</label>
+          
+          {/* Image Upload */}
+          <div className="mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <ImageUploadArea 
+                id="laudo_foto_1"
+                label="Foto 1"
+                image={arquivos.find(a => a.id === 'laudo_foto_1')?.dataUrl}
+                onUpload={handleImageUpload}
+                onRemove={() => handleRemoveArquivo('laudo_foto_1')}
+              />
+              <ImageUploadArea 
+                id="laudo_foto_2"
+                label="Foto 2"
+                image={arquivos.find(a => a.id === 'laudo_foto_2')?.dataUrl}
+                onUpload={handleImageUpload}
+                onRemove={() => handleRemoveArquivo('laudo_foto_2')}
+              />
+            </div>
+          </div>
+
+          {/* PDF Upload */}
+          <div className="mb-4">
+            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">PDFs e Outros Arquivos</label>
+            <input
+              type="file"
+              accept=".pdf,image/*"
+              multiple
+              onChange={handleFileUpload}
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+            />
+          </div>
+
+          {/* Lista de Arquivos */}
+          {arquivos.length > 0 && (
+            <div className="space-y-3">
+              {arquivos.map(arquivo => (
+                <div key={arquivo.id} className="flex items-center gap-3 bg-slate-950 border border-slate-800 rounded-xl p-3">
+                  {arquivo.tipo === 'imagem' ? (
+                    <ImageIcon className="text-federal-400" size={24} />
+                  ) : arquivo.tipo === 'pdf' ? (
+                    <FileText className="text-red-400" size={24} />
+                  ) : (
+                    <File className="text-slate-400" size={24} />
+                  )}
+                  <div className="flex-1">
+                    <p className="text-sm text-slate-200">{arquivo.file?.name}</p>
+                    <input
+                      type="text"
+                      placeholder="Descrição do arquivo (opcional)"
+                      value={arquivo.descricao}
+                      onChange={(e) => handleDescricaoChange(arquivo.id, e.target.value)}
+                      className="w-full bg-transparent border-none text-xs text-slate-400 focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveArquivo(arquivo.id)}
+                    className="text-slate-400 hover:text-red-400 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Conteúdo */}
         <div>
-          <label className="block text-sm font-semibold text-slate-300 mb-2">Conteúdo do Laudo *</label>
+          <label className="block text-sm font-bold text-slate-300 mb-2">Conteúdo do Laudo *</label>
           <textarea
             required
             rows={10}
             value={formData.conteudo}
             onChange={(e) => setFormData({...formData, conteudo: e.target.value})}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none resize-none"
+            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none resize-none"
             placeholder="Conteúdo completo do laudo médico..."
           />
         </div>

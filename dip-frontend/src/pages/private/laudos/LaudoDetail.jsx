@@ -5,30 +5,35 @@ import {
   ArrowLeft,
   Calendar,
   User,
-  Trash2
+  Trash2,
+  FileText,
+  Download
 } from 'lucide-react';
 import { useLaudos } from '../../../hooks/useLaudos';
 import { usePermissions } from '../../../hooks/usePermissions';
-import { supabase } from '../../../lib/supabase';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const LaudoDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { laudos, loading, deleteLaudo, fetchLaudos } = useLaudos();
+  const { laudos, loading, deleteLaudo, fetchLaudos, getLaudo } = useLaudos();
   const { can } = usePermissions();
   const [laudo, setLaudo] = useState(null);
   const canManage = can('laudos_manage');
 
   useEffect(() => {
-    if (laudos.length > 0) {
-      const found = laudos.find(l => l.id === parseInt(id));
-      setLaudo(found);
-    } else {
-      fetchLaudos();
-    }
-  }, [id, laudos, fetchLaudos]);
+    const fetchData = async () => {
+      if (laudos.length > 0) {
+        const found = laudos.find(l => l.id === parseInt(id));
+        setLaudo(found);
+      } else {
+        const data = await getLaudo(parseInt(id));
+        setLaudo(data);
+      }
+    };
+    fetchData();
+  }, [id, laudos, getLaudo]);
 
   const handleDelete = async () => {
     if (window.confirm('Tem certeza que deseja deletar este laudo?')) {
@@ -41,27 +46,11 @@ const LaudoDetail = () => {
     }
   };
 
-  if (loading) {
+  if (loading || !laudo) {
     return (
       <div className="max-w-4xl mx-auto py-10 text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-federal-500 mx-auto mb-4"></div>
         <p className="text-slate-400">Carregando laudo...</p>
-      </div>
-    );
-  }
-
-  if (!laudo) {
-    return (
-      <div className="max-w-4xl mx-auto py-10 text-center">
-        <Stethoscope size={48} className="mx-auto text-slate-600 mb-4" />
-        <h3 className="text-xl font-bold text-white mb-2">Laudo não encontrado</h3>
-        <Link 
-          to="/dashboard/laudos" 
-          className="inline-flex items-center gap-2 px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
-        >
-          <ArrowLeft size={18} />
-          Voltar para Laudos
-        </Link>
       </div>
     );
   }
@@ -125,6 +114,50 @@ const LaudoDetail = () => {
             </div>
           )}
         </div>
+
+        {/* Arquivos */}
+        {laudo.laudo_arquivos && laudo.laudo_arquivos.length > 0 && (
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 block">Arquivos</label>
+            <div className="grid gap-3">
+              {laudo.laudo_arquivos.map((arquivo, idx) => (
+                <a 
+                  key={idx}
+                  href={arquivo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-slate-950 border border-slate-800 rounded-xl p-4 hover:border-federal-500/50 transition-colors"
+                >
+                  <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center">
+                    {arquivo.url?.toLowerCase().endsWith('.pdf') ? (
+                      <FileText size={20} className="text-red-400" />
+                    ) : (
+                      <FileText size={20} className="text-blue-400" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white font-medium text-sm">
+                      {arquivo.descricao || 'Arquivo ' + (idx + 1)}
+                    </p>
+                    {arquivo.descricao && (
+                      <p className="text-slate-500 text-xs mt-1">{arquivo.descricao}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a 
+                      href={arquivo.url}
+                      download
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800"
+                    >
+                      <Download size={18} />
+                    </a>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Conteúdo do Laudo */}
         <div>

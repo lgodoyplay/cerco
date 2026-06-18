@@ -6,7 +6,8 @@ import {
   Search, 
   Calendar, 
   User,
-  FileText
+  FileText,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useLaudos } from '../../../hooks/useLaudos';
 import { usePermissions } from '../../../hooks/usePermissions';
@@ -31,6 +32,15 @@ const LaudosList = () => {
     item.tipo_laudo?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case 'Psicológico': return <Stethoscope size={18} className="text-blue-400" />;
+      case 'Médico Geral': return <User size={18} className="text-emerald-400" />;
+      case 'Psiquiátrico': return <Stethoscope size={18} className="text-purple-400" />;
+      default: return <FileText size={18} className="text-slate-400" />;
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto pb-10">
       {/* Header */}
@@ -40,7 +50,7 @@ const LaudosList = () => {
             <Stethoscope className="text-federal-500" size={32} />
             Laudos Médicos
           </h2>
-          <p className="text-slate-400 mt-2">Gerencie laudos médicos (psicológicos, etc.) cadastrados.</p>
+          <p className="text-slate-400 mt-2">Gerencie laudos médicos cadastrados.</p>
         </div>
         {canManage && (
           <Link 
@@ -102,7 +112,7 @@ const LaudosList = () => {
                     <div>
                       <div className="flex items-center gap-3 mb-2">
                         <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 text-xs font-bold uppercase tracking-wider border border-slate-700">
-                          <FileText size={18} className="text-blue-400" />
+                          {getTypeIcon(item.tipo_laudo)}
                           {item.tipo_laudo}
                         </span>
                         <span className="text-slate-500 text-xs flex items-center gap-1">
@@ -119,6 +129,30 @@ const LaudosList = () => {
                   <p className="text-slate-400 text-sm line-clamp-2">
                     Documento: {item.paciente_documento || 'N/A'}
                   </p>
+
+                  {/* Preview de Arquivos */}
+                  {item.laudo_arquivos && item.laudo_arquivos.length > 0 && (
+                    <div className="flex gap-2">
+                      {item.laudo_arquivos.slice(0, 3).map((arquivo, idx) => (
+                        <div key={idx} className="w-16 h-16 bg-slate-800 rounded-lg flex items-center justify-center border border-slate-700">
+                          {arquivo.url?.toLowerCase().endsWith('.pdf') ? (
+                            <FileText size={24} className="text-red-400" />
+                          ) : (
+                            arquivo.url ? (
+                              <img src={arquivo.url} alt="Preview" className="w-full h-full object-cover rounded-lg" />
+                            ) : (
+                              <ImageIcon size={24} className="text-slate-500" />
+                            )
+                          )}
+                        </div>
+                      ))}
+                      {item.laudo_arquivos.length > 3 && (
+                        <div className="w-16 h-16 bg-slate-800 rounded-lg flex items-center justify-center border border-slate-700">
+                          <span className="text-slate-400 font-bold text-xs">+{item.laudo_arquivos.length - 3}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-6 pt-2 border-t border-slate-800/50">
                     <div className="flex items-center gap-2 text-slate-500 text-xs font-medium ml-auto">
