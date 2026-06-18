@@ -42,12 +42,6 @@ const DEFAULT_DISCORD_CONFIG = {
   forensicsWebhook: ''
 };
 
-const DEFAULT_CRIMES = [
-  { id: 1, name: 'Homicídio Doloso', article: '121', penalty: '6 a 20 anos' },
-  { id: 2, name: 'Roubo', article: '157', penalty: '4 a 10 anos' },
-  { id: 3, name: 'Tráfico de Drogas', article: '33', penalty: '5 a 15 anos' },
-];
-
 export const SettingsProvider = ({ children }) => {
   // Users State (from API)
   const [users, setUsers] = useState([]);
@@ -70,11 +64,8 @@ export const SettingsProvider = ({ children }) => {
   // Discord Config State (Supabase)
   const [discordConfig, setDiscordConfig] = useState(DEFAULT_DISCORD_CONFIG);
 
-  // Crimes State (localStorage)
-  const [crimes, setCrimes] = useState(() => {
-    const saved = localStorage.getItem('dip_settings_crimes');
-    return saved ? JSON.parse(saved) : DEFAULT_CRIMES;
-  });
+  // Crimes State (Supabase)
+  const [crimes, setCrimes] = useState([]);
 
   // System Logs (Supabase)
   const [logs, setLogs] = useState([]);
@@ -116,6 +107,83 @@ export const SettingsProvider = ({ children }) => {
       }
     } catch (error) {
        console.error('Error fetching settings:', error);
+    }
+  }, []);
+
+  // Fetch Crimes
+  const fetchCrimes = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('crimes')
+        .select('*')
+        .order('article', { ascending: true });
+      
+      if (error) throw error;
+      setCrimes(data || []);
+    } catch (error) {
+      console.error('Error fetching crimes:', error);
+    }
+  }, []);
+
+  // Add Crime
+  const addCrime = useCallback(async (crime) => {
+    try {
+      const { data, error } = await supabase
+        .from('crimes')
+        .insert([{
+          article: crime.article,
+          name: crime.name,
+          penalty: crime.penalty
+        }])
+        .select('*')
+        .single();
+      
+      if (error) throw error;
+      setCrimes(prev => [...prev, data]);
+      return data;
+    } catch (error) {
+      console.error('Error adding crime:', error);
+      throw error;
+    }
+  }, []);
+
+  // Update Crime
+  const updateCrime = useCallback(async (id, crime) => {
+    try {
+      const { data, error } = await supabase
+        .from('crimes')
+        .update({
+          article: crime.article,
+          name: crime.name,
+          penalty: crime.penalty,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select('*')
+        .single();
+      
+      if (error) throw error;
+      setCrimes(prev => prev.map(c => c.id === id ? data : c));
+      return data;
+    } catch (error) {
+      console.error('Error updating crime:', error);
+      throw error;
+    }
+  }, []);
+
+  // Delete Crime
+  const deleteCrime = useCallback(async (id) => {
+    try {
+      const { error } = await supabase
+        .from('crimes')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      setCrimes(prev => prev.filter(c => c.id !== id));
+    } catch (error) {
+      console.error('Error deleting crime:', error);
+      throw error;
     }
   }, []);
 
@@ -172,12 +240,8 @@ export const SettingsProvider = ({ children }) => {
     fetchUsers();
     fetchLogs();
     fetchSettings();
-  }, [fetchUsers, fetchLogs, fetchSettings]);
-
-  // Save crimes to localStorage
-  useEffect(() => {
-    localStorage.setItem('dip_settings_crimes', JSON.stringify(crimes));
-  }, [crimes]);
+    fetchCrimes();
+  }, [fetchUsers, fetchLogs, fetchSettings, fetchCrimes]);
 
   // --- Actions ---
 
@@ -323,6 +387,10 @@ export const SettingsProvider = ({ children }) => {
     discordConfig,
     crimes,
     updateCrimes,
+    addCrime,
+    updateCrime,
+    deleteCrime,
+    fetchCrimes,
     logs,
     addUser,
     updateUser,

@@ -29,6 +29,57 @@ ALTER TABLE public.procurados ADD COLUMN IF NOT EXISTS bo_id UUID REFERENCES pub
 ALTER TABLE public.boletins ADD COLUMN IF NOT EXISTS nome_policial_prisao TEXT;
 ALTER TABLE public.boletins ADD COLUMN IF NOT EXISTS id_policial_prisao TEXT;
 
+-- Criação da tabela de crimes
+CREATE TABLE IF NOT EXISTS public.crimes (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    article TEXT NOT NULL,
+    name TEXT NOT NULL,
+    penalty TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.crimes ENABLE ROW LEVEL SECURITY;
+
+-- Políticas RLS para crimes
+DROP POLICY IF EXISTS "Crimes access" ON public.crimes;
+CREATE POLICY "Crimes access" ON public.crimes FOR ALL TO authenticated USING (true);
+
+-- Inserir todos os crimes fornecidos
+INSERT INTO public.crimes (article, name, penalty) VALUES
+('4', 'Vandalismo', '10 meses e multa de $10.000'),
+('7', 'Resistência à Prisão', '10 meses e multa de $20.000'),
+('8', 'Tentativa de Fuga', '10 meses e multa de $10.000'),
+('9', 'Ameaça', '15 meses e multa de $20.000'),
+('10', 'Lesão Corporal', '15 meses e multa de $30.000'),
+('11', 'Desacato à Servidor Público', '15 meses e multa de $20.000'),
+('12', 'Desobediência à Ordem Policial', '15 meses e multa de $20.000'),
+('13', 'Tentativa de Suborno', '15 meses e multa de $10.000'),
+('14', 'Falso Testemunho', '15 meses e multa de $20.000'),
+('15', 'Falsidade Ideológica', '15 meses e multa de $20.000'),
+('16', 'Obstrução de Justiça', '15 meses e multa de $20.000'),
+('17', 'Omissão de Socorro', '15 meses e multa de $20.000'),
+('18', 'Organização Criminosa', '40 meses e multa de $40.000'),
+('19', 'Sequestro', '30 meses e multa de $30.000'),
+('20', 'Lavagem de Dinheiro', '50 meses e multa de $50.000'),
+('21', 'Tentativa de Homicídio', '100 meses e multa de $100.000'),
+('22', 'Tentativa de Homicídio à Servidor', '100 meses e multa de $100.000'),
+('23', 'Homicídio Culposo (Não há Intenção de Matar)', '100 meses e multa de $150.000'),
+('24', 'Homicídio Doloso (Há Intenção de Matar)', '120 meses e multa de $200.000'),
+('25', 'Homicídio Doloso à Servidor', '120 meses e multa de $200.000'),
+('55', 'Dinheiro Sujo (10 Mil à 150 Mil)', '50 meses'),
+('55', 'Dinheiro Sujo (151 Mil à 200 Mil)', '100 meses'),
+('56', 'Formação de Quadrilha', '50 meses e multa de $50.000'),
+('57', 'Porte Ilegal de Arma Leve (Pistola)', '30 meses e multa de $50.000'),
+('58', 'Porte Ilegal de Arma Média (Submetralhadoras/Espingardas)', '80 meses e multa de $100.000'),
+('59', 'Porte Ilegal de Arma Pesada (Fuzis)', '100 meses e multa de $150.000'),
+('60', 'Porte Ilegal de Material Explosivo', '80 meses e multa de $200.000'),
+('61', 'Posse de Colete Balístico, LockPick e Placa', '50 meses e multa de $50.000'),
+('62', 'Tráfico de Drogas (101 à 150)', '30 meses'),
+('63', 'Tráfico de Drogas (151 à 200)', '80 meses'),
+('65', 'Tráfico de Armas (Ação) 101 à 150', '30 meses'),
+('66', 'Tráfico de Armas (Gatilho e/ou Peças de Arma) 151 à 200', '80 meses')
+ON CONFLICT DO NOTHING;
+
 -- Adicionar tabela de denúncias da corregedoria
 CREATE TABLE IF NOT EXISTS public.corregedoria (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

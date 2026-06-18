@@ -3,11 +3,12 @@ import { Gavel, Plus, Trash2, Edit2, Save, X } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 
 const CrimesSettings = () => {
-  const { crimes, updateCrimes } = useSettings();
+  const { crimes, addCrime, updateCrime, deleteCrime } = useSettings();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ name: '', article: '', penalty: '' });
+  const [loading, setLoading] = useState(false);
 
   const handleOpenModal = (crime = null) => {
     if (crime) {
@@ -20,19 +21,35 @@ const CrimesSettings = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingId) {
-      updateCrimes(crimes.map(c => c.id === editingId ? { ...c, ...formData } : c));
-    } else {
-      updateCrimes([...crimes, { id: Date.now(), ...formData }]);
+    setLoading(true);
+    try {
+      if (editingId) {
+        await updateCrime(editingId, formData);
+      } else {
+        await addCrime(formData);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error saving crime:', error);
+      alert('Erro ao salvar crime');
+    } finally {
+      setLoading(false);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Remover este tipo de crime?')) {
-      updateCrimes(crimes.filter(c => c.id !== id));
+      setLoading(true);
+      try {
+        await deleteCrime(id);
+      } catch (error) {
+        console.error('Error deleting crime:', error);
+        alert('Erro ao remover crime');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
