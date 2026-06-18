@@ -16,7 +16,9 @@ import {
   User, 
   Users, 
   FileText,
-  CheckCircle
+  CheckCircle,
+  X,
+  ExternalLink
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -31,6 +33,7 @@ const InvestigationDetail = () => {
   const [investigation, setInvestigation] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [selectedProof, setSelectedProof] = useState(null);
 
   // Determine back link based on URL path or investigation category
   const isRevenueRoute = location.pathname.includes('/revenue/');
@@ -199,7 +202,7 @@ const InvestigationDetail = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {investigation.proofs && investigation.proofs.length > 0 ? (
             investigation.proofs.map((proof) => (
-              <ProofCard key={proof.id} proof={proof} />
+              <ProofCard key={proof.id} proof={proof} onClick={setSelectedProof} />
             ))
           ) : (
             <div className="col-span-full py-12 bg-slate-900/50 border-2 border-dashed border-slate-800 rounded-2xl flex flex-col items-center justify-center text-slate-500">
@@ -217,6 +220,64 @@ const InvestigationDetail = () => {
         onClose={() => setIsModalOpen(false)} 
         onSave={handleAddProof} 
       />
+
+      {/* Proof Viewer Modal */}
+      {selectedProof && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80" onClick={() => setSelectedProof(null)}>
+          <div className="bg-slate-900 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-slate-800">
+              <div>
+                <h3 className="text-lg font-bold text-white">{selectedProof.title}</h3>
+                <p className="text-sm text-slate-400">{selectedProof.description}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedProof(null)}
+                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X size={24} className="text-slate-400" />
+              </button>
+            </div>
+            
+            <div className="p-4 overflow-auto max-h-[calc(90vh-80px)]">
+              {selectedProof.type === 'image' && (
+                <img 
+                  src={selectedProof.content} 
+                  alt={selectedProof.title}
+                  className="w-full h-auto rounded-lg"
+                />
+              )}
+              
+              {selectedProof.type === 'video' && (
+                <video 
+                  src={selectedProof.content} 
+                  controls
+                  className="w-full rounded-lg"
+                />
+              )}
+              
+              {selectedProof.type === 'link' && (
+                <div className="flex flex-col items-center gap-4 p-8">
+                  <ExternalLink size={48} className="text-blue-400" />
+                  <a 
+                    href={selectedProof.content} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-400 text-lg hover:underline break-all"
+                  >
+                    {selectedProof.content}
+                  </a>
+                  <button 
+                    onClick={() => window.open(selectedProof.content, '_blank')}
+                    className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+                  >
+                    Abrir Link
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

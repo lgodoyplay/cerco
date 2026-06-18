@@ -1,8 +1,8 @@
 import React from 'react';
-import { Image, Video, Link as LinkIcon, FileText, File, Calendar, User, ExternalLink } from 'lucide-react';
+import { Image, Video, Link as LinkIcon, FileText, File, Calendar, User, ExternalLink, ZoomIn } from 'lucide-react';
 import clsx from 'clsx';
 
-const ProofCard = ({ proof }) => {
+const ProofCard = ({ proof, onClick }) => {
   const getIcon = () => {
     switch (proof.type) {
       case 'image': return Image;
@@ -14,9 +14,16 @@ const ProofCard = ({ proof }) => {
   };
 
   const Icon = getIcon();
+  const isViewable = proof.type === 'image' || proof.type === 'video' || proof.type === 'link';
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-federal-500/30 transition-all group">
+    <div 
+      className={clsx(
+        "bg-slate-900 border border-slate-800 rounded-xl overflow-hidden transition-all group",
+        isViewable ? "hover:border-federal-500/50 cursor-pointer hover:shadow-lg hover:shadow-federal-900/20" : "hover:border-federal-500/30"
+      )}
+      onClick={() => isViewable && onClick && onClick(proof)}
+    >
       
       {/* Image Preview */}
       {proof.type === 'image' && proof.content && (
@@ -27,6 +34,27 @@ const ProofCard = ({ proof }) => {
             className="w-full h-full object-cover transition-transform group-hover:scale-105" 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60" />
+          {isViewable && (
+            <div className="absolute top-3 right-3 bg-black/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <ZoomIn size={16} className="text-white" />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Video Preview Placeholder */}
+      {proof.type === 'video' && proof.content && (
+        <div className="h-48 w-full bg-slate-950 relative overflow-hidden flex items-center justify-center">
+          <div className="text-slate-500 flex flex-col items-center gap-2">
+            <Video size={48} className="opacity-50" />
+            <span className="text-xs">Vídeo</span>
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60" />
+          {isViewable && (
+            <div className="absolute top-3 right-3 bg-black/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <ZoomIn size={16} className="text-white" />
+            </div>
+          )}
         </div>
       )}
 
@@ -54,14 +82,9 @@ const ProofCard = ({ proof }) => {
 
         {/* Special Content Display */}
         {proof.type === 'link' && (
-          <a 
-            href={proof.content} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-blue-400 text-xs flex items-center gap-1 hover:underline mb-4 break-all"
-          >
+          <div className="text-blue-400 text-xs flex items-center gap-1 mb-4 break-all">
             <ExternalLink size={12} /> {proof.content}
-          </a>
+          </div>
         )}
 
         {proof.type === 'text' && proof.content && proof.content !== proof.description && (
