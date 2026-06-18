@@ -1,8 +1,8 @@
 import React from 'react';
-import { Image, Video, Link as LinkIcon, FileText, File, Calendar, User, ExternalLink, ZoomIn } from 'lucide-react';
+import { Image, Video, Link as LinkIcon, FileText, File, Calendar, User, ExternalLink, ZoomIn, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 
-const ProofCard = ({ proof, onClick }) => {
+const ProofCard = ({ proof, onClick, onDelete, canDelete }) => {
   const getIcon = () => {
     switch (proof.type) {
       case 'image': return Image;
@@ -17,17 +17,14 @@ const ProofCard = ({ proof, onClick }) => {
   const isViewable = proof.type === 'image' || proof.type === 'video' || proof.type === 'link';
 
   return (
-    <div 
-      className={clsx(
-        "bg-slate-900 border border-slate-800 rounded-xl overflow-hidden transition-all group",
-        isViewable ? "hover:border-federal-500/50 cursor-pointer hover:shadow-lg hover:shadow-federal-900/20" : "hover:border-federal-500/30"
-      )}
-      onClick={() => isViewable && onClick && onClick(proof)}
-    >
+    <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden transition-all group">
       
       {/* Image Preview */}
       {proof.type === 'image' && proof.content && (
-        <div className="h-48 w-full bg-slate-950 relative overflow-hidden">
+        <div 
+          className={clsx("h-48 w-full bg-slate-950 relative overflow-hidden", isViewable && "cursor-pointer")}
+          onClick={() => isViewable && onClick && onClick(proof)}
+        >
           <img 
             src={proof.content} 
             alt={proof.title} 
@@ -44,7 +41,10 @@ const ProofCard = ({ proof, onClick }) => {
 
       {/* Video Preview Placeholder */}
       {proof.type === 'video' && proof.content && (
-        <div className="h-48 w-full bg-slate-950 relative overflow-hidden flex items-center justify-center">
+        <div 
+          className={clsx("h-48 w-full bg-slate-950 relative overflow-hidden flex items-center justify-center", isViewable && "cursor-pointer")}
+          onClick={() => isViewable && onClick && onClick(proof)}
+        >
           <div className="text-slate-500 flex flex-col items-center gap-2">
             <Video size={48} className="opacity-50" />
             <span className="text-xs">Vídeo</span>
@@ -71,9 +71,25 @@ const ProofCard = ({ proof, onClick }) => {
             </div>
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{proof.type}</span>
           </div>
-          <span className="text-[10px] text-slate-500 font-mono bg-slate-950 px-2 py-1 rounded">
-            {new Date(proof.createdAt).toLocaleDateString()}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-slate-500 font-mono bg-slate-950 px-2 py-1 rounded">
+              {new Date(proof.createdAt).toLocaleDateString()}
+            </span>
+            {canDelete && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm('Tem certeza que deseja deletar esta prova?')) {
+                    onDelete && onDelete(proof.id);
+                  }
+                }}
+                className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                title="Deletar prova"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Content */}

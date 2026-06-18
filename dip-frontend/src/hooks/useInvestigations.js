@@ -209,12 +209,56 @@ export const useInvestigations = () => {
     }
   }, []);
 
+  const deleteProof = useCallback(async (proofId, investigationId) => {
+    try {
+      // Primeiro, buscar a prova para obter o caminho do arquivo (se for arquivo)
+      const { data: proof, error: fetchError } = await supabase
+        .from('provas')
+        .select('url')
+        .eq('id', proofId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Se for um arquivo armazenado no storage, tentar deletar o arquivo também
+      if (proof.url && proof.url.includes('supabase.co/storage')) {
+        try {
+          // Extrair o caminho do arquivo da URL pública
+          const urlParts = proof.url.split('/provas/');
+          if (urlParts.length > 1) {
+            const filePath = decodeURIComponent(urlParts[1]);
+            await supabase.storage.from('provas').remove([filePath]);
+          }
+        } catch (storageError) {
+          console.warn('Não foi possível deletar o arquivo do storage:', storageError);
+          // Não lançamos erro aqui para não impedir a exclusão da prova no banco
+        }
+      }
+
+      // Deletar a prova do banco de dados
+      const { error: deleteError } = await supabase
+        .from('provas')
+        .delete()
+        .eq('id', proofId);
+
+      if (deleteError) throw deleteError;
+
+      // Refresh da lista de investigações
+      fetchInvestigations();
+
+    } catch (error) {
+      console.error('Erro ao deletar prova:', error);
+      throw error;
+    }
+  }, [fetchInvestigations]);
+
   return {
     investigations,
     loading,
     addInvestigation,
     getInvestigation,
     addProof,
-    closeInvestigation
+    closeInvestigation,
+    deleteProof
   };
 };

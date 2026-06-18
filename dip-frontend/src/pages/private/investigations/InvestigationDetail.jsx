@@ -28,7 +28,7 @@ const InvestigationDetail = () => {
   const location = useLocation(); // Add useLocation
   const { user } = useAuth();
   const { templates } = useSettings();
-  const { getInvestigation, addProof, closeInvestigation } = useInvestigations();
+  const { getInvestigation, addProof, closeInvestigation, deleteProof } = useInvestigations();
   
   const [investigation, setInvestigation] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -84,6 +84,21 @@ const InvestigationDetail = () => {
       await generateInvestigationPDF(investigation, user);
     } finally {
       setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleDeleteProof = async (proofId) => {
+    try {
+      await deleteProof(proofId, id);
+      // Refresh investigation data
+      const data = await getInvestigation(id);
+      if (data) setInvestigation(data);
+      // Fechar o modal se a prova deletada estiver aberta
+      if (selectedProof && selectedProof.id === proofId) {
+        setSelectedProof(null);
+      }
+    } catch (error) {
+      console.error('Erro ao deletar prova:', error);
     }
   };
 
@@ -202,7 +217,13 @@ const InvestigationDetail = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {investigation.proofs && investigation.proofs.length > 0 ? (
             investigation.proofs.map((proof) => (
-              <ProofCard key={proof.id} proof={proof} onClick={setSelectedProof} />
+              <ProofCard 
+                key={proof.id} 
+                proof={proof} 
+                onClick={setSelectedProof} 
+                onDelete={handleDeleteProof}
+                canDelete={!isClosed}
+              />
             ))
           ) : (
             <div className="col-span-full py-12 bg-slate-900/50 border-2 border-dashed border-slate-800 rounded-2xl flex flex-col items-center justify-center text-slate-500">
