@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, AlertTriangle, MoreVertical, ShieldAlert, Eye, FileText, Printer, X, Siren, Lock } from 'lucide-react';
+import { Search, Filter, AlertTriangle, MoreVertical, ShieldAlert, Eye, FileText, Printer, X, Siren, Lock, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
@@ -15,6 +15,8 @@ const WantedList = () => {
   const [wantedList, setWantedList] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPerson, setSelectedPerson] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ show: false, person: null });
+  const [deletePassword, setDeletePassword] = useState('');
 
   const canManage = can('wanted_manage');
 
@@ -75,6 +77,30 @@ const WantedList = () => {
         }
       } 
     });
+  };
+
+  const handleDeleteWanted = async () => {
+    if (deletePassword !== '4907') {
+      alert('Senha incorreta!');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('procurados')
+        .delete()
+        .eq('id', deleteModal.person.id);
+
+      if (error) throw error;
+
+      setWantedList(prev => prev.filter(p => p.id !== deleteModal.person.id));
+      setDeleteModal({ show: false, person: null });
+      setDeletePassword('');
+      alert('Procurado removido com sucesso!');
+    } catch (error) {
+      console.error('Erro ao remover procurado:', error);
+      alert('Erro ao remover procurado.');
+    }
   };
 
   return (
@@ -179,6 +205,15 @@ const WantedList = () => {
                 >
                   <Printer size={18} />
                 </button>
+                {canManage && (
+                  <button 
+                    onClick={() => setDeleteModal({ show: true, person })}
+                    className="px-3 py-2 bg-slate-800 hover:bg-red-500/20 text-slate-300 hover:text-red-400 rounded-lg transition-colors"
+                    title="Remover"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -296,6 +331,59 @@ const WantedList = () => {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.show && deleteModal.person && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl animate-fade-in-up">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <Trash2 className="text-red-500" />
+                Remover Procurado
+              </h3>
+              <button onClick={() => {setDeleteModal({ show: false, person: null }); setDeletePassword('');}} className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
+                <X className="text-slate-400 hover:text-white" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <p className="text-slate-300">
+                Tem certeza que deseja remover o registro de procurado de <span className="font-bold text-white">{deleteModal.person.name}</span>?
+              </p>
+              
+              <div className="space-y-2">
+                <label className="text-xs text-slate-500 uppercase font-bold flex items-center gap-2">
+                  <Lock size={14} />
+                  Senha de Confirmação
+                </label>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="Digite a senha..."
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:border-red-500 transition-colors"
+                  onKeyDown={(e) => e.key === 'Enter' && handleDeleteWanted()}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => {setDeleteModal({ show: false, person: null }); setDeletePassword('');}}
+                  className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={handleDeleteWanted}
+                  className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold shadow-lg transition-colors"
+                >
+                  Remover
+                </button>
+              </div>
             </div>
           </div>
         </div>
