@@ -16,7 +16,7 @@ const ExamResultsSettings = () => {
         const { data, error } = await supabase
           .from('candidatos')
           .select('*')
-          .eq('status', 'PROVA_DENARC')
+          .eq('status', 'PROVA_CIVIL EUFORIA')
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -47,7 +47,7 @@ const ExamResultsSettings = () => {
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <Inbox className="text-federal-500" />
-            Resultados da Prova – Curso DENARC
+            Resultados da Prova – Curso CIVIL EUFORIA
           </h2>
           <p className="text-slate-400">
             Acompanhe quem realizou a prova do curso e quantos acertos obteve.

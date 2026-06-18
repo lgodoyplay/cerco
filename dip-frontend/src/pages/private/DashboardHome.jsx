@@ -62,7 +62,7 @@ const DashboardHome = () => {
 
             } else {
               // Generate new code if none exists
-              const newCode = 'DENARC-' + Math.floor(100000 + Math.random() * 900000);
+              const newCode = 'CIVIL EUFORIA-' + Math.floor(100000 + Math.random() * 900000);
               const { error: updateError } = await supabase
                 .from('profiles')
                 .update({ passport_id: newCode })

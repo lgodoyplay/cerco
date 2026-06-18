@@ -166,7 +166,7 @@ const WeaponsManager = () => {
           { name: "Status", value: newStatus.toUpperCase(), inline: true },
           { name: "Motivo/Justificativa", value: license.reason }
         ],
-        footer: { text: "Sistema de Armas - DENARC" },
+        footer: { text: "Sistema de Armas - CIVIL EUFORIA" },
         timestamp: new Date().toISOString()
       };
 

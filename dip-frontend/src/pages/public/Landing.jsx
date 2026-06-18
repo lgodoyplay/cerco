@@ -84,10 +84,10 @@ const Landing = () => {
           <div className="flex-1 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/70 border border-slate-700 text-federal-200 text-xs font-semibold uppercase tracking-[0.18em]">
               <Shield size={16} className="text-federal-400" />
-              <span>DENARC - Investigativa do Estado da Euforia</span>
+              <span>CIVIL EUFORIA - Investigativa do Estado da Euforia</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white">
-              Sistema Operacional da DENARC.
+              Sistema Operacional da CIVIL EUFORIA.
             </h1>
             <p className="text-lg text-slate-300 max-w-2xl">
               Painel integrado para prisões, procurados, investigações, perícias e inteligência,
@@ -104,7 +104,7 @@ const Landing = () => {
                 href="/"
                 className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-800 text-slate-100 font-semibold text-sm tracking-wide transition-colors"
               >
-                Conhecer Curso DENARC
+                Conhecer Curso CIVIL EUFORIA
               </a>
             </div>
           </div>
@@ -180,7 +180,7 @@ const Landing = () => {
               Treinamentos e cursos internos
             </h2>
             <p className="text-sm text-slate-300">
-              Acesso a conteúdos como o Curso de Formação Institucional DENARC, reforçando a
+              Acesso a conteúdos como o Curso de Formação Institucional CIVIL EUFORIA, reforçando a
                 doutrina e os valores da corporação.
               </p>
           </div>
@@ -332,7 +332,7 @@ const Landing = () => {
           </div>
           <div className="px-6 sm:px-8 py-6 space-y-3 text-sm text-slate-200">
             <p>
-              Este sistema não representa, não substitui e não fala em nome de nenhuma DENARC
+              Este sistema não representa, não substitui e não fala em nome de nenhuma CIVIL EUFORIA
               real. Toda a ambientação é ficcional, voltada para entretenimento e treinamento em
               servidores de roleplay.
             </p>

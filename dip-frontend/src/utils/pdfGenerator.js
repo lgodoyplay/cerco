@@ -32,7 +32,7 @@ export const generateInvestigationPDF = (investigation, user) => {
     doc.setTextColor(0, 0, 0);
     doc.text('ESTADO DA EUFORIA', pageWidth / 2, 20, { align: 'center' });
     doc.text('SECRETARIA DE SEGURANÇA PÚBLICA', pageWidth / 2, 25, { align: 'center' });
-    doc.text('DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', pageWidth / 2, 30, { align: 'center' });
+    doc.text('CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', pageWidth / 2, 30, { align: 'center' });
     
     // Linha separadora
     doc.setLineWidth(0.5);
@@ -72,7 +72,7 @@ export const generateInvestigationPDF = (investigation, user) => {
   doc.text('RELATÓRIO DE INVESTIGAÇÃO', pageWidth / 2, yPos, { align: 'center' });
   yPos += 10;
   
-  const formattedId = `DENARC - ${investigation.id.toString().padStart(3, '0')}`;
+  const formattedId = `CIVIL EUFORIA - ${investigation.id.toString().padStart(3, '0')}`;
   doc.setFontSize(fontSizeBody);
   doc.text(`PROTOCOLO Nº: ${formattedId}/${new Date().getFullYear()}`, pageWidth / 2, yPos, { align: 'center' });
   yPos += 20;
@@ -123,7 +123,7 @@ export const generateInvestigationPDF = (investigation, user) => {
   // Tenta usar o nome do investigador vindo do objeto (se implementado join) ou do usuário logado
   let officerName = 'AGENTE RESPONSÁVEL';
   let officerBadge = '000.000';
-  let officerRole = 'Investigador DENARC';
+  let officerRole = 'Investigador CIVIL EUFORIA';
 
   if (investigation.investigator) {
       officerName = investigation.investigator.nome.toUpperCase();
@@ -322,7 +322,7 @@ export const generateBOReportPDF = (bo, user, templateStr) => {
     doc.setTextColor(0, 0, 0);
     doc.text("ESTADO DA EUFORIA", pageWidth / 2, 20, { align: "center" });
     doc.text("SECRETARIA DE SEGURANÇA PÚBLICA", pageWidth / 2, 25, { align: "center" });
-    doc.text("DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS", pageWidth / 2, 30, { align: "center" });
+    doc.text("CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS", pageWidth / 2, 30, { align: "center" });
     doc.setLineWidth(0.5);
     doc.line(marginLeft, 40, pageWidth - marginRight, 40);
   };
@@ -419,7 +419,7 @@ export const generateBOReportPDF = (bo, user, templateStr) => {
   yPos += 5;
   doc.setFont(fontNormal, "normal");
   doc.setFontSize(9);
-  doc.text("AGENTE DA DENARC", pageWidth / 2, yPos, { align: "center" });
+  doc.text("AGENTE DA CIVIL EUFORIA", pageWidth / 2, yPos, { align: "center" });
   doc.text(`Matrícula: ${officerBadge}`, pageWidth / 2, yPos + 4, { align: "center" });
 
   const totalPages = doc.internal.getNumberOfPages();
@@ -452,7 +452,7 @@ export const generateArrestPDF = (arrest, user, templateStr) => {
     doc.setTextColor(0, 0, 0);
     doc.text("ESTADO DA EUFORIA", pageWidth / 2, 20, { align: "center" });
     doc.text("SECRETARIA DE SEGURANÇA PÚBLICA", pageWidth / 2, 25, { align: "center" });
-    doc.text("DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS", pageWidth / 2, 30, { align: "center" });
+    doc.text("CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS", pageWidth / 2, 30, { align: "center" });
     doc.setLineWidth(0.5);
     doc.line(marginLeft, 40, pageWidth - marginRight, 40);
   };
@@ -547,7 +547,7 @@ export const generateArrestPDF = (arrest, user, templateStr) => {
   yPos += 5;
   doc.setFont(fontNormal, "normal");
   doc.setFontSize(9);
-  doc.text("AGENTE DA DENARC", pageWidth / 2, yPos, { align: "center" });
+  doc.text("AGENTE DA CIVIL EUFORIA", pageWidth / 2, yPos, { align: "center" });
   doc.text(`Matrícula: ${officerBadge}`, pageWidth / 2, yPos + 4, { align: "center" });
 
   const totalPages = doc.internal.getNumberOfPages();
@@ -580,7 +580,7 @@ export const generateWantedPDF = (person, user, templateStr) => {
     doc.setTextColor(0, 0, 0);
     doc.text("ESTADO DA EUFORIA", pageWidth / 2, 20, { align: "center" });
     doc.text("SECRETARIA DE SEGURANÇA PÚBLICA", pageWidth / 2, 25, { align: "center" });
-    doc.text("DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS", pageWidth / 2, 30, { align: "center" });
+    doc.text("CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS", pageWidth / 2, 30, { align: "center" });
     doc.setLineWidth(0.5);
     doc.line(marginLeft, 40, pageWidth - marginRight, 40);
   };
@@ -657,7 +657,7 @@ export const generateWantedPDF = (person, user, templateStr) => {
   yPos += 8;
 
   doc.setFont(fontNormal, "normal");
-  const bodyText = templateText || "Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades da DENARC.";
+  const bodyText = templateText || "Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades da CIVIL EUFORIA.";
   lines = doc.splitTextToSize(bodyText, width);
   doc.text(lines, marginLeft, yPos);
   yPos += lines.length * 6 + 20;

@@ -190,7 +190,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             } : null,
             { text: 'ESTADO DA EUFORIA', style: 'headerText' },
             { text: 'SECRETARIA DE SEGURANÇA PÚBLICA', style: 'headerText' },
-            { text: 'DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', style: 'headerText' },
+            { text: 'CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', style: 'headerText' },
             { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1 }], margin: [0, 5, 0, 10] }
         ];
 
@@ -214,7 +214,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 '{relato_fatos}': data.description || 'Ver seção de provas.',
                 '{conclusao}': 'Conforme relatório de provas em anexo.',
                 '{assinatura_agente}': user?.nome || 'Agente',
-                '{cargo_agente}': 'Investigador DENARC'
+                '{cargo_agente}': 'Investigador CIVIL EUFORIA'
             };
 
             standardContent = [
@@ -229,7 +229,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                     table: {
                         widths: ['25%', '75%'],
                         body: [
-                            [{ text: 'UNIDADE:', style: 'tableHeader' }, { text: 'DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', style: 'tableCell' }],
+                            [{ text: 'UNIDADE:', style: 'tableHeader' }, { text: 'CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', style: 'tableCell' }],
                             [{ text: 'NATUREZA:', style: 'tableHeader' }, { text: 'Investigação Criminal', style: 'tableCell' }],
                             [{ text: 'STATUS:', style: 'tableHeader' }, { text: data.status.toUpperCase(), style: 'tableCell', bold: true }],
                             [{ text: 'PRIORIDADE:', style: 'tableHeader' }, { text: data.priority.toUpperCase(), style: 'tableCell' }],
@@ -281,7 +281,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 '{relato_fatos}': data.descricao || 'Sem descrição.',
                 '{conclusao}': 'Registro realizado para fins legais.',
                 '{assinatura_agente}': user?.nome || 'Agente de Plantão',
-                '{cargo_agente}': 'Agente da DENARC'
+                '{cargo_agente}': 'Agente da CIVIL EUFORIA'
             };
 
             standardContent = [
@@ -328,7 +328,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 '{relato_fatos}': data.reason || data.description || 'Sem observações adicionais.',
                 '{conclusao}': 'Indivíduo detido e à disposição da justiça.',
                 '{assinatura_agente}': data.officer || user?.nome || 'Agente Responsável',
-                '{cargo_agente}': 'Agente da DENARC'
+                '{cargo_agente}': 'Agente da CIVIL EUFORIA'
             };
 
             standardContent = [
@@ -374,8 +374,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 '{recompensa}': data.reward || 'Não informada',
                 '{periculosidade}': data.dangerLevel || data.status || 'Desconhecida',
                 '{data_registro}': formatDate(data.date || data.created_at),
-                '{assinatura_agente}': user?.nome || 'DENARC',
-                '{cargo_agente}': 'Investigador DENARC'
+                '{assinatura_agente}': user?.nome || 'CIVIL EUFORIA',
+                '{cargo_agente}': 'Investigador CIVIL EUFORIA'
             };
 
             standardContent = [
@@ -417,7 +417,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 },
 
                 { text: '\n\n', fontSize: 1 },
-                { text: 'Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades da DENARC.', style: 'normalText', alignment: 'center', italics: true }
+                { text: 'Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades da CIVIL EUFORIA.', style: 'normalText', alignment: 'center', italics: true }
             ].filter(Boolean);
             
             validImages = []; // Evitar duplicação
@@ -455,7 +455,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                     stack: [
                         { text: 'ESTADO DA EUFORIA', alignment: 'center', fontSize: 10, bold: true, margin: [0, 15, 0, 0] },
                         { text: 'SECRETARIA DE SEGURANÇA PÚBLICA', alignment: 'center', fontSize: 10, bold: true },
-                        { text: 'DENARC - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', alignment: 'center', fontSize: 10, bold: true },
+                        { text: 'CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', alignment: 'center', fontSize: 10, bold: true },
                         { canvas: [{ type: 'line', x1: 85, y1: 5, x2: 538, y2: 5, lineWidth: 1 }] }
                     ]
                 };
@@ -537,8 +537,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
 
                     { text: '___________________________________________________', style: 'signatureLine', margin: [0, 40, 0, 0] },
                     { text: variables['{assinatura_agente}'].toUpperCase(), alignment: 'center', bold: true, fontSize: 12 },
-                    { text: 'INVESTIGADOR DENARC', alignment: 'center', fontSize: 10 },
-                    { text: `MATRÍCULA: ${user?.badge || 'DENARC-000'}`, alignment: 'center', fontSize: 10 }
+                    { text: 'INVESTIGADOR CIVIL EUFORIA', alignment: 'center', fontSize: 10 },
+                    { text: `MATRÍCULA: ${user?.badge || 'CIVIL EUFORIA-000'}`, alignment: 'center', fontSize: 10 }
                 ])
             ],
 
