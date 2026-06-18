@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Save, Eraser, User, FileText, Camera, CheckCircle, AlertCircle, Shield, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import clsx from 'clsx';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -88,6 +88,21 @@ const RegisterArrest = () => {
   });
   
   const [isArticlesDropdownOpen, setIsArticlesDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsArticlesDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleArticleChange = (articleId) => {
     setFormData(prev => {
@@ -403,7 +418,7 @@ const RegisterArrest = () => {
               {/* Artigos */}
               <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Artigos Aplicados</label>
-                <div className="relative">
+                <div className="relative" ref={dropdownRef}>
                   <button
                     type="button"
                     onClick={() => setIsArticlesDropdownOpen(!isArticlesDropdownOpen)}
