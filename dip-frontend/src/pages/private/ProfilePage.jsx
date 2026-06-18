@@ -359,7 +359,7 @@ const ProfilePage = () => {
 
       {/* Course Details Modal */}
       {selectedCourse && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setSelectedCourse(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl" onClick={() => setSelectedCourse(null)}>
           <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-8 py-6 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
               <h3 className="text-2xl font-bold text-white flex items-center gap-2">
