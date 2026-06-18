@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import AvatarUpload from '../../components/AvatarUpload';
-import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText, AlertTriangle, X, Play, Square, Link2 } from 'lucide-react';
+import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText, AlertTriangle, X, Play, Square, Link2, ArrowLeft } from 'lucide-react';
 import clsx from 'clsx';
 
 const ProfilePage = () => {
@@ -15,7 +15,7 @@ const ProfilePage = () => {
   const [message, setMessage] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [liveStream, setLiveStream] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isStartingLive, setIsStartingLive] = useState(false);
   const [liveLinks, setLiveLinks] = useState(['', '', '', '']);
   const [liveLoading, setLiveLoading] = useState(false);
 
@@ -36,7 +36,6 @@ const ProfilePage = () => {
         .select('*')
         .eq('id', user.id)
         .single();
-
       if (error) throw error;
       setProfile(data);
     } catch (error) {
@@ -50,17 +49,8 @@ const ProfilePage = () => {
     try {
       const { data, error } = await supabase
         .from('cursos_policiais')
-        .select(`
-          id,
-          certificado_url,
-          cursos (
-            id,
-            nome,
-            descricao
-          )
-        `)
+        .select(`id, certificado_url, cursos(id, nome, descricao)`)
         .eq('policial_id', user.id);
-
       if (error) throw error;
       setCourses(data || []);
     } catch (error) {
@@ -72,14 +62,10 @@ const ProfilePage = () => {
     try {
       const { data, error } = await supabase
         .from('warnings')
-        .select(`
-          *,
-          issuer:issued_by(full_name)
-        `)
+        .select(`*, issuer:issued_by(full_name)`)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-
-      if (error && error.code !== '42P01') throw error; // Ignore table missing error
+      if (error && error.code !== '42P01') throw error;
       setWarnings(data || []);
     } catch (error) {
       console.error('Error loading warnings:', error.message);
@@ -93,7 +79,6 @@ const ProfilePage = () => {
         .select('*')
         .eq('user_id', user.id)
         .single();
-
       if (error && error.code !== 'PGRST116') throw error;
       setLiveStream(data || null);
     } catch (error) {
@@ -106,24 +91,10 @@ const ProfilePage = () => {
     try {
       setSaving(true);
       setMessage(null);
-
-      const updates = {
-        id: user.id,
-        full_name: profile.full_name,
-        avatar_url: profile.avatar_url,
-        updated_at: new Date(),
-      };
-
+      const updates = { id: user.id, full_name: profile.full_name, avatar_url: profile.avatar_url, updated_at: new Date() };
       const { error } = await supabase.from('profiles').upsert(updates);
-
       if (error) throw error;
-      
-      // Update global context
-      updateUser({ 
-        full_name: profile.full_name,
-        avatar_url: profile.avatar_url
-      });
-
+      updateUser({ full_name: profile.full_name, avatar_url: profile.avatar_url });
       setMessage({ type: 'success', text: 'Perfil atualizado com sucesso!' });
     } catch (error) {
       setMessage({ type: 'error', text: 'Erro ao atualizar perfil.' });
@@ -139,13 +110,9 @@ const ProfilePage = () => {
         .from('profiles')
         .update({ avatar_url: url })
         .eq('id', user.id);
-
       if (error) throw error;
-      
       setProfile({ ...profile, avatar_url: url });
-      // Update global context immediately
       updateUser({ avatar_url: url });
-      
       setMessage({ type: 'success', text: 'Foto de perfil atualizada!' });
     } catch (error) {
       console.error('Error updating avatar:', error.message);
@@ -154,6 +121,10 @@ const ProfilePage = () => {
   };
 
   const startLiveStream = async () => {
+    if (!liveLinks[0].trim()) {
+      alert('O primeiro link é obrigatório!');
+      return;
+    }
     setLiveLoading(true);
     try {
       const validLinks = liveLinks.filter(link => link.trim() !== '');
@@ -162,10 +133,9 @@ const ProfilePage = () => {
         .insert([{ user_id: user.id, links: validLinks }])
         .select('*')
         .single();
-
       if (error) throw error;
       setLiveStream(data);
-      setIsModalOpen(false);
+      setIsStartingLive(false);
       setLiveLinks(['', '', '', '']);
     } catch (error) {
       console.error('Error starting live stream:', error.message);
@@ -183,7 +153,6 @@ const ProfilePage = () => {
         .from('live_streams')
         .delete()
         .eq('user_id', user.id);
-
       if (error) throw error;
       setLiveStream(null);
     } catch (error) {
@@ -197,20 +166,89 @@ const ProfilePage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[500px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-federal-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-federal-500"></div>
+      </div>
+    );
+  }
+
+  if (isStartingLive) {
+    return (
+      <div className="max-w-3xl mx-auto space-y-8 animate-fade-in-up py-8">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setIsStartingLive(false)}
+            className="p-3 bg-slate-900 border border-slate-800 hover:border-federal-500/30 rounded-xl text-slate-400 hover:text-white transition-all"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+              <Play size={32} className="text-green-500" />
+              Iniciar Live
+            </h1>
+          </div>
+        </div>
+
+        <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-8 shadow-lg">
+          <div className="space-y-6">
+            {[0, 1, 2, 3].map(index => (
+              <div key={index}>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+                  Link {index + 1} {index === 0 ? '(Obrigatório)' : '(Opcional)'}
+                </label>
+                <div className="flex items-center gap-3">
+                  <Link2 size={18} className="text-slate-500" />
+                  <input
+                    type="url"
+                    placeholder={`Digite o link ${index + 1}`}
+                    value={liveLinks[index]}
+                    onChange={(e) => {
+                      const newLinks = [...liveLinks];
+                      newLinks[index] = e.target.value;
+                      setLiveLinks(newLinks);
+                    }}
+                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                    required={index === 0}
+                  />
+                </div>
+              </div>
+            ))}
+
+            <div className="pt-4 flex justify-end gap-4">
+              <button
+                onClick={() => setIsStartingLive(false)}
+                className="px-6 py-3 rounded-xl text-slate-400 hover:text-white font-semibold"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={startLiveStream}
+                disabled={liveLoading}
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-xl font-bold transition-all disabled:opacity-50"
+              >
+                {liveLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-white"></div>
+                ) : (
+                  <Play size={20} />
+                )}
+                Iniciar Live
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (selectedCourse) {
     return (
-      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
+      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up py-8">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={() => setSelectedCourse(null)}
             className="p-3 bg-slate-900 border border-slate-800 hover:border-federal-500/30 rounded-xl text-slate-400 hover:text-white transition-all"
           >
-            <X size={24} />
+            <ArrowLeft size={24} />
           </button>
           <div>
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
@@ -236,9 +274,9 @@ const ProfilePage = () => {
                 Certificado
               </span>
               <div className="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
-                <img 
-                  src={selectedCourse.certificado_url} 
-                  alt="Certificado do Curso" 
+                <img
+                  src={selectedCourse.certificado_url}
+                  alt="Certificado do Curso"
                   className="w-full h-auto"
                 />
               </div>
@@ -261,7 +299,7 @@ const ProfilePage = () => {
         </div>
         <div className="flex gap-3">
           {liveStream ? (
-            <button 
+            <button
               onClick={endLiveStream}
               disabled={liveLoading}
               className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all disabled:opacity-50"
@@ -270,8 +308,8 @@ const ProfilePage = () => {
               Encerrar Live
             </button>
           ) : (
-            <button 
-              onClick={() => setIsModalOpen(true)}
+            <button
+              onClick={() => setIsStartingLive(true)}
               className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all"
             >
               <Play size={18} />
@@ -295,19 +333,19 @@ const ProfilePage = () => {
         {/* Left Column: Avatar & Basic Info */}
         <div className="md:col-span-1 space-y-6">
           <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 flex flex-col items-center shadow-lg">
-            <AvatarUpload 
-              url={profile?.avatar_url} 
+            <AvatarUpload
+              url={profile?.avatar_url}
               onUpload={handleAvatarUpload}
               size={180}
             />
-            
+
             <div className="mt-6 text-center w-full">
               <h2 className="text-xl font-bold text-white">{profile?.full_name}</h2>
               <div className="flex items-center justify-center gap-2 mt-2 text-federal-400 font-medium bg-federal-950/30 py-1 px-3 rounded-full border border-federal-500/20 inline-flex">
                 <Shield size={14} />
                 {profile?.role || 'Agente'}
               </div>
-              
+
               <div className="mt-6 grid grid-cols-2 gap-4 w-full pt-6 border-t border-slate-800">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-white">{courses.length}</p>
@@ -332,7 +370,7 @@ const ProfilePage = () => {
               <User size={20} className="text-federal-500" />
               Dados Pessoais
             </h3>
-            
+
             <form onSubmit={updateProfile} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Nome Completo</label>
@@ -406,21 +444,21 @@ const ProfilePage = () => {
                 <AlertTriangle size={20} />
                 Advertências e Punições
               </h3>
-              
+
               <div className="space-y-3">
                 {warnings.map((warning) => (
                   <div key={warning.id} className="bg-slate-950/50 border border-slate-800 rounded-xl p-4">
                     <div className="flex justify-between items-start mb-2">
                       <span className={clsx(
                         "px-2 py-0.5 rounded text-xs border font-bold uppercase",
-                        warning.severity === 'critical' ? 'bg-red-900/40 text-red-500 border-red-500/60' :
-                        warning.severity === 'high' ? 'bg-red-500/20 text-red-400 border-red-500/40' :
-                        warning.severity === 'medium' ? 'bg-orange-500/20 text-orange-400 border-orange-500/40' :
-                        'bg-yellow-500/20 text-yellow-400 border-yellow-500/40'
+                        warning.severity === 'critical' ? "bg-red-900/40 text-red-500 border-red-500/60" :
+                          warning.severity === 'high' ? "bg-red-500/20 text-red-400 border-red-500/40" :
+                            warning.severity === 'medium' ? "bg-orange-500/20 text-orange-400 border-orange-500/40" :
+                              "bg-yellow-500/20 text-yellow-400 border-yellow-500/40"
                       )}>
                         {warning.severity === 'low' ? 'Leve' :
-                         warning.severity === 'medium' ? 'Média' :
-                         warning.severity === 'high' ? 'Grave' : 'Gravíssima'}
+                          warning.severity === 'medium' ? 'Média' :
+                            warning.severity === 'high' ? 'Grave' : 'Gravíssima'}
                       </span>
                       <span className="text-xs text-slate-500">
                         {new Date(warning.created_at).toLocaleDateString()}
@@ -456,8 +494,8 @@ const ProfilePage = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {courses.map((item) => (
-                  <div 
-                    key={item.id} 
+                  <div
+                    key={item.id}
                     onClick={() => setSelectedCourse(item)}
                     className="flex items-center justify-between p-3 bg-slate-950 border border-slate-800 rounded-xl hover:border-federal-500/30 transition-colors group cursor-pointer"
                   >
@@ -473,7 +511,7 @@ const ProfilePage = () => {
 
                     {item.certificado_url && (
                       <div className="p-2 text-slate-400 hover:text-federal-400 transition-colors bg-slate-900 rounded-lg border border-slate-800 hover:border-federal-500/30"
-                           title="Ver Certificado">
+                        title="Ver Certificado">
                         <FileText size={18} />
                       </div>
                     )}
@@ -484,63 +522,6 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
-
-      {/* Live Stream Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}>
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md shadow-2xl animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-800">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <Play size={20} className="text-green-500" />
-                Iniciar Live
-              </h3>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-800 rounded-xl transition-colors">
-                <X size={24} className="text-slate-400" />
-              </button>
-            </div>
-
-            <div className="p-8 space-y-4">
-              {[0, 1, 2, 3].map(index => (
-                <div key={index} className="flex items-center gap-3">
-                  <Link2 size={18} className="text-slate-500" />
-                  <input
-                    type="url"
-                    placeholder={`Link ${index + 1} (opcional)`}
-                    value={liveLinks[index]}
-                    onChange={(e) => {
-                      const newLinks = [...liveLinks];
-                      newLinks[index] = e.target.value;
-                      setLiveLinks(newLinks);
-                    }}
-                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
-                  />
-                </div>
-              ))}
-
-              <div className="pt-4 flex justify-end gap-3">
-                <button 
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-6 py-2.5 rounded-xl text-slate-400 hover:text-white"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={startLiveStream}
-                  disabled={liveLoading}
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all disabled:opacity-50"
-                >
-                  {liveLoading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/20 border-t-white"></div>
-                  ) : (
-                    <Play size={18} />
-                  )}
-                  Iniciar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import {
@@ -26,6 +26,22 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 
+const getEmbedUrl = (url) => {
+  // YouTube
+  let match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  if (match) {
+    return `https://www.youtube.com/embed/${match[1]}`;
+  }
+  
+  // Twitch
+  match = url.match(/twitch\.tv\/([a-zA-Z0-9_]+)/i);
+  if (match) {
+    return `https://player.twitch.tv/?channel=${match[1]}&parent=${window.location.hostname}`;
+  }
+  
+  return null;
+};
+
 const Home = () => {
   const [wantedList, setWantedList] = useState([]);
   const [newsList, setNewsList] = useState([]);
@@ -37,9 +53,9 @@ const Home = () => {
     target: '',
     details: '',
     location: '',
-    contact: '' // Optional
+    contact: ''
   });
-  const [tipStatus, setTipStatus] = useState('idle'); // idle, submitting, success, error
+  const [tipStatus, setTipStatus] = useState('idle');
 
   const images = [
     '/imagem1.jpg',
@@ -51,7 +67,7 @@ const Home = () => {
     fetchWanted();
     fetchNews();
     fetchLiveStreams();
-    
+
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % images.length);
     }, 4000);
@@ -76,14 +92,10 @@ const Home = () => {
     try {
       const { data, error } = await supabase
         .from('news')
-        .select(`
-          *,
-          author:author_id(full_name)
-        `)
+        .select(`*, author:author_id(full_name)`)
         .eq('is_public', true)
         .order('created_at', { ascending: false })
         .limit(6);
-
       if (error && error.code !== '42P01') throw error;
       setNewsList(data || []);
     } catch (error) {
@@ -99,7 +111,6 @@ const Home = () => {
         .select('*')
         .eq('status', 'Procurado')
         .order('created_at', { ascending: false });
-
       if (error) throw error;
       setWantedList(data || []);
     } catch (error) {
@@ -112,21 +123,21 @@ const Home = () => {
   const handleTipSubmit = async (e) => {
     e.preventDefault();
     setTipStatus('submitting');
-    
+
     try {
       const { error } = await supabase
         .from('boletins')
         .insert([{
-           comunicante: tipForm.contact || 'Anônimo (Denúncia Site)',
-           descricao: `[DENÚNCIA ANÔNIMA] ALVO: ${tipForm.target} | DETALHES: ${tipForm.details}`,
-           localizacao: tipForm.location,
-           status: 'Pendente',
-           data_fato: new Date().toISOString()
+          comunicante: tipForm.contact || 'Anônimo (Denúncia Site)',
+          descricao: `[DENÚNCIA ANÔNIMA] ALVO: ${tipForm.target} | DETALHES: ${tipForm.details}`,
+          localizacao: tipForm.location,
+          status: 'Pendente',
+          data_fato: new Date().toISOString()
         }]);
 
       if (error) {
-         console.error('Error submitting tip to boletins', error);
-         throw error;
+        console.error('Error submitting tip to boletins', error);
+        throw error;
       }
 
       setTipStatus('success');
@@ -140,10 +151,9 @@ const Home = () => {
 
   return (
     <div className="space-y-20 pb-20">
-
       <section className="relative overflow-hidden bg-slate-950">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-federal-900" />
-        <div className="absolute inset-x-0 -top-32 h-64 bg-gradient-to-b from-federal-600/30 to-transparent blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-federal-900"></div>
+        <div className="absolute inset-x-0 -top-32 h-64 bg-gradient-to-b from-federal-600/30 to-transparent blur-3xl"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 lg:py-28 flex flex-col lg:flex-row items-center gap-12">
           <div className="flex-1 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/60 border border-federal-700/70 text-federal-200 text-xs font-semibold uppercase tracking-[0.18em]">
@@ -170,14 +180,6 @@ const Home = () => {
               >
                 Corregedoria
               </Link>
-              {/* Botão Solicitar Porte temporariamente ocultado - para reativar, remova os comentários
-              <Link
-                to="/porte-de-armas"
-                className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm tracking-wide shadow-lg transition-transform hover:-translate-y-0.5 border border-slate-700"
-              >
-                Solicitar Porte
-              </Link>
-              */}
               <a
                 href="#regra-de-ouro"
                 className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-800 text-slate-100 font-semibold text-sm tracking-wide transition-colors"
@@ -188,7 +190,7 @@ const Home = () => {
           </div>
           <div className="flex-1 w-full max-w-md lg:max-w-lg space-y-6">
             <div className="relative rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-federal-900 shadow-2xl overflow-hidden">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.35),transparent_60%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.35),transparent_60%)]"></div>
               <div className="relative p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -225,7 +227,7 @@ const Home = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="relative rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden aspect-video">
               {images.map((image, index) => (
                 <img
@@ -254,10 +256,10 @@ const Home = () => {
       {/* LIVE STREAMS SECTION */}
       {liveStreams.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-900/40 border border-red-700/70">
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
                 <span className="text-red-300 text-xs font-bold uppercase tracking-[0.18em]">
                   LIVE
                 </span>
@@ -267,53 +269,79 @@ const Home = () => {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {liveStreams.map((stream) => (
-                <div
-                  key={stream.id}
-                  className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 hover:border-red-500/40 transition-all"
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 rounded-full overflow-hidden border border-slate-700">
-                      {stream.user?.avatar_url ? (
-                        <img
-                          src={stream.user.avatar_url}
-                          alt={stream.user.full_name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                          <User size={24} className="text-slate-500" />
-                        </div>
-                      )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {liveStreams.map((stream) => {
+                const embedUrl = getEmbedUrl(stream.links[0]);
+                return (
+                  <div
+                    key={stream.id}
+                    className="bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden hover:border-red-500/40 transition-all"
+                  >
+                    {/* Profile Card */}
+                    <div className="p-6 border-b border-slate-800 flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full overflow-hidden border border-slate-700">
+                        {stream.user?.avatar_url ? (
+                          <img
+                            src={stream.user.avatar_url}
+                            alt={stream.user.full_name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                            <User size={32} className="text-slate-500" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-white">
+                          {stream.user?.full_name || 'Usuário'}
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          {new Date(stream.created_at).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-white">
-                        {stream.user?.full_name || 'Usuário'}
-                      </h3>
-                      <p className="text-xs text-slate-400">
-                        {new Date(stream.created_at).toLocaleString('pt-BR')}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    {stream.links.map((link, index) => (
-                      <a
-                        key={index}
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-200 hover:border-red-500/60 hover:text-red-300 transition-all group"
-                      >
-                        <Link2 size={18} />
-                        <span className="text-sm truncate">{link}</span>
-                        <Play size={16} className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </a>
-                    ))}
+                    {/* Embed */}
+                    {embedUrl ? (
+                      <div className="aspect-video">
+                        <iframe
+                          src={embedUrl}
+                          className="w-full h-full"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          title={`Live de ${stream.user?.full_name || 'Usuário'}`}
+                        ></iframe>
+                      </div>
+                    ) : (
+                      <div className="aspect-video bg-slate-950 flex items-center justify-center">
+                        <div className="text-center p-8">
+                          <Play size={64} className="text-slate-700 mx-auto mb-4" />
+                          <p className="text-slate-500">Link não suportado para embed</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Links */}
+                    <div className="p-6 space-y-3">
+                      {stream.links.map((link, index) => (
+                        <a
+                          key={index}
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 hover:border-red-500/60 hover:text-red-300 transition-all group"
+                        >
+                          <Link2 size={18} />
+                          <span className="text-sm truncate">{link}</span>
+                          <Play size={16} className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </a>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -344,28 +372,28 @@ const Home = () => {
               </h3>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-200">
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400"></span>
                   Tráfico de Drogas
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400"></span>
                   Facções Criminosas
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400"></span>
                   Inteligência Operacional
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400"></span>
                   Monitoramento
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400"></span>
                   Apreensões
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400" />
-                  Mandados Judiciais
+                  <span className="w-1.5 h-1.5 rounded-full bg-federal-400"></span>
+                  Mandatos Judiciais
                 </li>
               </ul>
             </div>
@@ -416,7 +444,7 @@ const Home = () => {
             </div>
             <p className="text-sm text-slate-300">
               Apoio a outras unidades da Polícia Civil, produção de relatórios investigativos
-              e cumprimento de mandados judiciais estaduais.
+              e cumprimento de mandatos judiciais estaduais.
             </p>
           </div>
         </div>
@@ -425,15 +453,15 @@ const Home = () => {
       {/* NEWS MODAL */}
       {selectedNews && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedNews(null)}>
-          <div 
+          <div
             className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative h-64 sm:h-80 w-full overflow-hidden">
               {selectedNews.image_url ? (
-                <img 
-                  src={selectedNews.image_url} 
-                  alt={selectedNews.title} 
+                <img
+                  src={selectedNews.image_url}
+                  alt={selectedNews.title}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -441,35 +469,35 @@ const Home = () => {
                   <Shield size={64} className="text-slate-700" />
                 </div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
-              <button 
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+              <button
                 onClick={() => setSelectedNews(null)}
                 className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-md transition-colors"
               >
                 <X size={24} />
               </button>
             </div>
-            
+
             <div className="p-8">
               <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400 mb-4">
                 <span className="flex items-center gap-1.5 text-federal-400">
                   <Calendar size={14} />
                   {new Date(selectedNews.created_at).toLocaleDateString()}
                 </span>
-                <span className="w-1 h-1 rounded-full bg-slate-700" />
+                <span className="w-1 h-1 rounded-full bg-slate-700"></span>
                 <span>Por: {selectedNews.author?.full_name || 'Assessoria de Comunicação'}</span>
               </div>
-              
+
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6 leading-tight">
                 {selectedNews.title}
               </h2>
-              
+
               <div className="prose prose-invert prose-lg max-w-none text-slate-300 whitespace-pre-wrap">
                 {selectedNews.content}
               </div>
 
               <div className="mt-8 pt-8 border-t border-slate-800 flex justify-end">
-                <button 
+                <button
                   onClick={() => setSelectedNews(null)}
                   className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-colors"
                 >
@@ -542,7 +570,7 @@ const Home = () => {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="rounded-3xl bg-slate-950 border border-red-600/40 shadow-xl p-6 sm:p-8 space-y-6">
+        <div className="rounded-3xl bg-slate-950 border border-red-500/40 shadow-xl p-6 sm:p-8 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-red-600/20 border border-red-500/60 flex items-center justify-center">
@@ -557,8 +585,8 @@ const Home = () => {
                 </p>
               </div>
             </div>
-            <Link 
-              to="/rules" 
+            <Link
+              to="/rules"
               className="inline-flex items-center gap-2 text-sm font-bold text-red-400 hover:text-red-300 transition-colors"
             >
               <FileText size={16} />
@@ -644,247 +672,247 @@ const Home = () => {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 animate-fade-in-up py-8 sm:py-12">
-          
-          <div className="text-center space-y-4">
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Siren className="text-red-600 animate-pulse hidden sm:block" size={48} />
-              <Siren className="text-red-600 animate-pulse sm:hidden" size={32} />
-              LISTA DE PROCURADOS
-              <Siren className="text-red-600 animate-pulse hidden sm:block" size={48} />
-              <Siren className="text-red-600 animate-pulse sm:hidden" size={32} />
-            </h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Ajude a CIVIL EUFORIA a localizar criminosos perigosos no Estado da Euforia. Sua identidade será mantida em absoluto sigilo.
-            </p>
-          </div>
 
-          {loadingWanted ? (
-            <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-            </div>
-          ) : wantedList.length === 0 ? (
-            <div className="text-center py-20 bg-slate-900/50 rounded-3xl border border-slate-800">
-              <p className="text-slate-400 text-xl">Nenhum procurado listado no momento.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {wantedList.map((person) => (
-                <div key={person.id} className="group relative bg-slate-900 border border-slate-800 hover:border-red-600/50 rounded-2xl overflow-hidden transition-all hover:-translate-y-1 shadow-2xl">
-                  {/* Reward Badge */}
-                  {person.recompensa && (
-                    <div className="absolute top-4 right-4 z-10 bg-emerald-600 text-white font-black px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 transform rotate-2 group-hover:scale-110 transition-transform">
-                      <DollarSign size={20} />
-                      {person.recompensa}
-                    </div>
-                  )}
-                  
-                  <div className="aspect-[4/5] relative overflow-hidden">
-                    <img 
-                      src={person.foto_principal} 
-                      alt={person.nome}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90" />
-                    
-                    <div className="absolute bottom-0 left-0 w-full p-6">
-                      <h3 className="text-2xl font-black text-white uppercase italic tracking-wider mb-1">
-                        {person.nome}
-                      </h3>
-                      <p className="text-red-500 font-bold uppercase tracking-widest text-xs mb-2">
-                        {person.periculosidade} Periculosidade
-                      </p>
-                    </div>
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Siren className="text-red-600 animate-pulse hidden sm:block" size={48} />
+            <Siren className="text-red-600 animate-pulse sm:hidden" size={32} />
+            LISTA DE PROCURADOS
+            <Siren className="text-red-600 animate-pulse hidden sm:block" size={48} />
+            <Siren className="text-red-600 animate-pulse sm:hidden" size={32} />
+          </h2>
+          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            Ajude a CIVIL EUFORIA a localizar criminosos perigosos no Estado da Euforia. Sua identidade será mantida em absoluto sigilo.
+          </p>
+        </div>
+
+        {loadingWanted ? (
+          <div className="flex justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+          </div>
+        ) : wantedList.length === 0 ? (
+          <div className="text-center py-20 bg-slate-900/50 rounded-3xl border border-slate-800">
+            <p className="text-slate-400 text-xl">Nenhum procurado listado no momento.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {wantedList.map((person) => (
+              <div key={person.id} className="group relative bg-slate-900 border border-slate-800 hover:border-red-600/50 rounded-2xl overflow-hidden transition-all hover:-translate-y-1 shadow-2xl">
+                {/* Reward Badge */}
+                {person.recompensa && (
+                  <div className="absolute top-4 right-4 z-10 bg-emerald-600 text-white font-black px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 transform rotate-2 group-hover:scale-110 transition-transform">
+                    <DollarSign size={20} />
+                    {person.recompensa}
+                  </div>
+                )}
+
+                <div className="aspect-[4/5] relative overflow-hidden">
+                  <img
+                    src={person.foto_principal}
+                    alt={person.nome}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+
+                  <div className="absolute bottom-0 left-0 w-full p-6">
+                    <h3 className="text-2xl font-black text-white uppercase italic tracking-wider mb-1">
+                      {person.nome}
+                    </h3>
+                    <p className="text-red-500 font-bold uppercase tracking-widest text-xs mb-2">
+                      {person.periculosidade} Periculosidade
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  <div>
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Motivo / Crimes</p>
+                    <p className="text-slate-300 text-sm leading-relaxed line-clamp-3">
+                      {person.motivo}
+                    </p>
                   </div>
 
-                  <div className="p-6 space-y-4">
-                    <div>
-                      <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Motivo / Crimes</p>
-                      <p className="text-slate-300 text-sm leading-relaxed line-clamp-3">
-                        {person.motivo}
-                      </p>
+                  <button
+                    onClick={() => {
+                      setTipForm(prev => ({ ...prev, target: person.nome }));
+                      document.getElementById('tip-form')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="w-full py-3 bg-red-900/30 hover:bg-red-900/50 border border-red-900/50 text-red-200 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 group-hover:bg-red-600 group-hover:text-white group-hover:border-red-600"
+                  >
+                    <AlertTriangle size={18} />
+                    DENÚNCIAR
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* NEWS SECTION */}
+        {newsList.length > 0 && (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/40 border border-federal-700/50 text-federal-300 text-xs font-semibold uppercase tracking-wider mb-2">
+                  <Newspaper size={14} />
+                  <span>Boletim CIVIL EUFORIA</span>
+                </div>
+                <h2 className="text-3xl font-bold text-white">Últimas Notícias e Operações</h2>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {newsList.map((news) => (
+                <div
+                  key={news.id}
+                  className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden group hover:border-federal-500/50 transition-all cursor-pointer"
+                  onClick={() => setSelectedNews(news)}
+                >
+                  <div className="h-48 overflow-hidden relative">
+                    {news.image_url ? (
+                      <img
+                        src={news.image_url}
+                        alt={news.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                        <Shield size={48} className="text-slate-700" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80"></div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 text-xs text-federal-400 mb-2">
+                      <Calendar size={12} />
+                      {new Date(news.created_at).toLocaleDateString()}
                     </div>
-                    
-                    <button
-                      onClick={() => {
-                        setTipForm(prev => ({ ...prev, target: person.nome }));
-                        document.getElementById('tip-form')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="w-full py-3 bg-red-900/30 hover:bg-red-900/50 border border-red-900/50 text-red-200 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 group-hover:bg-red-600 group-hover:text-white group-hover:border-red-600"
-                    >
-                      <AlertTriangle size={18} />
-                      DENUNCIAR
-                    </button>
+                    <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-federal-400 transition-colors">
+                      {news.title}
+                    </h3>
+                    <p className="text-slate-400 text-sm line-clamp-3 mb-4">
+                      {news.content}
+                    </p>
+                    <div className="flex items-center text-federal-400 text-sm font-semibold group-hover:translate-x-1 transition-transform">
+                      Ler mais <ChevronRight size={16} />
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* NEWS SECTION */}
-          {newsList.length > 0 && (
-            <div className="space-y-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/40 border border-federal-700/50 text-federal-300 text-xs font-semibold uppercase tracking-wider mb-2">
-                    <Newspaper size={14} />
-                    <span>Boletim CIVIL EUFORIA</span>
+        {/* Anonymous Tip Section */}
+        <div id="tip-form" className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 lg:p-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none hidden lg:block">
+            <Shield size={300} />
+          </div>
+
+          <div className="relative z-10 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div>
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 flex items-center gap-3">
+                <User size={24} className="text-federal-400 sm:w-8 sm:h-8" />
+                Denúncia Anônima
+              </h3>
+              <p className="text-slate-300 text-lg mb-6 leading-relaxed">
+                Sua colaboração é fundamental. Se você tem informações sobre tráfico de drogas,
+                facções criminosas ou qualquer crime no Estado da Euforia, utilize este canal.
+                <strong className="block mt-2 text-white">Não exigimos identificação. O sigilo é garantido.</strong>
+              </p>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 text-slate-400">
+                  <div className="w-12 h-12 rounded-full bg-slate-950 flex items-center justify-center border border-slate-800">
+                    <Shield size={24} />
                   </div>
-                  <h2 className="text-3xl font-bold text-white">Últimas Notícias e Operações</h2>
+                  <p className="text-sm">Informações criptografadas e seguras.</p>
+                </div>
+                <div className="flex items-center gap-4 text-slate-400">
+                  <div className="w-12 h-12 rounded-full bg-slate-950 flex items-center justify-center border border-slate-800">
+                    <Ban size={24} />
+                  </div>
+                  <p className="text-sm">Sem rastreamento de IP ou localização.</p>
                 </div>
               </div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {newsList.map((news) => (
-                  <div 
-                    key={news.id} 
-                    className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden group hover:border-federal-500/50 transition-all cursor-pointer"
-                    onClick={() => setSelectedNews(news)}
-                  >
-                    <div className="h-48 overflow-hidden relative">
-                      {news.image_url ? (
-                        <img 
-                          src={news.image_url} 
-                          alt={news.title} 
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                          <Shield size={48} className="text-slate-700" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
-                    </div>
-                    <div className="p-6">
-                      <div className="flex items-center gap-2 text-xs text-federal-400 mb-2">
-                        <Calendar size={12} />
-                        {new Date(news.created_at).toLocaleDateString()}
-                      </div>
-                      <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-federal-400 transition-colors">
-                        {news.title}
-                      </h3>
-                      <p className="text-slate-400 text-sm line-clamp-3 mb-4">
-                        {news.content}
-                      </p>
-                      <div className="flex items-center text-federal-400 text-sm font-semibold group-hover:translate-x-1 transition-transform">
-                        Ler mais <ChevronRight size={16} />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
-          )}
 
-          {/* Anonymous Tip Section */}
-          <div id="tip-form" className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 lg:p-12 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none hidden lg:block">
-               <Shield size={300} />
-             </div>
-             
-             <div className="relative z-10 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-               <div>
-                 <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 flex items-center gap-3">
-                   <User size={24} className="text-federal-400 sm:w-8 sm:h-8" />
-                   Denúncia Anônima
-                 </h3>
-                 <p className="text-slate-300 text-lg mb-6 leading-relaxed">
-                   Sua colaboração é fundamental. Se você tem informações sobre tráfico de drogas,
-                   facções criminosas ou qualquer crime no Estado da Euforia, utilize este canal.
-                   <strong className="block mt-2 text-white">Não exigimos identificação. O sigilo é garantido.</strong>
-                 </p>
-                 
-                 <div className="space-y-4">
-                   <div className="flex items-center gap-4 text-slate-400">
-                     <div className="w-12 h-12 rounded-full bg-slate-950 flex items-center justify-center border border-slate-800">
-                       <Shield size={24} />
-                     </div>
-                     <p className="text-sm">Informações criptografadas e seguras.</p>
-                   </div>
-                   <div className="flex items-center gap-4 text-slate-400">
-                     <div className="w-12 h-12 rounded-full bg-slate-950 flex items-center justify-center border border-slate-800">
-                       <Ban size={24} />
-                     </div>
-                     <p className="text-sm">Sem rastreamento de IP ou localização.</p>
-                   </div>
-                 </div>
-               </div>
+            <form onSubmit={handleTipSubmit} className="space-y-4 bg-slate-950/50 p-6 rounded-2xl border border-slate-800">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Alvo da Denúncia</label>
+                <input
+                  type="text"
+                  value={tipForm.target}
+                  onChange={(e) => setTipForm({ ...tipForm, target: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                  placeholder="Nome do procurado ou organização"
+                  required
+                />
+              </div>
 
-               <form onSubmit={handleTipSubmit} className="space-y-4 bg-slate-950/50 p-6 rounded-2xl border border-slate-800">
-                 <div>
-                   <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Alvo da Denúncia</label>
-                   <input 
-                     type="text" 
-                     value={tipForm.target}
-                     onChange={e => setTipForm({...tipForm, target: e.target.value})}
-                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-federal-500 outline-none transition-colors"
-                     placeholder="Nome do procurado ou organização"
-                     required
-                   />
-                 </div>
-                 
-                 <div>
-                   <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Localização Aproximada</label>
-                   <input 
-                     type="text" 
-                     value={tipForm.location}
-                     onChange={e => setTipForm({...tipForm, location: e.target.value})}
-                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-federal-500 outline-none transition-colors"
-                     placeholder="Cidade, Bairro, Rua..."
-                     required
-                   />
-                 </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Localização Aproximada</label>
+                <input
+                  type="text"
+                  value={tipForm.location}
+                  onChange={(e) => setTipForm({ ...tipForm, location: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                  placeholder="Cidade, Bairro, Rua..."
+                  required
+                />
+              </div>
 
-                 <div>
-                   <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Detalhes da Informação</label>
-                   <textarea 
-                     value={tipForm.details}
-                     onChange={e => setTipForm({...tipForm, details: e.target.value})}
-                     rows={4}
-                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-federal-500 outline-none transition-colors resize-none"
-                     placeholder="Descreva o que você sabe com o máximo de detalhes..."
-                     required
-                   />
-                 </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Detalhes da Informação</label>
+                <textarea
+                  value={tipForm.details}
+                  onChange={(e) => setTipForm({ ...tipForm, details: e.target.value })}
+                  rows={4}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors resize-none"
+                  placeholder="Descreva o que você sabe com o máximo de detalhes..."
+                  required
+                />
+              </div>
 
-                 <div>
-                   <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Contato (Opcional)</label>
-                   <input 
-                     type="text" 
-                     value={tipForm.contact}
-                     onChange={e => setTipForm({...tipForm, contact: e.target.value})}
-                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-federal-500 outline-none transition-colors"
-                     placeholder="Caso queira ser contatado para recompensa"
-                   />
-                 </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Contato (Opcional)</label>
+                <input
+                  type="text"
+                  value={tipForm.contact}
+                  onChange={(e) => setTipForm({ ...tipForm, contact: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                  placeholder="Caso queira ser contatado para recompensa"
+                />
+              </div>
 
-                 <button 
-                   type="submit"
-                   disabled={tipStatus === 'submitting'}
-                   className={clsx(
-                     "w-full py-4 font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2",
-                     tipStatus === 'success' ? "bg-emerald-600 text-white" : 
-                     tipStatus === 'error' ? "bg-red-600 text-white" :
-                     "bg-federal-600 hover:bg-federal-500 text-white"
-                   )}
-                 >
-                   {tipStatus === 'submitting' ? (
-                     <span className="animate-spin">⌛</span>
-                   ) : tipStatus === 'success' ? (
-                     <>
-                       <CheckSquare size={20} />
-                       Denúncia Enviada!
-                     </>
-                   ) : (
-                     <>
-                       <Send size={20} />
-                       Enviar Denúncia
-                     </>
-                   )}
-                 </button>
-               </form>
-             </div>
+              <button
+                type="submit"
+                disabled={tipStatus === 'submitting'}
+                className={clsx(
+                  "w-full py-4 font-bold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2",
+                  tipStatus === 'success' ? "bg-emerald-600 text-white" :
+                    tipStatus === 'error' ? "bg-red-600 text-white" :
+                      "bg-federal-600 hover:bg-federal-500 text-white"
+                )}
+              >
+                {tipStatus === 'submitting' ? (
+                  <span className="animate-spin">⌛</span>
+                ) : tipStatus === 'success' ? (
+                  <>
+                    <CheckSquare size={20} />
+                    Denúncia Enviada!
+                  </>
+                ) : (
+                  <>
+                    <Send size={20} />
+                    Enviar Denúncia
+                  </>
+                )}
+              </button>
+            </form>
           </div>
         </div>
+      </div>
 
     </div>
   );
