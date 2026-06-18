@@ -66,39 +66,78 @@ const PrivateLayout = () => {
     navigate('/login');
   };
 
-  const navItems = [
-    { to: '/dashboard', icon: LayoutDashboard, label: 'Painel Geral', prefetchKey: 'DashboardHome' },
-    // Only show Student Area if user is strictly 'Aluno'
-    ...(user?.role === 'Aluno' ? [{ to: '/dashboard/anp-student', icon: GraduationCap, label: 'Área do Aluno', prefetchKey: 'ANPStudentDashboard' }] : []),
-    { to: '/dashboard/communication', icon: Radio, label: 'Comunicação', prefetchKey: 'CommunicationHub', permission: 'communication_view' },
-    { to: '/dashboard/news', icon: Newspaper, label: 'Notícias', permission: 'news_manage' },
-    { to: '/dashboard/logistics', icon: Package, label: 'Logística', prefetchKey: 'LogisticsDashboard', permission: 'logistics_view' },
-    { to: '/dashboard/pm', icon: Car, label: 'Integração PM', prefetchKey: 'PMIntegration', permission: 'pm_view' },
-    { to: '/dashboard/lawyers', icon: Scale, label: 'Advogados', prefetchKey: 'LawyerDashboard', permission: 'lawyer_view' },
-    { to: '/dashboard/judiciary', icon: Gavel, label: 'Jurídico', prefetchKey: 'JudiciaryManager', permission: 'judiciary_view' },
-    { to: '/dashboard/arrest', icon: UserX, label: 'Registrar Prisão', prefetchKey: 'RegisterArrest', permission: 'arrest_manage' },
-    { to: '/dashboard/arrests', icon: Shield, label: 'Registro de Prisões', prefetchKey: 'ArrestList', permission: 'arrest_view' },
-    { to: '/dashboard/bo', icon: FileText, label: 'Registrar BO', prefetchKey: 'RegisterBO', permission: 'bo_manage' },
-    { to: '/dashboard/bo-list', icon: FileText, label: 'Consultar BOs', prefetchKey: 'BOList', permission: 'bo_view' },
-    { to: '/dashboard/reports', icon: AlertTriangle, label: 'Denúncias', prefetchKey: 'ReportList', permission: 'reports_view' },
-    { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados', prefetchKey: 'RegisterWanted', permission: 'wanted_manage' },
-    { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados', prefetchKey: 'WantedList', permission: 'wanted_view' },
-    { to: '/dashboard/investigations', icon: Search, label: 'Investigações', prefetchKey: 'InvestigationList', permission: 'investigations_view' },
-    { to: '/dashboard/forensics', icon: FileSearch, label: 'Perícias', prefetchKey: 'ForensicsList', permission: 'forensics_view' },
-    { to: '/dashboard/weapons', icon: Target, label: 'Porte de Armas', prefetchKey: 'WeaponsManager', permission: 'weapons_view' },
-    { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList', permission: 'revenue_view' },
-    { to: '/dashboard/alvaras', icon: Building2, label: 'Alvarás', prefetchKey: 'AlvaraList' },
-    { to: '/dashboard/laudos', icon: Stethoscope, label: 'Laudos Médicos', prefetchKey: 'LaudosList', permission: 'laudos_view' },
-    { to: '/dashboard/settings', icon: Settings, label: 'Configurações', prefetchKey: 'SettingsLayout', permission: 'settings_view' },
+  const navCategories = [
+    { 
+      label: 'Painel Principal',
+      items: [
+        { to: '/dashboard', icon: LayoutDashboard, label: 'Painel Geral', prefetchKey: 'DashboardHome' },
+        ...(user?.role === 'Aluno' ? [{ to: '/dashboard/anp-student', icon: GraduationCap, label: 'Área do Aluno', prefetchKey: 'ANPStudentDashboard' }] : []),
+      ]
+    },
+    { 
+      label: 'Trabalho',
+      items: [
+        { to: '/dashboard/arrest', icon: UserX, label: 'Registrar Prisão', prefetchKey: 'RegisterArrest', permission: 'arrest_manage' },
+        { to: '/dashboard/arrests', icon: Shield, label: 'Registro de Prisões', prefetchKey: 'ArrestList', permission: 'arrest_view' },
+        { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados', prefetchKey: 'RegisterWanted', permission: 'wanted_manage' },
+        { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados', prefetchKey: 'WantedList', permission: 'wanted_view' },
+        { to: '/dashboard/bo', icon: FileText, label: 'Registrar BO', prefetchKey: 'RegisterBO', permission: 'bo_manage' },
+        { to: '/dashboard/bo-list', icon: FileText, label: 'Consultar BOs', prefetchKey: 'BOList', permission: 'bo_view' },
+        { to: '/dashboard/reports', icon: AlertTriangle, label: 'Denúncias', prefetchKey: 'ReportList', permission: 'reports_view' },
+      ]
+    },
+    { 
+      label: 'Investigativo',
+      items: [
+        { to: '/dashboard/investigations', icon: Search, label: 'Investigações', prefetchKey: 'InvestigationList', permission: 'investigations_view' },
+        { to: '/dashboard/forensics', icon: FileSearch, label: 'Perícias', prefetchKey: 'ForensicsList', permission: 'forensics_view' },
+        { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList', permission: 'revenue_view' },
+      ]
+    },
+    { 
+      label: 'Jurídico',
+      items: [
+        { to: '/dashboard/alvaras', icon: Building2, label: 'Alvarás', prefetchKey: 'AlvaraList' },
+        { to: '/dashboard/weapons', icon: Target, label: 'Porte de Armas', prefetchKey: 'WeaponsManager', permission: 'weapons_view' },
+        { to: '/dashboard/lawyers', icon: Scale, label: 'Advogados', prefetchKey: 'LawyerDashboard', permission: 'lawyer_view' },
+        { to: '/dashboard/judiciary', icon: Gavel, label: 'Jurídico', prefetchKey: 'JudiciaryManager', permission: 'judiciary_view' },
+      ]
+    },
+    { 
+      label: 'Hospital',
+      items: [
+        { to: '/dashboard/laudos', icon: Stethoscope, label: 'Laudos Médicos', prefetchKey: 'LaudosList', permission: 'laudos_view' },
+      ]
+    },
+    { 
+      label: 'Outros',
+      items: [
+        { to: '/dashboard/pm', icon: Car, label: 'Integração PM', prefetchKey: 'PMIntegration', permission: 'pm_view' },
+        { to: '/dashboard/news', icon: Newspaper, label: 'Notícias', permission: 'news_manage' },
+        { to: '/dashboard/communication', icon: Radio, label: 'Comunicação', prefetchKey: 'CommunicationHub', permission: 'communication_view' },
+        { to: '/dashboard/logistics', icon: Package, label: 'Logística', prefetchKey: 'LogisticsDashboard', permission: 'logistics_view' },
+      ]
+    },
+    { 
+      label: 'Configuração',
+      items: [
+        { to: '/dashboard/settings', icon: Settings, label: 'Configurações', prefetchKey: 'SettingsLayout', permission: 'settings_view' },
+      ]
+    }
   ];
 
-  const filteredNavItems = navItems.filter(item => {
+  const filterItems = (items) => items.filter(item => {
     // Diretor Geral sees everything
     if (user?.role?.toLowerCase().includes('diretor')) return true;
     
     if (!item.permission) return true;
     return can(item.permission);
   });
+
+  const filteredNavCategories = navCategories.map(category => ({
+    ...category,
+    items: filterItems(category.items)
+  })).filter(category => category.items.length > 0);
 
   const isActive = (path) => {
     if (path === '/dashboard') {
@@ -178,19 +217,22 @@ const PrivateLayout = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto custom-scrollbar">
-          <div className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Menu Principal</div>
-          {filteredNavItems.map((item) => (
-            <SidebarItem 
-              key={item.to}
-              to={item.to}
-              icon={item.icon}
-              label={item.label}
-              // Fixed active logic: explicit check for root dashboard, startsWith for others
-              active={isActive(item.to)}
-              prefetchKey={item.prefetchKey}
-              onClick={() => setIsSidebarOpen(false)}
-            />
+        <nav className="flex-1 px-3 py-2 space-y-4 overflow-y-auto custom-scrollbar">
+          {filteredNavCategories.map((category, categoryIndex) => (
+            <div key={categoryIndex}>
+              <div className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">{category.label}</div>
+              {category.items.map((item) => (
+                <SidebarItem 
+                  key={item.to}
+                  to={item.to}
+                  icon={item.icon}
+                  label={item.label}
+                  active={isActive(item.to)}
+                  prefetchKey={item.prefetchKey}
+                  onClick={() => setIsSidebarOpen(false)}
+                />
+              ))}
+            </div>
           ))}
         </nav>
 
