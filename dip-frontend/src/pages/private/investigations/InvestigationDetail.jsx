@@ -5,6 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useSettings } from '../../../hooks/useSettings';
 import { generateInvestigationPDF } from '../../../utils/pdfGenerator';
 import AddProofModal from '../../../components/investigations/AddProofModal';
+import EditProofModal from '../../../components/investigations/EditProofModal';
 import ProofCard from '../../../components/investigations/ProofCard';
 import { 
   ArrowLeft, 
@@ -28,12 +29,14 @@ const InvestigationDetail = () => {
   const location = useLocation(); // Add useLocation
   const { user } = useAuth();
   const { templates } = useSettings();
-  const { getInvestigation, addProof, closeInvestigation, deleteProof } = useInvestigations();
+  const { getInvestigation, addProof, closeInvestigation, deleteProof, editProof } = useInvestigations();
   
   const [investigation, setInvestigation] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [selectedProof, setSelectedProof] = useState(null);
+  const [proofToEdit, setProofToEdit] = useState(null);
 
   // Determine back link based on URL path or investigation category
   const isRevenueRoute = location.pathname.includes('/revenue/');
@@ -99,6 +102,17 @@ const InvestigationDetail = () => {
       }
     } catch (error) {
       console.error('Erro ao deletar prova:', error);
+    }
+  };
+
+  const handleEditProof = async (proofId, proofData) => {
+    try {
+      await editProof(proofId, proofData);
+      // Refresh investigation data
+      const data = await getInvestigation(id);
+      if (data) setInvestigation(data);
+    } catch (error) {
+      console.error('Erro ao editar prova:', error);
     }
   };
 
@@ -222,7 +236,11 @@ const InvestigationDetail = () => {
                 proof={proof} 
                 onClick={setSelectedProof} 
                 onDelete={handleDeleteProof}
-                canDelete={!isClosed}
+                onEdit={(proof) => {
+                  setProofToEdit(proof);
+                  setIsEditModalOpen(true);
+                }}
+                canEdit={!isClosed}
               />
             ))
           ) : (
@@ -240,6 +258,16 @@ const InvestigationDetail = () => {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         onSave={handleAddProof} 
+      />
+
+      <EditProofModal 
+        isOpen={isEditModalOpen} 
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setProofToEdit(null);
+        }} 
+        onSave={handleEditProof}
+        proof={proofToEdit}
       />
 
       {/* Proof Viewer Modal */}

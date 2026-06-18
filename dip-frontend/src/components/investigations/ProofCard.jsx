@@ -1,8 +1,8 @@
 import React from 'react';
-import { Image, Video, Link as LinkIcon, FileText, File, Calendar, User, ExternalLink, ZoomIn, Trash2 } from 'lucide-react';
+import { Image, Video, Link as LinkIcon, FileText, File, Calendar, User, ExternalLink, ZoomIn, Trash2, Edit2 } from 'lucide-react';
 import clsx from 'clsx';
 
-const ProofCard = ({ proof, onClick, onDelete, canDelete }) => {
+const ProofCard = ({ proof, onClick, onDelete, onEdit, canEdit }) => {
   const getIcon = () => {
     switch (proof.type) {
       case 'image': return Image;
@@ -75,19 +75,31 @@ const ProofCard = ({ proof, onClick, onDelete, canDelete }) => {
             <span className="text-[10px] text-slate-500 font-mono bg-slate-950 px-2 py-1 rounded">
               {new Date(proof.createdAt).toLocaleDateString()}
             </span>
-            {canDelete && (
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (window.confirm('Tem certeza que deseja deletar esta prova?')) {
-                    onDelete && onDelete(proof.id);
-                  }
-                }}
-                className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                title="Deletar prova"
-              >
-                <Trash2 size={16} />
-              </button>
+            {canEdit && (
+              <>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit && onEdit(proof);
+                  }}
+                  className="p-2 hover:bg-amber-500/20 text-amber-400 rounded-lg transition-colors"
+                  title="Editar prova"
+                >
+                  <Edit2 size={16} />
+                </button>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm('Tem certeza que deseja deletar esta prova?')) {
+                      onDelete && onDelete(proof.id);
+                    }
+                  }}
+                  className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                  title="Deletar prova"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </>
             )}
           </div>
         </div>

@@ -37,6 +37,11 @@ const InvestigationList = React.lazy(() => lazyImport(routeLoaders.Investigation
 const InvestigationCreate = React.lazy(() => lazyImport(routeLoaders.InvestigationCreate));
 const InvestigationDetail = React.lazy(() => lazyImport(routeLoaders.InvestigationDetail));
 
+// Alvarás Pages
+const AlvaraList = React.lazy(() => lazyImport(routeLoaders.AlvaraList));
+const AlvaraCreate = React.lazy(() => lazyImport(routeLoaders.AlvaraCreate));
+const AlvaraDetail = React.lazy(() => lazyImport(routeLoaders.AlvaraDetail));
+
 const ForensicsList = React.lazy(() => lazyImport(routeLoaders.ForensicsList));
 const RegisterForensics = React.lazy(() => lazyImport(routeLoaders.RegisterForensics));
 const ForensicsDetail = React.lazy(() => lazyImport(routeLoaders.ForensicsDetail));
@@ -193,6 +198,11 @@ function App() {
                 <InvestigationDetail />
               </PermissionGuard>
             } />
+            
+            {/* Alvarás Routes */}
+            <Route path="alvaras" element={<AlvaraList />} />
+            <Route path="alvaras/new" element={<AlvaraCreate />} />
+            <Route path="alvaras/:id" element={<AlvaraDetail />} />
             
             {/* Forensics Routes */}
             <Route path="forensics" element={

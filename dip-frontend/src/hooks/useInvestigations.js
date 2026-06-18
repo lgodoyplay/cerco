@@ -252,6 +252,44 @@ export const useInvestigations = () => {
     }
   }, [fetchInvestigations]);
 
+  const editProof = useCallback(async (proofId, proofData) => {
+    try {
+      let finalContent = proofData.content;
+
+      if (proofData.file) {
+        const fileExt = proofData.file.name.split('.').pop();
+        const fileName = `proofs/${proofData.investigationId}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('provas')
+          .upload(fileName, proofData.file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage.from('provas').getPublicUrl(fileName);
+        finalContent = urlData.publicUrl;
+      }
+
+      const { error } = await supabase
+        .from('provas')
+        .update({
+          tipo: proofData.type,
+          descricao: proofData.title ? `${proofData.title} - ${proofData.description}` : proofData.description,
+          url: finalContent
+        })
+        .eq('id', proofId);
+
+      if (error) throw error;
+
+      // Refresh da lista de investigações
+      fetchInvestigations();
+
+    } catch (error) {
+      console.error('Erro ao editar prova:', error);
+      throw error;
+    }
+  }, [fetchInvestigations]);
+
   return {
     investigations,
     loading,
@@ -259,6 +297,7 @@ export const useInvestigations = () => {
     getInvestigation,
     addProof,
     closeInvestigation,
-    deleteProof
+    deleteProof,
+    editProof
   };
 };

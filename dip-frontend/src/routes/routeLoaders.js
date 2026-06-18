@@ -35,6 +35,11 @@ export const routeLoaders = {
   RevenueList: () => import('../pages/private/revenue/RevenueList'),
   RevenueDetail: () => import('../pages/private/revenue/RevenueDetail'),
 
+  // Alvarás
+  AlvaraList: () => import('../pages/private/alvaras/AlvaraList'),
+  AlvaraCreate: () => import('../pages/private/alvaras/AlvaraCreate'),
+  AlvaraDetail: () => import('../pages/private/alvaras/AlvaraDetail'),
+  
   // Specialized Managers
   WeaponsManager: () => import('../pages/private/weapons/WeaponsManager'),
   RequestWeaponLicense: () => import('../pages/private/weapons/RequestWeaponLicense'),

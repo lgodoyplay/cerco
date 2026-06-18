@@ -26,7 +26,8 @@ import {
   GraduationCap,
   Package,
   Radio,
-  Newspaper
+  Newspaper,
+  Building2
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
@@ -83,6 +84,7 @@ const PrivateLayout = () => {
     { to: '/dashboard/forensics', icon: FileSearch, label: 'Perícias', prefetchKey: 'ForensicsList', permission: 'forensics_view' },
     { to: '/dashboard/weapons', icon: Target, label: 'Porte de Armas', prefetchKey: 'WeaponsManager', permission: 'weapons_view' },
     { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList', permission: 'revenue_view' },
+    { to: '/dashboard/alvaras', icon: Building2, label: 'Alvarás', prefetchKey: 'AlvaraList' },
     { to: '/dashboard/settings', icon: Settings, label: 'Configurações', prefetchKey: 'SettingsLayout', permission: 'settings_view' },
   ];
 
