@@ -54,7 +54,19 @@ const UsersSettings = () => {
     { id: 'lawyer', label: 'Advogados' },
     { id: 'courses', label: 'Cursos/Ensino' },
     { id: 'anp', label: 'Gestão ANP' },
+    { id: 'alvaras', label: 'Alvarás' },
+    { id: 'news', label: 'Notícias' },
     { id: 'settings', label: 'Configurações' },
+    { id: 'warnings', label: 'Advertências' },
+    { id: 'forms', label: 'Formulários' },
+    { id: 'exams', label: 'Resultados de Prova' },
+    { id: 'templates', label: 'Modelos de Documentos' },
+    { id: 'corporation', label: 'Estrutura da Corporação' },
+    { id: 'appearance', label: 'Aparência' },
+    { id: 'security', label: 'Segurança' },
+    { id: 'backup', label: 'Backup & Dados' },
+    { id: 'health', label: 'Diagnóstico do Sistema' },
+    { id: 'logs', label: 'Logs do Sistema' },
   ];
 
   // Carregar cursos disponíveis quando abrir modal

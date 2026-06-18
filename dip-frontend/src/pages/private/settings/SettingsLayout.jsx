@@ -25,21 +25,21 @@ const SettingsLayout = () => {
   const { can } = usePermissions();
 
   const menuItems = [
-    { to: '/dashboard/settings/users', icon: Users, label: 'Usuários & Permissões' },
+    { to: '/dashboard/settings/users', icon: Users, label: 'Usuários & Permissões', permission: 'settings_manage' },
     { to: '/dashboard/settings/warnings', icon: AlertTriangle, label: 'Advertências', permission: 'warnings_manage' },
     { to: '/dashboard/settings/courses', icon: BookOpen, label: 'Gestão de Cursos', permission: 'courses_view' },
-    { to: '/dashboard/settings/webhooks', icon: Share2, label: 'Webhooks & Integrações' },
-    { to: '/dashboard/settings/forms', icon: Inbox, label: 'Formulários Recebidos' },
-    { to: '/dashboard/settings/exams', icon: CheckSquare, label: 'Resultados de Prova' },
-    { to: '/dashboard/settings/corporation', icon: Building, label: 'Estrutura da Corporação' },
-    { to: '/dashboard/settings/roles', icon: BadgeCheck, label: 'Cargos & Patentes' },
-    { to: '/dashboard/settings/crimes', icon: Gavel, label: 'Tipos de Crimes' },
-    { to: '/dashboard/settings/templates', icon: FileText, label: 'Modelos de Documentos' },
-    { to: '/dashboard/settings/appearance', icon: Palette, label: 'Aparência' },
-    { to: '/dashboard/settings/security', icon: Shield, label: 'Segurança' },
-    { to: '/dashboard/settings/backup', icon: Database, label: 'Backup & Dados' },
-    { to: '/dashboard/settings/health', icon: Activity, label: 'Diagnóstico do Sistema' },
-    { to: '/dashboard/settings/logs', icon: ScrollText, label: 'Logs do Sistema' },
+    { to: '/dashboard/settings/webhooks', icon: Share2, label: 'Webhooks & Integrações', permission: 'settings_manage' },
+    { to: '/dashboard/settings/forms', icon: Inbox, label: 'Formulários Recebidos', permission: 'forms_view' },
+    { to: '/dashboard/settings/exams', icon: CheckSquare, label: 'Resultados de Prova', permission: 'exams_view' },
+    { to: '/dashboard/settings/corporation', icon: Building, label: 'Estrutura da Corporação', permission: 'corporation_view' },
+    { to: '/dashboard/settings/roles', icon: BadgeCheck, label: 'Cargos & Patentes', permission: 'settings_manage' },
+    { to: '/dashboard/settings/crimes', icon: Gavel, label: 'Tipos de Crimes', permission: 'settings_manage' },
+    { to: '/dashboard/settings/templates', icon: FileText, label: 'Modelos de Documentos', permission: 'templates_view' },
+    { to: '/dashboard/settings/appearance', icon: Palette, label: 'Aparência', permission: 'appearance_view' },
+    { to: '/dashboard/settings/security', icon: Shield, label: 'Segurança', permission: 'security_view' },
+    { to: '/dashboard/settings/backup', icon: Database, label: 'Backup & Dados', permission: 'backup_view' },
+    { to: '/dashboard/settings/health', icon: Activity, label: 'Diagnóstico do Sistema', permission: 'health_view' },
+    { to: '/dashboard/settings/logs', icon: ScrollText, label: 'Logs do Sistema', permission: 'logs_view' },
   ];
 
   const filteredItems = menuItems.filter(item => !item.permission || can(item.permission));

@@ -301,8 +301,16 @@ function App() {
               </PermissionGuard>
             }>
               <Route index element={<Navigate to="courses" replace />} />
-              <Route path="health" element={<SystemHealth />} />
-              <Route path="users" element={<UsersSettings />} />
+              <Route path="health" element={
+                <PermissionGuard permission="health_view">
+                  <SystemHealth />
+                </PermissionGuard>
+              } />
+              <Route path="users" element={
+                <PermissionGuard permission="settings_manage">
+                  <UsersSettings />
+                </PermissionGuard>
+              } />
               <Route path="warnings" element={
                 <PermissionGuard permission="warnings_manage">
                   <WarningsSettings />
@@ -313,17 +321,61 @@ function App() {
                   <CoursesSettings />
                 </PermissionGuard>
               } />
-              <Route path="webhooks" element={<WebhookSettings />} />
-              <Route path="forms" element={<FormsSettings />} />
-              <Route path="exams" element={<ExamResultsSettings />} />
-              <Route path="corporation" element={<CorporationSettings />} />
-              <Route path="roles" element={<RolesSettings />} />
-              <Route path="crimes" element={<CrimesSettings />} />
-              <Route path="templates" element={<TemplatesSettings />} />
-              <Route path="appearance" element={<AppearanceSettings />} />
-              <Route path="security" element={<SecurityConfig />} />
-              <Route path="backup" element={<BackupSettings />} />
-              <Route path="logs" element={<SystemLogs />} />
+              <Route path="webhooks" element={
+                <PermissionGuard permission="settings_manage">
+                  <WebhookSettings />
+                </PermissionGuard>
+              } />
+              <Route path="forms" element={
+                <PermissionGuard permission="forms_view">
+                  <FormsSettings />
+                </PermissionGuard>
+              } />
+              <Route path="exams" element={
+                <PermissionGuard permission="exams_view">
+                  <ExamResultsSettings />
+                </PermissionGuard>
+              } />
+              <Route path="corporation" element={
+                <PermissionGuard permission="corporation_view">
+                  <CorporationSettings />
+                </PermissionGuard>
+              } />
+              <Route path="roles" element={
+                <PermissionGuard permission="settings_manage">
+                  <RolesSettings />
+                </PermissionGuard>
+              } />
+              <Route path="crimes" element={
+                <PermissionGuard permission="settings_manage">
+                  <CrimesSettings />
+                </PermissionGuard>
+              } />
+              <Route path="templates" element={
+                <PermissionGuard permission="templates_view">
+                  <TemplatesSettings />
+                </PermissionGuard>
+              } />
+              <Route path="appearance" element={
+                <PermissionGuard permission="appearance_view">
+                  <AppearanceSettings />
+                </PermissionGuard>
+              } />
+              <Route path="security" element={
+                <PermissionGuard permission="security_view">
+                  <SecurityConfig />
+                </PermissionGuard>
+              } />
+              <Route path="backup" element={
+                <PermissionGuard permission="backup_view">
+                  <BackupSettings />
+                </PermissionGuard>
+              } />
+              <Route path="logs" element={
+                <PermissionGuard permission="logs_view">
+                  <SystemLogs />
+                </PermissionGuard>
+              } />
             </Route>
           </Route>
 
