@@ -141,6 +141,53 @@ const ProfilePage = () => {
     );
   }
 
+  if (selectedCourse) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setSelectedCourse(null)}
+            className="p-3 bg-slate-900 border border-slate-800 hover:border-federal-500/30 rounded-xl text-slate-400 hover:text-white transition-all"
+          >
+            <X size={24} />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+              <BookOpen size={32} className="text-federal-500" />
+              {selectedCourse.cursos?.nome}
+            </h1>
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          <div className="bg-slate-950 border border-slate-800 rounded-2xl p-8">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-4">
+              Descrição do Curso
+            </span>
+            <p className="text-slate-200 text-lg leading-relaxed whitespace-pre-wrap">
+              {selectedCourse.cursos?.descricao || 'Descrição não disponível.'}
+            </p>
+          </div>
+
+          {selectedCourse.certificado_url && (
+            <div>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-4">
+                Certificado
+              </span>
+              <div className="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+                <img 
+                  src={selectedCourse.certificado_url} 
+                  alt="Certificado do Curso" 
+                  className="w-full h-auto"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -356,49 +403,6 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
-
-      {/* Course Details Modal */}
-      {selectedCourse && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl" onClick={() => setSelectedCourse(null)}>
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
-              <h3 className="text-2xl font-bold text-white flex items-center gap-2">
-                <BookOpen size={24} className="text-federal-500" />
-                {selectedCourse.cursos?.nome}
-              </h3>
-              <button onClick={() => setSelectedCourse(null)} className="p-2 hover:bg-slate-800 rounded-xl transition-colors">
-                <X size={24} className="text-slate-400" />
-              </button>
-            </div>
-
-            <div className="p-8 space-y-8">
-              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-3">
-                  Descrição do Curso
-                </span>
-                <p className="text-slate-200 leading-relaxed whitespace-pre-wrap">
-                  {selectedCourse.cursos?.descricao || 'Descrição não disponível.'}
-                </p>
-              </div>
-
-              {selectedCourse.certificado_url && (
-                <div>
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-4">
-                    Certificado
-                  </span>
-                  <div className="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
-                    <img 
-                      src={selectedCourse.certificado_url} 
-                      alt="Certificado do Curso" 
-                      className="w-full h-auto"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
