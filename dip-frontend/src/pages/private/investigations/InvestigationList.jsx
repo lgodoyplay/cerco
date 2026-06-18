@@ -105,7 +105,7 @@ const InvestigationList = ({ category = 'criminal', title }) => {
               className="bg-slate-900 border border-slate-800 hover:border-federal-500/50 rounded-2xl p-6 transition-all hover:shadow-xl hover:shadow-federal-900/10"
             >
               <div className="flex justify-between items-start mb-4">
-                <span className={clsx("px-2.5 py-1 rounded text-xs font-bold border", getPriorityColor(inv.priority)}>
+                <span className={clsx("px-2.5 py-1 rounded text-xs font-bold border", getPriorityColor(inv.priority))}>
                   {inv.priority}
                 </span>
                 <div className="flex gap-2">
