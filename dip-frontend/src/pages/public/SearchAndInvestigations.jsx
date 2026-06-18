@@ -157,7 +157,7 @@ const SearchAndInvestigations = () => {
                   type="text"
                   value={verifyCode}
                   onChange={(e) => setVerifyCode(e.target.value.toUpperCase())}
-                  placeholder="Ex: CIVIL EUFORIA-123456"
+                  placeholder="Ex: DEN3635"
                   className="w-full bg-slate-950 border border-slate-700 rounded-2xl px-6 py-4 text-center text-2xl font-mono tracking-widest text-white placeholder:text-slate-700 focus:outline-none focus:border-federal-500 transition-colors uppercase"
                 />
                 <button
