@@ -18,6 +18,7 @@ const ArrestList = () => {
 
   const canManage = can('arrest_manage');
   const [arrests, setArrests] = useState([]);
+  const [boletins, setBoletins] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedArrest, setSelectedArrest] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,36 +27,48 @@ const ArrestList = () => {
   const [deletePassword, setDeletePassword] = useState('');
 
   useEffect(() => {
-    const fetchArrests = async () => {
+    const fetchData = async () => {
       try {
-        const { data, error } = await supabase
+        // Fetch arrests
+        const { data: arrestsData, error: arrestsError } = await supabase
           .from('prisoes')
           .select('*')
           .order('created_at', { ascending: false });
+        if (arrestsError) throw arrestsError;
 
-        if (error) throw error;
+        // Fetch boletins
+        const { data: boletinsData, error: boletinsError } = await supabase
+          .from('boletins')
+          .select('id, comunicante, descricao');
+        if (boletinsError) throw boletinsError;
+        setBoletins(boletinsData || []);
 
-        const formattedArrests = data.map(item => ({
-          ...item,
-          name: item.nome,
-          passport: item.documento,
-          reason: item.observacoes, // Mapping observacoes to reason/description context
-          articles: item.artigo,
-          officer: item.conduzido_por || 'N/A',
-          description: item.observacoes,
-          broughtByOtherPolice: item.conduzido_por_outra_policia,
-          images: { 
-            face: item.foto_principal 
-          },
-          date: item.data_prisao // Assuming this field exists based on schema
-        }));
+        const formattedArrests = arrestsData.map(item => {
+          const linkedBo = boletinsData?.find(b => b.id === item.bo_id);
+          return {
+            ...item,
+            name: item.nome,
+            passport: item.documento,
+            reason: item.observacoes, // Mapping observacoes to reason/description context
+            articles: item.artigo,
+            officer: item.conduzido_por || 'N/A',
+            description: item.observacoes,
+            broughtByOtherPolice: item.conduzido_por_outra_policia,
+            boId: item.bo_id,
+            linkedBo: linkedBo,
+            images: { 
+              face: item.foto_principal 
+            },
+            date: item.data_prisao // Assuming this field exists based on schema
+          };
+        });
         setArrests(formattedArrests);
       } catch (error) {
-        console.error('Erro ao buscar prisões:', error);
+        console.error('Erro ao buscar dados:', error);
       }
     };
 
-    fetchArrests();
+    fetchData();
   }, []);
 
   const filteredArrests = arrests.filter(arrest => 
@@ -350,6 +363,20 @@ const ArrestList = () => {
                         <Shield size={16} />
                         Conduzido por outra polícia
                       </div>
+                    </div>
+                  )}
+
+                  {selectedArrest.linkedBo && (
+                    <div className="bg-federal-500/10 p-4 rounded-xl border border-federal-500/20">
+                      <span className="text-xs text-slate-500 uppercase font-bold block mb-1">
+                        BO Responsável
+                      </span>
+                      <div className="text-white font-medium">
+                        {selectedArrest.linkedBo.comunicante}
+                      </div>
+                      <p className="text-slate-400 text-sm mt-1">
+                        {selectedArrest.linkedBo.descricao}
+                      </p>
                     </div>
                   )}
 

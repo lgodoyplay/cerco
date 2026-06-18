@@ -19,6 +19,11 @@ ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS carros JSONB DEFAULT '
 
 -- Adicionar coluna para prisões conduzidas por outra polícia
 ALTER TABLE public.prisoes ADD COLUMN IF NOT EXISTS conduzido_por_outra_policia BOOLEAN DEFAULT FALSE;
+-- Adicionar coluna para BO relacionado à prisão
+ALTER TABLE public.prisoes ADD COLUMN IF NOT EXISTS bo_id UUID REFERENCES public.boletins(id);
+
+-- Adicionar coluna para BO relacionado à procurado
+ALTER TABLE public.procurados ADD COLUMN IF NOT EXISTS bo_id UUID REFERENCES public.boletins(id);
 
 -- 3. Garantir que a categoria pode ser 'search_and_seizure'
 -- Noop - já permite qualquer texto

@@ -13,6 +13,7 @@ const WantedList = () => {
   const { can } = usePermissions();
   const { templates } = useSettings();
   const [wantedList, setWantedList] = useState([]);
+  const [boletins, setBoletins] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ show: false, person: null });
@@ -21,32 +22,44 @@ const WantedList = () => {
   const canManage = can('wanted_manage');
 
   useEffect(() => {
-    const fetchWanted = async () => {
+    const fetchData = async () => {
       try {
-        const { data, error } = await supabase
+        // Fetch wanted
+        const { data: wantedData, error: wantedError } = await supabase
           .from('procurados')
           .select('*')
           .order('created_at', { ascending: false });
+        if (wantedError) throw wantedError;
 
-        if (error) throw error;
+        // Fetch boletins
+        const { data: boletinsData, error: boletinsError } = await supabase
+          .from('boletins')
+          .select('id, comunicante, descricao');
+        if (boletinsError) throw boletinsError;
+        setBoletins(boletinsData || []);
 
-        const formattedWanted = data.map(item => ({
-          ...item,
-          name: item.nome,
-          crime: item.motivo,
-          dangerLevel: item.periculosidade,
-          reward: item.recompensa,
-          date: item.created_at,
-          image: item.foto_principal,
-          document: item.documento
-        }));
+        const formattedWanted = wantedData.map(item => {
+          const linkedBo = boletinsData?.find(b => b.id === item.bo_id);
+          return {
+            ...item,
+            name: item.nome,
+            crime: item.motivo,
+            dangerLevel: item.periculosidade,
+            reward: item.recompensa,
+            date: item.created_at,
+            image: item.foto_principal,
+            document: item.documento,
+            boId: item.bo_id,
+            linkedBo: linkedBo
+          };
+        });
         setWantedList(formattedWanted);
       } catch (error) {
-        console.error('Erro ao buscar procurados:', error);
+        console.error('Erro ao buscar dados:', error);
       }
     };
 
-    fetchWanted();
+    fetchData();
   }, []);
 
   const filteredList = wantedList.filter(person => 
@@ -294,6 +307,20 @@ const WantedList = () => {
                       {selectedPerson.crime || selectedPerson.reason}
                     </p>
                   </div>
+
+                  {selectedPerson.linkedBo && (
+                    <div className="bg-federal-500/10 p-4 rounded-xl border border-federal-500/20">
+                      <span className="text-xs text-slate-500 uppercase font-bold block mb-1">
+                        BO Responsável
+                      </span>
+                      <div className="text-white font-medium">
+                        {selectedPerson.linkedBo.comunicante}
+                      </div>
+                      <p className="text-slate-400 text-sm mt-1">
+                        {selectedPerson.linkedBo.descricao}
+                      </p>
+                    </div>
+                  )}
 
                   {selectedPerson.observations && (
                     <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">

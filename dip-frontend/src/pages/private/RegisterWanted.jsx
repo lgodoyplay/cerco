@@ -12,6 +12,7 @@ const RegisterWanted = () => {
   const { discordConfig } = useSettings();
   const { can } = usePermissions();
   const [reformulating, setReformulating] = useState(false);
+  const [boletins, setBoletins] = useState([]);
   
   // Protect route
   useEffect(() => {
@@ -19,6 +20,22 @@ const RegisterWanted = () => {
       navigate('/dashboard/wanted');
     }
   }, [can, navigate]);
+
+  // Fetch boletins for dropdown
+  useEffect(() => {
+    const fetchBoletins = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('boletins')
+          .select('id, comunicante, descricao')
+          .order('created_at', { ascending: false });
+        if (!error && data) setBoletins(data);
+      } catch (err) {
+        console.error('Erro ao buscar boletins:', err);
+      }
+    };
+    fetchBoletins();
+  }, []);
 
   if (!can('wanted_manage')) {
     return null;
@@ -77,6 +94,7 @@ const RegisterWanted = () => {
     reward: '',
     officer: '',
     observations: '',
+    boId: null,
   });
 
   const [images, setImages] = useState({
@@ -160,7 +178,8 @@ const RegisterWanted = () => {
           status: 'Procurado',
           foto_principal: publicUrl,
           created_by: user?.id,
-          recompensa: formData.reward
+          recompensa: formData.reward,
+          bo_id: formData.boId
         }]);
 
       if (insertError) throw insertError;
@@ -403,6 +422,26 @@ const RegisterWanted = () => {
                 />
               </div>
 
+              {/* BO Relacionado */}
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
+                  Boletim de Ocorrência (BO) Responsável
+                  <span className="text-slate-500 ml-1">(Opcional)</span>
+                </label>
+                <select
+                  value={formData.boId || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, boId: e.target.value || null }))}
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                >
+                  <option value="">Nenhum BO Selecionado</option>
+                  {boletins.map(bo => (
+                    <option key={bo.id} value={bo.id}>
+                      {bo.comunicante} - {bo.descricao?.substring(0, 50)}{bo.descricao?.length > 50 ? '...' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* Descrição */}
               <div className="md:col-span-2">
                 <div className="flex justify-between items-center mb-2">
@@ -433,7 +472,15 @@ const RegisterWanted = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setFormData({ name: '', document: '', reason: '', dangerLevel: 'Baixa', officer: '', observations: '' });
+                  setFormData({
+                    name: '',
+                    document: '',
+                    reason: '',
+                    dangerLevel: 'Baixa',
+                    officer: '',
+                    observations: '',
+                    boId: null
+                  });
                   setImages({ proof1: null, proof2: null, proof3: null, proof4: null });
                 }}
                 className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition-colors flex items-center gap-2"
