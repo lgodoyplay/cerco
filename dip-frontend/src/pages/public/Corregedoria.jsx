@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Send, FileText, Upload, CheckCircle, AlertCircle, X } from 'lucide-react';
+import { Shield, Send, FileText, Upload, CheckCircle, AlertCircle, X, Link as LinkIcon, Plus } from 'lucide-react';
 import { clsx } from 'clsx';
 import { supabase } from '../../lib/supabase';
 
@@ -8,33 +8,47 @@ const Corregedoria = () => {
     nome: '',
     detalhes: '',
   });
-  const [files, setFiles] = useState([]);
+  const [items, setItems] = useState([]); // Array of { type: 'file' | 'link', ... }
+  const [linkInput, setLinkInput] = useState('');
   const [status, setStatus] = useState('idle');
   const [notification, setNotification] = useState(null);
 
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
-    const newFiles = selectedFiles.map(file => ({
+    const newItems = selectedFiles.map(file => ({
       id: Date.now() + Math.random(),
+      type: 'file',
       file,
       preview: URL.createObjectURL(file),
     }));
-    setFiles(prev => [...prev, ...newFiles]);
+    setItems(prev => [...prev, ...newItems]);
   };
 
-  const removeFile = (id) => {
-    setFiles(prev => {
-      const fileToRemove = prev.find(f => f.id === id);
-      if (fileToRemove?.preview) {
-        URL.revokeObjectURL(fileToRemove.preview);
+  const addLink = () => {
+    if (!linkInput.trim()) return;
+    const newItem = {
+      id: Date.now() + Math.random(),
+      type: 'link',
+      url: linkInput.trim(),
+    };
+    setItems(prev => [...prev, newItem]);
+    setLinkInput('');
+  };
+
+  const removeItem = (id) => {
+    setItems(prev => {
+      const itemToRemove = prev.find(item => item.id === id);
+      if (itemToRemove?.type === 'file' && itemToRemove?.preview) {
+        URL.revokeObjectURL(itemToRemove.preview);
       }
-      return prev.filter(f => f.id !== id);
+      return prev.filter(item => item.id !== id);
     });
   };
 
   const uploadFiles = async () => {
+    const fileItems = items.filter(item => item.type === 'file');
     const uploadedUrls = [];
-    for (const f of files) {
+    for (const f of fileItems) {
       const fileExt = f.file.name.split('.').pop();
       const fileName = `corregedoria/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const { error } = await supabase.storage.from('public').upload(fileName, f.file);
@@ -42,10 +56,11 @@ const Corregedoria = () => {
         console.error('Upload error:', error);
       } else {
         const { data: publicUrlData } = supabase.storage.from('public').getPublicUrl(fileName);
-        uploadedUrls.push(publicUrlData.publicUrl);
+        uploadedUrls.push({ type: 'file', url: publicUrlData.publicUrl, name: f.file.name });
       }
     }
-    return uploadedUrls;
+    const linkItems = items.filter(item => item.type === 'link').map(item => ({ type: 'link', url: item.url }));
+    return [...uploadedUrls, ...linkItems];
   };
 
   const handleSubmit = async (e) => {
@@ -53,18 +68,18 @@ const Corregedoria = () => {
     setStatus('submitting');
 
     try {
-      const fileUrls = await uploadFiles();
+      const allItems = await uploadFiles();
       const { error } = await supabase.from('corregedoria').insert([{
         nome: formData.nome,
         detalhes: formData.detalhes,
-        arquivos: fileUrls,
+        arquivos: allItems,
       }]);
       if (error) throw error;
 
       setStatus('success');
       setNotification({ type: 'success', message: 'Denúncia enviada com sucesso!' });
       setFormData({ nome: '', detalhes: '' });
-      setFiles([]);
+      setItems([]);
       setTimeout(() => setStatus('idle'), 3000);
     } catch (err) {
       console.error('Error submitting:', err);
@@ -136,42 +151,84 @@ const Corregedoria = () => {
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
-                Provas (Imagens, Vídeos, Documentos - Múltiplos arquivos permitidos)
-              </label>
-              <label className="flex items-center justify-center gap-3 px-6 py-8 border-2 border-dashed border-slate-700 rounded-2xl cursor-pointer hover:border-red-600 transition-colors">
-                <Upload size={28} className="text-slate-500" />
-                <div className="text-center">
-                  <p className="text-slate-300 font-medium">Clique para selecionar arquivos</p>
-                  <p className="text-xs text-slate-500">Arraste e solte arquivos aqui</p>
-                </div>
-                <input type="file" multiple className="hidden" onChange={handleFileChange} accept="image/*,video/*,.pdf,.doc,.docx,.txt" />
-              </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Add File */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
+                  Adicionar Arquivo
+                </label>
+                <label className="flex items-center justify-center gap-3 px-6 py-4 border-2 border-dashed border-slate-700 rounded-2xl cursor-pointer hover:border-red-600 transition-colors">
+                  <Upload size={24} className="text-slate-500" />
+                  <div className="text-center">
+                    <p className="text-slate-300 font-medium">Selecionar arquivo</p>
+                  </div>
+                  <input type="file" className="hidden" onChange={handleFileChange} accept="image/*,video/*,.pdf,.doc,.docx,.txt" />
+                </label>
+              </div>
 
-              {files.length > 0 && (
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {files.map((fileObj) => (
-                    <div key={fileObj.id} className="relative bg-slate-950 border border-slate-700 rounded-xl p-3 flex items-center gap-3">
-                      {fileObj.file.type.startsWith('image/') ? (
-                        <img src={fileObj.preview} alt={fileObj.file.name} className="w-12 h-12 rounded-lg object-cover" />
+              {/* Add Link */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
+                  Adicionar Link
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={linkInput}
+                    onChange={(e) => setLinkInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLink())}
+                    className="flex-1 px-4 py-4 bg-slate-950 border border-slate-700 rounded-2xl text-white placeholder-slate-600 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all"
+                    placeholder="https://exemplo.com"
+                  />
+                  <button
+                    type="button"
+                    onClick={addLink}
+                    disabled={!linkInput.trim()}
+                    className="px-4 py-4 bg-red-700 hover:bg-red-600 disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-bold rounded-2xl transition-colors"
+                  >
+                    <Plus size={20} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Items List */}
+            {items.length > 0 && (
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {items.map((item) => (
+                  <div key={item.id} className="relative bg-slate-950 border border-slate-700 rounded-xl p-3 flex items-center gap-3">
+                    {item.type === 'file' ? (
+                      item.file.type.startsWith('image/') ? (
+                        <img src={item.preview} alt={item.file.name} className="w-12 h-12 rounded-lg object-cover" />
                       ) : (
                         <div className="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center">
                           <FileText size={20} className="text-slate-400" />
                         </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white truncate">{fileObj.file.name}</p>
-                        <p className="text-xs text-slate-500">{(fileObj.file.size / 1024 / 1024).toFixed(2)} MB</p>
+                      )
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center">
+                        <LinkIcon size={20} className="text-blue-400" />
                       </div>
-                      <button type="button" onClick={() => removeFile(fileObj.id)} className="p-1 hover:bg-slate-800 rounded">
-                        <X size={18} className="text-slate-400" />
-                      </button>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      {item.type === 'file' ? (
+                        <>
+                          <p className="text-sm text-white truncate">{item.file.name}</p>
+                          <p className="text-xs text-slate-500">{(item.file.size / 1024 / 1024).toFixed(2)} MB</p>
+                        </>
+                      ) : (
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 truncate hover:underline">
+                          {item.url}
+                        </a>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    <button type="button" onClick={() => removeItem(item.id)} className="p-1 hover:bg-slate-800 rounded">
+                      <X size={18} className="text-slate-400" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <button
               type="submit"

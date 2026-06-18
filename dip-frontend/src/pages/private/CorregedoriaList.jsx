@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Eye, X, FileText, Image, Video, Calendar, User, Trash2 } from 'lucide-react';
+import { Shield, Eye, X, FileText, Image, Video, Calendar, User, Trash2, Link as LinkIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
@@ -35,10 +35,26 @@ const CorregedoriaList = () => {
     }
   };
 
-  const renderFileIcon = (url) => {
+  const renderItemIcon = (item) => {
+    if (item.type === 'link') return <LinkIcon size={18} className="text-blue-400" />;
+    const url = item.url || item;
     if (/\.(jpg|jpeg|png|gif|webp)$/i.test(url)) return <Image size={18} className="text-blue-400" />;
     if (/\.(mp4|webm|mov)$/i.test(url)) return <Video size={18} className="text-purple-400" />;
     return <FileText size={18} className="text-yellow-400" />;
+  };
+
+  const getItemUrl = (item) => {
+    return typeof item === 'string' ? item : item.url;
+  };
+
+  const getItemName = (item) => {
+    if (typeof item === 'string') {
+      return decodeURIComponent(item.split('/').pop().split('?')[0]);
+    }
+    if (item.type === 'link') {
+      return item.url;
+    }
+    return item.name || decodeURIComponent(item.url.split('/').pop().split('?')[0]);
   };
 
   if (loading) {
@@ -84,7 +100,7 @@ const CorregedoriaList = () => {
                   {denuncia.arquivos?.length > 0 && (
                     <span className="flex items-center gap-1">
                       <FileText size={14} />
-                      {denuncia.arquivos.length} arquivo(s)
+                      {denuncia.arquivos.length} item(s)
                     </span>
                   )}
                 </div>
@@ -156,21 +172,32 @@ const CorregedoriaList = () => {
                     Arquivos e Provas
                   </span>
                   <div className="grid gap-4">
-                    {selectedDenuncia.arquivos.map((url, index) => (
+                    {selectedDenuncia.arquivos.map((item, index) => (
                       <div key={index} className="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
-                        {renderFileIcon(url)}
+                        {renderItemIcon(item)}
                         <div className="flex-1">
-                          <p className="text-sm text-slate-200 truncate">
-                            {decodeURIComponent(url.split('/').pop().split('?')[0])}
-                          </p>
+                          {typeof item === 'object' && item.type === 'link' ? (
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-400 truncate hover:underline"
+                            >
+                              {item.url}
+                            </a>
+                          ) : (
+                            <p className="text-sm text-white truncate">
+                              {getItemName(item)}
+                            </p>
+                          )}
                         </div>
                         <a
-                          href={url}
+                          href={getItemUrl(item)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white text-sm font-semibold rounded-xl transition-colors"
                         >
-                          Abrir Arquivo
+                          Abrir
                         </a>
                       </div>
                     ))}
