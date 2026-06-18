@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import AvatarUpload from '../../components/AvatarUpload';
-import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText, AlertTriangle } from 'lucide-react';
+import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText, AlertTriangle, X } from 'lucide-react';
 import clsx from 'clsx';
 
 const ProfilePage = () => {
@@ -13,6 +13,7 @@ const ProfilePage = () => {
   const [courses, setCourses] = useState([]);
   const [warnings, setWarnings] = useState([]);
   const [message, setMessage] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -329,7 +330,8 @@ const ProfilePage = () => {
                 {courses.map((item) => (
                   <div 
                     key={item.id} 
-                    className="flex items-center justify-between p-3 bg-slate-950 border border-slate-800 rounded-xl hover:border-federal-500/30 transition-colors group"
+                    onClick={() => setSelectedCourse(item)}
+                    className="flex items-center justify-between p-3 bg-slate-950 border border-slate-800 rounded-xl hover:border-federal-500/30 transition-colors group cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-federal-900/20 flex items-center justify-center border border-federal-500/20 text-federal-400 group-hover:text-federal-300 group-hover:border-federal-500/40 transition-all">
@@ -342,15 +344,10 @@ const ProfilePage = () => {
                     </div>
 
                     {item.certificado_url && (
-                      <a 
-                        href={item.certificado_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="p-2 text-slate-400 hover:text-federal-400 transition-colors bg-slate-900 rounded-lg border border-slate-800 hover:border-federal-500/30"
-                        title="Ver Certificado"
-                      >
+                      <div className="p-2 text-slate-400 hover:text-federal-400 transition-colors bg-slate-900 rounded-lg border border-slate-800 hover:border-federal-500/30"
+                           title="Ver Certificado">
                         <FileText size={18} />
-                      </a>
+                      </div>
                     )}
                   </div>
                 ))}
@@ -359,6 +356,49 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Course Details Modal */}
+      {selectedCourse && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setSelectedCourse(null)}>
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
+              <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                <BookOpen size={24} className="text-federal-500" />
+                {selectedCourse.cursos?.nome}
+              </h3>
+              <button onClick={() => setSelectedCourse(null)} className="p-2 hover:bg-slate-800 rounded-xl transition-colors">
+                <X size={24} className="text-slate-400" />
+              </button>
+            </div>
+
+            <div className="p-8 space-y-8">
+              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-3">
+                  Descrição do Curso
+                </span>
+                <p className="text-slate-200 leading-relaxed whitespace-pre-wrap">
+                  {selectedCourse.cursos?.descricao || 'Descrição não disponível.'}
+                </p>
+              </div>
+
+              {selectedCourse.certificado_url && (
+                <div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-4">
+                    Certificado
+                  </span>
+                  <div className="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+                    <img 
+                      src={selectedCourse.certificado_url} 
+                      alt="Certificado do Curso" 
+                      className="w-full h-auto"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
