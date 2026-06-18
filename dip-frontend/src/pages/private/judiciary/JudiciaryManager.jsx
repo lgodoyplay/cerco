@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import { useSettings } from '../../../hooks/useSettings';
 import { useAuth } from '../../../context/AuthContext';
@@ -254,7 +254,10 @@ const JudiciaryManager = () => {
   const [petitions, setPetitions] = useState([]);
   const [hearings, setHearings] = useState([]);
   const [releases, setReleases] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [warrantFormLoading, setWarrantFormLoading] = useState(false);
+  const [hearingFormLoading, setHearingFormLoading] = useState(false);
+  const [releaseFormLoading, setReleaseFormLoading] = useState(false);
   
   // Warrant Logic States
   const [isWarrantModalOpen, setIsWarrantModalOpen] = useState(false);
@@ -299,7 +302,7 @@ const JudiciaryManager = () => {
   }, [activeTab]);
 
   const fetchData = async () => {
-    setLoading(true);
+    setDataLoading(true);
     try {
       if (activeTab === 'warrants') {
         const { data, error } = await supabase
@@ -336,7 +339,7 @@ const JudiciaryManager = () => {
     } catch (err) {
       console.error('Error fetching data:', err);
     } finally {
-      setLoading(false);
+      setDataLoading(false);
     }
   };
 
@@ -356,7 +359,7 @@ const JudiciaryManager = () => {
 
   const handleCreateHearing = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setHearingFormLoading(true);
     try {
       const { error } = await supabase.from('hearings').insert([{
         ...hearingForm,
@@ -373,13 +376,13 @@ const JudiciaryManager = () => {
       console.error('Error creating hearing:', err);
       alert('Erro ao agendar audiência.');
     } finally {
-      setLoading(false);
+      setHearingFormLoading(false);
     }
   };
 
   const handleCreateRelease = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setReleaseFormLoading(true);
     try {
       const { error } = await supabase.from('release_orders').insert([{
         ...releaseForm,
@@ -396,7 +399,7 @@ const JudiciaryManager = () => {
       console.error('Error issuing release:', err);
       alert('Erro ao emitir alvará.');
     } finally {
-      setLoading(false);
+      setReleaseFormLoading(false);
     }
   };
 
@@ -456,7 +459,7 @@ const JudiciaryManager = () => {
 
   const handleCreateWarrant = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setWarrantFormLoading(true);
     try {
       let attachmentUrl = null;
 
@@ -512,7 +515,7 @@ const JudiciaryManager = () => {
       console.error("Erro ao criar mandado:", err);
       alert("Erro ao criar mandado: " + err.message);
     } finally {
-      setLoading(false);
+      setWarrantFormLoading(false);
     }
   };
 
@@ -701,10 +704,10 @@ const JudiciaryManager = () => {
                         </button>
                         <button 
                             type="submit"
-                            disabled={loading}
+                            disabled={warrantFormLoading}
                             className="px-6 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg shadow-lg shadow-red-900/20 transition-all flex items-center gap-2"
                         >
-                            {loading ? 'Processando...' : <><Gavel size={18} /> Expedir Mandado</>}
+                            {warrantFormLoading ? 'Processando...' : <><Gavel size={18} /> Expedir Mandado</>}
                         </button>
                     </div>
                 </form>
@@ -810,10 +813,10 @@ const JudiciaryManager = () => {
                         </button>
                         <button 
                             type="submit"
-                            disabled={loading}
+                            disabled={hearingFormLoading}
                             className="px-6 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg shadow-lg shadow-federal-900/20 transition-all flex items-center gap-2"
                         >
-                            {loading ? 'Agendando...' : <><Calendar size={18} /> Agendar</>}
+                            {hearingFormLoading ? 'Agendando...' : <><Calendar size={18} /> Agendar</>}
                         </button>
                     </div>
                 </form>
@@ -894,10 +897,10 @@ const JudiciaryManager = () => {
                         </button>
                         <button 
                             type="submit"
-                            disabled={loading}
+                            disabled={releaseFormLoading}
                             className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg shadow-green-900/20 transition-all flex items-center gap-2"
                         >
-                            {loading ? 'Emitindo...' : <><FileSignature size={18} /> Emitir Alvará</>}
+                            {releaseFormLoading ? 'Emitindo...' : <><FileSignature size={18} /> Emitir Alvará</>}
                         </button>
                     </div>
                 </form>
@@ -927,15 +930,15 @@ const JudiciaryManager = () => {
           >
             Audiências
           </button>
-          <button
-            onClick={() => setActiveTab('releases')}
+          <Link
+            to="/dashboard/alvaras"
             className={clsx(
-                "flex-1 py-2 px-2 text-xs font-bold rounded-md transition-colors whitespace-nowrap",
+                "flex-1 py-2 px-2 text-xs font-bold rounded-md transition-colors whitespace-nowrap text-center",
                 activeTab === 'releases' ? "bg-federal-600 text-white shadow-lg" : "text-slate-400 hover:text-white"
             )}
           >
             Alvarás
-          </button>
+          </Link>
           <button
             onClick={() => setActiveTab('petitions')}
             className={clsx(
@@ -979,18 +982,18 @@ const JudiciaryManager = () => {
             )}
 
             {activeTab === 'releases' && canManage && (
-                <button 
-                    onClick={() => setIsReleaseModalOpen(true)}
+                <Link 
+                    to="/dashboard/alvaras/new"
                     className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 border-dashed rounded-xl text-slate-300 hover:text-white font-bold flex items-center justify-center gap-2 transition-all"
                 >
                     <FileSignature size={18} /> Emitir Alvará
-                </button>
+                </Link>
             )}
         </div>
 
         {/* List */}
         <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-          {loading ? (
+          {dataLoading ? (
             <div className="text-center py-10 text-slate-500 text-sm">Carregando...</div>
           ) : activeTab === 'warrants' ? (
             warrants.length === 0 ? (
