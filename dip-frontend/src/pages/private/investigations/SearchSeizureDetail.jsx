@@ -34,22 +34,26 @@ const SearchSeizureDetail = () => {
   }, [id, getInvestigation, navigate]);
 
   const handleEditCasa = (index, campo, valor) => {
+    // If we get 3 args (id, dataUrl, file) from ImageUploadArea, ignore the first and third
+    const actualValor = arguments.length === 3 ? arguments[1] : valor;
     setEditData(prev => {
       const newCasas = [...prev.casas];
-      newCasas[index] = { ...newCasas[index], [campo]: valor };
+      newCasas[index] = { ...newCasas[index], [campo]: actualValor };
       return { ...prev, casas: newCasas };
     });
   };
 
   const handleEditCarro = (index, campo, valor) => {
+    // If we get 3 args (id, dataUrl, file) from ImageUploadArea, ignore the first and third
+    const actualValor = arguments.length === 3 ? arguments[1] : valor;
     setEditData(prev => {
       const newCarros = [...prev.carros];
       const newNomesCarros = [...(prev.nomesCarros || [])];
       if (campo === 'nome') {
-        newNomesCarros[index] = valor;
+        newNomesCarros[index] = actualValor;
         return { ...prev, nomesCarros: newNomesCarros };
       } else {
-        newCarros[index] = { ...newCarros[index], [campo]: valor };
+        newCarros[index] = { ...newCarros[index], [campo]: actualValor };
         return { ...prev, carros: newCarros };
       }
     });
@@ -211,7 +215,7 @@ const SearchSeizureDetail = () => {
                   id="foto-rosto"
                   label="Foto do Rosto"
                   image={data.fotoRosto}
-                  onUpload={(url) => setEditData(prev => ({ ...prev, fotoRosto: url }))}
+                  onUpload={(id, url) => setEditData(prev => ({ ...prev, fotoRosto: url }))}
                   onRemove={() => setEditData(prev => ({ ...prev, fotoRosto: null }))}
                   aspect={1}
                 />
@@ -316,7 +320,7 @@ const SearchSeizureDetail = () => {
                           id={`casa-${index}-tranca`}
                           label="Foto da Tranca"
                           image={casa.fotoTranca}
-                          onUpload={(url) => handleEditCasa(index, 'fotoTranca', url)}
+                          onUpload={(id, url) => handleEditCasa(index, 'fotoTranca', url)}
                           onRemove={() => handleEditCasa(index, 'fotoTranca', null)}
                         />
                       ) : casa.fotoTranca ? (
@@ -334,7 +338,7 @@ const SearchSeizureDetail = () => {
                           id={`casa-${index}-interior`}
                           label="Foto do Interior"
                           image={casa.fotoInterior}
-                          onUpload={(url) => handleEditCasa(index, 'fotoInterior', url)}
+                          onUpload={(id, url) => handleEditCasa(index, 'fotoInterior', url)}
                           onRemove={() => handleEditCasa(index, 'fotoInterior', null)}
                         />
                       ) : casa.fotoInterior ? (
@@ -395,7 +399,7 @@ const SearchSeizureDetail = () => {
                         id={`carro-${index}-porta-malas`}
                         label="Foto do Porta-Malas"
                         image={carro.fotoPortaMala}
-                        onUpload={(url) => handleEditCarro(index, 'fotoPortaMala', url)}
+                        onUpload={(id, url) => handleEditCarro(index, 'fotoPortaMala', url)}
                         onRemove={() => handleEditCarro(index, 'fotoPortaMala', null)}
                       />
                     ) : carro.fotoPortaMala ? (

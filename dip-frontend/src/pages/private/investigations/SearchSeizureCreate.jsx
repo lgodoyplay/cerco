@@ -98,27 +98,31 @@ const SearchSeizureCreate = () => {
   };
 
   const handleCasaChange = (index, campo, valor) => {
+    // If we get 3 args (id, dataUrl, file) from ImageUploadArea, ignore the first and third
+    const actualValor = arguments.length === 3 ? arguments[1] : valor;
     setFormData(prev => {
       const newCasas = [...prev.casas];
-      newCasas[index] = { ...newCasas[index], [campo]: valor };
+      newCasas[index] = { ...newCasas[index], [campo]: actualValor };
       return { ...prev, casas: newCasas };
     });
   };
 
   const handleCarroChange = (index, campo, valor) => {
+    // If we get 3 args (id, dataUrl, file) from ImageUploadArea, ignore the first and third
+    const actualValor = arguments.length === 3 ? arguments[1] : valor;
     setFormData(prev => {
       const newCarros = [...prev.carros];
       const newNomesCarros = [...(prev.nomesCarros || [])];
       if (campo === 'nome') {
-        newNomesCarros[index] = valor;
+        newNomesCarros[index] = actualValor;
       } else {
-        newCarros[index] = { ...newCarros[index], [campo]: valor };
+        newCarros[index] = { ...newCarros[index], [campo]: actualValor };
       }
       return { ...prev, carros: newCarros, nomesCarros: newNomesCarros };
     });
   };
 
-  const handleFotoRosto = (dataUrl) => {
+  const handleFotoRosto = (id, dataUrl) => {
     setFormData(prev => ({ ...prev, fotoRosto: dataUrl }));
   };
 
