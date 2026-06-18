@@ -197,6 +197,11 @@ function App() {
                 <InvestigationCreate />
               </PermissionGuard>
             } />
+            <Route path="investigations/:id/edit" element={
+              <PermissionGuard permission="investigations_manage">
+                <InvestigationCreate />
+              </PermissionGuard>
+            } />
             <Route path="investigations/:id" element={
               <PermissionGuard permission="investigations_view">
                 <InvestigationDetail />
@@ -249,6 +254,11 @@ function App() {
               </PermissionGuard>
             } />
             <Route path="revenue/investigations/new" element={
+              <PermissionGuard permission="revenue_manage">
+                <InvestigationCreate />
+              </PermissionGuard>
+            } />
+            <Route path="revenue/investigations/:id/edit" element={
               <PermissionGuard permission="revenue_manage">
                 <InvestigationCreate />
               </PermissionGuard>

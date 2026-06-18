@@ -1,23 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Gavel, Plus, Trash2, Edit2, Save, X } from 'lucide-react';
+import { useSettings } from '../../../hooks/useSettings';
 
 const CrimesSettings = () => {
-  const [crimes, setCrimes] = useState(() => {
-    const saved = localStorage.getItem('dip_settings_crimes');
-    return saved ? JSON.parse(saved) : [
-      { id: 1, name: 'Homicídio Doloso', article: '121', penalty: '6 a 20 anos' },
-      { id: 2, name: 'Roubo', article: '157', penalty: '4 a 10 anos' },
-      { id: 3, name: 'Tráfico de Drogas', article: '33', penalty: '5 a 15 anos' },
-    ];
-  });
+  const { crimes, updateCrimes } = useSettings();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ name: '', article: '', penalty: '' });
-
-  useEffect(() => {
-    localStorage.setItem('dip_settings_crimes', JSON.stringify(crimes));
-  }, [crimes]);
 
   const handleOpenModal = (crime = null) => {
     if (crime) {
@@ -33,16 +23,16 @@ const CrimesSettings = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (editingId) {
-      setCrimes(crimes.map(c => c.id === editingId ? { ...c, ...formData } : c));
+      updateCrimes(crimes.map(c => c.id === editingId ? { ...c, ...formData } : c));
     } else {
-      setCrimes([...crimes, { id: Date.now(), ...formData }]);
+      updateCrimes([...crimes, { id: Date.now(), ...formData }]);
     }
     setIsModalOpen(false);
   };
 
   const handleDelete = (id) => {
     if (window.confirm('Remover este tipo de crime?')) {
-      setCrimes(crimes.filter(c => c.id !== id));
+      updateCrimes(crimes.filter(c => c.id !== id));
     }
   };
 

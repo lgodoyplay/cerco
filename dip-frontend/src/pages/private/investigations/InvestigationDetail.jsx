@@ -19,9 +19,12 @@ import {
   FileText,
   CheckCircle,
   X,
-  ExternalLink
+  ExternalLink,
+  Edit3,
+  Trash2
 } from 'lucide-react';
 import clsx from 'clsx';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 const InvestigationDetail = () => {
   const { id } = useParams();
@@ -29,7 +32,8 @@ const InvestigationDetail = () => {
   const location = useLocation(); // Add useLocation
   const { user } = useAuth();
   const { templates } = useSettings();
-  const { getInvestigation, addProof, closeInvestigation, deleteProof, editProof } = useInvestigations();
+  const { getInvestigation, addProof, closeInvestigation, deleteProof, editProof, editInvestigation, deleteInvestigation } = useInvestigations();
+  const { can } = usePermissions();
   
   const [investigation, setInvestigation] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -116,6 +120,23 @@ const InvestigationDetail = () => {
     }
   };
 
+  const handleEditInvestigation = () => {
+    navigate(isRevenueRoute ? `/dashboard/revenue/investigations/${id}/edit` : `/dashboard/investigations/${id}/edit`);
+  };
+
+  const handleDeleteInvestigation = async () => {
+    if (window.confirm('Tem certeza que deseja deletar esta investigação? Esta ação não pode ser desfeita.')) {
+      try {
+        await deleteInvestigation(id);
+        navigate(isRevenueRoute ? '/dashboard/revenue' : '/dashboard/investigations');
+      } catch (error) {
+        console.error('Erro ao deletar investigação:', error);
+      }
+    }
+  };
+
+  const canManage = can('investigations_manage');
+
   return (
     <div className="max-w-7xl mx-auto pb-20">
       
@@ -151,6 +172,24 @@ const InvestigationDetail = () => {
           </div>
 
           <div className="flex gap-3">
+            {canManage && (
+              <>
+                <button
+                  onClick={handleEditInvestigation}
+                  className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg transition-all"
+                >
+                  <Edit3 size={20} />
+                  Editar
+                </button>
+                <button
+                  onClick={handleDeleteInvestigation}
+                  className="bg-red-800 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg transition-all"
+                >
+                  <Trash2 size={20} />
+                  Deletar
+                </button>
+              </>
+            )}
             {isClosed ? (
               <button
                 onClick={handleDownloadPDF}

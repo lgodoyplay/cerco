@@ -42,6 +42,12 @@ const DEFAULT_DISCORD_CONFIG = {
   forensicsWebhook: ''
 };
 
+const DEFAULT_CRIMES = [
+  { id: 1, name: 'Homicídio Doloso', article: '121', penalty: '6 a 20 anos' },
+  { id: 2, name: 'Roubo', article: '157', penalty: '4 a 10 anos' },
+  { id: 3, name: 'Tráfico de Drogas', article: '33', penalty: '5 a 15 anos' },
+];
+
 export const SettingsProvider = ({ children }) => {
   // Users State (from API)
   const [users, setUsers] = useState([]);
@@ -63,6 +69,12 @@ export const SettingsProvider = ({ children }) => {
 
   // Discord Config State (Supabase)
   const [discordConfig, setDiscordConfig] = useState(DEFAULT_DISCORD_CONFIG);
+
+  // Crimes State (localStorage)
+  const [crimes, setCrimes] = useState(() => {
+    const saved = localStorage.getItem('dip_settings_crimes');
+    return saved ? JSON.parse(saved) : DEFAULT_CRIMES;
+  });
 
   // System Logs (Supabase)
   const [logs, setLogs] = useState([]);
@@ -162,7 +174,16 @@ export const SettingsProvider = ({ children }) => {
     fetchSettings();
   }, [fetchUsers, fetchLogs, fetchSettings]);
 
+  // Save crimes to localStorage
+  useEffect(() => {
+    localStorage.setItem('dip_settings_crimes', JSON.stringify(crimes));
+  }, [crimes]);
+
   // --- Actions ---
+
+  const updateCrimes = (newCrimes) => {
+    setCrimes(newCrimes);
+  };
 
   const logAction = async (action) => {
     try {
@@ -300,6 +321,8 @@ export const SettingsProvider = ({ children }) => {
     appearance,
     security,
     discordConfig,
+    crimes,
+    updateCrimes,
     logs,
     addUser,
     updateUser,

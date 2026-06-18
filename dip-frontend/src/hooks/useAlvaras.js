@@ -29,10 +29,19 @@ export const useAlvaras = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setAlvaras(data.map(mapAlvara));
+      if (error) {
+        // If table doesn't exist, just set empty array
+        if (error.code === 'PGRST204' || error.code === '42P01') {
+          setAlvaras([]);
+        } else {
+          throw error;
+        }
+      } else {
+        setAlvaras(data.map(mapAlvara));
+      }
     } catch (error) {
       console.error('Erro ao buscar alvarás:', error);
+      setAlvaras([]);
     } finally {
       setLoading(false);
     }

@@ -16,7 +16,14 @@ export const useLaudos = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // If table doesn't exist, just set empty array
+        if (error.code === 'PGRST204' || error.code === '42P01') {
+          setLaudos([]);
+          return;
+        }
+        throw error;
+      }
 
       // Fetch profiles manually like in useInvestigations
       const userIds = [...new Set(data.map(item => item.created_by).filter(Boolean))];
@@ -44,6 +51,7 @@ export const useLaudos = () => {
       setLaudos(laudosWithProfiles);
     } catch (error) {
       console.error('Erro ao buscar laudos:', error);
+      setLaudos([]);
     } finally {
       setLoading(false);
     }

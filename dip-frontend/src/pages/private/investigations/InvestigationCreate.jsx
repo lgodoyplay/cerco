@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useInvestigations } from '../../../hooks/useInvestigations';
-import { Save, ArrowLeft, FolderPlus, AlertCircle, DollarSign } from 'lucide-react';
+import { Save, ArrowLeft, FolderPlus, AlertCircle, DollarSign, Edit3 } from 'lucide-react';
 import clsx from 'clsx';
 
 const InvestigationCreate = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { id } = useParams();
   const categoryParam = searchParams.get('category');
   
-  const { addInvestigation } = useInvestigations();
+  const { addInvestigation, getInvestigation, editInvestigation } = useInvestigations();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -17,12 +18,33 @@ const InvestigationCreate = () => {
     priority: 'Média',
     category: categoryParam || 'criminal'
   });
+  const [loading, setLoading] = useState(!!id);
 
   useEffect(() => {
-    if (categoryParam) {
-      setFormData(prev => ({ ...prev, category: categoryParam }));
+    if (id) {
+      const fetchData = async () => {
+        const inv = await getInvestigation(id);
+        if (inv) {
+          setFormData({
+            title: inv.title,
+            description: inv.description,
+            involved: inv.involved,
+            priority: inv.priority,
+            category: inv.category
+          });
+        } else {
+          navigate('/dashboard/investigations');
+        }
+        setLoading(false);
+      };
+      fetchData();
+    } else {
+      if (categoryParam) {
+        setFormData(prev => ({ ...prev, category: categoryParam }));
+      }
+      setLoading(false);
     }
-  }, [categoryParam]);
+  }, [id, categoryParam, getInvestigation, navigate]);
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -33,21 +55,33 @@ const InvestigationCreate = () => {
     if (!formData.title || !formData.description) return;
     
     try {
-      const id = await addInvestigation(formData);
+      if (id) {
+        await editInvestigation(id, formData);
+      } else {
+        await addInvestigation(formData);
+      }
       
       if (formData.category === 'financial') {
-        navigate(`/dashboard/revenue/investigations/${id}`);
+        navigate(id ? `/dashboard/revenue/investigations/${id}` : '/dashboard/revenue');
       } else {
-        navigate(`/dashboard/investigations/${id}`);
+        navigate(id ? `/dashboard/investigations/${id}` : '/dashboard/investigations');
       }
     } catch (error) {
-      console.error('Erro ao criar investigação:', error);
+      console.error('Erro ao salvar investigação:', error);
       // Optional: Add notification handling here
     }
   };
 
   const isFinancial = formData.category === 'financial';
   const backLink = isFinancial ? '/dashboard/revenue' : '/dashboard/investigations';
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto pb-10 flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-federal-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto pb-10">
@@ -61,13 +95,15 @@ const InvestigationCreate = () => {
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl">
         <div className="mb-8 border-b border-slate-800 pb-6">
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            {isFinancial ? <DollarSign className="text-emerald-500" size={28} /> : <FolderPlus className="text-federal-500" size={28} />}
-            {isFinancial ? 'Nova Investigação Financeira' : 'Nova Investigação'}
+            {isFinancial ? <DollarSign className="text-emerald-500" size={28} /> : id ? <Edit3 className="text-federal-500" size={28} /> : <FolderPlus className="text-federal-500" size={28} />}
+            {id ? 'Editar Investigação' : isFinancial ? 'Nova Investigação Financeira' : 'Nova Investigação'}
           </h2>
           <p className="text-slate-400 mt-2">
-            {isFinancial 
-              ? 'Abra um novo inquérito para apurar crimes financeiros.' 
-              : 'Preencha os dados iniciais para abrir um novo inquérito.'}
+            {id 
+              ? 'Atualize os dados da investigação.' 
+              : isFinancial 
+                ? 'Abra um novo inquérito para apurar crimes financeiros.' 
+                : 'Preencha os dados iniciais para abrir um novo inquérito.'}
           </p>
         </div>
 
@@ -136,7 +172,7 @@ const InvestigationCreate = () => {
               className="bg-federal-600 hover:bg-federal-500 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-federal-900/50 transition-all hover:-translate-y-0.5"
             >
               <Save size={20} />
-              Criar Investigação
+              {id ? 'Salvar Alterações' : 'Criar Investigação'}
             </button>
           </div>
         </form>

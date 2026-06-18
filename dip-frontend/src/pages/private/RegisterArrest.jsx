@@ -10,7 +10,7 @@ import { usePermissions } from '../../hooks/usePermissions';
 const RegisterArrest = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { discordConfig } = useSettings();
+  const { discordConfig, crimes } = useSettings();
   const { can } = usePermissions();
   const prefillData = location.state?.wantedPerson;
 
@@ -36,9 +36,32 @@ const RegisterArrest = () => {
     passport: prefillData?.document || '',
     reason: prefillData?.reason || '',
     articles: '',
+    selectedArticles: [],
     officer: '',
     description: prefillData ? `Prisão realizada a partir de mandado de busca. Motivo original: ${prefillData.reason}` : '',
   });
+
+  const handleArticleChange = (articleId) => {
+    setFormData(prev => {
+      const isSelected = prev.selectedArticles.includes(articleId);
+      const newSelectedArticles = isSelected
+        ? prev.selectedArticles.filter(id => id !== articleId)
+        : [...prev.selectedArticles, articleId];
+      
+      // Generate articles string like "Art. 121, Art. 157"
+      const articlesString = newSelectedArticles
+        .map(id => crimes.find(c => c.id === id))
+        .filter(Boolean)
+        .map(crime => `Art. ${crime.article}`)
+        .join(', ');
+
+      return {
+        ...prev,
+        selectedArticles: newSelectedArticles,
+        articles: articlesString
+      };
+    });
+  };
 
   const [images, setImages] = useState({
     face: null,
@@ -332,17 +355,29 @@ const RegisterArrest = () => {
               {/* Artigos */}
               <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Artigos Aplicados</label>
-                <div className="relative">
-                  <FileText className="absolute left-4 top-3.5 text-slate-600" size={20} />
-                  <input
-                    type="text"
-                    name="articles"
-                    value={formData.articles}
-                    onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
-                    placeholder="Art. 157, Art. 121, Art. 33..."
-                    required
-                  />
+                <div className="bg-slate-950 border border-slate-700 rounded-xl p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {crimes.map(crime => (
+                      <label key={crime.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-900 transition-colors cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.selectedArticles.includes(crime.id)}
+                          onChange={() => handleArticleChange(crime.id)}
+                          className="w-5 h-5 text-federal-600 rounded border-slate-600 focus:ring-federal-500"
+                        />
+                        <div>
+                          <div className="text-slate-100 font-medium">Art. {crime.article}</div>
+                          <div className="text-xs text-slate-500">{crime.name}</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                  {formData.articles && (
+                    <div className="mt-3 pt-3 border-t border-slate-800">
+                      <div className="text-xs text-slate-500 mb-1">Selecionados:</div>
+                      <div className="text-sm text-federal-400 font-mono">{formData.articles}</div>
+                    </div>
+                  )}
                 </div>
               </div>
 

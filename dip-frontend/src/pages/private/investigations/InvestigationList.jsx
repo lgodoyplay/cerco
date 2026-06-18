@@ -1,15 +1,17 @@
+
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useInvestigations } from '../../../hooks/useInvestigations';
 import { usePermissions } from '../../../hooks/usePermissions';
-import { Search, Plus, FileText, Clock, CheckCircle, AlertTriangle, FolderOpen, Archive } from 'lucide-react';
+import { Search, Plus, FileText, Clock, CheckCircle, AlertTriangle, FolderOpen, Archive, Edit3, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 
 const InvestigationList = ({ category = 'criminal', title }) => {
-  const { investigations } = useInvestigations();
+  const { investigations, deleteInvestigation } = useInvestigations();
   const { can } = usePermissions();
   const [filter, setFilter] = useState('active'); // 'active' | 'closed'
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
 
   const canManage = can('investigations_manage');
 
@@ -98,31 +100,62 @@ const InvestigationList = ({ category = 'criminal', title }) => {
           </div>
         ) : (
           filteredInvestigations.map(inv => (
-            <Link 
+            <div 
               key={inv.id} 
-              to={`/dashboard/investigations/${inv.id}`}
-              className="group bg-slate-900 border border-slate-800 hover:border-federal-500/50 rounded-2xl p-6 transition-all hover:shadow-xl hover:shadow-federal-900/10 hover:-translate-y-1"
+              className="bg-slate-900 border border-slate-800 hover:border-federal-500/50 rounded-2xl p-6 transition-all hover:shadow-xl hover:shadow-federal-900/10"
             >
               <div className="flex justify-between items-start mb-4">
-                <span className={clsx("px-2.5 py-1 rounded text-xs font-bold border", getPriorityColor(inv.priority))}>
+                <span className={clsx("px-2.5 py-1 rounded text-xs font-bold border", getPriorityColor(inv.priority)}>
                   {inv.priority}
                 </span>
-                <span className="text-slate-500 text-xs font-mono">{new Date(inv.createdAt).toLocaleDateString('pt-BR')}</span>
+                <div className="flex gap-2">
+                  {canManage && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(category === 'financial' ? `/dashboard/revenue/investigations/${inv.id}/edit` : `/dashboard/investigations/${inv.id}/edit`);
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-federal-400 hover:bg-slate-800 rounded-lg transition-colors"
+                      >
+                        <Edit3 size={16} />
+                      </button>
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (window.confirm('Tem certeza que deseja deletar esta investigação?')) {
+                            await deleteInvestigation(inv.id);
+                          }
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
               
-              <h3 className="text-xl font-bold text-white mb-2 group-hover:text-federal-400 transition-colors line-clamp-1">{inv.title}</h3>
-              <p className="text-slate-400 text-sm line-clamp-2 mb-6 h-10">{inv.description}</p>
+              <Link 
+                to={category === 'financial' ? `/dashboard/revenue/investigations/${inv.id}` : `/dashboard/investigations/${inv.id}`}
+              >
+                <h3 className="text-xl font-bold text-white mb-2 hover:text-federal-400 transition-colors line-clamp-1">{inv.title}</h3>
+                <p className="text-slate-400 text-sm line-clamp-2 mb-6 h-10">{inv.description}</p>
+              </Link>
               
               <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                 <div className="flex items-center gap-2 text-slate-500 text-xs">
                   <FileText size={14} />
                   <span>{inv.proofs?.length || 0} Provas</span>
                 </div>
-                <div className="flex items-center gap-1 text-federal-400 text-xs font-bold uppercase tracking-wider">
-                  Abrir <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </div>
+                <Link 
+                  to={category === 'financial' ? `/dashboard/revenue/investigations/${inv.id}` : `/dashboard/investigations/${inv.id}`}
+                  className="flex items-center gap-1 text-federal-400 text-xs font-bold uppercase tracking-wider hover:underline"
+                >
+                  Abrir <span>→</span>
+                </Link>
               </div>
-            </Link>
+            </div>
           ))
         )}
       </div>
@@ -131,3 +164,4 @@ const InvestigationList = ({ category = 'criminal', title }) => {
 };
 
 export default InvestigationList;
+

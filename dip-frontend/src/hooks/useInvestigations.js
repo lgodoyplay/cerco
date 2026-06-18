@@ -290,6 +290,76 @@ export const useInvestigations = () => {
     }
   }, [fetchInvestigations]);
 
+  const editInvestigation = useCallback(async (id, data) => {
+    try {
+      const payload = {
+        titulo: data.title,
+        categoria: data.category || 'criminal',
+        descricao: data.description,
+        envolvidos: data.involved,
+        prioridade: data.priority
+      };
+
+      const { error } = await supabase
+        .from('investigacoes')
+        .update(payload)
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Refresh da lista
+      fetchInvestigations();
+    } catch (error) {
+      console.error('Erro ao editar investigação:', error);
+      throw error;
+    }
+  }, [fetchInvestigations]);
+
+  const deleteInvestigation = useCallback(async (id) => {
+    try {
+      // Primeiro, buscar a investigação para obter as provas
+      const { data: investigation, error: fetchError } = await supabase
+        .from('investigacoes')
+        .select('id, provas(*)')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Deletar arquivos das provas do storage
+      if (investigation.provas && investigation.provas.length > 0) {
+        for (const proof of investigation.provas) {
+          if (proof.url && proof.url.includes('supabase.co/storage')) {
+            try {
+              // Extrair o caminho do arquivo da URL pública
+              const urlParts = proof.url.split('/provas/');
+              if (urlParts.length > 1) {
+                const filePath = decodeURIComponent(urlParts[1]);
+                await supabase.storage.from('provas').remove([filePath]);
+              }
+            } catch (storageError) {
+              console.warn('Não foi possível deletar o arquivo do storage:', storageError);
+            }
+          }
+        }
+      }
+
+      // Deletar a investigação do banco de dados
+      const { error: deleteError } = await supabase
+        .from('investigacoes')
+        .delete()
+        .eq('id', id);
+
+      if (deleteError) throw deleteError;
+
+      // Refresh da lista
+      fetchInvestigations();
+    } catch (error) {
+      console.error('Erro ao deletar investigação:', error);
+      throw error;
+    }
+  }, [fetchInvestigations]);
+
   return {
     investigations,
     loading,
@@ -298,6 +368,8 @@ export const useInvestigations = () => {
     addProof,
     closeInvestigation,
     deleteProof,
-    editProof
+    editProof,
+    editInvestigation,
+    deleteInvestigation
   };
 };
