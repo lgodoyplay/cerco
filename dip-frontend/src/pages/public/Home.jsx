@@ -68,11 +68,23 @@ const Home = () => {
     fetchNews();
     fetchLiveStreams();
 
+    // Subscribe to live stream changes
+    const subscription = supabase
+      .channel('public:live_streams')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'live_streams' }, 
+        () => fetchLiveStreams()
+      )
+      .subscribe();
+
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % images.length);
     }, 4000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchLiveStreams = async () => {

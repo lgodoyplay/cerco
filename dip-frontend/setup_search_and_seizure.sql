@@ -93,6 +93,9 @@ ALTER TABLE public.live_streams ENABLE ROW LEVEL SECURITY;
 -- Políticas RLS para lives
 DROP POLICY IF EXISTS "Live streams access" ON public.live_streams;
 CREATE POLICY "Live streams access" ON public.live_streams FOR ALL TO authenticated USING (true);
+-- Allow public to read live streams
+DROP POLICY IF EXISTS "Live streams public read" ON public.live_streams;
+CREATE POLICY "Live streams public read" ON public.live_streams FOR SELECT USING (true);
 
 -- Adicionar tabela de denúncias da corregedoria
 CREATE TABLE IF NOT EXISTS public.corregedoria (
