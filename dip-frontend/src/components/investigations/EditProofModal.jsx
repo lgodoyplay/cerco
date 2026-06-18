@@ -119,15 +119,20 @@ const EditProofModal = ({ isOpen, onClose, onSave, proof }) => {
             )}
 
             {type === 'video' && (
-              <input
-                type="text"
-                name="content"
-                value={formData.content}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
-                placeholder="URL do vídeo (YouTube, Drive, etc)"
-                required
-              />
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  name="content"
+                  value={formData.content}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                  placeholder="Link do vídeo no YouTube (obrigatório)"
+                  required
+                />
+                <p className="text-xs text-slate-500">
+                  Recomendamos usar o link do YouTube para melhor visualização no inquérito
+                </p>
+              </div>
             )}
 
             {type === 'link' && (

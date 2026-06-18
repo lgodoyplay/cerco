@@ -296,13 +296,49 @@ const InvestigationDetail = () => {
                 />
               )}
               
-              {selectedProof.type === 'video' && (
-                <video 
-                  src={selectedProof.content} 
-                  controls
-                  className="w-full rounded-lg"
-                />
-              )}
+              {selectedProof.type === 'video' && (() => {
+                // Try to extract YouTube video ID
+                const youtubeMatch = selectedProof.content.match(
+                  /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+                );
+                
+                if (youtubeMatch) {
+                  const youtubeId = youtubeMatch[1];
+                  return (
+                    <div className="aspect-video w-full rounded-lg overflow-hidden">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        src={`https://www.youtube.com/embed/${youtubeId}`}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        title={selectedProof.title}
+                      />
+                    </div>
+                  );
+                }
+                
+                // Fallback for non-YouTube videos
+                return (
+                  <div className="space-y-4">
+                    <video 
+                      src={selectedProof.content} 
+                      controls
+                      className="w-full rounded-lg"
+                    />
+                    <a 
+                      href={selectedProof.content} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-400 text-sm hover:underline break-all flex items-center gap-2"
+                    >
+                      <ExternalLink size={16} />
+                      Abrir vídeo externo
+                    </a>
+                  </div>
+                );
+              })()}
               
               {selectedProof.type === 'link' && (
                 <div className="flex flex-col items-center gap-4 p-8">
