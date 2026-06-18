@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, Eraser, User, FileText, Camera, CheckCircle, AlertCircle, Shield, RefreshCw } from 'lucide-react';
+import { Save, Eraser, User, FileText, Camera, CheckCircle, AlertCircle, Shield, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import clsx from 'clsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ImageUploadArea from '../../components/ImageUploadArea';
@@ -86,6 +86,8 @@ const RegisterArrest = () => {
     officer: '',
     description: prefillData ? `Prisão realizada a partir de mandado de busca. Motivo original: ${prefillData.reason}` : '',
   });
+  
+  const [isArticlesDropdownOpen, setIsArticlesDropdownOpen] = useState(false);
 
   const handleArticleChange = (articleId) => {
     setFormData(prev => {
@@ -96,7 +98,7 @@ const RegisterArrest = () => {
       
       // Generate articles string like "Art. 121, Art. 157"
       const articlesString = newSelectedArticles
-        .map(id => crimes.find(c => c.id === id))
+        .map(id => crimes.find(c => c && c.id === id)) // Fix: ensure c exists before accessing c.id
         .filter(Boolean)
         .map(crime => `Art. ${crime.article}`)
         .join(', ');
@@ -401,30 +403,56 @@ const RegisterArrest = () => {
               {/* Artigos */}
               <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Artigos Aplicados</label>
-                <div className="bg-slate-950 border border-slate-700 rounded-xl p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {crimes.map(crime => (
-                      <label key={crime.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-900 transition-colors cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.selectedArticles.includes(crime.id)}
-                          onChange={() => handleArticleChange(crime.id)}
-                          className="w-5 h-5 text-federal-600 rounded border-slate-600 focus:ring-federal-500"
-                        />
-                        <div>
-                          <div className="text-slate-100 font-medium">Art. {crime.article}</div>
-                          <div className="text-xs text-slate-500">{crime.name}</div>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsArticlesDropdownOpen(!isArticlesDropdownOpen)}
+                    className="w-full flex items-center justify-between px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 transition-all hover:border-federal-500"
+                  >
+                    <span>
+                      {formData.selectedArticles.length > 0
+                        ? `${formData.selectedArticles.length} artigo(s) selecionado(s)`
+                        : 'Selecione os artigos aplicados'}
+                    </span>
+                    {isArticlesDropdownOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </button>
+
+                  {isArticlesDropdownOpen && (
+                    <div className="absolute z-50 w-full mt-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-h-80 overflow-y-auto">
+                      <div className="p-2 space-y-1">
+                        {crimes.filter(crime => crime && crime.id).map(crime => ( // Filter out any invalid crimes
+                          <label
+                            key={crime.id}
+                            className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.selectedArticles.includes(crime.id)}
+                              onChange={() => handleArticleChange(crime.id)}
+                              className="w-5 h-5 text-federal-600 rounded border-slate-600 focus:ring-federal-500"
+                            />
+                            <div>
+                              <div className="text-slate-100 font-medium">Art. {crime.article}</div>
+                              <div className="text-xs text-slate-500">{crime.name}</div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                      {formData.articles && (
+                        <div className="p-3 border-t border-slate-800">
+                          <div className="text-xs text-slate-500 mb-1">Selecionados:</div>
+                          <div className="text-sm text-federal-400 font-mono">{formData.articles}</div>
                         </div>
-                      </label>
-                    ))}
-                  </div>
-                  {formData.articles && (
-                    <div className="mt-3 pt-3 border-t border-slate-800">
-                      <div className="text-xs text-slate-500 mb-1">Selecionados:</div>
-                      <div className="text-sm text-federal-400 font-mono">{formData.articles}</div>
+                      )}
                     </div>
                   )}
                 </div>
+                {formData.articles && !isArticlesDropdownOpen && (
+                  <div className="mt-3 pt-3 border-t border-slate-800">
+                    <div className="text-xs text-slate-500 mb-1">Selecionados:</div>
+                    <div className="text-sm text-federal-400 font-mono">{formData.articles}</div>
+                  </div>
+                )}
               </div>
 
               {/* Descrição */}
