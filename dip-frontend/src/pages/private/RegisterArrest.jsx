@@ -85,6 +85,7 @@ const RegisterArrest = () => {
     selectedArticles: [],
     officer: '',
     description: prefillData ? `Prisão realizada a partir de mandado de busca. Motivo original: ${prefillData.reason}` : '',
+    broughtByOtherPolice: false,
   });
   
   const [isArticlesDropdownOpen, setIsArticlesDropdownOpen] = useState(false);
@@ -149,6 +150,9 @@ const RegisterArrest = () => {
   };
 
   const isFormValid = () => {
+    if (formData.broughtByOtherPolice) {
+      return formData.name && formData.passport && formData.articles && formData.officer;
+    }
     return formData.name && formData.passport && formData.articles && formData.officer && images.face;
   };
 
@@ -165,7 +169,7 @@ const RegisterArrest = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!images.face) {
+    if (!formData.broughtByOtherPolice && !images.face) {
       setNotification({ type: 'error', message: 'A foto do rosto é obrigatória.' });
       return;
     }
@@ -176,18 +180,23 @@ const RegisterArrest = () => {
       // 0. Get User
       const { data: { user } } = await supabase.auth.getUser();
 
-      // 1. Upload Image to Supabase Storage (Face is mandatory)
-      const fileBlob = dataURLtoBlob(images.face);
-      const sanitizedDoc = formData.passport.replace(/[^a-zA-Z0-9]/g, '_');
-      const fileName = `arrests/${Date.now()}_${sanitizedDoc}_face.jpg`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('prisoes')
-        .upload(fileName, fileBlob);
+      let publicUrl = null;
 
-      if (uploadError) throw uploadError;
+      // 1. Upload Image to Supabase Storage (Face is mandatory unless brought by other police)
+      if (!formData.broughtByOtherPolice && images.face) {
+        const fileBlob = dataURLtoBlob(images.face);
+        const sanitizedDoc = formData.passport.replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = `arrests/${Date.now()}_${sanitizedDoc}_face.jpg`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('prisoes')
+          .upload(fileName, fileBlob);
 
-      const { data: { publicUrl } } = supabase.storage.from('prisoes').getPublicUrl(fileName);
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl: url } } = supabase.storage.from('prisoes').getPublicUrl(fileName);
+        publicUrl = url;
+      }
 
       // 2. Insert Data into Database
       const { error: insertError } = await supabase
@@ -201,6 +210,7 @@ const RegisterArrest = () => {
           foto_principal: publicUrl,
           conduzido_por: formData.officer,
           observacoes: formData.description,
+          conduzido_por_outra_policia: formData.broughtByOtherPolice,
           created_by: user?.id
         }]);
 
@@ -319,7 +329,7 @@ const RegisterArrest = () => {
                 image={images.face} 
                 onUpload={handleImageUpload} 
                 onRemove={handleImageRemove}
-                required 
+                required={!formData.broughtByOtherPolice}
                 aspect={1}
                 // forceAspect={true} // Removido para dar liberdade
               />
@@ -329,7 +339,7 @@ const RegisterArrest = () => {
                 image={images.bag} 
                 onUpload={handleImageUpload} 
                 onRemove={handleImageRemove}
-                required 
+                required={!formData.broughtByOtherPolice}
               />
               <ImageUploadArea 
                 id="tablet" 
@@ -337,7 +347,7 @@ const RegisterArrest = () => {
                 image={images.tablet} 
                 onUpload={handleImageUpload} 
                 onRemove={handleImageRemove}
-                required 
+                required={!formData.broughtByOtherPolice}
               />
               <ImageUploadArea 
                 id="approach" 
@@ -413,6 +423,22 @@ const RegisterArrest = () => {
                   placeholder="Ex: Tentativa de Homicídio, Roubo a Banco..."
                   required
                 />
+              </div>
+
+              {/* Conduzido por outra polícia */}
+              <div className="md:col-span-2">
+                <label className="flex items-center gap-3 p-4 bg-slate-950 border border-slate-700 rounded-xl cursor-pointer hover:border-federal-500 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={formData.broughtByOtherPolice}
+                    onChange={(e) => setFormData(prev => ({ ...prev, broughtByOtherPolice: e.target.checked }))}
+                    className="w-5 h-5 text-federal-600 rounded border-slate-600 focus:ring-federal-500"
+                  />
+                  <div>
+                    <div className="text-slate-100 font-medium">Conduzido por outra polícia</div>
+                    <div className="text-xs text-slate-500">Marque esta opção se o indivíduo foi trazido por uma força policial diferente da civil (fotos obrigatórias não são necessárias)</div>
+                  </div>
+                </label>
               </div>
 
               {/* Artigos */}

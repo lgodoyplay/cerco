@@ -43,6 +43,7 @@ const ArrestList = () => {
           articles: item.artigo,
           officer: item.conduzido_por || 'N/A',
           description: item.observacoes,
+          broughtByOtherPolice: item.conduzido_por_outra_policia,
           images: { 
             face: item.foto_principal 
           },
@@ -342,6 +343,15 @@ const ArrestList = () => {
                       </div>
                     </div>
                   </div>
+
+                  {selectedArrest.broughtByOtherPolice && (
+                    <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20">
+                      <div className="flex items-center gap-2 text-amber-400 font-medium">
+                        <Shield size={16} />
+                        Conduzido por outra polícia
+                      </div>
+                    </div>
+                  )}
 
                   <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
                     <span className="text-xs text-slate-500 uppercase font-bold block mb-2">Infrações e Artigos</span>
