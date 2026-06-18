@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import AvatarUpload from '../../components/AvatarUpload';
-import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText, AlertTriangle, X } from 'lucide-react';
+import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText, AlertTriangle, X, Play, Square, Link2 } from 'lucide-react';
 import clsx from 'clsx';
 
 const ProfilePage = () => {
@@ -14,12 +14,17 @@ const ProfilePage = () => {
   const [warnings, setWarnings] = useState([]);
   const [message, setMessage] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [liveStream, setLiveStream] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [liveLinks, setLiveLinks] = useState(['', '', '', '']);
+  const [liveLoading, setLiveLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
       getProfile();
       getMyCourses();
       getMyWarnings();
+      getMyLiveStream();
     }
   }, [user]);
 
@@ -81,6 +86,21 @@ const ProfilePage = () => {
     }
   };
 
+  const getMyLiveStream = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('live_streams')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      setLiveStream(data || null);
+    } catch (error) {
+      console.error('Error loading live stream:', error.message);
+    }
+  };
+
   const updateProfile = async (e) => {
     e.preventDefault();
     try {
@@ -128,8 +148,49 @@ const ProfilePage = () => {
       
       setMessage({ type: 'success', text: 'Foto de perfil atualizada!' });
     } catch (error) {
-      console.error('Error updating avatar:', error);
+      console.error('Error updating avatar:', error.message);
       setMessage({ type: 'error', text: 'Erro ao salvar nova foto.' });
+    }
+  };
+
+  const startLiveStream = async () => {
+    setLiveLoading(true);
+    try {
+      const validLinks = liveLinks.filter(link => link.trim() !== '');
+      const { data, error } = await supabase
+        .from('live_streams')
+        .insert([{ user_id: user.id, links: validLinks }])
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      setLiveStream(data);
+      setIsModalOpen(false);
+      setLiveLinks(['', '', '', '']);
+    } catch (error) {
+      console.error('Error starting live stream:', error.message);
+      alert('Erro ao iniciar live!');
+    } finally {
+      setLiveLoading(false);
+    }
+  };
+
+  const endLiveStream = async () => {
+    if (!confirm('Tem certeza que quer encerrar a live?')) return;
+    setLiveLoading(true);
+    try {
+      const { error } = await supabase
+        .from('live_streams')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      setLiveStream(null);
+    } catch (error) {
+      console.error('Error ending live stream:', error.message);
+      alert('Erro ao encerrar live!');
+    } finally {
+      setLiveLoading(false);
     }
   };
 
@@ -197,6 +258,26 @@ const ProfilePage = () => {
             Meu Perfil
           </h1>
           <p className="text-slate-400 mt-1">Gerencie suas informações pessoais e visualize seus cursos.</p>
+        </div>
+        <div className="flex gap-3">
+          {liveStream ? (
+            <button 
+              onClick={endLiveStream}
+              disabled={liveLoading}
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all disabled:opacity-50"
+            >
+              {liveLoading ? <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/20 border-t-white"></div> : <Square size={18} />}
+              Encerrar Live
+            </button>
+          ) : (
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all"
+            >
+              <Play size={18} />
+              Iniciar Live
+            </button>
+          )}
         </div>
       </div>
 
@@ -403,6 +484,63 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Stream Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}>
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md shadow-2xl animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-800">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <Play size={20} className="text-green-500" />
+                Iniciar Live
+              </h3>
+              <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-800 rounded-xl transition-colors">
+                <X size={24} className="text-slate-400" />
+              </button>
+            </div>
+
+            <div className="p-8 space-y-4">
+              {[0, 1, 2, 3].map(index => (
+                <div key={index} className="flex items-center gap-3">
+                  <Link2 size={18} className="text-slate-500" />
+                  <input
+                    type="url"
+                    placeholder={`Link ${index + 1} (opcional)`}
+                    value={liveLinks[index]}
+                    onChange={(e) => {
+                      const newLinks = [...liveLinks];
+                      newLinks[index] = e.target.value;
+                      setLiveLinks(newLinks);
+                    }}
+                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                  />
+                </div>
+              ))}
+
+              <div className="pt-4 flex justify-end gap-3">
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-2.5 rounded-xl text-slate-400 hover:text-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={startLiveStream}
+                  disabled={liveLoading}
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all disabled:opacity-50"
+                >
+                  {liveLoading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/20 border-t-white"></div>
+                  ) : (
+                    <Play size={18} />
+                  )}
+                  Iniciar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

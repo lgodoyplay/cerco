@@ -80,6 +80,20 @@ INSERT INTO public.crimes (article, name, penalty) VALUES
 ('66', 'Tráfico de Armas (Gatilho e/ou Peças de Arma) 151 à 200', '80 meses')
 ON CONFLICT DO NOTHING;
 
+-- Criação da tabela de lives
+CREATE TABLE IF NOT EXISTS public.live_streams (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    links TEXT[] NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.live_streams ENABLE ROW LEVEL SECURITY;
+
+-- Políticas RLS para lives
+DROP POLICY IF EXISTS "Live streams access" ON public.live_streams;
+CREATE POLICY "Live streams access" ON public.live_streams FOR ALL TO authenticated USING (true);
+
 -- Adicionar tabela de denúncias da corregedoria
 CREATE TABLE IF NOT EXISTS public.corregedoria (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

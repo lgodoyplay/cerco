@@ -20,13 +20,16 @@ import {
   Target,
   Search,
   Database,
-  Cpu
+  Cpu,
+  Play,
+  Link2
 } from 'lucide-react';
 import clsx from 'clsx';
 
 const Home = () => {
   const [wantedList, setWantedList] = useState([]);
   const [newsList, setNewsList] = useState([]);
+  const [liveStreams, setLiveStreams] = useState([]);
   const [loadingWanted, setLoadingWanted] = useState(false);
   const [selectedNews, setSelectedNews] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -47,6 +50,7 @@ const Home = () => {
   useEffect(() => {
     fetchWanted();
     fetchNews();
+    fetchLiveStreams();
     
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -54,6 +58,19 @@ const Home = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  const fetchLiveStreams = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('live_streams')
+        .select(`*, user:user_id(full_name, avatar_url)`)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setLiveStreams(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar lives:', error);
+    }
+  };
 
   const fetchNews = async () => {
     try {
@@ -233,6 +250,74 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* LIVE STREAMS SECTION */}
+      {liveStreams.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-900/40 border border-red-700/70">
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-red-300 text-xs font-bold uppercase tracking-[0.18em]">
+                  LIVE
+                </span>
+              </div>
+              <h2 className="text-3xl font-bold text-white">
+                Lives em Andamento
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {liveStreams.map((stream) => (
+                <div
+                  key={stream.id}
+                  className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 hover:border-red-500/40 transition-all"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-14 h-14 rounded-full overflow-hidden border border-slate-700">
+                      {stream.user?.avatar_url ? (
+                        <img
+                          src={stream.user.avatar_url}
+                          alt={stream.user.full_name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                          <User size={24} className="text-slate-500" />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white">
+                        {stream.user?.full_name || 'Usuário'}
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        {new Date(stream.created_at).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    {stream.links.map((link, index) => (
+                      <a
+                        key={index}
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-200 hover:border-red-500/60 hover:text-red-300 transition-all group"
+                      >
+                        <Link2 size={18} />
+                        <span className="text-sm truncate">{link}</span>
+                        <Play size={16} className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section id="dpf" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-10 items-start">
