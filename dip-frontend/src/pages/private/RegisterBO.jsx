@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Save, Eraser, FileText, CheckCircle, AlertCircle, Shield, MapPin, Calendar, User, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
@@ -80,7 +80,17 @@ const RegisterBO = () => {
     location: '',
     date: '',
     officer: '',
+    arrestOfficerName: '',
+    arrestOfficerId: '',
   });
+
+  // Auto-fill current date and time on component load
+  useEffect(() => {
+    const now = new Date();
+    // Format as YYYY-MM-DDTHH:MM for datetime-local input
+    const formattedDate = now.toISOString().slice(0, 16);
+    setFormData(prev => ({ ...prev, date: formattedDate }));
+  }, []);
 
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -101,6 +111,9 @@ const RegisterBO = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
+      // Auto-fill policial_responsavel from user if possible, or keep what user typed
+      const officerName = formData.officer || (user?.email || user?.id || '');
+
       const { error } = await supabase
         .from('boletins')
         .insert([{
@@ -108,7 +121,9 @@ const RegisterBO = () => {
           descricao: formData.description,
           localizacao: formData.location,
           data_fato: formData.date,
-          policial_responsavel: formData.officer,
+          policial_responsavel: officerName,
+          nome_policial_prisao: formData.arrestOfficerName,
+          id_policial_prisao: formData.arrestOfficerId,
           status: 'Registrado',
           created_by: user?.id
         }]);
@@ -128,8 +143,9 @@ const RegisterBO = () => {
             fields: [
               { name: "Comunicante", value: formData.complainant, inline: true },
               { name: "Local", value: formData.location, inline: true },
-              { name: "Data do Fato", value: formData.date, inline: true },
-              { name: "Policial Responsável", value: formData.officer, inline: true }
+              { name: "Data e Hora do Fato", value: formData.date, inline: true },
+              { name: "Policial Responsável pelo BO", value: officerName, inline: true },
+              ...(formData.arrestOfficerName ? [{ name: "Policial Responsável pela Prisão", value: `${formData.arrestOfficerName} (${formData.arrestOfficerId || 'ID não informado'})`, inline: true }] : [])
             ],
             footer: { text: "Sistema de Ocorrências CIVIL EUFORIA" },
             timestamp: new Date().toISOString()
@@ -151,13 +167,17 @@ const RegisterBO = () => {
         message: 'Boletim de ocorrência registrado com sucesso'
       });
       
-      // Clear form
+      // Clear form and reset date to current time
+      const now = new Date();
+      const formattedDate = now.toISOString().slice(0, 16);
       setFormData({
         complainant: '',
         description: '',
         location: '',
-        date: '',
+        date: formattedDate,
         officer: '',
+        arrestOfficerName: '',
+        arrestOfficerId: '',
       });
     } catch (error) {
       console.error('Erro ao registrar BO:', error);
@@ -239,18 +259,56 @@ const RegisterBO = () => {
             </div>
           </div>
 
-          {/* Data */}
+          {/* Data e Hora */}
           <div>
-            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Data do Fato</label>
+            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Data e Hora do Fato</label>
             <div className="relative">
               <Calendar className="absolute left-4 top-3.5 text-slate-600" size={20} />
               <input
-                type="date"
+                type="datetime-local"
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
                 className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
                 required
+              />
+            </div>
+          </div>
+
+          {/* Nome do Policial Responsável pela Prisão em Flagrante */}
+          <div>
+            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
+              Nome do Policial Responsável pela Prisão em Flagrante
+              <span className="text-slate-500 ml-1">(Opcional)</span>
+            </label>
+            <div className="relative">
+              <User className="absolute left-4 top-3.5 text-slate-600" size={20} />
+              <input
+                type="text"
+                name="arrestOfficerName"
+                value={formData.arrestOfficerName}
+                onChange={handleChange}
+                className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                placeholder="Nome completo do policial"
+              />
+            </div>
+          </div>
+
+          {/* ID do Policial Responsável pela Prisão em Flagrante */}
+          <div>
+            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
+              ID/Distintivo do Policial Responsável pela Prisão em Flagrante
+              <span className="text-slate-500 ml-1">(Opcional)</span>
+            </label>
+            <div className="relative">
+              <Shield className="absolute left-4 top-3.5 text-slate-600" size={20} />
+              <input
+                type="text"
+                name="arrestOfficerId"
+                value={formData.arrestOfficerId}
+                onChange={handleChange}
+                className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                placeholder="Distintivo ou ID"
               />
             </div>
           </div>
@@ -303,7 +361,19 @@ const RegisterBO = () => {
         <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-800">
           <button
             type="button"
-            onClick={() => setFormData({ complainant: '', description: '', location: '', date: '', officer: '' })}
+            onClick={() => {
+              const now = new Date();
+              const formattedDate = now.toISOString().slice(0, 16);
+              setFormData({ 
+                complainant: '', 
+                description: '', 
+                location: '', 
+                date: formattedDate, 
+                officer: '',
+                arrestOfficerName: '',
+                arrestOfficerId: '',
+              });
+            }}
             className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition-colors flex items-center gap-2"
           >
             <Eraser size={18} />

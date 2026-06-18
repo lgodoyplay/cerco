@@ -233,10 +233,10 @@ const BOList = () => {
                   <p className="text-white font-mono text-sm">{selectedBO.id}</p>
                 </div>
                 <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                  <span className="text-xs text-slate-500 uppercase">Data do Fato</span>
+                  <span className="text-xs text-slate-500 uppercase">Data e Hora do Fato</span>
                   <p className="text-white font-medium">
                     {selectedBO.data_fato && !isNaN(new Date(selectedBO.data_fato).getTime()) 
-                      ? format(new Date(selectedBO.data_fato), 'dd/MM/yyyy', { locale: ptBR })
+                      ? format(new Date(selectedBO.data_fato), 'dd/MM/yyyy HH:mm', { locale: ptBR })
                       : 'Data inválida'}
                   </p>
                 </div>
@@ -262,12 +262,22 @@ const BOList = () => {
                 </p>
               </div>
 
+              {selectedBO.nome_policial_prisao && (
+                <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20">
+                  <span className="text-xs text-amber-400 uppercase font-bold block mb-1">Policial Responsável pela Prisão em Flagrante</span>
+                  <div className="text-white font-medium">{selectedBO.nome_policial_prisao}</div>
+                  {selectedBO.id_policial_prisao && (
+                    <div className="text-amber-300 text-sm mt-1">ID/Distintivo: {selectedBO.id_policial_prisao}</div>
+                  )}
+                </div>
+              )}
+
               <div className="flex items-center gap-3 pt-4 border-t border-slate-800">
                 <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">
                   <Shield size={20} className="text-federal-500" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white">Policial Responsável</p>
+                  <p className="text-sm font-bold text-white">Policial Responsável pelo BO</p>
                   <p className="text-xs text-slate-400">{selectedBO.policial_responsavel}</p>
                 </div>
               </div>

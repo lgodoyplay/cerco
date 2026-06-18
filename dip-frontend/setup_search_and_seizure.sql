@@ -25,6 +25,10 @@ ALTER TABLE public.prisoes ADD COLUMN IF NOT EXISTS bo_id UUID REFERENCES public
 -- Adicionar coluna para BO relacionado à procurado
 ALTER TABLE public.procurados ADD COLUMN IF NOT EXISTS bo_id UUID REFERENCES public.boletins(id);
 
+-- Adicionar colunas para policial responsável pela prisão em flagrante
+ALTER TABLE public.boletins ADD COLUMN IF NOT EXISTS nome_policial_prisao TEXT;
+ALTER TABLE public.boletins ADD COLUMN IF NOT EXISTS id_policial_prisao TEXT;
+
 -- 3. Garantir que a categoria pode ser 'search_and_seizure'
 -- Noop - já permite qualquer texto
 
