@@ -1,28 +1,81 @@
 import React, { useState, useEffect } from 'react';
-import { Users, AlertTriangle, FileText, TrendingUp, Search, Clock, ShieldAlert, BadgeCheck } from 'lucide-react';
+import { Users, AlertTriangle, FileText, TrendingUp, Search, Clock, ShieldAlert, BadgeCheck, Sun, Moon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
-const DashboardStat = React.memo(({ title, value, subtext, icon: Icon, color }) => (
-  <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 relative overflow-hidden transition-all hover:border-slate-700">
-    <div className={`absolute top-0 right-0 p-2 md:p-4 opacity-5 text-${color}-500 transform scale-125 md:scale-150`}>
-      <Icon size={60} className="md:w-24 md:h-24" />
-    </div>
-    <div className="relative z-10">
-      <div className={`inline-flex p-2 rounded-lg bg-${color}-500/10 text-${color}-500 mb-3 md:mb-4`}>
-        <Icon size={20} className="md:w-6 md:h-6" />
+// Hook para data e hora em tempo real
+const useCurrentDateTime = () => {
+  const [dateTime, setDateTime] = useState(new Date());
+  
+  useEffect(() => {
+    const timer = setInterval(() => setDateTime(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+  
+  return dateTime;
+};
+
+// Função para saudação personalizada
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
+};
+
+const DashboardStat = React.memo(({ title, value, subtext, icon: Icon, color }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Mapeamento de cores para gradientes
+  const colorMap = {
+    blue: { bg: 'from-blue-600 to-blue-800', accent: 'text-blue-400', soft: 'bg-blue-500/10', border: 'border-blue-500/30' },
+    red: { bg: 'from-red-600 to-red-800', accent: 'text-red-400', soft: 'bg-red-500/10', border: 'border-red-500/30' },
+    amber: { bg: 'from-amber-600 to-amber-800', accent: 'text-amber-400', soft: 'bg-amber-500/10', border: 'border-amber-500/30' },
+    emerald: { bg: 'from-emerald-600 to-emerald-800', accent: 'text-emerald-400', soft: 'bg-emerald-500/10', border: 'border-emerald-500/30' },
+  };
+  
+  const colors = colorMap[color] || colorMap.blue;
+
+  return (
+    <div 
+      className={`
+        bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-6 relative overflow-hidden 
+        transition-all duration-500 hover:border-${color}-500/50 hover:shadow-lg hover:shadow-${color}-900/20 hover:-translate-y-1
+        ${isVisible ? 'animate-in slide-in-from-bottom-8' : 'opacity-0'}
+      `}
+    >
+      {/* Elemento de fundo decorativo */}
+      <div className={`absolute top-0 right-0 p-3 md:p-5 opacity-10 text-${color}-500 transform scale-150 md:scale-[2] transition-transform duration-700 group-hover:scale-[1.8]`}>
+        <Icon size={80} />
       </div>
-      <h3 className="text-2xl md:text-3xl font-bold text-white mb-1 tracking-tight">
-        {value}
-      </h3>
-      <p className="text-slate-400 text-xs md:text-sm font-medium truncate">{title}</p>
-      {subtext && <p className="text-slate-600 text-[10px] md:text-xs mt-1 md:mt-2 block">{subtext}</p>}
+      
+      {/* Barra de acento no topo */}
+      <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${colors.bg} opacity-70`} />
+      
+      <div className="relative z-10">
+        <div className={`inline-flex p-3 rounded-xl ${colors.soft} ${colors.accent} mb-4 shadow-inner`}>
+          <Icon size={24} className="md:w-7 md:h-7" />
+        </div>
+        <h3 className="text-3xl md:text-4xl font-extrabold text-white mb-2 tracking-tight drop-shadow-sm">
+          {value}
+        </h3>
+        <p className="text-slate-300 text-sm md:text-base font-semibold">{title}</p>
+        {subtext && <p className="text-slate-500 text-xs md:text-sm mt-2 flex items-center gap-1">
+          <TrendingUp size={12} /> {subtext}
+        </p>}
+      </div>
     </div>
-  </div>
-));
+  );
+});
 
 const DashboardHome = () => {
   const navigate = useNavigate();
+  const dateTime = useCurrentDateTime();
   const [stats, setStats] = useState({
     totalPresos: 0,
     totalProcurados: 0,
@@ -32,6 +85,7 @@ const DashboardHome = () => {
   const [recentActivities, setRecentActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [functionalCode, setFunctionalCode] = useState(null);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -40,28 +94,27 @@ const DashboardHome = () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
 
-        // 1. Check/Generate Functional Code
         if (user) {
+          // Setar nome do usuário
           const { data: profile } = await supabase
             .from('profiles')
-            .select('passport_id, codigo_funcional')
+            .select('passport_id, codigo_funcional, full_name')
             .eq('id', user.id)
             .single();
 
           if (profile) {
-            // Prioriza passport_id (novo padrão), fallback para codigo_funcional (legado)
+            if (profile.full_name) setUserName(profile.full_name.split(' ')[0]);
+            
             const currentCode = profile.passport_id || profile.codigo_funcional;
 
             if (currentCode) {
               if (isMounted) setFunctionalCode(currentCode);
               
-              // Se tiver codigo antigo mas nao novo, migra
               if (!profile.passport_id && profile.codigo_funcional) {
                  await supabase.from('profiles').update({ passport_id: profile.codigo_funcional }).eq('id', user.id);
               }
 
             } else {
-              // Generate new code if none exists
               const newCode = 'CIVIL EUFORIA-' + Math.floor(100000 + Math.random() * 900000);
               const { error: updateError } = await supabase
                 .from('profiles')
@@ -100,7 +153,6 @@ const DashboardHome = () => {
             totalBos: bosCount || 0
           });
           
-          // Map logs to match recentActivities structure if needed
           const activities = (logs || []).map(log => ({
             action: log.action,
             details: log.details,
@@ -151,15 +203,30 @@ const DashboardHome = () => {
 
   return (
     <div className="space-y-6 pb-20 md:pb-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold text-white">Painel Geral</h2>
-          <p className="text-slate-400 text-xs md:text-sm">Visão geral das operações e estatísticas (Tempo Real).</p>
+      {/* Seção de saudação e data */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            {new Date().getHours() < 12 ? 
+              <Sun size={24} className="text-amber-400" /> : 
+              new Date().getHours() < 18 ? 
+                <Sun size={24} className="text-orange-400" /> : 
+                <Moon size={24} className="text-indigo-400" />
+            }
+            <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+              {getGreeting()}, {userName || 'Agente'}!
+            </h1>
+          </div>
+          <p className="text-slate-400 text-sm md:text-base">
+            {dateTime.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} • {dateTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+          </p>
+          <p className="text-slate-500 text-xs md:text-sm">Visão geral das operações e estatísticas (Tempo Real).</p>
         </div>
-        <div className="flex gap-2">
-          <span className="px-3 py-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-lg text-xs font-bold flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            ONLINE
+        <div className="flex gap-3 items-center">
+          <span className="px-4 py-2 bg-gradient-to-r from-green-500/20 via-emerald-500/10 text-green-400 border border-green-500/30 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-green-900/20">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping" />
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse absolute ml-[6px]" />
+            SISTEMA ONLINE
           </span>
         </div>
       </div>
@@ -197,33 +264,55 @@ const DashboardHome = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Activity Feed */}
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-base md:text-lg text-white flex items-center gap-2">
-              <Clock size={20} className="text-slate-400" />
-              Atividade Recente
-            </h3>
-            <button className="text-xs text-federal-400 hover:text-federal-300 font-medium">Ver Histórico</button>
+        <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+          <div className="flex items-center justify-between mb-7">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-federal-500 to-federal-700 rounded-xl">
+                <Clock size={20} className="text-white" />
+              </div>
+              <h3 className="font-bold text-lg md:text-xl text-white">Atividade Recente</h3>
+            </div>
+            <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-xl transition-all">Ver Histórico</button>
           </div>
           
           <div className="space-y-4">
             {recentActivities.length === 0 ? (
-              <p className="text-slate-500 text-sm">Nenhuma atividade recente registrada.</p>
+              <div className="flex flex-col items-center justify-center py-10 bg-slate-950/30 rounded-2xl border border-dashed border-slate-700">
+                <Clock size={48} className="text-slate-600 mb-3" />
+                <p className="text-slate-500 text-sm font-medium">Nenhuma atividade recente registrada.</p>
+                <p className="text-slate-600 text-xs mt-1">Todas as ações aparecerão aqui automaticamente.</p>
+              </div>
             ) : (
               recentActivities.map((item, i) => {
                 const { icon: Icon, color } = getIconForActivity(item.action);
                 return (
-                  <div key={i} className="flex items-start gap-4 p-3 md:p-4 rounded-lg bg-slate-950/50 border border-slate-800/50 hover:border-slate-700 transition-colors">
-                    <div className={`mt-1 p-2 rounded-lg flex-shrink-0 bg-${color}-500/10 text-${color}-500`}>
-                      <Icon size={16} />
+                  <div 
+                    key={i} 
+                    className={`
+                      flex items-start gap-4 p-4 md:p-5 rounded-xl bg-slate-950/40 border border-slate-800 
+                      hover:border-${color}-500/40 hover:bg-slate-900/60 transition-all duration-300
+                      animate-in slide-in-from-left-4
+                    `}
+                    style={{ animationDelay: `${i * 80}ms` }}
+                  >
+                    <div className={`
+                      mt-0.5 p-3 rounded-xl flex-shrink-0 
+                      bg-gradient-to-br from-${color}-500/20 to-${color}-600/10 
+                      text-${color}-400 border border-${color}-500/20
+                    `}>
+                      <Icon size={20} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
-                        <h4 className="text-sm font-bold text-slate-200 truncate pr-2">{item.action}</h4>
-                        <span className="text-xs text-slate-500 whitespace-nowrap">{formatTimeAgo(item.createdAt)}</span>
+                        <h4 className="text-sm md:text-base font-bold text-slate-200 truncate pr-2">{item.action}</h4>
+                        <span className="text-xs text-slate-500 whitespace-nowrap flex items-center gap-1 bg-slate-800/50 px-2 py-1 rounded-full">
+                          <Clock size={10} />
+                          {formatTimeAgo(item.createdAt)}
+                        </span>
                       </div>
-                      <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{item.details}</p>
-                      <p className="text-[10px] text-slate-600 mt-2 font-medium uppercase tracking-wider">
+                      <p className="text-sm text-slate-400 mt-2 line-clamp-2">{item.details}</p>
+                      <p className="text-[11px] text-slate-500 mt-3 font-semibold uppercase tracking-widest flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
                         Por: {item.user?.nome || 'Sistema'} ({item.user?.patente || 'N/A'})
                       </p>
                     </div>
@@ -237,57 +326,74 @@ const DashboardHome = () => {
         {/* Quick Actions / Notices */}
         <div className="space-y-6">
           {/* Functional Code Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-5 text-federal-500 transform scale-150 group-hover:scale-125 transition-transform duration-500">
-              <BadgeCheck size={100} />
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+            <div className="absolute inset-0 bg-gradient-to-br from-federal-900/10 to-transparent pointer-events-none" />
+            <div className="absolute top-0 right-0 p-5 opacity-15 text-federal-500 transform scale-[2] group-hover:scale-[1.8] transition-transform duration-700">
+              <BadgeCheck size={120} />
             </div>
             <div className="relative z-10">
-              <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Identificação Funcional</h3>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl md:text-3xl font-mono font-bold text-white tracking-widest">
+              <h3 className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Identificação Funcional</h3>
+              <div className="flex items-center gap-4 mb-2">
+                <span className="text-2xl md:text-4xl font-mono font-extrabold text-white tracking-wider">
                   {functionalCode || '...'}
                 </span>
                 {functionalCode && (
-                  <span className="px-2 py-0.5 bg-federal-500/20 text-federal-400 text-[10px] font-bold rounded border border-federal-500/30">
+                  <span className="px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     ATIVO
                   </span>
                 )}
               </div>
-              <p className="text-slate-500 text-xs mt-2">
-                Utilize este código para se identificar em operações e para verificação de identidade.
+              <p className="text-slate-500 text-sm mt-3 leading-relaxed">
+                Utilize este código para se identificar em operações e para verificação de identidade em serviços.
               </p>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-federal-900 to-federal-800 border border-federal-700 rounded-xl p-6 text-white relative overflow-hidden">
+          {/* Quick Actions Grid */}
+          <div className="bg-gradient-to-br from-federal-900/80 to-federal-800/70 border border-federal-700 rounded-2xl p-6 text-white relative overflow-hidden shadow-[0_8px_30px_rgba(30,58,138,0.2)]">
             <div className="relative z-10">
-              <h3 className="font-bold text-lg mb-2">Acesso Rápido</h3>
-              <p className="text-federal-200 text-xs mb-6">Atalhos para funções comuns.</p>
+              <h3 className="font-bold text-xl mb-2 flex items-center gap-2">
+                Acesso Rápido
+              </h3>
+              <p className="text-federal-200 text-sm mb-6">Atalhos para as funções mais utilizadas.</p>
               
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-3">
                 <button 
                   onClick={() => navigate('/dashboard/arrest')}
-                  className="w-full py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-sm font-medium transition-colors text-left px-4"
+                  className="group flex items-center gap-3 w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
                 >
-                  + Nova Prisão
+                  <div className="p-2 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
+                    <Users size={18} className="text-blue-300" />
+                  </div>
+                  <span>Nova Prisão</span>
                 </button>
                 <button 
                   onClick={() => navigate('/dashboard/register-wanted')}
-                  className="w-full py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-sm font-medium transition-colors text-left px-4"
+                  className="group flex items-center gap-3 w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
                 >
-                  + Novo Procurado
+                  <div className="p-2 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
+                    <AlertTriangle size={18} className="text-red-300" />
+                  </div>
+                  <span>Novo Procurado</span>
                 </button>
                 <button 
                   onClick={() => navigate('/dashboard/investigations/new')}
-                  className="w-full py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-sm font-medium transition-colors text-left px-4"
+                  className="group flex items-center gap-3 w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
                 >
-                  + Iniciar Investigação
+                  <div className="p-2 bg-amber-500/20 rounded-lg group-hover:bg-amber-500/30 transition-colors">
+                    <Search size={18} className="text-amber-300" />
+                  </div>
+                  <span>Iniciar Investigação</span>
                 </button>
                 <button 
                   onClick={() => navigate('/dashboard/bo')}
-                  className="w-full py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-sm font-medium transition-colors text-left px-4"
+                  className="group flex items-center gap-3 w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
                 >
-                  + Registrar B.O.
+                  <div className="p-2 bg-emerald-500/20 rounded-lg group-hover:bg-emerald-500/30 transition-colors">
+                    <FileText size={18} className="text-emerald-300" />
+                  </div>
+                  <span>Registrar B.O.</span>
                 </button>
               </div>
             </div>
