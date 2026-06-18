@@ -526,7 +526,16 @@ const RegisterArrest = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setFormData({ name: '', passport: '', reason: '', articles: '', officer: '', description: '' });
+                  setFormData({
+                    name: '',
+                    passport: '',
+                    reason: '',
+                    articles: '',
+                    selectedArticles: [],
+                    officer: '',
+                    description: '',
+                    broughtByOtherPolice: false
+                  });
                   setImages({ face: null, bag: null, tablet: null, approach: null });
                 }}
                 className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition-colors flex items-center gap-2"
