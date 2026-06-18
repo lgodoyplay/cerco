@@ -10,6 +10,7 @@ ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS tipo_entidade TEXT; --
 ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS nome_entidade TEXT;
 ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS documento_pessoa TEXT;
 ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS foto_rosto TEXT;
+ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS documento_ordem TEXT;
 ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS quantidade_casas INTEGER DEFAULT 0;
 ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS quantidade_carros INTEGER DEFAULT 0;
 ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS nomes_carros TEXT[]; -- Array de nomes dos carros

@@ -5,6 +5,7 @@ import { useInvestigations } from '../../../hooks/useInvestigations';
 import { useAuth } from '../../../context/AuthContext';
 import { Save, ArrowLeft } from 'lucide-react';
 import ImageUploadArea from '../../../components/ImageUploadArea';
+import FileUploadArea from '../../../components/FileUploadArea';
 import { supabase } from '../../../lib/supabase';
 
 const SearchSeizureCreate = () => {
@@ -22,6 +23,7 @@ const SearchSeizureCreate = () => {
     nomeEntidade: '',
     documentoPessoa: '',
     fotoRosto: null,
+    documentoOrdem: null,
     quantidadeCasas: 0,
     quantidadeCarros: 0,
     nomesCarros: [],
@@ -42,6 +44,7 @@ const SearchSeizureCreate = () => {
             nomeEntidade: inv.nomeEntidade || '',
             documentoPessoa: inv.documentoPessoa || '',
             fotoRosto: inv.fotoRosto || null,
+            documentoOrdem: inv.documentoOrdem || null,
             quantidadeCasas: inv.quantidadeCasas || 0,
             quantidadeCarros: inv.quantidadeCarros || 0,
             nomesCarros: inv.nomesCarros || [],
@@ -126,11 +129,16 @@ const SearchSeizureCreate = () => {
     setFormData(prev => ({ ...prev, fotoRosto: dataUrl }));
   };
 
+  const handleDocumentoOrdem = (id, dataUrl) => {
+    setFormData(prev => ({ ...prev, documentoOrdem: dataUrl }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
       let finalFotoRosto = formData.fotoRosto;
+      let finalDocumentoOrdem = formData.documentoOrdem;
       
       // Upload foto do rosto se for um dataUrl novo
       if (finalFotoRosto && finalFotoRosto.startsWith('data:')) {
@@ -147,6 +155,23 @@ const SearchSeizureCreate = () => {
         
         const { data: urlData } = supabase.storage.from('busca_e_apreensao').getPublicUrl(fileName);
         finalFotoRosto = urlData.publicUrl;
+      }
+
+      // Upload documento da ordem se for um dataUrl novo
+      if (finalDocumentoOrdem && finalDocumentoOrdem.startsWith('data:')) {
+        const response = await fetch(finalDocumentoOrdem);
+        const blob = await response.blob();
+        const fileExt = blob.type.split('/')[1];
+        const fileName = `busca_e_apreensao/${Date.now()}_ordem.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('busca_e_apreensao')
+          .upload(fileName, blob);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: urlData } = supabase.storage.from('busca_e_apreensao').getPublicUrl(fileName);
+        finalDocumentoOrdem = urlData.publicUrl;
       }
 
       // Processar fotos das casas e carros
@@ -190,6 +215,7 @@ const SearchSeizureCreate = () => {
         nomeEntidade: formData.nomeEntidade,
         documentoPessoa: formData.documentoPessoa,
         fotoRosto: finalFotoRosto,
+        documentoOrdem: finalDocumentoOrdem,
         quantidadeCasas: formData.quantidadeCasas,
         quantidadeCarros: formData.quantidadeCarros,
         nomesCarros: formData.nomesCarros,
@@ -336,6 +362,18 @@ const SearchSeizureCreate = () => {
               />
             </div>
           )}
+
+          <div>
+            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Documento de Ordem (PDF/PNG)</label>
+            <FileUploadArea
+              id="documentoOrdem"
+              label="Documento de Ordem"
+              fileUrl={formData.documentoOrdem}
+              onUpload={handleDocumentoOrdem}
+              onRemove={() => setFormData(prev => ({ ...prev, documentoOrdem: null }))}
+              required
+            />
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>

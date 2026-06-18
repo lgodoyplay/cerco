@@ -34,6 +34,7 @@ export const useInvestigations = () => {
     nomeEntidade: inv.nome_entidade,
     documentoPessoa: inv.documento_pessoa,
     fotoRosto: inv.foto_rosto,
+    documentoOrdem: inv.documento_ordem,
     quantidadeCasas: inv.quantidade_casas,
     quantidadeCarros: inv.quantidade_carros,
     nomesCarros: inv.nomes_carros,
@@ -110,6 +111,7 @@ export const useInvestigations = () => {
         nome_entidade: data.nomeEntidade,
         documento_pessoa: data.documentoPessoa,
         foto_rosto: data.fotoRosto,
+        documento_ordem: data.documentoOrdem,
         quantidade_casas: data.quantidadeCasas,
         quantidade_carros: data.quantidadeCarros,
         nomes_carros: data.nomesCarros,
@@ -180,6 +182,7 @@ export const useInvestigations = () => {
       if (data.nomeEntidade !== undefined) payload.nome_entidade = data.nomeEntidade;
       if (data.documentoPessoa !== undefined) payload.documento_pessoa = data.documentoPessoa;
       if (data.fotoRosto !== undefined) payload.foto_rosto = data.fotoRosto;
+      if (data.documentoOrdem !== undefined) payload.documento_ordem = data.documentoOrdem;
       if (data.quantidadeCasas !== undefined) payload.quantidade_casas = data.quantidadeCasas;
       if (data.quantidadeCarros !== undefined) payload.quantidade_carros = data.quantidadeCarros;
       if (data.nomesCarros !== undefined) payload.nomes_carros = data.nomesCarros;

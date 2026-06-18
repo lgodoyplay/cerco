@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useInvestigations } from '../../../hooks/useInvestigations';
 import { usePermissions } from '../../../hooks/usePermissions';
-import { ArrowLeft, Edit3, Trash2, Home, Car, User, Building2 } from 'lucide-react';
+import { ArrowLeft, Edit3, Trash2, Home, Car, User, Building2, FileText } from 'lucide-react';
 import ImageUploadArea from '../../../components/ImageUploadArea';
+import FileUploadArea from '../../../components/FileUploadArea';
 import { supabase } from '../../../lib/supabase';
 
 const SearchSeizureDetail = () => {
@@ -63,6 +64,7 @@ const SearchSeizureDetail = () => {
     try {
       setLoading(true);
       let finalFotoRosto = editData.fotoRosto;
+      let finalDocumentoOrdem = editData.documentoOrdem;
       
       if (finalFotoRosto && finalFotoRosto.startsWith('data:')) {
         const response = await fetch(finalFotoRosto);
@@ -78,6 +80,22 @@ const SearchSeizureDetail = () => {
         
         const { data: urlData } = supabase.storage.from('busca_e_apreensao').getPublicUrl(fileName);
         finalFotoRosto = urlData.publicUrl;
+      }
+
+      if (finalDocumentoOrdem && finalDocumentoOrdem.startsWith('data:')) {
+        const response = await fetch(finalDocumentoOrdem);
+        const blob = await response.blob();
+        const fileExt = blob.type.split('/')[1];
+        const fileName = `busca_e_apreensao/${Date.now()}_ordem.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('busca_e_apreensao')
+          .upload(fileName, blob);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: urlData } = supabase.storage.from('busca_e_apreensao').getPublicUrl(fileName);
+        finalDocumentoOrdem = urlData.publicUrl;
       }
 
       const processarFotos = async (items, tipo) => {
@@ -114,6 +132,7 @@ const SearchSeizureDetail = () => {
       const payload = {
         ...editData,
         fotoRosto: finalFotoRosto,
+        documentoOrdem: finalDocumentoOrdem,
         casas: finalCasas,
         carros: finalCarros
       };
@@ -228,6 +247,36 @@ const SearchSeizureDetail = () => {
               )}
             </div>
           )}
+
+          <div className="md:col-span-2">
+            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Documento de Ordem</label>
+            {isEditing ? (
+              <FileUploadArea
+                id="documento-ordem"
+                label="Documento de Ordem"
+                fileUrl={data.documentoOrdem}
+                onUpload={(id, url) => setEditData(prev => ({ ...prev, documentoOrdem: url }))}
+                onRemove={() => setEditData(prev => ({ ...prev, documentoOrdem: null }))}
+              />
+            ) : data.documentoOrdem ? (
+              <a 
+                href={data.documentoOrdem} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-4 bg-slate-950 border border-slate-700 rounded-xl hover:border-federal-500 transition-colors"
+              >
+                <FileText size={32} className="text-federal-500" />
+                <div>
+                  <p className="text-white font-medium">Abrir documento de ordem</p>
+                  <p className="text-slate-500 text-sm">Clique para visualizar</p>
+                </div>
+              </a>
+            ) : (
+              <div className="p-4 bg-slate-950 border border-slate-700 rounded-xl flex items-center justify-center text-slate-500">
+                Sem documento
+              </div>
+            )}
+          </div>
 
           <div className="bg-slate-950 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center gap-3 mb-4">
