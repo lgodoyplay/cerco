@@ -25,6 +25,9 @@ export const routeLoaders = {
   InvestigationList: () => import('../pages/private/investigations/InvestigationList'),
   InvestigationCreate: () => import('../pages/private/investigations/InvestigationCreate'),
   InvestigationDetail: () => import('../pages/private/investigations/InvestigationDetail'),
+  SearchSeizureList: () => import('../pages/private/investigations/SearchSeizureList'),
+  SearchSeizureCreate: () => import('../pages/private/investigations/SearchSeizureCreate'),
+  SearchSeizureDetail: () => import('../pages/private/investigations/SearchSeizureDetail'),
   
   // Forensics
   ForensicsList: () => import('../pages/private/forensics/ForensicsList'),

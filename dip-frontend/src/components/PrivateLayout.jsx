@@ -29,7 +29,8 @@ import {
   Radio,
   Newspaper,
   Building2,
-  Stethoscope
+  Stethoscope,
+  Handcuffs
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
@@ -90,6 +91,7 @@ const PrivateLayout = () => {
       label: 'Investigativo',
       items: [
         { to: '/dashboard/investigations', icon: Search, label: 'Investigações', prefetchKey: 'InvestigationList', permission: 'investigations_view' },
+        { to: '/dashboard/search-seizure', icon: Handcuffs, label: 'Busca e Apreensão', prefetchKey: 'SearchSeizureList', permission: 'investigations_view' },
         { to: '/dashboard/forensics', icon: FileSearch, label: 'Perícias', prefetchKey: 'ForensicsList', permission: 'forensics_view' },
         { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList', permission: 'revenue_view' },
       ]

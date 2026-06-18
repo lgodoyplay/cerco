@@ -14,7 +14,7 @@ export const useInvestigations = () => {
     priority: inv.prioridade || 'Média',
     status: inv.status,
     createdAt: inv.created_at,
-    closedAt: inv.data_fim, // Assuming column name change or keep consistency
+    closedAt: inv.data_fim,
     investigator: inv.investigator ? {
       nome: inv.investigator.full_name,
       badge: inv.investigator.badge,
@@ -28,7 +28,17 @@ export const useInvestigations = () => {
       content: ev.url,
       author: 'Agente',
       createdAt: ev.created_at
-    })) || []
+    })) || [],
+    // Dados específicos para busca e apreensão
+    tipoEntidade: inv.tipo_entidade,
+    nomeEntidade: inv.nome_entidade,
+    documentoPessoa: inv.documento_pessoa,
+    fotoRosto: inv.foto_rosto,
+    quantidadeCasas: inv.quantidade_casas,
+    quantidadeCarros: inv.quantidade_carros,
+    nomesCarros: inv.nomes_carros,
+    casas: inv.casas || [],
+    carros: inv.carros || []
   });
 
   const fetchInvestigations = useCallback(async () => {
@@ -94,7 +104,17 @@ export const useInvestigations = () => {
         descricao: data.description,
         envolvidos: data.involved,
         prioridade: data.priority,
-        status: 'Em Andamento'
+        status: 'Em Andamento',
+        // Dados específicos para busca e apreensão
+        tipo_entidade: data.tipoEntidade,
+        nome_entidade: data.nomeEntidade,
+        documento_pessoa: data.documentoPessoa,
+        foto_rosto: data.fotoRosto,
+        quantidade_casas: data.quantidadeCasas,
+        quantidade_carros: data.quantidadeCarros,
+        nomes_carros: data.nomesCarros,
+        casas: data.casas || [],
+        carros: data.carros || []
       };
 
       const { data: newInv, error } = await supabase
@@ -151,6 +171,36 @@ export const useInvestigations = () => {
     }
   }, []);
 
+  const updateSearchSeizureData = useCallback(async (id, data) => {
+    try {
+      const payload = {};
+      
+      // Mapear os dados para as colunas do banco
+      if (data.tipoEntidade !== undefined) payload.tipo_entidade = data.tipoEntidade;
+      if (data.nomeEntidade !== undefined) payload.nome_entidade = data.nomeEntidade;
+      if (data.documentoPessoa !== undefined) payload.documento_pessoa = data.documentoPessoa;
+      if (data.fotoRosto !== undefined) payload.foto_rosto = data.fotoRosto;
+      if (data.quantidadeCasas !== undefined) payload.quantidade_casas = data.quantidadeCasas;
+      if (data.quantidadeCarros !== undefined) payload.quantidade_carros = data.quantidadeCarros;
+      if (data.nomesCarros !== undefined) payload.nomes_carros = data.nomesCarros;
+      if (data.casas !== undefined) payload.casas = data.casas;
+      if (data.carros !== undefined) payload.carros = data.carros;
+
+      const { error } = await supabase
+        .from('investigacoes')
+        .update(payload)
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Refresh da lista
+      fetchInvestigations();
+    } catch (error) {
+      console.error('Erro ao atualizar dados de busca e apreensão:', error);
+      throw error;
+    }
+  }, [fetchInvestigations]);
+
   const addProof = useCallback(async (investigationId, proofData) => {
     try {
       let finalContent = proofData.content;
@@ -195,7 +245,7 @@ export const useInvestigations = () => {
     try {
       const { error } = await supabase
         .from('investigacoes')
-        .update({ status: 'Finalizada' }) // removed closedAt as I didn't add it to schema explicitly, rely on status
+        .update({ status: 'Finalizada' })
         .eq('id', id);
 
       if (error) throw error;
@@ -211,7 +261,6 @@ export const useInvestigations = () => {
 
   const deleteProof = useCallback(async (proofId, investigationId) => {
     try {
-      // Primeiro, buscar a prova para obter o caminho do arquivo (se for arquivo)
       const { data: proof, error: fetchError } = await supabase
         .from('provas')
         .select('url')
@@ -220,10 +269,8 @@ export const useInvestigations = () => {
 
       if (fetchError) throw fetchError;
 
-      // Se for um arquivo armazenado no storage, tentar deletar o arquivo também
       if (proof.url && proof.url.includes('supabase.co/storage')) {
         try {
-          // Extrair o caminho do arquivo da URL pública
           const urlParts = proof.url.split('/provas/');
           if (urlParts.length > 1) {
             const filePath = decodeURIComponent(urlParts[1]);
@@ -231,11 +278,9 @@ export const useInvestigations = () => {
           }
         } catch (storageError) {
           console.warn('Não foi possível deletar o arquivo do storage:', storageError);
-          // Não lançamos erro aqui para não impedir a exclusão da prova no banco
         }
       }
 
-      // Deletar a prova do banco de dados
       const { error: deleteError } = await supabase
         .from('provas')
         .delete()
@@ -243,9 +288,7 @@ export const useInvestigations = () => {
 
       if (deleteError) throw deleteError;
 
-      // Refresh da lista de investigações
       fetchInvestigations();
-
     } catch (error) {
       console.error('Erro ao deletar prova:', error);
       throw error;
@@ -281,9 +324,7 @@ export const useInvestigations = () => {
 
       if (error) throw error;
 
-      // Refresh da lista de investigações
       fetchInvestigations();
-
     } catch (error) {
       console.error('Erro ao editar prova:', error);
       throw error;
@@ -307,7 +348,6 @@ export const useInvestigations = () => {
 
       if (error) throw error;
 
-      // Refresh da lista
       fetchInvestigations();
     } catch (error) {
       console.error('Erro ao editar investigação:', error);
@@ -317,7 +357,6 @@ export const useInvestigations = () => {
 
   const deleteInvestigation = useCallback(async (id) => {
     try {
-      // Primeiro, buscar a investigação para obter as provas
       const { data: investigation, error: fetchError } = await supabase
         .from('investigacoes')
         .select('id, provas(*)')
@@ -326,12 +365,10 @@ export const useInvestigations = () => {
 
       if (fetchError) throw fetchError;
 
-      // Deletar arquivos das provas do storage
       if (investigation.provas && investigation.provas.length > 0) {
         for (const proof of investigation.provas) {
           if (proof.url && proof.url.includes('supabase.co/storage')) {
             try {
-              // Extrair o caminho do arquivo da URL pública
               const urlParts = proof.url.split('/provas/');
               if (urlParts.length > 1) {
                 const filePath = decodeURIComponent(urlParts[1]);
@@ -344,7 +381,6 @@ export const useInvestigations = () => {
         }
       }
 
-      // Deletar a investigação do banco de dados
       const { error: deleteError } = await supabase
         .from('investigacoes')
         .delete()
@@ -352,7 +388,6 @@ export const useInvestigations = () => {
 
       if (deleteError) throw deleteError;
 
-      // Refresh da lista
       fetchInvestigations();
     } catch (error) {
       console.error('Erro ao deletar investigação:', error);
@@ -370,6 +405,7 @@ export const useInvestigations = () => {
     deleteProof,
     editProof,
     editInvestigation,
-    deleteInvestigation
+    deleteInvestigation,
+    updateSearchSeizureData
   };
 };

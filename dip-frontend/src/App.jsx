@@ -36,6 +36,9 @@ const ReportList = React.lazy(() => lazyImport(routeLoaders.ReportList));
 const InvestigationList = React.lazy(() => lazyImport(routeLoaders.InvestigationList));
 const InvestigationCreate = React.lazy(() => lazyImport(routeLoaders.InvestigationCreate));
 const InvestigationDetail = React.lazy(() => lazyImport(routeLoaders.InvestigationDetail));
+const SearchSeizureList = React.lazy(() => lazyImport(routeLoaders.SearchSeizureList));
+const SearchSeizureCreate = React.lazy(() => lazyImport(routeLoaders.SearchSeizureCreate));
+const SearchSeizureDetail = React.lazy(() => lazyImport(routeLoaders.SearchSeizureDetail));
 
 // Alvarás Pages
 const AlvaraList = React.lazy(() => lazyImport(routeLoaders.AlvaraList));
@@ -205,6 +208,28 @@ function App() {
             <Route path="investigations/:id" element={
               <PermissionGuard permission="investigations_view">
                 <InvestigationDetail />
+              </PermissionGuard>
+            } />
+
+            {/* Search and Seizure Routes */}
+            <Route path="search-seizure" element={
+              <PermissionGuard permission="investigations_view">
+                <SearchSeizureList />
+              </PermissionGuard>
+            } />
+            <Route path="search-seizure/new" element={
+              <PermissionGuard permission="investigations_manage">
+                <SearchSeizureCreate />
+              </PermissionGuard>
+            } />
+            <Route path="search-seizure/:id/edit" element={
+              <PermissionGuard permission="investigations_manage">
+                <SearchSeizureCreate />
+              </PermissionGuard>
+            } />
+            <Route path="search-seizure/:id" element={
+              <PermissionGuard permission="investigations_view">
+                <SearchSeizureDetail />
               </PermissionGuard>
             } />
             
