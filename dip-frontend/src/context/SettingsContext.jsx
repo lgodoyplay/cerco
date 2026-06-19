@@ -115,11 +115,16 @@ export const SettingsProvider = ({ children }) => {
     try {
       const { data, error } = await supabase
         .from('crimes')
-        .select('*')
-        .order('article', { ascending: true });
+        .select('*');
       
       if (error) throw error;
-      setCrimes(data || []);
+      // Ordena os crimes pelo número do artigo (convertendo para número)
+      const sortedCrimes = (data || []).sort((a, b) => {
+        const numA = parseInt(a.article, 10);
+        const numB = parseInt(b.article, 10);
+        return numA - numB;
+      });
+      setCrimes(sortedCrimes);
     } catch (error) {
       console.error('Error fetching crimes:', error);
     }
