@@ -480,12 +480,26 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
 
             // Converter para formato pdfmake (parágrafos)
             customContent = text.split('\n').map(line => {
-                const trimmed = line.trim();
-                // Detecção simples de "títulos" (linhas curtas em maiúsculas) para aplicar estilo
-                if (trimmed.length > 0 && trimmed.length < 60 && trimmed === trimmed.toUpperCase() && !trimmed.includes(':') && !trimmed.includes('.')) {
-                    return { text: trimmed, style: 'subHeader', margin: [0, 10, 0, 5] };
+                // Verificar tag de centralização
+                let isCentered = false;
+                let processedLine = line;
+                if (processedLine.startsWith('[CENTER]') && processedLine.endsWith('[/CENTER]')) {
+                    isCentered = true;
+                    processedLine = processedLine.slice(8, -9).trim();
                 }
-                return { text: trimmed, style: 'normalText', margin: [0, 2, 0, 2] };
+                
+                const trimmed = processedLine.trim();
+                // Detecção simples de "títulos" (linhas curtas em maiúsculas) para aplicar estilo
+                const isHeader = trimmed.length > 0 && trimmed.length < 60 && trimmed === trimmed.toUpperCase() && !trimmed.includes(':') && !trimmed.includes('.');
+                
+                return { 
+                    text: trimmed, 
+                    style: isHeader ? 'subHeader' : 'normalText', 
+                    margin: [0, 2, 0, 2], 
+                    alignment: isCentered ? 'center' : 'left',
+                    bold: isHeader ? true : false,
+                    fontSize: isHeader ? 13 : 11
+                };
             });
         }
 
@@ -493,13 +507,16 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         const docDefinition = {
             pageSize: 'A4',
             pageMargins: [85, 85, 57, 57],
-            background: backgroundBase64 ? {
-                image: backgroundBase64,
-                width: 595,
-                height: 842,
-                absolutePosition: { x: 0, y: 0 },
-                opacity: 0.3
-            } : null,
+            background: function(currentPage, pageCount) {
+                if (backgroundBase64) {
+                    return {
+                        image: backgroundBase64,
+                        width: 595,
+                        height: 842
+                    };
+                }
+                return null;
+            },
             
             // Cabeçalho em todas as páginas
             header: () => {
