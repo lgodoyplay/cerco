@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { FileText, Save, RefreshCw } from 'lucide-react';
+import { FileText, Save, RefreshCw, Download } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
+import { generateProfessionalPDF } from '../../../utils/pdfGeneratorPro';
 
 const TemplatesSettings = () => {
   const { templates: dbTemplates, updateTemplates, logAction } = useSettings();
@@ -129,6 +130,42 @@ Foi determinado o registro da ocorrência para devida apuração...`
     }
   };
 
+  const handlePreview = async () => {
+    try {
+      // Dados de exemplo para pré-visualização
+      const dummyData = {
+        id: '12345',
+        createdAt: new Date().toISOString(),
+        status: 'Concluído',
+        priority: 'Alta',
+        title: 'Inquérito de Exemplo',
+        description: 'Descrição detalhada dos fatos apurados durante a investigação realizada.',
+        involved: 'João da Silva',
+        investigator: { nome: 'Maria Oliveira' },
+        closedAt: new Date().toISOString(),
+        proofs: [
+          { title: 'Fotografia do Local', description: 'Imagem do local dos fatos', type: 'Imagem', createdAt: new Date().toISOString() },
+          { title: 'Depoimento da Vitima', description: 'Oitiva registrada no dia 15/06', type: 'Documento', createdAt: new Date().toISOString() },
+        ]
+      };
+
+      const dummyUser = {
+        nome: 'Maria Oliveira',
+        badge: 'PC-EUF-001'
+      };
+
+      await generateProfessionalPDF(
+        dummyData,
+        dummyUser,
+        templates[activeTab],
+        activeTab
+      );
+    } catch (e) {
+      console.error('Erro ao gerar pré-visualização:', e);
+      alert('Erro ao gerar pré-visualização.');
+    }
+  };
+
   const tabs = [
     { id: 'investigation', label: 'Relatório de Investigação' },
     { id: 'arrest', label: 'Auto de Prisão' },
@@ -174,7 +211,7 @@ Foi determinado o registro da ocorrência para devida apuração...`
           </div>
         </div>
 
-        <div className="bg-slate-900 border-t border-slate-800 p-4 flex justify-between items-center">
+        <div className="bg-slate-900 border-t border-slate-800 p-4 flex justify-between items-center gap-3">
           <button 
             onClick={handleReset}
             className="text-slate-400 hover:text-white text-sm flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors"
@@ -183,18 +220,28 @@ Foi determinado o registro da ocorrência para devida apuração...`
             Restaurar Padrão
           </button>
           
-          <button 
-            onClick={handleSave}
-            disabled={!hasChanges}
-            className={`flex items-center gap-2 px-6 py-2 rounded-xl font-bold transition-all ${
-              hasChanges 
-                ? 'bg-federal-600 hover:bg-federal-500 text-white shadow-lg' 
-                : 'bg-slate-800 text-slate-500 cursor-not-allowed'
-            }`}
-          >
-            <Save size={18} />
-            Salvar Alterações
-          </button>
+          <div className="flex gap-3">
+            <button 
+              onClick={handlePreview}
+              className="flex items-center gap-2 px-5 py-2 rounded-xl font-bold bg-emerald-700 hover:bg-emerald-600 text-white shadow-lg transition-all"
+            >
+              <Download size={18} />
+              Pré-visualizar
+            </button>
+            
+            <button 
+              onClick={handleSave}
+              disabled={!hasChanges}
+              className={`flex items-center gap-2 px-6 py-2 rounded-xl font-bold transition-all ${
+                hasChanges 
+                  ? 'bg-federal-600 hover:bg-federal-500 text-white shadow-lg' 
+                  : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+              }`}
+            >
+              <Save size={18} />
+              Salvar Alterações
+            </button>
+          </div>
         </div>
       </div>
     </div>
