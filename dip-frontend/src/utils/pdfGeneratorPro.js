@@ -978,7 +978,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         // Definir Conteúdo Final
         const docDefinition = {
             pageSize: 'A4',
-            pageMargins: [85, 118, 57, 57],
+            pageMargins: [57, 118, 57, 57],
             background: function(currentPage, pageCount) {
                 if (backgroundBase64) {
                     return {
@@ -1010,7 +1010,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 if (type === 'investigation' && currentPage === 1) return null;
                 return {
                     columns: [
-                        { text: `Documento Oficial - Uso Interno | ${docTitle} Nº ${data.id}`, alignment: 'left', fontSize: 10, margin: [85, 0, 0, 0] },
+                        { text: `Documento Oficial - Uso Interno | ${docTitle} Nº ${data.id}`, alignment: 'left', fontSize: 10, margin: [57, 0, 0, 0] },
                         { text: `Emitido em: ${new Date().toLocaleDateString('pt-BR')} | Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 10, margin: [0, 0, 57, 0] }
                     ]
                 };

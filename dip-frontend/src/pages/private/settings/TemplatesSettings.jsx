@@ -167,7 +167,7 @@ const quillStyles = `
     color: #475569;
   }
   .pdf-preview-body-page {
-    padding: 108px 58px 64px;
+    padding: 108px 57px 64px;
     color: #111827;
   }
   .pdf-preview-page-header {
