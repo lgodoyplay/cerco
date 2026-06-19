@@ -134,7 +134,9 @@ const InvestigationDetail = () => {
           'investigation',
           templates?.__layoutConfig?.investigation,
           templates?.__pageHeaderConfig,
-          templates?.__investigationCoverConfig
+          {},
+          templates?.__investigationCoverTemplate,
+          templates?.__investigationNumberConfig
         );
         setNotification({
           type: 'success',
@@ -162,7 +164,9 @@ const InvestigationDetail = () => {
         'investigation',
         templates?.__layoutConfig?.investigation,
         templates?.__pageHeaderConfig,
-        templates?.__investigationCoverConfig
+        {},
+        templates?.__investigationCoverTemplate,
+        templates?.__investigationNumberConfig
       );
       setNotification({
         type: 'success',

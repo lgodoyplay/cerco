@@ -87,6 +87,21 @@ export const DEFAULT_INVESTIGATION_COVER_CONFIG = {
     footer: '"Servir e Proteger com Justica e Integridade"'
 };
 
+export const DEFAULT_INVESTIGATION_NUMBER_CONFIG = {
+    segment: '8',
+    tribunal: '26',
+    unit: '0001'
+};
+
+export const DEFAULT_INVESTIGATION_COVER_TEMPLATE = `<p class="ql-align-center"><strong>POLÍCIA CIVIL DO ESTADO DA EUFORIA</strong></p>
+<p class="ql-align-center"><strong>DEPARTAMENTO DE INVESTIGAÇÕES CRIMINAIS</strong></p>
+<p class="ql-align-center"><br></p>
+<p class="ql-align-center"><strong>RELATÓRIO FINAL DE INQUÉRITO POLICIAL</strong></p>
+<p class="ql-align-center"><br></p>
+<p class="ql-align-center">PROTOCOLO Nº {numero_inquerito}</p>
+<p class="ql-align-center"><br></p>
+<p class="ql-align-center">"Servir e Proteger com Justiça e Integridade"</p>`;
+
 export const getMergedTemplateLayout = (type = 'investigation', layoutConfig = {}) => ({
     ...(DEFAULT_TEMPLATE_LAYOUTS[type] || {}),
     ...(layoutConfig || {})
@@ -95,6 +110,11 @@ export const getMergedTemplateLayout = (type = 'investigation', layoutConfig = {
 export const getMergedPageHeaderConfig = (headerConfig = {}) => ({
     ...DEFAULT_PAGE_HEADER_CONFIG,
     ...(headerConfig || {})
+});
+
+export const getMergedInvestigationNumberConfig = (numberConfig = {}) => ({
+    ...DEFAULT_INVESTIGATION_NUMBER_CONFIG,
+    ...(numberConfig || {})
 });
 
 export const getMergedInvestigationCoverConfig = (coverConfig = {}) => ({
@@ -220,7 +240,7 @@ const buildInvestigationProofsHtml = (proofs = []) => {
     return proofs.map((proof, index) => {
         const proofNumber = String(index + 1).padStart(3, '0');
         const attachmentNote = isImageProof(proof)
-            ? 'Imagem vinculada ao sistema. O registro fotografico segue anexado no final do documento.'
+            ? `${proof.content ? `<img src="${escapeHtml(proof.content)}" alt="${escapeHtml(proof.title || 'Imagem da prova')}" style="display:block;max-width:100%;max-height:320px;object-fit:contain;margin:12px auto;border-radius:6px;" />` : ''}<span>Imagem vinculada ao sistema.</span>`
             : buildProofAttachmentHtml(proof);
         return `<p><strong>PROVA ${proofNumber} - ${escapeHtml(proof.title || 'Sem título')}</strong></p>
 <p>Tipo: ${escapeHtml(getProofTypeLabel(proof.type))}</p>
@@ -233,12 +253,68 @@ const buildInvestigationProofsHtml = (proofs = []) => {
     }).join('');
 };
 
+const buildInvestigationProofBlocksPdf = (proofs = []) => {
+    if (!proofs.length) {
+        return [{ text: 'Nenhuma prova anexada.', style: 'normalText', italics: true }];
+    }
+
+    return proofs.flatMap((proof, index) => {
+        const proofNumber = String(index + 1).padStart(3, '0');
+        const block = [
+            { text: `PROVA ${proofNumber} - ${proof.title || 'Sem título'}`, bold: true, fontSize: 11, margin: [0, index === 0 ? 0 : 14, 0, 6] },
+            { text: `Tipo: ${getProofTypeLabel(proof.type)}`, style: 'normalText', margin: [0, 0, 0, 2] },
+            { text: `Data de Inserção: ${formatDate(proof.createdAt)}`, style: 'normalText', margin: [0, 0, 0, 2] },
+            { text: `Responsável: ${proof.author || 'Agente'}`, style: 'normalText', margin: [0, 0, 0, 6] },
+            { text: 'Descrição:', style: 'normalText', bold: true, margin: [0, 0, 0, 2] },
+            { text: proof.description || proof.content || 'Sem descrição informada.', style: 'normalText', margin: [0, 0, 0, 6] }
+        ];
+
+        if (isImageProof(proof) && proof.imgData) {
+            block.push(
+                { text: 'Anexo fotográfico:', style: 'normalText', bold: true, margin: [0, 0, 0, 6] },
+                { image: proof.imgData, fit: [420, 300], alignment: 'center', margin: [0, 0, 0, 8] }
+            );
+        } else if (proof.type === 'link' || proof.type === 'video') {
+            block.push({ text: `Anexo: ${proof.content || 'Link não informado'}`, link: proof.content || undefined, color: '#2563eb', decoration: 'underline', fontSize: 10, margin: [0, 0, 0, 8] });
+        } else if (proof.type === 'file') {
+            block.push({ text: `Anexo: ${proof.content || 'Arquivo vinculado'}`, fontSize: 10, italics: true, color: '#4b5563', margin: [0, 0, 0, 8] });
+        } else {
+            block.push({ text: 'Anexo: [Arquivo vinculado]', fontSize: 10, margin: [0, 0, 0, 8] });
+        }
+
+        return block;
+    });
+};
+
 const buildInvestigationProofsText = (proofs = []) => {
     if (!proofs.length) return 'Nenhuma prova anexada.';
 
     return proofs.map((proof, index) =>
         `${String(index + 1).padStart(3, '0')} - ${proof.title || 'Sem título'} | ${getProofTypeLabel(proof.type)} | ${formatDate(proof.createdAt)} | ${proof.author || 'Agente'}`
     ).join('\n');
+};
+
+const onlyDigits = (value = '') => String(value || '').replace(/\D/g, '');
+
+const modulo97 = (digits) => {
+    let remainder = 0;
+    for (const digit of String(digits)) {
+        remainder = (remainder * 10 + Number(digit)) % 97;
+    }
+    return remainder;
+};
+
+export const formatInvestigationNumber = (data = {}, numberConfig = {}) => {
+    const config = getMergedInvestigationNumberConfig(numberConfig);
+    const year = String(new Date(data.createdAt || data.created_at || Date.now()).getFullYear()).padStart(4, '0').slice(-4);
+    const sequential = onlyDigits(data.id).padStart(7, '0').slice(-7);
+    const segment = onlyDigits(config.segment).padStart(1, '0').slice(-1);
+    const tribunal = onlyDigits(config.tribunal).padStart(2, '0').slice(-2);
+    const unit = onlyDigits(config.unit).padStart(4, '0').slice(-4);
+    const baseNumber = `${sequential}${year}${segment}${tribunal}${unit}`;
+    const verifier = String(98 - (modulo97(`${baseNumber}00`) % 97)).padStart(2, '0').slice(-2);
+
+    return `${sequential}-${verifier}.${year}.${segment}.${tribunal}.${unit}`;
 };
 
 const replaceTemplateVariables = (templateStr = '', variables = {}) => {
@@ -266,13 +342,14 @@ const normalizeInvestigationTemplateHtml = (templateStr = '') => {
     return normalized.trim();
 };
 
-const getDocumentVariables = (data, user, type = 'investigation') => {
+const getDocumentVariables = (data, user, type = 'investigation', investigationNumberConfig = {}) => {
     if (type === 'investigation') {
         const listaProvas = buildInvestigationProofsText(data.proofs || []);
         const blocoProvas = buildInvestigationProofsHtml(data.proofs || []);
+        const investigationNumber = formatInvestigationNumber(data, investigationNumberConfig);
 
         return {
-            '{numero_inquerito}': data.id,
+            '{numero_inquerito}': investigationNumber,
             '{data_abertura}': formatDate(data.createdAt),
             '{status}': data.status,
             '{delegacia}': data.delegaciaResponsavel || 'Delegacia Central de Investigacoes',
@@ -350,7 +427,6 @@ const buildPreviewHeaderHtml = (headerConfig = {}) => {
 
     return `
         <div class="pdf-preview-page-header">
-            <div class="pdf-preview-page-line"></div>
             <div class="pdf-preview-page-header-text">${escapeHtml(header.line1)}</div>
             <div class="pdf-preview-page-header-text">${escapeHtml(header.line2)}</div>
             <div class="pdf-preview-page-header-text">${escapeHtml(header.line3)}</div>
@@ -364,26 +440,199 @@ const buildPdfHeaderContent = (headerConfig = {}) => {
     return [
         { text: header.line1, style: 'headerText' },
         { text: header.line2, style: 'headerText' },
-        { text: header.line3, style: 'headerText' },
-        { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1 }], margin: [0, 5, 0, 10] }
+        { text: header.line3, style: 'headerText' }
     ];
 };
 
-export const buildTemplatePreviewHtml = (data, user, templateStr = '', type = 'investigation', layoutConfig = {}, pageHeaderConfig = {}, coverConfig = {}) => {
+const getAlignment = (node) => {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) return undefined;
+
+    const styleAttr = (node.getAttribute('style') || '').toLowerCase();
+    const classAttr = node.getAttribute('class') || '';
+
+    if (styleAttr.includes('text-align: center') || classAttr.includes('ql-align-center')) return 'center';
+    if (styleAttr.includes('text-align: right') || classAttr.includes('ql-align-right')) return 'right';
+    if (styleAttr.includes('text-align: justify') || classAttr.includes('ql-align-justify')) return 'justify';
+    if (styleAttr.includes('text-align: left') || classAttr.includes('ql-align-left')) return 'left';
+
+    return undefined;
+};
+
+const applyInlineStyles = (node, item) => {
+    if (!item || node.nodeType !== Node.ELEMENT_NODE) return item;
+
+    const tag = node.tagName.toLowerCase();
+    const styleAttr = (node.getAttribute('style') || '').toLowerCase();
+
+    if (tag === 'strong' || tag === 'b' || styleAttr.includes('font-weight: bold') || styleAttr.includes('font-weight:bold')) {
+        item.bold = true;
+    }
+
+    if (tag === 'em' || tag === 'i' || styleAttr.includes('font-style: italic') || styleAttr.includes('font-style:italic')) {
+        item.italics = true;
+    }
+
+    if (tag === 'u' || styleAttr.includes('text-decoration: underline')) {
+        item.decoration = item.decoration ? [].concat(item.decoration, 'underline') : 'underline';
+    }
+
+    if (tag === 's' || tag === 'strike' || styleAttr.includes('text-decoration: line-through')) {
+        item.decoration = item.decoration ? [].concat(item.decoration, 'lineThrough') : 'lineThrough';
+    }
+
+    if (tag === 'a') {
+        const href = node.getAttribute('href');
+        if (href) {
+            item.link = href;
+            item.color = item.color || '#2563eb';
+            item.decoration = item.decoration || 'underline';
+        }
+    }
+
+    return item;
+};
+
+const parseInlineNode = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+        return node.textContent || '';
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+        return '';
+    }
+
+    const tag = node.tagName.toLowerCase();
+
+    if (tag === 'br') {
+        return '\n';
+    }
+
+    if (tag === 'img') {
+        return '';
+    }
+
+    const children = Array.from(node.childNodes)
+        .map(parseInlineNode)
+        .filter(item => item !== null && item !== undefined && item !== '');
+
+    if (tag === 'span' || tag === 'strong' || tag === 'b' || tag === 'em' || tag === 'i' || tag === 'u' || tag === 's' || tag === 'strike' || tag === 'a') {
+        const inlineItem = {
+            text: children.length <= 1 ? (children[0] || '') : children
+        };
+        return applyInlineStyles(node, inlineItem);
+    }
+
+    return children.length <= 1 ? (children[0] || '') : children;
+};
+
+const parseBlockNode = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent;
+        return text && text.trim() ? { text: text.trim() } : null;
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+        return null;
+    }
+
+    const tag = node.tagName.toLowerCase();
+    const classAttr = node.getAttribute('class') || '';
+    const alignment = getAlignment(node);
+
+    if (node.hasAttribute('data-proof-block-placeholder')) {
+        return { __proofBlockPlaceholder: true };
+    }
+
+    if (tag === 'div' && classAttr.includes('divider-blot')) {
+        return {
+            canvas: [
+                { type: 'line', x1: 0, y1: 0, x2: 500, y2: 0, lineWidth: 1 }
+            ],
+            margin: [0, 10, 0, 10]
+        };
+    }
+
+    if (tag === 'hr') {
+        return {
+            canvas: [
+                { type: 'line', x1: 0, y1: 0, x2: 500, y2: 0, lineWidth: 1 }
+            ],
+            margin: [0, 10, 0, 10]
+        };
+    }
+
+    if (tag === 'ul' || tag === 'ol') {
+        const items = Array.from(node.children)
+            .filter(child => child.tagName && child.tagName.toLowerCase() === 'li')
+            .map(li => {
+                const parsed = Array.from(li.childNodes)
+                    .map(parseInlineNode)
+                    .filter(item => item !== null && item !== undefined && item !== '');
+                return parsed.length <= 1 ? (parsed[0] || '') : parsed;
+            });
+
+        return tag === 'ul' ? { ul: items } : { ol: items };
+    }
+
+    if (tag === 'p' || tag === 'div') {
+        const parsed = Array.from(node.childNodes)
+            .map(parseInlineNode)
+            .filter(item => item !== null && item !== undefined && item !== '');
+        const paragraph = { text: parsed.length <= 1 ? (parsed[0] || '') : parsed };
+        if (alignment) paragraph.alignment = alignment;
+        return paragraph;
+    }
+
+    if (tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4' || tag === 'h5' || tag === 'h6') {
+        const level = parseInt(tag.charAt(1), 10);
+        const sizes = [24, 20, 18, 16, 14, 12];
+        const parsed = Array.from(node.childNodes)
+            .map(parseInlineNode)
+            .filter(item => item !== null && item !== undefined && item !== '');
+        const heading = {
+            text: parsed.length <= 1 ? (parsed[0] || '') : parsed,
+            fontSize: sizes[level - 1],
+            bold: true,
+            margin: [0, 10, 0, 5]
+        };
+        if (alignment) heading.alignment = alignment;
+        return heading;
+    }
+
+    const fallback = Array.from(node.childNodes)
+        .map(parseBlockNode)
+        .filter(Boolean);
+
+    if (fallback.length === 1) return fallback[0];
+    if (fallback.length > 1) return fallback;
+    return null;
+};
+
+const htmlToPdfmakeContent = (html) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    return Array.from(doc.body.childNodes)
+        .map(parseBlockNode)
+        .flat()
+        .filter(item => item !== null && item !== undefined);
+};
+
+export const buildTemplatePreviewHtml = (data, user, templateStr = '', type = 'investigation', layoutConfig = {}, pageHeaderConfig = {}, coverConfig = {}, coverTemplate = '', investigationNumberConfig = {}) => {
     const layout = getMergedTemplateLayout(type, layoutConfig);
     const cover = getMergedInvestigationCoverConfig(coverConfig);
-    const variables = getDocumentVariables(data, user, type);
+    const variables = getDocumentVariables(data, user, type, investigationNumberConfig);
     const sourceTemplate = type === 'investigation'
         ? normalizeInvestigationTemplateHtml(templateStr)
         : templateStr;
     const processedHtml = replaceTemplateVariables(sourceTemplate, variables);
+    const processedCoverHtml = replaceTemplateVariables(coverTemplate || DEFAULT_INVESTIGATION_COVER_TEMPLATE, variables);
 
     const contentPage = `
         <section class="pdf-preview-page pdf-preview-body-page">
             ${buildPreviewHeaderHtml(pageHeaderConfig)}
             <div class="pdf-preview-page-content">${processedHtml}</div>
             <div class="pdf-preview-page-footer">
-                <div class="pdf-preview-page-line"></div>
                 <div class="pdf-preview-page-footer-text">Documento oficial gerado pelo sistema</div>
             </div>
         </section>
@@ -395,46 +644,30 @@ export const buildTemplatePreviewHtml = (data, user, templateStr = '', type = 'i
 
     return `
         <section class="pdf-preview-page pdf-preview-cover-page">
-            <div class="pdf-preview-cover-line" data-line-key="coverTopLineY" style="top:${layout.coverTopLineY}px;"></div>
-            <div class="pdf-preview-cover-line" data-line-key="coverBottomLineY" style="top:${layout.coverBottomLineY}px;"></div>
             <div class="pdf-preview-cover-content">
-                <p class="pdf-preview-cover-eyebrow">${escapeHtml(cover.eyebrow1)}</p>
-                <p class="pdf-preview-cover-eyebrow">${escapeHtml(cover.eyebrow2)}</p>
-                <div class="pdf-preview-cover-title-wrap">
-                    <p class="pdf-preview-cover-title">${escapeHtml(cover.title)}</p>
-                </div>
-                <p class="pdf-preview-cover-ref">PROTOCOLO Nº ${escapeHtml(String(data.id || '0001'))}/${new Date().getFullYear()}</p>
-                <p class="pdf-preview-cover-footer">${escapeHtml(cover.footer)}</p>
+                ${processedCoverHtml}
             </div>
         </section>
         ${contentPage}
     `;
 };
 
-const buildInvestigationCoverContent = (data, layoutConfig = {}, coverConfig = {}) => {
+const buildInvestigationCoverContent = (data, layoutConfig = {}, coverConfig = {}, coverTemplate = '', investigationNumberConfig = {}) => {
     const layout = getMergedTemplateLayout('investigation', layoutConfig);
     const cover = getMergedInvestigationCoverConfig(coverConfig);
+    const variables = getDocumentVariables(data, null, 'investigation', investigationNumberConfig);
+    const processedCoverHtml = replaceTemplateVariables(coverTemplate || DEFAULT_INVESTIGATION_COVER_TEMPLATE, variables);
+    const coverContent = htmlToPdfmakeContent(processedCoverHtml);
 
     return {
-        stack: [
-            {
-                canvas: [
-                    { type: 'line', x1: 0, y1: 0, x2: 481, y2: 0, lineWidth: 1.2 }
-                ],
-                absolutePosition: { x: 57, y: layout.coverTopLineY }
-            },
-            {
-                canvas: [
-                    { type: 'line', x1: 0, y1: 0, x2: 481, y2: 0, lineWidth: 1.2 }
-                ],
-                absolutePosition: { x: 57, y: layout.coverBottomLineY }
-            },
+        stack: coverContent.length ? coverContent : [
             { text: cover.eyebrow1, alignment: 'center', bold: true, fontSize: 16, margin: [0, 180, 0, 12] },
             { text: cover.eyebrow2, alignment: 'center', bold: true, fontSize: 13, margin: [0, 0, 0, 100] },
             { text: cover.title, alignment: 'center', bold: true, fontSize: 20, margin: [0, 0, 0, 20] },
             { text: `PROTOCOLO Nº ${String(data.id || '0001')}/${new Date().getFullYear()}`, alignment: 'center', fontSize: 11, margin: [0, 0, 0, 230] },
             { text: cover.footer, alignment: 'center', italics: true, fontSize: 11, color: '#444444' }
         ],
+        margin: [0, 180, 0, 0],
         pageBreak: 'after'
     };
 };
@@ -443,7 +676,7 @@ const buildInvestigationCoverContent = (data, layoutConfig = {}, coverConfig = {
 const coatOfArmsBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 // Gerar Documento
-export const generateProfessionalPDF = async (data, user, templateStr = null, type = 'investigation', layoutConfig = {}, pageHeaderConfig = {}, coverConfig = {}) => {
+export const generateProfessionalPDF = async (data, user, templateStr = null, type = 'investigation', layoutConfig = {}, pageHeaderConfig = {}, coverConfig = {}, coverTemplate = '', investigationNumberConfig = {}) => {
     console.log(`Iniciando geração de PDF Profissional (${type})...`, data);
     try {
         // Garantir configuração de VFS
@@ -538,7 +771,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
 
         if (type === 'investigation') {
             docTitle = 'RELATÓRIO FINAL DE INQUÉRITO POLICIAL';
-            docRef = `PROTOCOLO Nº ${data.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`;
+            docRef = `PROTOCOLO Nº ${formatInvestigationNumber(data, investigationNumberConfig)}`;
             templateHasProofPlaceholder = Boolean(templateStr && (templateStr.includes('{bloco_provas}') || templateStr.includes('{lista_provas}')));
             
             // Criar lista de provas formatada
@@ -546,7 +779,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             const blocoProvas = buildInvestigationProofsHtml(data.proofs || []);
             
             variables = {
-                ...getDocumentVariables(data, user, type),
+                ...getDocumentVariables(data, user, type, investigationNumberConfig),
                 '{lista_provas}': listaProvas,
                 '{bloco_provas}': blocoProvas
             };
@@ -730,181 +963,16 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             let processedHtml = templateStr;
             if (type === 'investigation') {
                 processedHtml = normalizeInvestigationTemplateHtml(processedHtml);
+                processedHtml = processedHtml.replace(/\{bloco_provas\}/g, '<div data-proof-block-placeholder="true"></div>');
             }
             processedHtml = replaceTemplateVariables(processedHtml, variables);
 
-            // Função para converter HTML em array pdfmake
-            const htmlToPdfmake = (html) => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
+            customContent = htmlToPdfmakeContent(processedHtml);
 
-                const getAlignment = (node) => {
-                    if (!node || node.nodeType !== Node.ELEMENT_NODE) return undefined;
-
-                    const styleAttr = (node.getAttribute('style') || '').toLowerCase();
-                    const classAttr = node.getAttribute('class') || '';
-
-                    if (styleAttr.includes('text-align: center') || classAttr.includes('ql-align-center')) return 'center';
-                    if (styleAttr.includes('text-align: right') || classAttr.includes('ql-align-right')) return 'right';
-                    if (styleAttr.includes('text-align: justify') || classAttr.includes('ql-align-justify')) return 'justify';
-                    if (styleAttr.includes('text-align: left') || classAttr.includes('ql-align-left')) return 'left';
-
-                    return undefined;
-                };
-
-                const applyInlineStyles = (node, item) => {
-                    if (!item || node.nodeType !== Node.ELEMENT_NODE) return item;
-
-                    const tag = node.tagName.toLowerCase();
-                    const styleAttr = (node.getAttribute('style') || '').toLowerCase();
-
-                    if (tag === 'strong' || tag === 'b' || styleAttr.includes('font-weight: bold') || styleAttr.includes('font-weight:bold')) {
-                        item.bold = true;
-                    }
-
-                    if (tag === 'em' || tag === 'i' || styleAttr.includes('font-style: italic') || styleAttr.includes('font-style:italic')) {
-                        item.italics = true;
-                    }
-
-                    if (tag === 'u' || styleAttr.includes('text-decoration: underline')) {
-                        item.decoration = item.decoration ? [].concat(item.decoration, 'underline') : 'underline';
-                    }
-
-                    if (tag === 's' || tag === 'strike' || styleAttr.includes('text-decoration: line-through')) {
-                        item.decoration = item.decoration ? [].concat(item.decoration, 'lineThrough') : 'lineThrough';
-                    }
-
-                    if (tag === 'a') {
-                        const href = node.getAttribute('href');
-                        if (href) {
-                            item.link = href;
-                            item.color = item.color || '#2563eb';
-                            item.decoration = item.decoration || 'underline';
-                        }
-                    }
-
-                    return item;
-                };
-
-                const parseInlineNode = (node) => {
-                    if (node.nodeType === Node.TEXT_NODE) {
-                        return node.textContent || '';
-                    }
-
-                    if (node.nodeType !== Node.ELEMENT_NODE) {
-                        return '';
-                    }
-
-                    const tag = node.tagName.toLowerCase();
-
-                    if (tag === 'br') {
-                        return '\n';
-                    }
-
-                    if (tag === 'img') {
-                        return '';
-                    }
-
-                    const children = Array.from(node.childNodes)
-                        .map(parseInlineNode)
-                        .filter(item => item !== null && item !== undefined && item !== '');
-
-                    if (tag === 'span' || tag === 'strong' || tag === 'b' || tag === 'em' || tag === 'i' || tag === 'u' || tag === 's' || tag === 'strike' || tag === 'a') {
-                        const inlineItem = {
-                            text: children.length <= 1 ? (children[0] || '') : children
-                        };
-                        return applyInlineStyles(node, inlineItem);
-                    }
-
-                    return children.length <= 1 ? (children[0] || '') : children;
-                };
-
-                const parseBlockNode = (node) => {
-                    if (node.nodeType === Node.TEXT_NODE) {
-                        const text = node.textContent;
-                        return text && text.trim() ? { text: text.trim() } : null;
-                    }
-
-                    if (node.nodeType !== Node.ELEMENT_NODE) {
-                        return null;
-                    }
-
-                    const tag = node.tagName.toLowerCase();
-                    const classAttr = node.getAttribute('class') || '';
-                    const alignment = getAlignment(node);
-
-                    if (tag === 'div' && classAttr.includes('divider-blot')) {
-                        return {
-                            canvas: [
-                                { type: 'line', x1: 0, y1: 0, x2: 500, y2: 0, lineWidth: 1 }
-                            ],
-                            margin: [0, 10, 0, 10]
-                        };
-                    }
-
-                    if (tag === 'hr') {
-                        return {
-                            canvas: [
-                                { type: 'line', x1: 0, y1: 0, x2: 500, y2: 0, lineWidth: 1 }
-                            ],
-                            margin: [0, 10, 0, 10]
-                        };
-                    }
-
-                    if (tag === 'ul' || tag === 'ol') {
-                        const items = Array.from(node.children)
-                            .filter(child => child.tagName && child.tagName.toLowerCase() === 'li')
-                            .map(li => {
-                                const parsed = Array.from(li.childNodes)
-                                    .map(parseInlineNode)
-                                    .filter(item => item !== null && item !== undefined && item !== '');
-                                return parsed.length <= 1 ? (parsed[0] || '') : parsed;
-                            });
-
-                        return tag === 'ul' ? { ul: items } : { ol: items };
-                    }
-
-                    if (tag === 'p' || tag === 'div') {
-                        const parsed = Array.from(node.childNodes)
-                            .map(parseInlineNode)
-                            .filter(item => item !== null && item !== undefined && item !== '');
-                        const paragraph = { text: parsed.length <= 1 ? (parsed[0] || '') : parsed };
-                        if (alignment) paragraph.alignment = alignment;
-                        return paragraph;
-                    }
-
-                    if (tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4' || tag === 'h5' || tag === 'h6') {
-                        const level = parseInt(tag.charAt(1), 10);
-                        const sizes = [24, 20, 18, 16, 14, 12];
-                        const parsed = Array.from(node.childNodes)
-                            .map(parseInlineNode)
-                            .filter(item => item !== null && item !== undefined && item !== '');
-                        const heading = {
-                            text: parsed.length <= 1 ? (parsed[0] || '') : parsed,
-                            fontSize: sizes[level - 1],
-                            bold: true,
-                            margin: [0, 10, 0, 5]
-                        };
-                        if (alignment) heading.alignment = alignment;
-                        return heading;
-                    }
-
-                    const fallback = Array.from(node.childNodes)
-                        .map(parseBlockNode)
-                        .filter(Boolean);
-
-                    if (fallback.length === 1) return fallback[0];
-                    if (fallback.length > 1) return fallback;
-                    return null;
-                };
-
-                return Array.from(doc.body.childNodes)
-                    .map(parseBlockNode)
-                    .flat()
-                    .filter(item => item !== null && item !== undefined);
-            };
-
-            customContent = htmlToPdfmake(processedHtml);
+            if (type === 'investigation' && templateHasProofPlaceholder) {
+                const proofBlocks = buildInvestigationProofBlocksPdf(processedProofs);
+                customContent = customContent.flatMap((item) => item && item.__proofBlockPlaceholder ? proofBlocks : [item]);
+            }
         }
 
         // Definir Conteúdo Final
@@ -949,72 +1017,19 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             },
 
             content: [
-                ...(type === 'investigation' ? [buildInvestigationCoverContent(data, mergedLayout, coverConfig)] : []),
+                ...(type === 'investigation' ? [buildInvestigationCoverContent(data, mergedLayout, coverConfig, coverTemplate, investigationNumberConfig)] : []),
                 // Se tiver template customizado, usa ele. Se não, usa o padrão.
                 ...(customContent ? customContent : standardContent),
 
-                // --- ANEXOS (Para Investigations ou se houver imagens em outros tipos) ---
-                ((!customContent && type === 'investigation') || validImages.length > 0) ? [
-                    { text: customContent ? '\n\n--- ANEXOS DO SISTEMA ---\n\n' : '', style: 'subHeader', pageBreak: customContent ? 'before' : undefined },
-                ] : [],
-
-                // --- PROVAS E EVIDÊNCIAS (Apenas Investigation sem bloco customizado) ---
+                // --- PROVAS E EVIDÊNCIAS DINÂMICAS DO INQUÉRITO ---
                 (type === 'investigation' && !templateHasProofPlaceholder) ? [
                     { text: customContent ? 'REGISTRO DE PROVAS' : '5. PROVAS COLETADAS', style: 'sectionTitle', tocItem: !customContent },
-                    processedProofs.length > 0 ? {
-                        layout: 'headerLineOnly',
-                        table: {
-                            widths: ['5%', '15%', '60%', '20%'],
-                            headerRows: 1,
-                            body: [
-                                [
-                                    { text: '#', style: 'tableHeader' },
-                                    { text: 'TIPO', style: 'tableHeader' },
-                                    { text: 'DESCRIÇÃO E CONTEÚDO', style: 'tableHeader' },
-                                    { text: 'DATA', style: 'tableHeader' }
-                                ],
-                                ...processedProofs.map((proof, index) => [
-                                    { text: (index + 1).toString(), style: 'tableCell', alignment: 'center' },
-                                    { text: (proof.type || 'DOC').toUpperCase(), style: 'tableCell' },
-                                    { 
-                                        stack: [
-                                            { text: proof.title || 'Sem título', bold: true, fontSize: 10 },
-                                            { text: proof.description || '', fontSize: 10, margin: [0, 2, 0, 2] },
-                                            isImageProof(proof) ? { text: '(Visualizar na seção de Anexos)', fontSize: 9, italics: true, color: '#666666' } : null,
-                                            (proof.type === 'link' || proof.type === 'video') ? { text: proof.content || '', link: proof.content, color: '#2563eb', decoration: 'underline', fontSize: 9, margin: [0, 2, 0, 0] } : null,
-                                            (proof.type === 'file') ? { text: `Arquivo/Ref: ${proof.content || 'Não informado'}`, fontSize: 9, italics: true, color: '#4b5563', margin: [0, 2, 0, 0] } : null,
-                                            (proof.type === 'text') ? { text: `"${proof.content || ''}"`, fontSize: 9, italics: true, background: '#f3f4f6', margin: [0, 2, 0, 0] } : null
-                                        ].filter(Boolean),
-                                        style: 'tableCell' 
-                                    },
-                                    { text: formatDate(proof.createdAt), style: 'tableCell', alignment: 'center' }
-                                ])
-                            ]
-                        }
-                    } : { text: 'Nenhuma prova anexada.', style: 'normalText', italics: true }
-                ] : [],
-
-                // --- ANEXOS (IMAGENS) ---
-                (validImages.length > 0) ? [
-                     { text: customContent ? 'REGISTRO FOTOGRÁFICO' : (type === 'investigation' ? '6. ANEXOS FOTOGRÁFICOS' : 'ANEXOS FOTOGRÁFICOS'), style: 'sectionTitle', pageBreak: 'before', tocItem: !customContent },
-                     ...(type === 'investigation' ? [{
-                        text: 'As imagens abaixo foram importadas automaticamente da pasta de investigação.',
-                        style: 'normalText',
-                        margin: [0, 0, 0, 12]
-                     }] : []),
-                     ...validImages.map((proof, index) => {
-                        if (!proof.imgData) return null;
-                        return [
-                            { text: `ANEXO ${index + 1} - ${proof.title || 'EVIDÊNCIA VISUAL'}`, style: 'subHeader', margin: [0, 20, 0, 10] },
-                            { image: proof.imgData, fit: [450, 350], alignment: 'center', margin: [0, 0, 0, 10] },
-                            { text: `Legenda: ${proof.description || 'Sem descrição.'}`, fontSize: 9, alignment: 'center', italics: true, margin: [0, 0, 0, 20] }
-                        ];
-                    }).flat().filter(Boolean)
+                    ...buildInvestigationProofBlocksPdf(processedProofs)
                 ] : [],
 
                 // --- CONCLUSÃO E ASSINATURAS (Se não customizado) ---
                 ...(customContent ? [] : [
-                    { text: type === 'investigation' ? '7. CONCLUSÃO' : 'CONCLUSÃO', style: 'sectionTitle', pageBreak: 'before', tocItem: true },
+                    { text: type === 'investigation' ? '7. CONCLUSÃO' : 'CONCLUSÃO', style: 'sectionTitle', tocItem: true },
                     { text: variables['{conclusao}'], style: 'normalText' },
                     { text: "Sendo o que cumpria relatar, submeto à consideração superior.", style: 'normalText', margin: [0, 10, 0, 0] },
 

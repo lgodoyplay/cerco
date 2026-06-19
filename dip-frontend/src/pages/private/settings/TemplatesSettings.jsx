@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ExternalLink, FileText, Save, RefreshCw } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
-import { buildTemplatePreviewHtml, DEFAULT_INVESTIGATION_COVER_CONFIG, DEFAULT_PAGE_HEADER_CONFIG, DEFAULT_TEMPLATE_LAYOUTS, generateProfessionalPDF, getMergedInvestigationCoverConfig, getMergedPageHeaderConfig, getMergedTemplateLayout } from '../../../utils/pdfGeneratorPro';
+import { buildTemplatePreviewHtml, DEFAULT_INVESTIGATION_COVER_TEMPLATE, DEFAULT_INVESTIGATION_NUMBER_CONFIG, DEFAULT_PAGE_HEADER_CONFIG, DEFAULT_TEMPLATE_LAYOUTS, formatInvestigationNumber, generateProfessionalPDF, getMergedInvestigationNumberConfig, getMergedPageHeaderConfig, getMergedTemplateLayout } from '../../../utils/pdfGeneratorPro';
 import ReactQuill from 'react-quill-new';
 import Quill from 'quill';
 import 'react-quill-new/dist/quill.snow.css';
@@ -113,10 +113,25 @@ const quillStyles = `
     min-height: 1123px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
     padding: 210px 72px 72px;
     color: #0f172a;
+  }
+  .pdf-preview-cover-content p,
+  .pdf-preview-cover-content li {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .pdf-preview-cover-content .ql-align-center {
+    text-align: center;
+  }
+  .pdf-preview-cover-content .ql-align-right {
+    text-align: right;
+  }
+  .pdf-preview-cover-content .ql-align-justify {
+    text-align: justify;
+  }
+  .pdf-preview-cover-content .ql-align-left {
+    text-align: left;
   }
   .pdf-preview-cover-eyebrow {
     margin: 0 0 12px;
@@ -144,26 +159,6 @@ const quillStyles = `
     font-size: 14px;
     font-style: italic;
     color: #475569;
-  }
-  .pdf-preview-cover-line {
-    position: absolute;
-    left: 56px;
-    right: 56px;
-    border-top: 2px solid #0f172a;
-    cursor: ns-resize;
-    z-index: 3;
-  }
-  .pdf-preview-cover-line::after {
-    content: 'Arraste a linha';
-    position: absolute;
-    right: 0;
-    top: -18px;
-    font-size: 10px;
-    color: #334155;
-    background: rgba(255,255,255,0.92);
-    padding: 2px 6px;
-    border-radius: 999px;
-    border: 1px solid #cbd5e1;
   }
   .pdf-preview-body-page {
     padding: 76px 58px 64px;
@@ -386,10 +381,11 @@ const TemplatesSettings = () => {
 
   const layoutConfigs = templates.__layoutConfig || DEFAULT_TEMPLATE_LAYOUTS;
   const pageHeaderConfig = templates.__pageHeaderConfig || DEFAULT_PAGE_HEADER_CONFIG;
-  const investigationCoverConfig = templates.__investigationCoverConfig || DEFAULT_INVESTIGATION_COVER_CONFIG;
+  const investigationCoverTemplate = templates.__investigationCoverTemplate || DEFAULT_INVESTIGATION_COVER_TEMPLATE;
+  const investigationNumberConfig = templates.__investigationNumberConfig || DEFAULT_INVESTIGATION_NUMBER_CONFIG;
   const activeLayout = getMergedTemplateLayout(activeTab, layoutConfigs?.[activeTab]);
   const mergedPageHeaderConfig = getMergedPageHeaderConfig(pageHeaderConfig);
-  const mergedInvestigationCoverConfig = getMergedInvestigationCoverConfig(investigationCoverConfig);
+  const mergedInvestigationNumberConfig = getMergedInvestigationNumberConfig(investigationNumberConfig);
   const previewSampleData = useMemo(() => getPreviewSampleData(activeTab), [activeTab]);
   const previewSampleUser = useMemo(() => getPreviewSampleUser(), []);
   const activeTabLabel = tabs.find(tab => tab.id === activeTab)?.label || 'Documento';
@@ -399,7 +395,8 @@ const TemplatesSettings = () => {
       const mergedTemplates = { ...defaultTemplates, ...(dbTemplates || {}) };
       const mergedLayouts = { ...DEFAULT_TEMPLATE_LAYOUTS, ...((dbTemplates && dbTemplates.__layoutConfig) || {}) };
       const mergedPageHeader = { ...DEFAULT_PAGE_HEADER_CONFIG, ...((dbTemplates && dbTemplates.__pageHeaderConfig) || {}) };
-      const mergedInvestigationCover = { ...DEFAULT_INVESTIGATION_COVER_CONFIG, ...((dbTemplates && dbTemplates.__investigationCoverConfig) || {}) };
+      const mergedInvestigationCoverTemplate = (dbTemplates && dbTemplates.__investigationCoverTemplate) || DEFAULT_INVESTIGATION_COVER_TEMPLATE;
+      const mergedInvestigationNumber = { ...DEFAULT_INVESTIGATION_NUMBER_CONFIG, ...((dbTemplates && dbTemplates.__investigationNumberConfig) || {}) };
       return hasChanges
         ? {
             ...mergedTemplates,
@@ -412,16 +409,18 @@ const TemplatesSettings = () => {
               ...mergedPageHeader,
               ...((prev && prev.__pageHeaderConfig) || {})
             },
-            __investigationCoverConfig: {
-              ...mergedInvestigationCover,
-              ...((prev && prev.__investigationCoverConfig) || {})
+            __investigationCoverTemplate: (prev && prev.__investigationCoverTemplate) || mergedInvestigationCoverTemplate,
+            __investigationNumberConfig: {
+              ...mergedInvestigationNumber,
+              ...((prev && prev.__investigationNumberConfig) || {})
             }
           }
         : {
             ...mergedTemplates,
             __layoutConfig: mergedLayouts,
             __pageHeaderConfig: mergedPageHeader,
-            __investigationCoverConfig: mergedInvestigationCover
+            __investigationCoverTemplate: mergedInvestigationCoverTemplate,
+            __investigationNumberConfig: mergedInvestigationNumber
           };
     });
   }, [dbTemplates, hasChanges]);
@@ -450,7 +449,9 @@ const TemplatesSettings = () => {
           event.data.tab || activeTab,
           layoutConfigs?.[event.data.tab || activeTab],
           pageHeaderConfig,
-          investigationCoverConfig
+          {},
+          investigationCoverTemplate,
+          investigationNumberConfig
         );
       } catch (error) {
         console.error('Erro ao gerar PDF da previa:', error);
@@ -503,6 +504,11 @@ const TemplatesSettings = () => {
     setHasChanges(true);
   };
 
+  const handleCoverTemplateChange = (value) => {
+    setTemplates(prev => ({ ...prev, __investigationCoverTemplate: value }));
+    setHasChanges(true);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -517,9 +523,10 @@ const TemplatesSettings = () => {
           ...DEFAULT_PAGE_HEADER_CONFIG,
           ...(templates.__pageHeaderConfig || {})
         },
-        __investigationCoverConfig: {
-          ...DEFAULT_INVESTIGATION_COVER_CONFIG,
-          ...(templates.__investigationCoverConfig || {})
+        __investigationCoverTemplate: templates.__investigationCoverTemplate || DEFAULT_INVESTIGATION_COVER_TEMPLATE,
+        __investigationNumberConfig: {
+          ...DEFAULT_INVESTIGATION_NUMBER_CONFIG,
+          ...(templates.__investigationNumberConfig || {})
         }
       };
       const success = await updateTemplates(payload);
@@ -550,10 +557,8 @@ const TemplatesSettings = () => {
           ...DEFAULT_PAGE_HEADER_CONFIG,
           ...(prev.__pageHeaderConfig || {})
         },
-        __investigationCoverConfig: {
-          ...DEFAULT_INVESTIGATION_COVER_CONFIG,
-          ...(prev.__investigationCoverConfig || {})
-        }
+        __investigationCoverTemplate: DEFAULT_INVESTIGATION_COVER_TEMPLATE,
+        __investigationNumberConfig: DEFAULT_INVESTIGATION_NUMBER_CONFIG
       }));
       setHasChanges(true);
     }
@@ -567,9 +572,11 @@ const TemplatesSettings = () => {
       activeTab,
       layoutConfigs?.[activeTab],
       pageHeaderConfig,
-      investigationCoverConfig
+      {},
+      investigationCoverTemplate,
+      investigationNumberConfig
     );
-  }, [activeTab, defaultTemplates, investigationCoverConfig, layoutConfigs, pageHeaderConfig, previewSampleData, previewSampleUser, templates]);
+  }, [activeTab, defaultTemplates, investigationCoverTemplate, investigationNumberConfig, layoutConfigs, pageHeaderConfig, previewSampleData, previewSampleUser, templates]);
 
   const previewWindowDocument = useMemo(() => `<!doctype html>
 <html lang="pt-BR">
@@ -860,20 +867,20 @@ const TemplatesSettings = () => {
 
         {activeTab === 'investigation' && (
           <div className="border-b border-slate-800 bg-slate-950/60 px-4 py-4">
-            <p className="text-xs font-bold text-white mb-3">Texto da capa do relatorio</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            <p className="text-xs font-bold text-white mb-3">Estrutura do numero do inquerito</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
               <label className="text-xs text-slate-300">
-                Linha superior da capa
+                Segmento (J)
                 <input
                   type="text"
-                  value={mergedInvestigationCoverConfig.eyebrow1}
+                  value={mergedInvestigationNumberConfig.segment}
                   onChange={(e) => {
-                    const value = e.target.value;
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 1);
                     setTemplates(prev => ({
                       ...prev,
-                      __investigationCoverConfig: {
-                        ...getMergedInvestigationCoverConfig(prev.__investigationCoverConfig),
-                        eyebrow1: value
+                      __investigationNumberConfig: {
+                        ...getMergedInvestigationNumberConfig(prev.__investigationNumberConfig),
+                        segment: value
                       }
                     }));
                     setHasChanges(true);
@@ -882,17 +889,17 @@ const TemplatesSettings = () => {
                 />
               </label>
               <label className="text-xs text-slate-300">
-                Linha secundária da capa
+                Tribunal (TR)
                 <input
                   type="text"
-                  value={mergedInvestigationCoverConfig.eyebrow2}
+                  value={mergedInvestigationNumberConfig.tribunal}
                   onChange={(e) => {
-                    const value = e.target.value;
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 2);
                     setTemplates(prev => ({
                       ...prev,
-                      __investigationCoverConfig: {
-                        ...getMergedInvestigationCoverConfig(prev.__investigationCoverConfig),
-                        eyebrow2: value
+                      __investigationNumberConfig: {
+                        ...getMergedInvestigationNumberConfig(prev.__investigationNumberConfig),
+                        tribunal: value
                       }
                     }));
                     setHasChanges(true);
@@ -900,37 +907,18 @@ const TemplatesSettings = () => {
                   className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-federal-500"
                 />
               </label>
-              <label className="text-xs text-slate-300 md:col-span-2">
-                Título principal da capa
+              <label className="text-xs text-slate-300">
+                Unidade (OOOO)
                 <input
                   type="text"
-                  value={mergedInvestigationCoverConfig.title}
+                  value={mergedInvestigationNumberConfig.unit}
                   onChange={(e) => {
-                    const value = e.target.value;
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 4);
                     setTemplates(prev => ({
                       ...prev,
-                      __investigationCoverConfig: {
-                        ...getMergedInvestigationCoverConfig(prev.__investigationCoverConfig),
-                        title: value
-                      }
-                    }));
-                    setHasChanges(true);
-                  }}
-                  className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-federal-500"
-                />
-              </label>
-              <label className="text-xs text-slate-300 md:col-span-2">
-                Rodapé da capa
-                <input
-                  type="text"
-                  value={mergedInvestigationCoverConfig.footer}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setTemplates(prev => ({
-                      ...prev,
-                      __investigationCoverConfig: {
-                        ...getMergedInvestigationCoverConfig(prev.__investigationCoverConfig),
-                        footer: value
+                      __investigationNumberConfig: {
+                        ...getMergedInvestigationNumberConfig(prev.__investigationNumberConfig),
+                        unit: value
                       }
                     }));
                     setHasChanges(true);
@@ -939,60 +927,27 @@ const TemplatesSettings = () => {
                 />
               </label>
             </div>
-            <p className="text-xs font-bold text-white mb-3">Ajuste da capa do relatorio</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="text-xs text-slate-300">
-                Linha superior: {activeLayout.coverTopLineY}px
-                <input
-                  type="range"
-                  min="70"
-                  max="400"
-                  value={activeLayout.coverTopLineY}
-                  onChange={(e) => {
-                    const value = Number(e.target.value);
-                    setTemplates(prev => ({
-                      ...prev,
-                      __layoutConfig: {
-                        ...(prev.__layoutConfig || {}),
-                        [activeTab]: {
-                          ...getMergedTemplateLayout(activeTab, prev.__layoutConfig?.[activeTab]),
-                          coverTopLineY: value
-                        }
-                      }
-                    }));
-                    setHasChanges(true);
-                  }}
-                  className="mt-2 w-full"
-                />
-              </label>
-              <label className="text-xs text-slate-300">
-                Linha inferior: {activeLayout.coverBottomLineY}px
-                <input
-                  type="range"
-                  min="420"
-                  max="980"
-                  value={activeLayout.coverBottomLineY}
-                  onChange={(e) => {
-                    const value = Number(e.target.value);
-                    setTemplates(prev => ({
-                      ...prev,
-                      __layoutConfig: {
-                        ...(prev.__layoutConfig || {}),
-                        [activeTab]: {
-                          ...getMergedTemplateLayout(activeTab, prev.__layoutConfig?.[activeTab]),
-                          coverBottomLineY: value
-                        }
-                      }
-                    }));
-                    setHasChanges(true);
-                  }}
-                  className="mt-2 w-full"
-                />
-              </label>
-            </div>
-            <p className="text-[11px] text-slate-500 mt-2">
-              A visualizacao da capa fica disponivel apenas pela janela de previa.
+            <p className="text-[11px] text-slate-400 mb-4">
+              Prévia do número: <span className="font-semibold text-white">{formatInvestigationNumber(previewSampleData, mergedInvestigationNumberConfig)}</span>
             </p>
+            <p className="text-xs font-bold text-white mb-3">Editor da capa do inquerito</p>
+            <p className="text-[11px] text-slate-400 mb-3">
+              A capa agora e totalmente editavel aqui. As linhas automaticas foram removidas e so aparecem linhas que voce inserir no editor.
+            </p>
+            <div className="relative min-h-[360px] overflow-auto bg-slate-50 rounded-lg border border-slate-800">
+              <ReactQuill
+                key="investigation-cover-template"
+                theme="snow"
+                value={investigationCoverTemplate}
+                onChange={handleCoverTemplateChange}
+                modules={modules}
+                formats={formats}
+                className="template-quill"
+              />
+              <div className="sticky bottom-4 ml-auto mr-4 mb-4 w-fit text-xs text-slate-200 bg-slate-900/90 px-2 py-1 rounded pointer-events-none z-10">
+                Variáveis da capa: {'{numero_inquerito}'}, {'{data_abertura}'}, {'{status}'}, {'{delegacia}'}
+              </div>
+            </div>
           </div>
         )}
 
@@ -1002,7 +957,7 @@ const TemplatesSettings = () => {
               <div>
                 <h3 className="text-sm font-bold text-white">Editor do Documento</h3>
                 <p className="text-xs text-slate-400">
-                  Edite aqui apenas o corpo do documento. A capa do relatorio e o cabecalho das paginas sao configurados nos blocos acima.
+                  Edite aqui o corpo do documento. A capa do relatorio tem um editor proprio acima.
                 </p>
               </div>
               <button 
