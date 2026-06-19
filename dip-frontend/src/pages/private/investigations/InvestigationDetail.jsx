@@ -273,7 +273,6 @@ const InvestigationDetail = () => {
       
       {/* Top Nav */}
       <button 
-        onClick={() => navigate(isRevenueRoute ? '/dashboard/revenue' : '/dashboard/investigations')}
         onClick={() => navigate(backLink)}
         className="mb-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-wider"
       >

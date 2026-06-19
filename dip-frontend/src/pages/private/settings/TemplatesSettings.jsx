@@ -473,7 +473,7 @@ const TemplatesSettings = () => {
         investigator: { nome: 'Maria Oliveira' },
         closedAt: new Date().toISOString(),
         proofs: [
-          { title: 'Fotografia do Local', description: 'Imagem do local dos fatos', type: 'image', content: 'https://exemplo.com/prova1.jpg', author: 'Maria Oliveira', createdAt: new Date().toISOString() },
+          { title: 'Fotografia do Local', description: 'Imagem do local dos fatos', type: 'image', content: '/imagem1.jpg', author: 'Maria Oliveira', createdAt: new Date().toISOString() },
           { title: 'Depoimento da Vítima', description: 'Oitiva registrada no dia 15/06', type: 'file', content: 'https://exemplo.com/prova2.pdf', author: 'Paulo Mendes', createdAt: new Date().toISOString() },
           { title: 'Relatório de Inteligência', description: 'Apontou o vínculo do investigado com os fatos apurados', type: 'text', content: 'Resumo analítico catalogado no sistema', author: 'Ana Souza', createdAt: new Date().toISOString() },
         ]
@@ -527,7 +527,7 @@ const TemplatesSettings = () => {
       investigator: { nome: 'Maria Oliveira' },
       closedAt: new Date().toISOString(),
       proofs: [
-        { title: 'Fotografia do Local', description: 'Imagem do local dos fatos', type: 'image', content: 'https://exemplo.com/prova1.jpg', author: 'Maria Oliveira', createdAt: new Date().toISOString() },
+        { title: 'Fotografia do Local', description: 'Imagem do local dos fatos', type: 'image', content: '/imagem1.jpg', author: 'Maria Oliveira', createdAt: new Date().toISOString() },
         { title: 'Depoimento da Vitima', description: 'Oitiva registrada no dia 15/06', type: 'file', content: 'https://exemplo.com/prova2.pdf', author: 'Paulo Mendes', createdAt: new Date().toISOString() },
         { title: 'Relatorio de Inteligencia', description: 'Apontou o vinculo do investigado com os fatos apurados', type: 'text', content: 'Resumo analitico catalogado no sistema', author: 'Ana Souza', createdAt: new Date().toISOString() },
       ]

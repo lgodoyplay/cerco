@@ -848,7 +848,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             },
             
             // Cabeçalho em todas as páginas
-            header: () => {
+            header: (currentPage) => {
                 if (customContent && type !== 'investigation') return null;
                 if (type === 'investigation' && currentPage === 1) return null;
                 return {
