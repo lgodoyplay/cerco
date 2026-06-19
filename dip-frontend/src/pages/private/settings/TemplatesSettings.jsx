@@ -74,7 +74,6 @@ const TemplatesSettings = () => {
 <p style="text-align: center;"><strong>SECRETARIA DE SEGURANÇA PÚBLICA</strong></p>
 <p style="text-align: center;"><strong>CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS</strong></p>
 <p style="text-align: center;"><br></p>
-<hr>
 <p style="text-align: center;"><strong>RELATÓRIO FINAL DE INQUÉRITO POLICIAL</strong></p>
 <p><br></p>
 <p><strong>DADOS DO INQUÉRITO</strong></p>
@@ -121,14 +120,12 @@ const TemplatesSettings = () => {
 <p>Assim, os autos são encaminhados à autoridade competente para análise e deliberação quanto às providências subsequentes.</p>
 <p style="text-align: center;">Estado da Euforia, {data_conclusao}.</p>
 <p><br></p>
-<p><br></p>
 <p style="text-align: center;">{nome_agente}</p>
 <p style="text-align: center;">Investigador de Polícia Civil</p>
 <p><br></p>
 <p style="text-align: center;">{nome_delegado}</p>
 <p style="text-align: center;">Delegado de Polícia Civil</p>
 <p><br></p>
-<hr>
 <p style="text-align: center;"><strong>POLÍCIA CIVIL DO ESTADO DA EUFORIA</strong></p>
 <p style="text-align: center;">"Servir e Proteger com Justiça e Integridade"</p>`,
     arrest: `<p><strong>AUTO DE PRISÃO</strong></p>

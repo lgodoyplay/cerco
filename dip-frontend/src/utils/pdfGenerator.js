@@ -11,9 +11,7 @@ export const generateInvestigationPDF = (investigation, user) => {
   let yPos = marginTop;
 
   // Configurações de Fonte ABNT (Times New Roman ou Arial)
-  // jsPDF padrão usa Helvetica (similar a Arial).
-  // Tamanho padrão 12, espaçamento 1.5
-  const fontNormal = 'times'; // Usando Times para ficar mais formal/ABNT
+  const fontNormal = 'times'; 
   const fontBold = 'times'; 
   const fontSizeBody = 12;
   const fontSizeTitle = 14;
@@ -22,11 +20,6 @@ export const generateInvestigationPDF = (investigation, user) => {
   // --- FUNÇÕES AUXILIARES ---
 
   const drawHeader = () => {
-    // Brasão (Simulado com texto/círculo por enquanto)
-    doc.setFillColor(0, 0, 0); 
-    // doc.circle(pageWidth / 2, 20, 10, 'F'); // Placeholder do brasão
-
-    // Cabeçalho Oficial
     doc.setFont(fontBold, 'bold');
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
@@ -34,18 +27,15 @@ export const generateInvestigationPDF = (investigation, user) => {
     doc.text('SECRETARIA DE SEGURANÇA PÚBLICA', pageWidth / 2, 25, { align: 'center' });
     doc.text('CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', pageWidth / 2, 30, { align: 'center' });
     
-    // Linha separadora
     doc.setLineWidth(0.5);
     doc.line(marginLeft, 40, pageWidth - marginRight, 40);
   };
 
   const drawFooter = (pageNumber, totalPages) => {
     doc.setFont(fontNormal, 'normal');
-    doc.setFontSize(10); // ABNT: tamanho 10 para notas de rodapé/paginação
+    doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     
-    // ABNT: Paginação no canto superior direito é comum, mas rodapé centralizado também é aceito em documentos oficiais internos.
-    // Vamos manter no rodapé conforme padrão anterior, mas com fonte correta.
     const footerText = `RELATÓRIO Nº ${investigation.id} - Confidencial`;
     doc.text(footerText, marginLeft, pageHeight - 15);
     doc.text(`Página ${pageNumber} de ${totalPages}`, pageWidth - marginRight, pageHeight - 15, { align: 'right' });
@@ -55,7 +45,7 @@ export const generateInvestigationPDF = (investigation, user) => {
     if (yPos + heightNeeded > pageHeight - marginBottom) {
       doc.addPage();
       drawHeader();
-      yPos = marginTop + 20; // Reinicia posição Y após cabeçalho com margem
+      yPos = marginTop + 20;
       return true;
     }
     return false;
@@ -64,12 +54,12 @@ export const generateInvestigationPDF = (investigation, user) => {
   // --- INÍCIO DO DOCUMENTO ---
 
   drawHeader();
-  yPos = marginTop + 30; // Ajuste inicial
+  yPos = marginTop + 30;
 
   // Título do Documento
   doc.setFont(fontBold, 'bold');
   doc.setFontSize(fontSizeTitle);
-  doc.text('RELATÓRIO DE INVESTIGAÇÃO', pageWidth / 2, yPos, { align: 'center' });
+  doc.text('RELATÓRIO FINAL DE INQUÉRITO POLICIAL', pageWidth / 2, yPos, { align: 'center' });
   yPos += 10;
   
   const formattedId = `CIVIL EUFORIA - ${investigation.id.toString().padStart(3, '0')}`;
@@ -77,19 +67,18 @@ export const generateInvestigationPDF = (investigation, user) => {
   doc.text(`PROTOCOLO Nº: ${formattedId}/${new Date().getFullYear()}`, pageWidth / 2, yPos, { align: 'center' });
   yPos += 20;
 
-  // --- DADOS DA INVESTIGAÇÃO (TABELA SIMULADA) ---
+  // --- DADOS DO INQUÉRITO ---
   
   doc.setFontSize(fontSizeSmall);
   doc.setFillColor(240, 240, 240);
   doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 35, 'F');
-  doc.setDrawColor(0, 0, 0); // Preto para ficar mais sóbrio
+  doc.setDrawColor(0, 0, 0);
   doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 35);
 
   let dataY = yPos + 8;
   const col1 = marginLeft + 5;
   const col2 = marginLeft + 100;
 
-  // Linha 1
   doc.setFont(fontBold, 'bold');
   doc.text('DATA DE INSTAURAÇÃO:', col1, dataY);
   doc.setFont(fontNormal, 'normal');
@@ -102,25 +91,22 @@ export const generateInvestigationPDF = (investigation, user) => {
 
   dataY += 8;
 
-  // Linha 2
   doc.setFont(fontBold, 'bold');
   doc.text('PRIORIDADE:', col1, dataY);
   doc.setFont(fontNormal, 'normal');
   doc.text(investigation.priority, col1 + 45, dataY);
 
   doc.setFont(fontBold, 'bold');
-  doc.text('DATA DE ENCERRAMENTO:', col2, dataY);
+  doc.text('DELEGACIA RESPONSÁVEL:', col2, dataY);
   doc.setFont(fontNormal, 'normal');
-  doc.text(investigation.closedAt ? new Date(investigation.closedAt).toLocaleDateString('pt-BR') : 'Em andamento', col2 + 50, dataY);
+  doc.text('Central', col2 + 55, dataY);
 
   dataY += 8;
 
-  // Linha 3 - Responsável
   doc.setFont(fontBold, 'bold');
-  doc.text('AUTORIDADE RESPONSÁVEL:', col1, dataY);
+  doc.text('INVESTIGADOR RESPONSÁVEL:', col1, dataY);
   doc.setFont(fontNormal, 'normal');
   
-  // Tenta usar o nome do investigador vindo do objeto (se implementado join) ou do usuário logado
   let officerName = 'AGENTE RESPONSÁVEL';
   let officerBadge = '000.000';
   let officerRole = 'Investigador CIVIL EUFORIA';
@@ -139,10 +125,11 @@ export const generateInvestigationPDF = (investigation, user) => {
 
   yPos += 45;
 
-  // --- ENVOLVIDOS ---
+  // --- IDENTIFICAÇÃO DO INVESTIGADO ---
+  checkPageBreak(40);
   doc.setFont(fontBold, 'bold');
   doc.setFontSize(fontSizeBody);
-  doc.text('1. DOS ENVOLVIDOS', marginLeft, yPos);
+  doc.text('1. IDENTIFICAÇÃO DO INVESTIGADO', marginLeft, yPos);
   yPos += 8;
   
   doc.setFont(fontNormal, 'normal');
@@ -155,17 +142,26 @@ export const generateInvestigationPDF = (investigation, user) => {
       involvedText = investigation.involved;
   }
   
-  // Parágrafo com recuo (1.25cm ~ 12.5mm aprox 13) na primeira linha seria o ideal ABNT
-  // jsPDF splitTextToSize não suporta indentação de primeira linha nativamente fácil
-  // Vamos manter justificado simples por enquanto
   const involvedLines = doc.splitTextToSize(involvedText, pageWidth - (marginLeft + marginRight));
   doc.text(involvedLines, marginLeft, yPos);
   yPos += (involvedLines.length * 6) + 10;
 
-  // --- FATOS / DESCRIÇÃO ---
+  // --- OBJETO DA INVESTIGAÇÃO ---
   checkPageBreak(30);
   doc.setFont(fontBold, 'bold');
-  doc.text('2. DOS FATOS APURADOS', marginLeft, yPos);
+  doc.text('2. OBJETO DA INVESTIGAÇÃO', marginLeft, yPos);
+  yPos += 8;
+
+  doc.setFont(fontNormal, 'normal');
+  const objText = 'O presente Inquérito Policial foi instaurado pela Polícia Civil do Estado da Euforia com a finalidade de apurar os fatos noticiados, identificar a autoria, materialidade e circunstâncias relacionadas à possível prática de infração penal atribuída ao investigado.';
+  const objLines = doc.splitTextToSize(objText, pageWidth - (marginLeft + marginRight));
+  doc.text(objLines, marginLeft, yPos);
+  yPos += (objLines.length * 6) + 10;
+
+  // --- RELATÓRIO DOS FATOS ---
+  checkPageBreak(30);
+  doc.setFont(fontBold, 'bold');
+  doc.text('3. RELATÓRIO DOS FATOS', marginLeft, yPos);
   yPos += 8;
 
   doc.setFont(fontNormal, 'normal');
@@ -173,98 +169,156 @@ export const generateInvestigationPDF = (investigation, user) => {
   doc.text(descLines, marginLeft, yPos);
   yPos += (descLines.length * 6) + 15;
 
-  // --- PROVAS E EVIDÊNCIAS ---
+  // --- DILIGÊNCIAS REALIZADAS ---
   checkPageBreak(30);
   doc.setFont(fontBold, 'bold');
-  doc.text('3. DAS PROVAS E EVIDÊNCIAS COLETADAS', marginLeft, yPos);
+  doc.text('4. DILIGÊNCIAS REALIZADAS', marginLeft, yPos);
+  yPos += 8;
+
+  doc.setFont(fontNormal, 'normal');
+  const diligText = 'Durante a instrução do presente inquérito foram realizadas as seguintes ações investigativas:\n- Levantamento de informações e antecedentes;\n- Coleta de depoimentos e oitivas;\n- Análise documental;\n- Verificação de registros fotográficos e audiovisuais;\n- Levantamento de inteligência policial;\n- Demais diligências necessárias para o esclarecimento dos fatos.';
+  const diligLines = doc.splitTextToSize(diligText, pageWidth - (marginLeft + marginRight));
+  doc.text(diligLines, marginLeft, yPos);
+  yPos += (diligLines.length * 6) + 15;
+
+  // --- ELEMENTOS PROBATÓRIOS ---
+  checkPageBreak(30);
+  doc.setFont(fontBold, 'bold');
+  doc.text('5. ELEMENTOS PROBATÓRIOS', marginLeft, yPos);
   yPos += 10;
 
   if (investigation.proofs && investigation.proofs.length > 0) {
     investigation.proofs.forEach((proof, index) => {
-      checkPageBreak(50); // Verifica se cabe pelo menos o cabeçalho da prova
+      checkPageBreak(100);
 
-      // Caixa da prova
+      const proofNumber = String(index + 1).padStart(3, '0');
+      
       doc.setDrawColor(0, 0, 0);
-      doc.setFillColor(240, 240, 240); // Fundo cinza claro
-      doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 8, 'F'); // Cabeçalho da prova
+      doc.setFillColor(220, 220, 220);
+      doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 12, 'F');
+      doc.setLineWidth(0.5);
+      doc.rect(marginLeft, yPos, pageWidth - (marginLeft + marginRight), 12);
       
       doc.setFont(fontBold, 'bold');
-      doc.setFontSize(fontSizeSmall);
+      doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
-      doc.text(`EVIDÊNCIA #${index + 1} - ${proof.type ? proof.type.toUpperCase() : 'DOCUMENTO'}`, marginLeft + 2, yPos + 6);
+      doc.text(`PROVA ${proofNumber} — ${proof.title ? proof.title.toUpperCase() : 'EVIDÊNCIA'}`, marginLeft + 5, yPos + 9);
+      
+      yPos += 18;
+
+      doc.setFont(fontNormal, 'normal');
+      doc.setFontSize(11);
+      
+      doc.setFont(fontBold, 'bold');
+      doc.text('Tipo:', marginLeft, yPos);
+      doc.setFont(fontNormal, 'normal');
+      let typeLabel = 'Documento';
+      if (proof.type === 'image') typeLabel = 'Fotografia/Vídeo';
+      if (proof.type === 'video') typeLabel = 'Vídeo';
+      if (proof.type === 'link') typeLabel = 'Link/Recurso Digital';
+      if (proof.type === 'text') typeLabel = 'Depoimento/Declaração';
+      doc.text(typeLabel, marginLeft + 20, yPos);
+      
+      yPos += 7;
+      
+      doc.setFont(fontBold, 'bold');
+      doc.text('Data:', marginLeft, yPos);
+      doc.setFont(fontNormal, 'normal');
+      doc.text(proof.createdAt ? new Date(proof.createdAt).toLocaleDateString('pt-BR') : 'Não registrada', marginLeft + 20, yPos);
+      
+      yPos += 7;
+      
+      doc.setFont(fontBold, 'bold');
+      doc.text('Responsável:', marginLeft, yPos);
+      doc.setFont(fontNormal, 'normal');
+      doc.text(proof.author || 'Agente Responsável', marginLeft + 35, yPos);
       
       yPos += 12;
 
-      // Descrição da prova
+      doc.setFont(fontBold, 'bold');
+      doc.text('Descrição:', marginLeft, yPos);
+      yPos += 7;
       doc.setFont(fontNormal, 'normal');
       doc.setFontSize(fontSizeBody);
-      
-      const proofTitle = proof.title ? `${proof.title} - ` : '';
-      const proofDescText = `${proofTitle}${proof.description || 'Sem descrição adicional.'}`;
-      const proofLines = doc.splitTextToSize(proofDescText, pageWidth - (marginLeft + marginRight));
-      
-      doc.text(proofLines, marginLeft, yPos);
-      yPos += (proofLines.length * 6) + 5;
+      const descLines = doc.splitTextToSize(proof.description || 'Sem descrição detalhada.', pageWidth - (marginLeft + marginRight));
+      doc.text(descLines, marginLeft, yPos);
+      yPos += (descLines.length * 6) + 8;
 
-      // Conteúdo da prova (Imagem ou Link)
       if (proof.type === 'image' && proof.content) {
-        checkPageBreak(100);
+        checkPageBreak(120);
         try {
-            // Tenta adicionar imagem
-            const imgHeight = 80; // Altura fixa para manter padrão ou calcular proporcional
-            // Mantendo proporção simples (assumindo paisagem ou quadrado para caber)
-            const imgWidth = 100; 
-            
-            // Centralizar imagem
-            const xImg = (pageWidth - imgWidth) / 2;
-            
-            doc.addImage(proof.content, 'JPEG', xImg, yPos, imgWidth, imgHeight);
-            doc.setFontSize(8); // Legenda menor
-            doc.text('Figura: Representação visual da evidência.', xImg, yPos + imgHeight + 5);
-            yPos += imgHeight + 15;
+          const imgHeight = 100;
+          const imgWidth = 130; 
+          const xImg = (pageWidth - imgWidth) / 2;
+          
+          doc.addImage(proof.content, 'JPEG', xImg, yPos, imgWidth, imgHeight);
+          doc.setFontSize(8);
+          doc.text(`Figura ${proofNumber}: ${proof.title || 'Evidência visual'}`, xImg, yPos + imgHeight + 5, { align: 'center' });
+          yPos += imgHeight + 15;
         } catch (_error) {
-            doc.setTextColor(200, 0, 0);
-            doc.text('[Imagem não pôde ser carregada no relatório]', marginLeft, yPos);
-            doc.setTextColor(0, 0, 0);
-            yPos += 10;
+          doc.setTextColor(200, 0, 0);
+          doc.text('[Imagem não pôde ser carregada no relatório]', marginLeft, yPos);
+          doc.setTextColor(0, 0, 0);
+          yPos += 10;
         }
-      } else if (proof.type === 'link') {
+      } else if (proof.type === 'video' || proof.type === 'link') {
         doc.setTextColor(0, 0, 255);
         doc.setFontSize(fontSizeSmall);
-        doc.textWithLink(`Acesse o conteúdo externo: ${proof.content}`, marginLeft, yPos, { url: proof.content });
+        doc.textWithLink(`Acesse o conteúdo: ${proof.content}`, marginLeft, yPos, { url: proof.content });
         doc.setTextColor(0, 0, 0);
         yPos += 10;
       }
 
-      yPos += 5; // Espaço entre provas
+      if (index < investigation.proofs.length - 1) {
+        doc.setLineWidth(0.2);
+        doc.setDrawColor(150, 150, 150);
+        doc.line(marginLeft, yPos + 3, pageWidth - marginRight, yPos + 3);
+        yPos += 15;
+      }
     });
   } else {
     doc.setFont(fontNormal, 'italic');
-    doc.text('Nenhuma prova digital anexada a este relatório.', marginLeft, yPos);
+    doc.text('Nenhuma prova digital anexada a este inquérito.', marginLeft, yPos);
     yPos += 10;
   }
 
-  // --- CONCLUSÃO ---
+  // --- ANÁLISE INVESTIGATIVA ---
   checkPageBreak(40);
-  yPos += 10;
   doc.setFont(fontBold, 'bold');
   doc.setFontSize(fontSizeBody);
-  doc.text('4. CONCLUSÃO', marginLeft, yPos);
+  doc.text('6. ANÁLISE INVESTIGATIVA', marginLeft, yPos);
   yPos += 8;
   
   doc.setFont(fontNormal, 'normal');
-  const conclusionText = "Diante do exposto, encaminha-se o presente relatório para apreciação da autoridade competente, contendo o relato detalhado das diligências realizadas e evidências coletadas, dando-se por encerradas as atividades investigativas desta fase.";
+  const analysisText = 'Após análise técnica e confrontação dos elementos obtidos, verificou-se a existência de indícios consistentes relacionados aos fatos investigados, permitindo a formação de convicção acerca da dinâmica dos acontecimentos e da eventual responsabilidade do investigado. As informações coletadas demonstram coerência entre os depoimentos, documentos e demais evidências presentes nos autos.';
+  const analysisLines = doc.splitTextToSize(analysisText, pageWidth - (marginLeft + marginRight));
+  doc.text(analysisLines, marginLeft, yPos);
+  yPos += (analysisLines.length * 6) + 15;
+
+  // --- CONCLUSÃO ---
+  checkPageBreak(40);
+  doc.setFont(fontBold, 'bold');
+  doc.text('7. CONCLUSÃO', marginLeft, yPos);
+  yPos += 8;
+  
+  doc.setFont(fontNormal, 'normal');
+  const conclusionText = 'Diante dos fatos apurados e das provas produzidas ao longo da investigação, conclui-se que o presente Inquérito Policial atingiu seus objetivos, reunindo elementos suficientes para subsidiar as medidas legais cabíveis. Assim, os autos são encaminhados à autoridade competente para análise e deliberação quanto às providências subsequentes.';
   const conclusionLines = doc.splitTextToSize(conclusionText, pageWidth - (marginLeft + marginRight));
   doc.text(conclusionLines, marginLeft, yPos);
-  yPos += (conclusionLines.length * 6) + 30;
+  yPos += (conclusionLines.length * 6) + 15;
 
-  // --- ASSINATURA ---
-  checkPageBreak(40);
+  // Local e data
+  const dataConclusao = investigation.closedAt ? new Date(investigation.closedAt) : new Date();
+  doc.text(`Estado da Euforia, ${dataConclusao.toLocaleDateString('pt-BR')}`, pageWidth / 2, yPos, { align: 'center' });
+  yPos += 25;
+
+  // --- ASSINATURAS ---
+  checkPageBreak(60);
   
-  // Linha de assinatura
-  const signatureLineY = yPos;
+  // Investigador
+  let signatureY = yPos;
   doc.setLineWidth(0.5);
-  doc.line(pageWidth / 2 - 40, signatureLineY, pageWidth / 2 + 40, signatureLineY);
+  doc.line(pageWidth / 2 - 40, signatureY, pageWidth / 2 + 40, signatureY);
   
   yPos += 5;
   doc.setFont(fontBold, 'bold');
@@ -274,8 +328,28 @@ export const generateInvestigationPDF = (investigation, user) => {
   yPos += 5;
   doc.setFont(fontNormal, 'normal');
   doc.setFontSize(9);
-  doc.text(officerRole, pageWidth / 2, yPos, { align: 'center' });
-  doc.text(`Matrícula: ${officerBadge}`, pageWidth / 2, yPos + 4, { align: 'center' });
+  doc.text('Investigador de Polícia Civil', pageWidth / 2, yPos, { align: 'center' });
+  yPos += 25;
+
+  // Delegado
+  signatureY = yPos;
+  doc.line(pageWidth / 2 - 40, signatureY, pageWidth / 2 + 40, signatureY);
+  
+  yPos += 5;
+  doc.setFont(fontBold, 'bold');
+  doc.setFontSize(10);
+  doc.text('DELEGADO DE POLÍCIA', pageWidth / 2, yPos, { align: 'center' });
+  
+  yPos += 20;
+
+  // Rodapé
+  doc.setFont(fontBold, 'bold');
+  doc.setFontSize(12);
+  doc.text('POLÍCIA CIVIL DO ESTADO DA EUFORIA', pageWidth / 2, yPos, { align: 'center' });
+  yPos += 7;
+  doc.setFont(fontNormal, 'normal');
+  doc.setFontSize(11);
+  doc.text('"Servir e Proteger com Justiça e Integridade"', pageWidth / 2, yPos, { align: 'center' });
 
   // Numeração de páginas
   const totalPages = doc.internal.getNumberOfPages();
@@ -284,7 +358,7 @@ export const generateInvestigationPDF = (investigation, user) => {
     drawFooter(i, totalPages);
   }
 
-  doc.save(`Relatorio_Investigacao_${investigation.id}.pdf`);
+  doc.save(`Inquerito_${investigation.id}.pdf`);
 };
 
 function fillTemplate(templateStr, variables) {
