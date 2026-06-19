@@ -74,9 +74,20 @@ export const DEFAULT_TEMPLATE_LAYOUTS = {
     wanted: {}
 };
 
+export const DEFAULT_PAGE_HEADER_CONFIG = {
+    line1: 'ESTADO DA EUFORIA',
+    line2: 'SECRETARIA DE SEGURANCA PUBLICA',
+    line3: 'CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGACAO DE NARCOTICOS'
+};
+
 export const getMergedTemplateLayout = (type = 'investigation', layoutConfig = {}) => ({
     ...(DEFAULT_TEMPLATE_LAYOUTS[type] || {}),
     ...(layoutConfig || {})
+});
+
+export const getMergedPageHeaderConfig = (headerConfig = {}) => ({
+    ...DEFAULT_PAGE_HEADER_CONFIG,
+    ...(headerConfig || {})
 });
 
 // --- FUNÇÕES AUXILIARES ---
@@ -309,7 +320,31 @@ const getDocumentVariables = (data, user, type = 'investigation') => {
     return {};
 };
 
-export const buildTemplatePreviewHtml = (data, user, templateStr = '', type = 'investigation', layoutConfig = {}) => {
+const buildPreviewHeaderHtml = (headerConfig = {}) => {
+    const header = getMergedPageHeaderConfig(headerConfig);
+
+    return `
+        <div class="pdf-preview-page-header">
+            <div class="pdf-preview-page-line"></div>
+            <div class="pdf-preview-page-header-text">${escapeHtml(header.line1)}</div>
+            <div class="pdf-preview-page-header-text">${escapeHtml(header.line2)}</div>
+            <div class="pdf-preview-page-header-text">${escapeHtml(header.line3)}</div>
+        </div>
+    `;
+};
+
+const buildPdfHeaderContent = (headerConfig = {}) => {
+    const header = getMergedPageHeaderConfig(headerConfig);
+
+    return [
+        { text: header.line1, style: 'headerText' },
+        { text: header.line2, style: 'headerText' },
+        { text: header.line3, style: 'headerText' },
+        { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1 }], margin: [0, 5, 0, 10] }
+    ];
+};
+
+export const buildTemplatePreviewHtml = (data, user, templateStr = '', type = 'investigation', layoutConfig = {}, pageHeaderConfig = {}) => {
     const layout = getMergedTemplateLayout(type, layoutConfig);
     const variables = getDocumentVariables(data, user, type);
     const sourceTemplate = type === 'investigation'
@@ -319,12 +354,7 @@ export const buildTemplatePreviewHtml = (data, user, templateStr = '', type = 'i
 
     const contentPage = `
         <section class="pdf-preview-page pdf-preview-body-page">
-            <div class="pdf-preview-page-header">
-                <div class="pdf-preview-page-line"></div>
-                <div class="pdf-preview-page-header-text">ESTADO DA EUFORIA</div>
-                <div class="pdf-preview-page-header-text">SECRETARIA DE SEGURANCA PUBLICA</div>
-                <div class="pdf-preview-page-header-text">CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGACAO DE NARCOTICOS</div>
-            </div>
+            ${buildPreviewHeaderHtml(pageHeaderConfig)}
             <div class="pdf-preview-page-content">${processedHtml}</div>
             <div class="pdf-preview-page-footer">
                 <div class="pdf-preview-page-line"></div>
@@ -386,7 +416,7 @@ const buildInvestigationCoverContent = (data, layoutConfig = {}) => {
 const coatOfArmsBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 // Gerar Documento
-export const generateProfessionalPDF = async (data, user, templateStr = null, type = 'investigation', layoutConfig = {}) => {
+export const generateProfessionalPDF = async (data, user, templateStr = null, type = 'investigation', layoutConfig = {}, pageHeaderConfig = {}) => {
     console.log(`Iniciando geração de PDF Profissional (${type})...`, data);
     try {
         // Garantir configuração de VFS
@@ -474,10 +504,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
                 image: coatOfArmsBase64, width: 40, alignment: 'center', margin: [0, 0, 0, 5]
             } : null,
-            { text: 'ESTADO DA EUFORIA', style: 'headerText' },
-            { text: 'SECRETARIA DE SEGURANÇA PÚBLICA', style: 'headerText' },
-            { text: 'CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', style: 'headerText' },
-            { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1 }], margin: [0, 5, 0, 10] }
+            ...buildPdfHeaderContent(pageHeaderConfig)
         ];
 
         const mergedLayout = getMergedTemplateLayout(type, layoutConfig);
@@ -874,10 +901,10 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 if (type === 'investigation' && currentPage === 1) return null;
                 return {
                     stack: [
-                        { text: 'ESTADO DA EUFORIA', alignment: 'center', fontSize: 10, bold: true, margin: [0, 15, 0, 0] },
-                        { text: 'SECRETARIA DE SEGURANÇA PÚBLICA', alignment: 'center', fontSize: 10, bold: true },
-                        { text: 'CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', alignment: 'center', fontSize: 10, bold: true },
-                        { canvas: [{ type: 'line', x1: 85, y1: 5, x2: 538, y2: 5, lineWidth: 1 }] }
+                        ...buildPdfHeaderContent(pageHeaderConfig).map((item, index) => index === 0
+                            ? { ...item, margin: [0, 15, 0, 0] }
+                            : item
+                        )
                     ]
                 };
             },

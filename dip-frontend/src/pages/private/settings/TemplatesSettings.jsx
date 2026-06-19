@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ExternalLink, FileText, Save, RefreshCw } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
-import { buildTemplatePreviewHtml, DEFAULT_TEMPLATE_LAYOUTS, generateProfessionalPDF, getMergedTemplateLayout } from '../../../utils/pdfGeneratorPro';
+import { buildTemplatePreviewHtml, DEFAULT_PAGE_HEADER_CONFIG, DEFAULT_TEMPLATE_LAYOUTS, generateProfessionalPDF, getMergedPageHeaderConfig, getMergedTemplateLayout } from '../../../utils/pdfGeneratorPro';
 import ReactQuill from 'react-quill-new';
 import Quill from 'quill';
 import 'react-quill-new/dist/quill.snow.css';
@@ -381,7 +381,9 @@ const TemplatesSettings = () => {
   ];
 
   const layoutConfigs = templates.__layoutConfig || DEFAULT_TEMPLATE_LAYOUTS;
+  const pageHeaderConfig = templates.__pageHeaderConfig || DEFAULT_PAGE_HEADER_CONFIG;
   const activeLayout = getMergedTemplateLayout(activeTab, layoutConfigs?.[activeTab]);
+  const mergedPageHeaderConfig = getMergedPageHeaderConfig(pageHeaderConfig);
   const previewSampleData = useMemo(() => getPreviewSampleData(activeTab), [activeTab]);
   const previewSampleUser = useMemo(() => getPreviewSampleUser(), []);
   const activeTabLabel = tabs.find(tab => tab.id === activeTab)?.label || 'Documento';
@@ -390,6 +392,7 @@ const TemplatesSettings = () => {
     setTemplates(prev => {
       const mergedTemplates = { ...defaultTemplates, ...(dbTemplates || {}) };
       const mergedLayouts = { ...DEFAULT_TEMPLATE_LAYOUTS, ...((dbTemplates && dbTemplates.__layoutConfig) || {}) };
+      const mergedPageHeader = { ...DEFAULT_PAGE_HEADER_CONFIG, ...((dbTemplates && dbTemplates.__pageHeaderConfig) || {}) };
       return hasChanges
         ? {
             ...mergedTemplates,
@@ -397,11 +400,16 @@ const TemplatesSettings = () => {
             __layoutConfig: {
               ...mergedLayouts,
               ...((prev && prev.__layoutConfig) || {})
+            },
+            __pageHeaderConfig: {
+              ...mergedPageHeader,
+              ...((prev && prev.__pageHeaderConfig) || {})
             }
           }
         : {
             ...mergedTemplates,
-            __layoutConfig: mergedLayouts
+            __layoutConfig: mergedLayouts,
+            __pageHeaderConfig: mergedPageHeader
           };
     });
   }, [dbTemplates, hasChanges]);
@@ -428,7 +436,8 @@ const TemplatesSettings = () => {
           getPreviewSampleUser(),
           templates[event.data.tab || activeTab] || defaultTemplates[event.data.tab || activeTab],
           event.data.tab || activeTab,
-          layoutConfigs?.[event.data.tab || activeTab]
+          layoutConfigs?.[event.data.tab || activeTab],
+          pageHeaderConfig
         );
       } catch (error) {
         console.error('Erro ao gerar PDF da previa:', error);
@@ -523,6 +532,10 @@ const TemplatesSettings = () => {
         __layoutConfig: {
           ...DEFAULT_TEMPLATE_LAYOUTS,
           ...(templates.__layoutConfig || {})
+        },
+        __pageHeaderConfig: {
+          ...DEFAULT_PAGE_HEADER_CONFIG,
+          ...(templates.__pageHeaderConfig || {})
         }
       };
       const success = await updateTemplates(payload);
@@ -548,6 +561,10 @@ const TemplatesSettings = () => {
         __layoutConfig: {
           ...(prev.__layoutConfig || {}),
           [activeTab]: DEFAULT_TEMPLATE_LAYOUTS[activeTab] || {}
+        },
+        __pageHeaderConfig: {
+          ...DEFAULT_PAGE_HEADER_CONFIG,
+          ...(prev.__pageHeaderConfig || {})
         }
       }));
       setHasChanges(true);
@@ -571,9 +588,10 @@ const TemplatesSettings = () => {
       previewSampleUser,
       templates[activeTab] || defaultTemplates[activeTab],
       activeTab,
-      layoutConfigs?.[activeTab]
+      layoutConfigs?.[activeTab],
+      pageHeaderConfig
     );
-  }, [activeTab, defaultTemplates, layoutConfigs, previewSampleData, previewSampleUser, templates]);
+  }, [activeTab, defaultTemplates, layoutConfigs, pageHeaderConfig, previewSampleData, previewSampleUser, templates]);
 
   const previewWindowDocument = useMemo(() => `<!doctype html>
 <html lang="pt-BR">
@@ -794,6 +812,71 @@ const TemplatesSettings = () => {
           </p>
           <p className="text-[11px] text-slate-500 mt-1">
             O titulo da aba nao faz parte do documento final.
+          </p>
+        </div>
+        <div className="border-b border-slate-800 bg-slate-950/80 px-4 py-4">
+          <p className="text-xs font-bold text-white mb-3">Cabecalho de todas as paginas</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <label className="text-xs text-slate-300">
+              Linha 1
+              <input
+                type="text"
+                value={mergedPageHeaderConfig.line1}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setTemplates(prev => ({
+                    ...prev,
+                    __pageHeaderConfig: {
+                      ...getMergedPageHeaderConfig(prev.__pageHeaderConfig),
+                      line1: value
+                    }
+                  }));
+                  setHasChanges(true);
+                }}
+                className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-federal-500"
+              />
+            </label>
+            <label className="text-xs text-slate-300">
+              Linha 2
+              <input
+                type="text"
+                value={mergedPageHeaderConfig.line2}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setTemplates(prev => ({
+                    ...prev,
+                    __pageHeaderConfig: {
+                      ...getMergedPageHeaderConfig(prev.__pageHeaderConfig),
+                      line2: value
+                    }
+                  }));
+                  setHasChanges(true);
+                }}
+                className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-federal-500"
+              />
+            </label>
+            <label className="text-xs text-slate-300">
+              Linha 3
+              <input
+                type="text"
+                value={mergedPageHeaderConfig.line3}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setTemplates(prev => ({
+                    ...prev,
+                    __pageHeaderConfig: {
+                      ...getMergedPageHeaderConfig(prev.__pageHeaderConfig),
+                      line3: value
+                    }
+                  }));
+                  setHasChanges(true);
+                }}
+                className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-federal-500"
+              />
+            </label>
+          </div>
+          <p className="text-[11px] text-slate-500 mt-2">
+            Essas 3 linhas aparecem no topo de todas as paginas do PDF e da previa.
           </p>
         </div>
 
