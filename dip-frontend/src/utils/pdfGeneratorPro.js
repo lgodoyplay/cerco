@@ -136,6 +136,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         ensureFontsConfigured();
         
         // Carregar imagem de fundo em base64
+        // @ts-ignore: TypeScript false positive
         const getBase64FromLocalImage = (src) => {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -150,7 +151,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 };
                 img.onerror = reject;
                 img.src = src;
-            };
+            });
         };
         
         // Carregar o fundo
