@@ -5,6 +5,33 @@ import { generateProfessionalPDF } from '../../../utils/pdfGeneratorPro';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
+// Custom Quill styles for dark mode
+const quillStyles = `
+  .ql-toolbar {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+  }
+  .ql-container {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+  }
+  .ql-editor {
+    color: #e2e8f0 !important;
+    font-size: 16px !important;
+    min-height: 400px !important;
+  }
+  .ql-editor strong {
+    font-weight: bold !important;
+  }
+  .ql-editor em {
+    font-style: italic !important;
+  }
+  .ql-editor.ql-blank::before {
+    color: #64748b !important;
+  }
+`;
+
 const TemplatesSettings = () => {
   const { templates: dbTemplates, updateTemplates, logAction } = useSettings();
   
@@ -117,7 +144,7 @@ const TemplatesSettings = () => {
   };
 
   const formats = [
-    'header', 'font', 'bold', 'italic', 'underline', 'strike', 'list', 'bullet', 
+    'header', 'font', 'bold', 'italic', 'underline', 'strike', 'list', 
     'align', 'color', 'background', 'link', 'image'
   ];
 
@@ -185,6 +212,7 @@ const TemplatesSettings = () => {
 
   return (
     <div className="space-y-6">
+      <style dangerouslySetInnerHTML={{ __html: quillStyles }} />
       <div>
         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
           <FileText className="text-federal-500" size={28} />
