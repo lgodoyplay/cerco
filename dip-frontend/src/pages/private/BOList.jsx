@@ -5,14 +5,14 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
-import { useSettings } from '../../hooks/useSettings';
+import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { generateBOReportPDF } from '../../utils/pdfGenerator';
 
 const BOList = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { templates } = useSettings();
+  const { templates, logAction } = useSettingsContext();
   const { can } = usePermissions();
   const [boletins, setBoletins] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,6 +86,9 @@ const BOList = () => {
         .eq('id', boToDelete.id);
 
       if (error) throw error;
+
+      // Log action
+      logAction('DELETE_BO', 'boletins', boToDelete.id, boToDelete, null);
 
       setBoletins(boletins.filter(bo => bo.id !== boToDelete.id));
       alert('BO excluído com sucesso!');

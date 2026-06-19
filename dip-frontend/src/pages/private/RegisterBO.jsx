@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Save, Eraser, FileText, CheckCircle, AlertCircle, Shield, MapPin, Calendar, User, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
-import { useSettings } from '../../hooks/useSettings';
+import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useNavigate } from 'react-router-dom';
 
 const RegisterBO = () => {
   const navigate = useNavigate();
-  const { logAction, discordConfig } = useSettings();
+  const { logAction, discordConfig } = useSettingsContext();
   const { can } = usePermissions();
   const [reformulating, setReformulating] = useState(false);
 
@@ -114,7 +114,7 @@ const RegisterBO = () => {
       // Auto-fill policial_responsavel from user if possible, or keep what user typed
       const officerName = formData.officer || (user?.email || user?.id || '');
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('boletins')
         .insert([{
           comunicante: formData.complainant,
@@ -126,12 +126,14 @@ const RegisterBO = () => {
           id_policial_prisao: formData.arrestOfficerId,
           status: 'Registrado',
           created_by: user?.id
-        }]);
+        }])
+        .select('*');
 
       if (error) throw error;
+      const newBO = data[0];
 
       // Log action
-      logAction(`B.O. Registrado: ${formData.complainant} - ${formData.description.substring(0, 30)}...`);
+      logAction('CREATE_BO', 'boletins', newBO.id, null, newBO);
 
       // Send Discord Notification
       if (discordConfig?.bulletinsWebhook) {
