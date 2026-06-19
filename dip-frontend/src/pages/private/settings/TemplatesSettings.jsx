@@ -2,113 +2,124 @@ import React, { useState } from 'react';
 import { FileText, Save, RefreshCw, Download } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 import { generateProfessionalPDF } from '../../../utils/pdfGeneratorPro';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const TemplatesSettings = () => {
   const { templates: dbTemplates, updateTemplates, logAction } = useSettings();
   
   const defaultTemplates = {
-    investigation: `[CENTER]POLÍCIA CIVIL DO ESTADO DA EUFORIA[/CENTER]
-[CENTER]DEPARTAMENTO DE INVESTIGAÇÕES CRIMINAIS[/CENTER]
-[CENTER]RELATÓRIO FINAL DE INQUÉRITO POLICIAL[/CENTER]
-
-DADOS DO INQUÉRITO
-Número do Inquérito: {numero_inquerito}
-Data de Instauração: {data_abertura}
-Status: {status}
-Delegacia Responsável: {delegacia}
-[CENTER]Investigador Responsável: {nome_agente}[/CENTER]
-
-IDENTIFICAÇÃO DO INVESTIGADO
-
-Nome Completo: {nome_investigado}
-CPF: {cpf_investigado}
-Data de Nascimento: {data_nascimento}
-Telefone: {telefone}
-
-OBJETO DA INVESTIGAÇÃO
-
-O presente Inquérito Policial foi instaurado pela Polícia Civil do Estado da Euforia com a finalidade de apurar os fatos noticiados, identificar a autoria, materialidade e circunstâncias relacionadas à possível prática de infração penal atribuída ao investigado.
-
-RELATÓRIO DOS FATOS
-
-{relato_fatos}
-
-DILIGÊNCIAS REALIZADAS
-
-Durante a instrução do presente inquérito foram realizadas as seguintes ações investigativas:
-- Levantamento de informações e antecedentes;
-- Coleta de depoimentos e oitivas;
-- Análise documental;
-- Verificação de registros fotográficos e audiovisuais;
-- Levantamento de inteligência policial;
-- Demais diligências necessárias para o esclarecimento dos fatos.
-
-ELEMENTOS PROBATÓRIOS
-
-Foram reunidos e anexados aos autos os seguintes elementos de prova:
-{lista_provas}
-
-Todos os materiais foram devidamente analisados e catalogados, passando a integrar o conjunto probatório deste procedimento investigativo.
-
-ANÁLISE INVESTIGATIVA
-
-Após análise técnica e confrontação dos elementos obtidos, verificou-se a existência de indícios consistentes relacionados aos fatos investigados, permitindo a formação de convicção acerca da dinâmica dos acontecimentos e da eventual responsabilidade do investigado.
-
-As informações coletadas demonstram coerência entre os depoimentos, documentos e demais evidências presentes nos autos.
-
-CONCLUSÃO
-
-Diante dos fatos apurados e das provas produzidas ao longo da investigação, conclui-se que o presente Inquérito Policial atingiu seus objetivos, reunindo elementos suficientes para subsidiar as medidas legais cabíveis.
-
-Assim, os autos são encaminhados à autoridade competente para análise e deliberação quanto às providências subsequentes.
-
-[CENTER]Estado da Euforia, {data_conclusao}.[/CENTER]
-
-
-[CENTER]{nome_agente}[/CENTER]
-[CENTER]Investigador de Polícia Civil[/CENTER]
-
-[CENTER]{nome_delegado}[/CENTER]
-[CENTER]Delegado de Polícia Civil[/CENTER]
-
-[CENTER]POLÍCIA CIVIL DO ESTADO DA EUFORIA[/CENTER]
-[CENTER]"Servir e Proteger com Justiça e Integridade"[/CENTER]`,
-    arrest: `AUTO DE PRISÃO
-    
-DADOS DA OCORRÊNCIA
-Data: {data_atual}
-Local: {local_prisao}
-
-DETIDO
-Nome: {nome_detido}
-Documento: {doc_detido}
-
-MOTIVO DA PRISÃO
-O indivíduo foi detido em flagrante delito sob a acusação de...
-
-DIREITOS CONSTITUCIONAIS
-Foi informado ao detido seus direitos constitucionais...
-
-__________________________
-Autoridade Policial`,
-    bo: `BOLETIM DE OCORRÊNCIA
-    
-PROTOCOLO: {protocolo}
-NATUREZA: {natureza_ocorrencia}
-
-COMUNICANTE
-Nome: {nome_comunicante}
-
-NARRATIVA DOS FATOS
-Compareceu a esta unidade policial o comunicante acima qualificado narrando que...
-
-PROVIDÊNCIAS
-Foi determinado o registro da ocorrência para devida apuração...`
+    investigation: `<p style="text-align: center;"><strong>POLÍCIA CIVIL DO ESTADO DA EUFORIA</strong></p>
+<p style="text-align: center;"><strong>DEPARTAMENTO DE INVESTIGAÇÕES CRIMINAIS</strong></p>
+<p style="text-align: center;"><strong>RELATÓRIO FINAL DE INQUÉRITO POLICIAL</strong></p>
+<p><br></p>
+<p><strong>DADOS DO INQUÉRITO</strong></p>
+<p>Número do Inquérito: {numero_inquerito}</p>
+<p>Data de Instauração: {data_abertura}</p>
+<p>Status: {status}</p>
+<p>Delegacia Responsável: {delegacia}</p>
+<p style="text-align: center;">Investigador Responsável: {nome_agente}</p>
+<p><br></p>
+<p><strong>IDENTIFICAÇÃO DO INVESTIGADO</strong></p>
+<p>Nome Completo: {nome_investigado}</p>
+<p>CPF: {cpf_investigado}</p>
+<p>Data de Nascimento: {data_nascimento}</p>
+<p>Telefone: {telefone}</p>
+<p><br></p>
+<p><strong>OBJETO DA INVESTIGAÇÃO</strong></p>
+<p>O presente Inquérito Policial foi instaurado pela Polícia Civil do Estado da Euforia com a finalidade de apurar os fatos noticiados, identificar a autoria, materialidade e circunstâncias relacionadas à possível prática de infração penal atribuída ao investigado.</p>
+<p><br></p>
+<p><strong>RELATÓRIO DOS FATOS</strong></p>
+<p>{relato_fatos}</p>
+<p><br></p>
+<p><strong>DILIGÊNCIAS REALIZADAS</strong></p>
+<p>Durante a instrução do presente inquérito foram realizadas as seguintes ações investigativas:</p>
+<ul>
+  <li>Levantamento de informações e antecedentes;</li>
+  <li>Coleta de depoimentos e oitivas;</li>
+  <li>Análise documental;</li>
+  <li>Verificação de registros fotográficos e audiovisuais;</li>
+  <li>Levantamento de inteligência policial;</li>
+  <li>Demais diligências necessárias para o esclarecimento dos fatos.</li>
+</ul>
+<p><br></p>
+<p><strong>ELEMENTOS PROBATÓRIOS</strong></p>
+<p>Foram reunidos e anexados aos autos os seguintes elementos de prova:</p>
+<p>{lista_provas}</p>
+<p>Todos os materiais foram devidamente analisados e catalogados, passando a integrar o conjunto probatório deste procedimento investigativo.</p>
+<p><br></p>
+<p><strong>ANÁLISE INVESTIGATIVA</strong></p>
+<p>Após análise técnica e confrontação dos elementos obtidos, verificou-se a existência de indícios consistentes relacionados aos fatos investigados, permitindo a formação de convicção acerca da dinâmica dos acontecimentos e da eventual responsabilidade do investigado.</p>
+<p>As informações coletadas demonstram coerência entre os depoimentos, documentos e demais evidências presentes nos autos.</p>
+<p><br></p>
+<p><strong>CONCLUSÃO</strong></p>
+<p>Diante dos fatos apurados e das provas produzidas ao longo da investigação, conclui-se que o presente Inquérito Policial atingiu seus objetivos, reunindo elementos suficientes para subsidiar as medidas legais cabíveis.</p>
+<p>Assim, os autos são encaminhados à autoridade competente para análise e deliberação quanto às providências subsequentes.</p>
+<p style="text-align: center;">Estado da Euforia, {data_conclusao}.</p>
+<p><br></p>
+<p><br></p>
+<p style="text-align: center;">{nome_agente}</p>
+<p style="text-align: center;">Investigador de Polícia Civil</p>
+<p><br></p>
+<p style="text-align: center;">{nome_delegado}</p>
+<p style="text-align: center;">Delegado de Polícia Civil</p>
+<p><br></p>
+<p style="text-align: center;"><strong>POLÍCIA CIVIL DO ESTADO DA EUFORIA</strong></p>
+<p style="text-align: center;">"Servir e Proteger com Justiça e Integridade"</p>`,
+    arrest: `<p><strong>AUTO DE PRISÃO</strong></p>
+<p><br></p>
+<p><strong>DADOS DA OCORRÊNCIA</strong></p>
+<p>Data: {data_atual}</p>
+<p>Local: {local_prisao}</p>
+<p><br></p>
+<p><strong>DETIDO</strong></p>
+<p>Nome: {nome_detido}</p>
+<p>Documento: {doc_detido}</p>
+<p><br></p>
+<p><strong>MOTIVO DA PRISÃO</strong></p>
+<p>O indivíduo foi detido em flagrante delito sob a acusação de...</p>
+<p><br></p>
+<p><strong>DIREITOS CONSTITUCIONAIS</strong></p>
+<p>Foi informado ao detido seus direitos constitucionais...</p>
+<p><br></p>
+<p>__________________________</p>
+<p>Autoridade Policial</p>`,
+    bo: `<p><strong>BOLETIM DE OCORRÊNCIA</strong></p>
+<p><br></p>
+<p>PROTOCOLO: {protocolo}</p>
+<p>NATUREZA: {natureza_ocorrencia}</p>
+<p><br></p>
+<p><strong>COMUNICANTE</strong></p>
+<p>Nome: {nome_comunicante}</p>
+<p><br></p>
+<p><strong>NARRATIVA DOS FATOS</strong></p>
+<p>Compareceu a esta unidade policial o comunicante acima qualificado narrando que...</p>
+<p><br></p>
+<p><strong>PROVIDÊNCIAS</strong></p>
+<p>Foi determinado o registro da ocorrência para devida apuração...</p>`
   };
 
   const [templates, setTemplates] = useState(dbTemplates || defaultTemplates);
   const [activeTab, setActiveTab] = useState('investigation');
   const [hasChanges, setHasChanges] = useState(false);
+
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      [{ 'font': [] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'align': [] }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['link', 'image'],
+      ['clean']
+    ]
+  };
+
+  const formats = [
+    'header', 'font', 'bold', 'italic', 'underline', 'strike', 'list', 'bullet', 
+    'align', 'color', 'background', 'link', 'image'
+  ];
 
   const handleTemplateChange = (value) => {
     setTemplates(prev => ({ ...prev, [activeTab]: value }));
@@ -182,7 +193,7 @@ Foi determinado o registro da ocorrência para devida apuração...`
         <p className="text-slate-400 mt-1">Gerencie os templates padrão utilizados na geração de documentos oficiais.</p>
       </div>
 
-      <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col h-[600px]">
+      <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col h-[700px]">
         <div className="flex border-b border-slate-800 bg-slate-900">
           {tabs.map(tab => (
             <button
@@ -200,13 +211,17 @@ Foi determinado o registro da ocorrência para devida apuração...`
         </div>
 
         <div className="flex-1 p-0 relative">
-          <textarea
-            value={templates[activeTab]}
-            onChange={(e) => handleTemplateChange(e.target.value)}
-            className="w-full h-full bg-slate-950 text-slate-300 p-6 font-mono text-sm resize-none focus:outline-none focus:ring-0"
-            spellCheck={false}
-          />
-          <div className="absolute bottom-4 right-4 text-xs text-slate-600 bg-slate-900/80 px-2 py-1 rounded pointer-events-none">
+          <div className="h-full bg-slate-50">
+            <ReactQuill
+              theme="snow"
+              value={templates[activeTab]}
+              onChange={handleTemplateChange}
+              modules={modules}
+              formats={formats}
+              className="h-full"
+            />
+          </div>
+          <div className="absolute bottom-4 right-4 text-xs text-slate-600 bg-slate-900/80 px-2 py-1 rounded pointer-events-none z-10">
             Variáveis disponíveis: {'{nome}'}, {'{data}'}, {'{numero}'}
           </div>
         </div>

@@ -472,36 +472,114 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         // Processar Template Personalizado (se houver)
         let customContent = null;
         if (templateStr) {
-            // Substituição
-            let text = templateStr;
+            // Primeiro substituir as variáveis!
+            let processedHtml = templateStr;
             Object.keys(variables).forEach(key => {
                 const regex = new RegExp(key, 'g');
-                text = text.replace(regex, variables[key] || '');
+                processedHtml = processedHtml.replace(regex, variables[key] || '');
             });
 
-            // Converter para formato pdfmake (parágrafos)
-            customContent = text.split('\n').map(line => {
-                // Verificar tag de centralização
-                let isCentered = false;
-                let processedLine = line;
-                if (processedLine.startsWith('[CENTER]') && processedLine.endsWith('[/CENTER]')) {
-                    isCentered = true;
-                    processedLine = processedLine.slice(8, -9).trim();
-                }
-                
-                const trimmed = processedLine.trim();
-                // Detecção simples de "títulos" (linhas curtas em maiúsculas) para aplicar estilo
-                const isHeader = trimmed.length > 0 && trimmed.length < 60 && trimmed === trimmed.toUpperCase() && !trimmed.includes(':') && !trimmed.includes('.');
-                
-                return { 
-                    text: trimmed, 
-                    style: isHeader ? 'subHeader' : 'normalText', 
-                    margin: [0, 2, 0, 2], 
-                    alignment: isCentered ? 'center' : 'left',
-                    bold: isHeader ? true : false,
-                    fontSize: isHeader ? 13 : 11
+            // Função para converter HTML em array pdfmake
+            const htmlToPdfmake = (html) => {
+                // Criar um DOM temporário
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const content = [];
+
+                const walk = (node) => {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        const text = node.textContent;
+                        if (text.trim()) {
+                            content.push(text);
+                        }
+                        return;
+                    }
+
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        const tag = node.tagName.toLowerCase();
+                        
+                        let children = [];
+                        node.childNodes.forEach(child => {
+                            const childContent = htmlToPdfmake(child.outerHTML || child.textContent);
+                            children = children.concat(childContent);
+                        });
+
+                        if (tag === 'p' || tag === 'div') {
+                            let paragraph = { text: children.length ? children : (node.textContent || '') };
+                            const styleAttr = node.getAttribute('style');
+                            if (styleAttr) {
+                                if (styleAttr.includes('text-align: center')) {
+                                    paragraph.alignment = 'center';
+                                }
+                            }
+                            content.push(paragraph);
+                        } else if (tag === 'strong' || tag === 'b') {
+                            if (children.length === 1) {
+                                if (typeof children[0] === 'string') {
+                                    content.push({ text: children[0], bold: true });
+                                } else {
+                                    children[0].bold = true;
+                                    content.push(children[0]);
+                                }
+                            } else {
+                                content.push({ text: children, bold: true });
+                            }
+                        } else if (tag === 'em' || tag === 'i') {
+                            if (children.length === 1) {
+                                if (typeof children[0] === 'string') {
+                                    content.push({ text: children[0], italics: true });
+                                } else {
+                                    children[0].italics = true;
+                                    content.push(children[0]);
+                                }
+                            } else {
+                                content.push({ text: children, italics: true });
+                            }
+                        } else if (tag === 'u') {
+                            if (children.length === 1) {
+                                if (typeof children[0] === 'string') {
+                                    content.push({ text: children[0], decoration: 'underline' });
+                                } else {
+                                    children[0].decoration = 'underline';
+                                    content.push(children[0]);
+                                }
+                            } else {
+                                content.push({ text: children, decoration: 'underline' });
+                            }
+                        } else if (tag === 'br') {
+                            content.push('\n');
+                        } else if (tag === 'ul' || tag === 'ol') {
+                            const list = [];
+                            node.querySelectorAll('li').forEach(li => {
+                                list.push(htmlToPdfmake(li.innerHTML));
+                            });
+                            if (tag === 'ul') {
+                                content.push({ ul: list });
+                            } else {
+                                content.push({ ol: list });
+                            }
+                        } else if (tag === 'li') {
+                            return children;
+                        } else if (tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4' || tag === 'h5' || tag === 'h6') {
+                            const level = parseInt(tag.charAt(1));
+                            const sizes = [24, 20, 18, 16, 14, 12];
+                            content.push({ 
+                                text: children.length ? children : node.textContent, 
+                                fontSize: sizes[level-1], 
+                                bold: true, 
+                                margin: [0, 10, 0, 5] 
+                            });
+                        }
+                    }
                 };
-            });
+
+                // Percorrer o body
+                doc.body.childNodes.forEach(walk);
+
+                return content.filter(item => item !== null && item !== undefined);
+            };
+
+            customContent = htmlToPdfmake(processedHtml);
         }
 
         // Definir Conteúdo Final
