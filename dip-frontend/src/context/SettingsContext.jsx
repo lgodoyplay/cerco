@@ -245,6 +245,9 @@ export const SettingsProvider = ({ children }) => {
       setUnreadLogsCount(unreadCount);
     } catch (error) {
       console.error('Error fetching logs:', error);
+      // Se a tabela não existir, usamos array vazio
+      setLogs([]);
+      setUnreadLogsCount(0);
     }
   }, []);
 

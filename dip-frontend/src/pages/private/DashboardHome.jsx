@@ -138,7 +138,7 @@ const DashboardHome = () => {
           { count: procuradosCount },
           { count: investigacoesCount },
           { count: bosCount },
-          { data: logs },
+          { data: logs, error: logsError },
           { data: boData },
           { data: crimesData },
           { data: boCrimesData }

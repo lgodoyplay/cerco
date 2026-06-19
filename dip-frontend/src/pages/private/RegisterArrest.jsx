@@ -4,13 +4,13 @@ import clsx from 'clsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ImageUploadArea from '../../components/ImageUploadArea';
 import { supabase } from '../../lib/supabase';
-import { useSettings } from '../../hooks/useSettings';
+import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
 
 const RegisterArrest = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { discordConfig, crimes = [] } = useSettings(); // Ensure crimes is always an array
+  const { discordConfig, crimes = [], logAction } = useSettingsContext(); // Ensure crimes is always an array
   const { can } = usePermissions();
   const prefillData = location.state?.wantedPerson;
   const [reformulating, setReformulating] = useState(false);
@@ -217,7 +217,7 @@ const RegisterArrest = () => {
       }
 
       // 2. Insert Data into Database
-      const { error: insertError } = await supabase
+      const { data, error: insertError } = await supabase
         .from('prisoes')
         .insert([{
           nome: formData.name,
@@ -231,21 +231,23 @@ const RegisterArrest = () => {
           conduzido_por_outra_policia: formData.broughtByOtherPolice,
           bo_id: formData.boId,
           created_by: user?.id
-        }]);
+        }])
+        .select('*');
 
       if (insertError) throw insertError;
+      const newArrest = data[0];
 
       // 3. Log Action
-      if (user) {
-        await supabase.from('system_logs').insert([{
-          user_id: user.id,
-          action: 'Nova Prisão',
-          details: `Prisão registrada: ${formData.name} (Art. ${formData.articles})`
-        }]);
-      }
+      await logAction('CREATE_ARREST', 'prisoes', newArrest.id, null, newArrest);
 
       // 3.1 If this was a wanted person, remove from wanted list
       if (prefillData?.id) {
+        const { data: oldWanted, error: fetchError } = await supabase
+          .from('procurados')
+          .select('*')
+          .eq('id', prefillData.id)
+          .single();
+          
         const { error: deleteError } = await supabase
           .from('procurados')
           .delete()
@@ -253,12 +255,8 @@ const RegisterArrest = () => {
 
         if (deleteError) {
           console.error('Error removing from wanted list:', deleteError);
-        } else if (user) {
-          await supabase.from('system_logs').insert([{
-            user_id: user.id,
-            action: 'Procurado Preso',
-            details: `Procurado ${formData.name} removido da lista após prisão.`
-          }]);
+        } else {
+          await logAction('DELETE_WANTED', 'procurados', prefillData.id, oldWanted, null);
         }
       }
 

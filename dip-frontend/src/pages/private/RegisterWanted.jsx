@@ -4,12 +4,12 @@ import { Save, Eraser, User, FileText, Camera, CheckCircle, AlertCircle, Shield,
 import clsx from 'clsx';
 import ImageUploadArea from '../../components/ImageUploadArea';
 import { supabase } from '../../lib/supabase';
-import { useSettings } from '../../hooks/useSettings';
+import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
 
 const RegisterWanted = () => {
   const navigate = useNavigate();
-  const { discordConfig } = useSettings();
+  const { discordConfig, logAction } = useSettingsContext();
   const { can } = usePermissions();
   const [reformulating, setReformulating] = useState(false);
   const [boletins, setBoletins] = useState([]);
@@ -167,7 +167,7 @@ const RegisterWanted = () => {
       const { data: { publicUrl } } = supabase.storage.from('procurados').getPublicUrl(fileName);
 
       // 2. Insert Data into Database
-      const { error: insertError } = await supabase
+      const { data, error: insertError } = await supabase
         .from('procurados')
         .insert([{
           nome: formData.name,
@@ -180,16 +180,14 @@ const RegisterWanted = () => {
           created_by: user?.id,
           recompensa: formData.reward,
           bo_id: formData.boId
-        }]);
+        }])
+        .select('*');
 
       if (insertError) throw insertError;
+      const newWanted = data[0];
 
       // 3. Log Action
-      await supabase.from('system_logs').insert([{
-        user_id: user?.id,
-        action: 'Novo Procurado',
-        details: `Procurado cadastrado: ${formData.name} (Periculosidade: ${formData.dangerLevel})`
-      }]);
+      await logAction('CREATE_WANTED', 'procurados', newWanted.id, null, newWanted);
 
       // 4. Send Discord Notification
       if (discordConfig?.wantedWebhook) {

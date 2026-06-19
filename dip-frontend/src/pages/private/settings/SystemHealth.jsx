@@ -23,7 +23,7 @@ const SystemHealth = () => {
     'profiles',
     'notifications',
     'system_settings',
-    'system_logs',
+    'audit_logs',
     'logistics_requisitions',
     'logistics_custody',
     'cursos',
@@ -222,7 +222,40 @@ ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Settings access" ON public.system_settings;
 CREATE POLICY "Settings access" ON public.system_settings FOR ALL TO authenticated USING (true);
 
--- Tabela System Logs
+-- Tabela Audit Logs (Nova tabela de auditoria
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  user_name TEXT,
+  action TEXT NOT NULL,
+  table_name TEXT,
+  record_id UUID,
+  old_data JSONB,
+  new_data JSONB,
+  ip_address TEXT,
+  user_agent TEXT,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Audit logs are visible by authenticated only" ON public.audit_logs;
+CREATE POLICY "Audit logs are visible by authenticated only" 
+  ON public.audit_logs FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Audit logs are insertable by authenticated" ON public.audit_logs;
+CREATE POLICY "Audit logs are insertable by authenticated" 
+  ON public.audit_logs FOR INSERT TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Audit logs are updatable to mark as read" ON public.audit_logs;
+CREATE POLICY "Audit logs are updatable to mark as read" 
+  ON public.audit_logs FOR UPDATE TO authenticated USING (true);
+
+-- Índice para melhorar performance de consultas por data
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON public.audit_logs(created_at DESC);
+
+-- Tabela System Logs (mantida para compatibilidade
 CREATE TABLE IF NOT EXISTS public.system_logs (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id),
@@ -295,7 +328,7 @@ BEGIN
       financial_assets, financial_records, prf_photos, prf_seizures, prf_fines,
       hearings, release_orders, petitions, provas, cursos_policiais, investigacoes,
       prisoes, procurados, boletins, candidatos, cursos, denuncias, notifications,
-      system_logs, system_settings, warnings, news
+      system_logs, audit_logs, system_settings, warnings, news
     CASCADE;
   EXCEPTION WHEN OTHERS THEN
     -- Fallback para delete individual
@@ -322,6 +355,7 @@ BEGIN
     DELETE FROM public.denuncias;
     DELETE FROM public.notifications;
     DELETE FROM public.system_logs;
+    DELETE FROM public.audit_logs;
     DELETE FROM public.system_settings;
     DELETE FROM public.warnings;
     DELETE FROM public.news;
