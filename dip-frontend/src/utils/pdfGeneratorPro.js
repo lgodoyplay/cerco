@@ -978,7 +978,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         // Definir Conteúdo Final
         const docDefinition = {
             pageSize: 'A4',
-            pageMargins: [85, 85, 57, 57],
+            pageMargins: [85, 118, 57, 57],
             background: function(currentPage, pageCount) {
                 if (backgroundBase64) {
                     return {
@@ -997,7 +997,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 return {
                     stack: [
                         ...buildPdfHeaderContent(pageHeaderConfig).map((item, index) => index === 0
-                            ? { ...item, margin: [0, 15, 0, 0] }
+                            ? { ...item, margin: [0, 26, 0, 0] }
                             : item
                         )
                     ]

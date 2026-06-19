@@ -167,11 +167,11 @@ const quillStyles = `
     color: #475569;
   }
   .pdf-preview-body-page {
-    padding: 76px 58px 64px;
+    padding: 108px 58px 64px;
     color: #111827;
   }
   .pdf-preview-page-header {
-    margin-bottom: 28px;
+    margin-bottom: 32px;
     text-align: center;
   }
   .pdf-preview-page-line {
@@ -186,7 +186,7 @@ const quillStyles = `
     letter-spacing: 0.02em;
   }
   .pdf-preview-page-content {
-    min-height: 860px;
+    min-height: 828px;
   }
   .pdf-preview-page-content p,
   .pdf-preview-page-content li {
