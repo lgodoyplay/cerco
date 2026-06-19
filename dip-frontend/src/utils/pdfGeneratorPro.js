@@ -195,15 +195,34 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         ];
 
         if (type === 'investigation') {
-            docTitle = 'RELATÓRIO DE INVESTIGAÇÃO';
+            docTitle = 'RELATÓRIO FINAL DE INQUÉRITO POLICIAL';
             docRef = `PROTOCOLO Nº ${data.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`;
+            
+            // Criar lista de provas formatada
+            let listaProvas = '';
+            if (data.proofs && data.proofs.length > 0) {
+                data.proofs.forEach((proof, i) => {
+                    listaProvas += `${i + 1}. ${proof.type ? proof.type.toUpperCase() : 'DOCUMENTO'} - ${proof.title || 'Sem título'}: ${proof.description || 'Sem descrição'}\n`;
+                });
+            } else {
+                listaProvas = 'Nenhuma prova anexada.';
+            }
             
             variables = {
                 '{numero_inquerito}': data.id,
                 '{data_abertura}': formatDate(data.createdAt),
                 '{status}': data.status,
+                '{delegacia}': 'Delegacia Central de Investigações',
+                '{nome_agente}': data.investigator ? data.investigator.nome : (user?.nome || 'Agente Responsável'),
                 '{nome_investigado}': Array.isArray(data.involved) ? data.involved.join(', ') : (data.involved || 'Não informado'),
                 '{cpf_investigado}': 'Não informado',
+                '{data_nascimento}': 'Não informado',
+                '{endereco}': 'Não informado',
+                '{telefone}': 'Não informado',
+                '{relato_fatos}': data.description || 'Conforme informações e provas anexadas.',
+                '{lista_provas}': listaProvas,
+                '{data_conclusao}': formatDate(data.closedAt || new Date()),
+                '{nome_delegado}': 'Delegado Responsável',
                 '{nome_detido}': Array.isArray(data.involved) ? data.involved.join(', ') : 'Não informado',
                 '{data_atual}': new Date().toLocaleDateString('pt-BR'),
                 '{local_prisao}': 'Local da Ocorrência',
@@ -211,7 +230,6 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 '{protocolo}': `${new Date().getFullYear()}.${data.id}`,
                 '{natureza_ocorrencia}': 'Investigação Criminal',
                 '{nome_comunicante}': user?.nome || 'Agente Responsável',
-                '{relato_fatos}': data.description || 'Ver seção de provas.',
                 '{conclusao}': 'Conforme relatório de provas em anexo.',
                 '{assinatura_agente}': user?.nome || 'Agente',
                 '{cargo_agente}': 'Investigador CIVIL EUFORIA'

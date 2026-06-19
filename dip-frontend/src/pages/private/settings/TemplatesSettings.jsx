@@ -6,25 +6,51 @@ const TemplatesSettings = () => {
   const { templates: dbTemplates, updateTemplates, logAction } = useSettings();
   
   const defaultTemplates = {
-    investigation: `RELATÓRIO DE INVESTIGAÇÃO
-    
-DADOS DO INQUÉRITO
-Número: {numero_inquerito}
-Data de Abertura: {data_abertura}
-Status: {status}
+    investigation: `POLÍCIA CIVIL DO ESTADO DA EUFORIA 
+DEPARTAMENTO DE INVESTIGAÇÕES CRIMINAIS 
+RELATÓRIO FINAL DE INQUÉRITO POLICIAL 
+DADOS DO INQUÉRITO 
+Número do Inquérito: {numero_inquerito} 
+Data de Instauração: {data_abertura} 
+Status: {status} 
+Delegacia Responsável: {delegacia} 
+Investigador Responsável: {nome_agente} 
+IDENTIFICAÇÃO DO INVESTIGADO 
+Nome Completo: {nome_investigado} 
+CPF: {cpf_investigado} 
+Data de Nascimento: {data_nascimento} 
+Endereço: {endereco} 
+Telefone: {telefone} 
+OBJETO DA INVESTIGAÇÃO 
+O presente Inquérito Policial foi instaurado pela Polícia Civil do Estado da Euforia com a finalidade de apurar os fatos noticiados, identificar a autoria, materialidade e circunstâncias relacionadas à possível prática de infração penal atribuída ao investigado. 
+RELATÓRIO DOS FATOS 
+{relato_fatos}
+DILIGÊNCIAS REALIZADAS 
+Durante a instrução do presente inquérito foram realizadas as seguintes ações investigativas: 
+Levantamento de informações e antecedentes; 
+Coleta de depoimentos e oitivas; 
+Análise documental; 
+Verificação de registros fotográficos e audiovisuais; 
+Levantamento de inteligência policial; 
+Demais diligências necessárias para o esclarecimento dos fatos. 
+ELEMENTOS PROBATÓRIOS 
+Foram reunidos e anexados aos autos os seguintes elementos de prova: 
+{lista_provas}
+Todos os materiais foram devidamente analisados e catalogados, passando a integrar o conjunto probatório deste procedimento investigativo. 
+ANÁLISE INVESTIGATIVA 
+Após análise técnica e confrontação dos elementos obtidos, verificou-se a existência de indícios consistentes relacionados aos fatos investigados, permitindo a formação de convicção acerca da dinâmica dos acontecimentos e da eventual responsabilidade do investigado. 
+As informações coletadas demonstram coerência entre os depoimentos, documentos e demais evidências presentes nos autos. 
+CONCLUSÃO 
+Diante dos fatos apurados e das provas produzidas ao longo da investigação, conclui-se que o presente Inquérito Policial atingiu seus objetivos, reunindo elementos suficientes para subsidiar as medidas legais cabíveis. 
+Assim, os autos são encaminhados à autoridade competente para análise e deliberação quanto às providências subsequentes. 
+Estado da Euforia, {data_conclusao}. 
 
-INVESTIGADO
-Nome: {nome_investigado}
-CPF: {cpf_investigado}
-
-RELATÓRIO
-O presente relatório tem por objetivo descrever os fatos apurados durante a investigação...
-
-CONCLUSÃO
-Diante do exposto, conclui-se que...
-
-__________________________
-Assinatura do Agente`,
+{nome_agente} 
+Investigador de Polícia Civil 
+{nome_delegado} 
+Delegado de Polícia Civil 
+POLÍCIA CIVIL DO ESTADO DA EUFORIA 
+"Servir e Proteger com Justiça e Integridade"`,
     arrest: `AUTO DE PRISÃO
     
 DADOS DA OCORRÊNCIA
