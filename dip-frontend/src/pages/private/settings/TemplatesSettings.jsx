@@ -788,6 +788,14 @@ const TemplatesSettings = () => {
             </button>
           ))}
         </div>
+        <div className="border-b border-slate-800 bg-slate-900/60 px-4 py-3">
+          <p className="text-xs text-slate-300">
+            Essas abas apenas trocam o tipo de documento. Para alterar o conteudo do PDF, edite o texto no editor logo abaixo.
+          </p>
+          <p className="text-[11px] text-slate-500 mt-1">
+            O titulo da aba nao faz parte do documento final.
+          </p>
+        </div>
 
         <div className="flex-1 min-h-0 grid grid-rows-[minmax(0,1fr)_minmax(220px,320px)]">
           <div className="relative overflow-hidden border-b border-slate-800">
