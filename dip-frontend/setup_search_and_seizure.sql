@@ -2,6 +2,10 @@
 -- Script de setup para Busca e Apreensão
 -- Execute este script no SQL Editor do Supabase
 
+-- Garantir que a extensão uuid-ossp está ativada
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+
 -- 1. Adicionar coluna categoria na tabela investigacoes
 ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS categoria TEXT DEFAULT 'criminal';
 

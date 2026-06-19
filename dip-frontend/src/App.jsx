@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SettingsProvider } from './context/SettingsContext';
 import ThemeManager from './components/ThemeManager';
-import SessionMonitorComponent from './components/SessionMonitor';
 import PublicLayout from './components/PublicLayout';
 import PrivateLayout from './components/PrivateLayout';
 import ComingSoon from './components/ComingSoon';
@@ -121,7 +120,6 @@ function App() {
     <AuthProvider>
       <SettingsProvider>
         <ThemeManager />
-        <SessionMonitorComponent />
         <BrowserRouter>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>

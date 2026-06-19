@@ -135,12 +135,11 @@ export const SettingsProvider = ({ children }) => {
           name: crime.name,
           penalty: crime.penalty
         }])
-        .select('*')
-        .single();
+        .select('*');
       
       if (error) throw error;
-      setCrimes(prev => [...prev, data]);
-      return data;
+      setCrimes(prev => [...prev, data[0]]);
+      return data[0];
     } catch (error) {
       console.error('Error adding crime:', error);
       throw error;
@@ -159,12 +158,11 @@ export const SettingsProvider = ({ children }) => {
           updated_at: new Date().toISOString()
         })
         .eq('id', id)
-        .select('*')
-        .single();
+        .select('*');
       
       if (error) throw error;
-      setCrimes(prev => prev.map(c => c.id === id ? data : c));
-      return data;
+      setCrimes(prev => prev.map(c => c.id === id ? data[0] : c));
+      return data[0];
     } catch (error) {
       console.error('Error updating crime:', error);
       throw error;
