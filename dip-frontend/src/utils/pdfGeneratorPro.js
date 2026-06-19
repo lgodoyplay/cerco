@@ -134,6 +134,33 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
     try {
         // Garantir configuração de VFS
         ensureFontsConfigured();
+        
+        // Carregar imagem de fundo em base64
+        const getBase64FromLocalImage = (src) => {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = this.naturalWidth;
+                    canvas.height = this.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(this, 0, 0);
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                img.onerror = reject;
+                img.src = src;
+            };
+        };
+        
+        // Carregar o fundo
+        let backgroundBase64;
+        try {
+            backgroundBase64 = await getBase64FromLocalImage('/PDF/fundo.png');
+        } catch (e) {
+            console.warn('Erro ao carregar imagem de fundo:', e);
+            backgroundBase64 = null;
+        }
 
         // Preparar dados de imagens (assíncrono) - Apenas se houver provas (investigation) ou imagens (arrest/bo)
         let processedProofs = [];
@@ -465,7 +492,14 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         // Definir Conteúdo Final
         const docDefinition = {
             pageSize: 'A4',
-            pageMargins: [85, 85, 57, 57], 
+            pageMargins: [85, 85, 57, 57],
+            background: backgroundBase64 ? {
+                image: backgroundBase64,
+                width: 595,
+                height: 842,
+                absolutePosition: { x: 0, y: 0 },
+                opacity: 0.3
+            } : null,
             
             // Cabeçalho em todas as páginas
             header: () => {
