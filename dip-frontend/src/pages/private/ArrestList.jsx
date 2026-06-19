@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, Filter, Eye, FileText, Download, Shield, User, Calendar, MapPin, X, ChevronLeft, ChevronRight, Plus, Trash2, Lock } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -9,12 +9,14 @@ import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
 import { usePermissions } from '../../hooks/usePermissions';
 import { generateArrestPDF } from '../../utils/pdfGenerator';
+import NotificationBanner from '../../components/feedback/NotificationBanner';
 
 const ArrestList = () => {
   const { user } = useAuth();
   const { templates } = useSettings();
   const { can } = usePermissions();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const canManage = can('arrest_manage');
   const [arrests, setArrests] = useState([]);
@@ -25,9 +27,12 @@ const ArrestList = () => {
   const itemsPerPage = 10;
   const [deleteModal, setDeleteModal] = useState({ show: false, arrest: null });
   const [deletePassword, setDeletePassword] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState(location.state?.notification || null);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         // Fetch arrests
         const { data: arrestsData, error: arrestsError } = await supabase
@@ -65,11 +70,31 @@ const ArrestList = () => {
         setArrests(formattedArrests);
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
+        setNotification({
+          type: 'error',
+          message: error?.message || 'Nao foi possivel carregar as prisoes.'
+        });
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.notification) {
+      setNotification(location.state.notification);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.pathname, location.state, navigate]);
+
+  useEffect(() => {
+    if (!notification) return undefined;
+
+    const timer = window.setTimeout(() => setNotification(null), 3500);
+    return () => window.clearTimeout(timer);
+  }, [notification]);
 
   const filteredArrests = arrests.filter(arrest => 
     (arrest.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -89,13 +114,16 @@ const ArrestList = () => {
       await generateArrestPDF(arrest, user, templates?.arrest);
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
-      alert("Erro ao gerar PDF de prisão.");
+      setNotification({
+        type: 'error',
+        message: error?.message || 'Nao foi possivel gerar o PDF da prisao.'
+      });
     }
   };
 
   const handleDeleteArrest = async () => {
     if (deletePassword !== '4907') {
-      alert('Senha incorreta!');
+      setNotification({ type: 'warning', message: 'Senha incorreta para remover a prisao.' });
       return;
     }
 
@@ -110,10 +138,13 @@ const ArrestList = () => {
       setArrests(prev => prev.filter(a => a.id !== deleteModal.arrest.id));
       setDeleteModal({ show: false, arrest: null });
       setDeletePassword('');
-      alert('Prisão removida com sucesso!');
+      setNotification({ type: 'success', message: 'Prisao removida com sucesso.' });
     } catch (error) {
       console.error('Erro ao remover prisão:', error);
-      alert('Erro ao remover prisão.');
+      setNotification({
+        type: 'error',
+        message: error?.message || 'Nao foi possivel remover a prisao.'
+      });
     }
   };
 
@@ -128,6 +159,11 @@ const ArrestList = () => {
 
   return (
     <div className="space-y-6">
+      <NotificationBanner
+        notification={notification}
+        onClose={() => setNotification(null)}
+      />
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -179,7 +215,14 @@ const ArrestList = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {paginatedArrests.map((arrest) => (
+              {loading && (
+                <tr>
+                  <td colSpan="6" className="p-8 text-center text-slate-500">
+                    Carregando prisoes...
+                  </td>
+                </tr>
+              )}
+              {!loading && paginatedArrests.map((arrest) => (
                 <tr key={arrest.id} className="hover:bg-slate-800/50 transition-colors group">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
@@ -244,7 +287,7 @@ const ArrestList = () => {
                   </td>
                 </tr>
               ))}
-              {paginatedArrests.length === 0 && (
+              {!loading && paginatedArrests.length === 0 && (
                 <tr>
                   <td colSpan="6" className="p-8 text-center text-slate-500">
                     Nenhum registro encontrado.

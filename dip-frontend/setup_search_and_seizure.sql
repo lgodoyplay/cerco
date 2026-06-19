@@ -21,6 +21,9 @@ ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS nomes_carros TEXT[]; -
 ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS casas JSONB DEFAULT '[]'::jsonb; -- Dados das casas (objetos, fotos)
 ALTER TABLE public.investigacoes ADD COLUMN IF NOT EXISTS carros JSONB DEFAULT '[]'::jsonb; -- Dados dos carros (objetos, fotos)
 
+-- 2.1. Campos do relatório final do inquérito foram separados para:
+-- setup_investigation_report_fields.sql
+
 -- Adicionar coluna para prisões conduzidas por outra polícia
 ALTER TABLE public.prisoes ADD COLUMN IF NOT EXISTS conduzido_por_outra_policia BOOLEAN DEFAULT FALSE;
 -- Adicionar coluna para BO relacionado à prisão

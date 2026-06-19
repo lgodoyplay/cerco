@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useInvestigations } from '../../../hooks/useInvestigations';
 import { useAuth } from '../../../context/AuthContext';
 import { useSettings } from '../../../hooks/useSettings';
-import { generateInvestigationPDF } from '../../../utils/pdfGenerator';
+import { generateProfessionalPDF } from '../../../utils/pdfGeneratorPro';
 import AddProofModal from '../../../components/investigations/AddProofModal';
 import EditProofModal from '../../../components/investigations/EditProofModal';
 import ProofCard from '../../../components/investigations/ProofCard';
@@ -18,10 +18,12 @@ import {
   Users, 
   FileText,
   CheckCircle,
+  AlertCircle,
   X,
   ExternalLink,
   Edit3,
-  Trash2
+  Trash2,
+  Building2
 } from 'lucide-react';
 import clsx from 'clsx';
 import { usePermissions } from '../../../hooks/usePermissions';
@@ -32,7 +34,7 @@ const InvestigationDetail = () => {
   const location = useLocation(); // Add useLocation
   const { user } = useAuth();
   const { templates } = useSettings();
-  const { getInvestigation, addProof, closeInvestigation, deleteProof, editProof, editInvestigation, deleteInvestigation } = useInvestigations();
+  const { getInvestigation, addProof, closeInvestigation, deleteProof, editProof, deleteInvestigation } = useInvestigations();
   const { can } = usePermissions();
   
   const [investigation, setInvestigation] = useState(null);
@@ -41,44 +43,107 @@ const InvestigationDetail = () => {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [selectedProof, setSelectedProof] = useState(null);
   const [proofToEdit, setProofToEdit] = useState(null);
+  const [notification, setNotification] = useState(location.state?.notification || null);
+  const [loading, setLoading] = useState(true);
 
   // Determine back link based on URL path or investigation category
   const isRevenueRoute = location.pathname.includes('/revenue/');
+  const backLink = isRevenueRoute ? '/dashboard/revenue' : '/dashboard/investigations';
   
   // Load data
   useEffect(() => {
     const fetchDetail = async () => {
-      const data = await getInvestigation(id);
-      if (!data) {
-        navigate(isRevenueRoute ? '/dashboard/revenue' : '/dashboard/investigations');
-        return;
+      setLoading(true);
+      try {
+        const data = await getInvestigation(id);
+        if (!data) {
+          navigate(backLink);
+          return;
+        }
+        setInvestigation(data);
+      } catch (_error) {
+        setNotification({
+          type: 'error',
+          message: 'Nao foi possivel carregar a investigacao.'
+        });
+      } finally {
+        setLoading(false);
       }
-      setInvestigation(data);
     };
     fetchDetail();
-  }, [id, getInvestigation, navigate, isModalOpen, isRevenueRoute]); // Reload when modal closes (potentially adds proof)
+  }, [id, getInvestigation, navigate, isModalOpen, isEditModalOpen, isRevenueRoute, backLink]);
+
+  useEffect(() => {
+    if (location.state?.notification) {
+      setNotification(location.state.notification);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.pathname, location.state, navigate]);
+
+  useEffect(() => {
+    if (!notification) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setNotification(null);
+    }, 3500);
+
+    return () => window.clearTimeout(timer);
+  }, [notification]);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto pb-20 flex justify-center items-center min-h-[420px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-federal-500" />
+      </div>
+    );
+  }
 
   if (!investigation) return null;
 
   const isClosed = investigation.status === 'Encerrada' || investigation.status === 'Finalizada';
 
   const handleAddProof = async (proofData) => {
-    await addProof(id, proofData);
-    // Refresh
-    const data = await getInvestigation(id);
-    setInvestigation(data);
+    try {
+      await addProof(id, proofData);
+      const data = await getInvestigation(id);
+      setInvestigation(data);
+      setNotification({
+        type: 'success',
+        message: 'Prova adicionada com sucesso.'
+      });
+    } catch (error) {
+      console.error('Erro ao adicionar prova:', error);
+      setNotification({
+        type: 'error',
+        message: error?.message || 'Nao foi possivel adicionar a prova.'
+      });
+    }
   };
 
   const handleFinalize = async () => {
     if (window.confirm('Tem certeza que deseja finalizar esta investigação? Esta ação não pode ser desfeita.')) {
-      await closeInvestigation(id);
-      const updatedInv = await getInvestigation(id);
-      setInvestigation(updatedInv);
-      
-      // Generate PDF
       setIsGeneratingPdf(true);
       try {
-        await generateInvestigationPDF(updatedInv, user);
+        await closeInvestigation(id);
+        const updatedInv = await getInvestigation(id);
+        setInvestigation(updatedInv);
+        await generateProfessionalPDF(
+          updatedInv,
+          user,
+          templates?.investigation,
+          'investigation',
+          templates?.__layoutConfig?.investigation
+        );
+        setNotification({
+          type: 'success',
+          message: 'Investigação finalizada e relatório gerado com sucesso.'
+        });
+      } catch (error) {
+        console.error('Erro ao finalizar investigação:', error);
+        setNotification({
+          type: 'error',
+          message: error?.message || 'Nao foi possivel finalizar a investigacao.'
+        });
       } finally {
         setIsGeneratingPdf(false);
       }
@@ -88,7 +153,23 @@ const InvestigationDetail = () => {
   const handleDownloadPDF = async () => {
     setIsGeneratingPdf(true);
     try {
-      await generateInvestigationPDF(investigation, user);
+      await generateProfessionalPDF(
+        investigation,
+        user,
+        templates?.investigation,
+        'investigation',
+        templates?.__layoutConfig?.investigation
+      );
+      setNotification({
+        type: 'success',
+        message: 'Relatorio gerado com sucesso.'
+      });
+    } catch (error) {
+      console.error('Erro ao gerar relatorio:', error);
+      setNotification({
+        type: 'error',
+        message: error?.message || 'Nao foi possivel gerar o relatorio.'
+      });
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -104,8 +185,16 @@ const InvestigationDetail = () => {
       if (selectedProof && selectedProof.id === proofId) {
         setSelectedProof(null);
       }
+      setNotification({
+        type: 'success',
+        message: 'Prova removida com sucesso.'
+      });
     } catch (error) {
       console.error('Erro ao deletar prova:', error);
+      setNotification({
+        type: 'error',
+        message: error?.message || 'Nao foi possivel remover a prova.'
+      });
     }
   };
 
@@ -115,8 +204,16 @@ const InvestigationDetail = () => {
       // Refresh investigation data
       const data = await getInvestigation(id);
       if (data) setInvestigation(data);
+      setNotification({
+        type: 'success',
+        message: 'Prova atualizada com sucesso.'
+      });
     } catch (error) {
       console.error('Erro ao editar prova:', error);
+      setNotification({
+        type: 'error',
+        message: error?.message || 'Nao foi possivel atualizar a prova.'
+      });
     }
   };
 
@@ -128,9 +225,20 @@ const InvestigationDetail = () => {
     if (window.confirm('Tem certeza que deseja deletar esta investigação? Esta ação não pode ser desfeita.')) {
       try {
         await deleteInvestigation(id);
-        navigate(isRevenueRoute ? '/dashboard/revenue' : '/dashboard/investigations');
+        navigate(backLink, {
+          state: {
+            notification: {
+              type: 'success',
+              message: 'Investigacao deletada com sucesso.'
+            }
+          }
+        });
       } catch (error) {
         console.error('Erro ao deletar investigação:', error);
+        setNotification({
+          type: 'error',
+          message: error?.message || 'Nao foi possivel deletar a investigacao.'
+        });
       }
     }
   };
@@ -139,10 +247,34 @@ const InvestigationDetail = () => {
 
   return (
     <div className="max-w-7xl mx-auto pb-20">
+      {notification && (
+        <div
+          className={clsx(
+            "mb-6 rounded-2xl border px-4 py-3 flex items-start gap-3 shadow-lg",
+            notification.type === 'success'
+              ? "bg-emerald-950/70 border-emerald-500/30 text-emerald-100"
+              : "bg-red-950/70 border-red-500/30 text-red-100"
+          )}
+        >
+          {notification.type === 'success' ? <CheckCircle size={20} className="mt-0.5 shrink-0" /> : <AlertCircle size={20} className="mt-0.5 shrink-0" />}
+          <div className="flex-1">
+            <p className="font-semibold">{notification.type === 'success' ? 'Sucesso' : 'Erro'}</p>
+            <p className="text-sm opacity-90">{notification.message}</p>
+          </div>
+          <button
+            onClick={() => setNotification(null)}
+            className="text-current/80 hover:text-current transition-colors"
+            aria-label="Fechar aviso"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
       
       {/* Top Nav */}
       <button 
         onClick={() => navigate(isRevenueRoute ? '/dashboard/revenue' : '/dashboard/investigations')}
+        onClick={() => navigate(backLink)}
         className="mb-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-wider"
       >
         <ArrowLeft size={16} /> Voltar para {isRevenueRoute ? 'Receita' : 'Lista'}
@@ -194,7 +326,10 @@ const InvestigationDetail = () => {
               <button
                 onClick={handleDownloadPDF}
                 disabled={isGeneratingPdf}
-                className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg transition-all"
+                className={clsx(
+                  "text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg transition-all",
+                  isGeneratingPdf ? "bg-slate-700 cursor-not-allowed" : "bg-slate-800 hover:bg-slate-700"
+                )}
               >
                 <Download size={20} />
                 {isGeneratingPdf ? 'Gerando...' : 'Baixar Relatório PDF'}
@@ -202,17 +337,23 @@ const InvestigationDetail = () => {
             ) : (
               <button
                 onClick={handleFinalize}
-                className="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-red-900/50 transition-all hover:-translate-y-0.5"
+                disabled={isGeneratingPdf}
+                className={clsx(
+                  "text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg transition-all",
+                  isGeneratingPdf
+                    ? "bg-slate-700 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-500 shadow-red-900/50 hover:-translate-y-0.5"
+                )}
               >
                 <CheckCircle size={20} />
-                Finalizar Investigação
+                {isGeneratingPdf ? 'Finalizando...' : 'Finalizar Investigação'}
               </button>
             )}
           </div>
         </div>
 
         {/* Metadata Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-slate-800 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 pt-6 border-t border-slate-800 relative z-10">
           <div>
             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Prioridade</label>
             <div className="text-white font-medium flex items-center gap-2">
@@ -225,16 +366,37 @@ const InvestigationDetail = () => {
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Envolvidos</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Investigado</label>
+            <div className="text-white font-medium flex items-center gap-2">
+              <User size={16} className="text-slate-400" />
+              <span className="truncate">{investigation.nomeInvestigado || investigation.involved || 'Não informado'}</span>
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CPF / Documento</label>
             <div className="text-white font-medium flex items-center gap-2">
               <Users size={16} className="text-slate-400" />
-              <span className="truncate">{investigation.involved || 'N/A'}</span>
+              <span className="truncate">{investigation.cpfInvestigado || 'Não informado'}</span>
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Delegacia</label>
+            <div className="text-white font-medium flex items-center gap-2">
+              <Building2 size={16} className="text-slate-400" />
+              <span className="truncate">{investigation.delegaciaResponsavel || 'Não informada'}</span>
             </div>
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Data de Abertura</label>
             <div className="text-white font-medium flex items-center gap-2">
               <CalendarIcon date={investigation.createdAt} />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Delegado</label>
+            <div className="text-white font-medium flex items-center gap-2">
+              <User size={16} className="text-slate-400" />
+              <span className="truncate">{investigation.nomeDelegado || 'Não informado'}</span>
             </div>
           </div>
           <div>

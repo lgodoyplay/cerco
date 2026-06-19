@@ -11,6 +11,7 @@ import {
   User, Calendar, Lock, Siren, Eye, Scale, FileSignature, Briefcase, ArrowLeft
 } from 'lucide-react';
 import clsx from 'clsx';
+import NotificationBanner from '../../../components/feedback/NotificationBanner';
 
 // --- Components ---
 
@@ -258,6 +259,7 @@ const JudiciaryManager = () => {
   const [warrantFormLoading, setWarrantFormLoading] = useState(false);
   const [hearingFormLoading, setHearingFormLoading] = useState(false);
   const [releaseFormLoading, setReleaseFormLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
   
   // Warrant Logic States
   const [isWarrantModalOpen, setIsWarrantModalOpen] = useState(false);
@@ -301,6 +303,13 @@ const JudiciaryManager = () => {
     fetchData();
   }, [activeTab]);
 
+  useEffect(() => {
+    if (!notification) return undefined;
+
+    const timer = window.setTimeout(() => setNotification(null), 3500);
+    return () => window.clearTimeout(timer);
+  }, [notification]);
+
   const fetchData = async () => {
     setDataLoading(true);
     try {
@@ -338,6 +347,10 @@ const JudiciaryManager = () => {
       }
     } catch (err) {
       console.error('Error fetching data:', err);
+      setNotification({
+        type: 'error',
+        message: err?.message || 'Nao foi possivel carregar os dados do juridico.'
+      });
     } finally {
       setDataLoading(false);
     }
@@ -351,9 +364,16 @@ const JudiciaryManager = () => {
       if (viewingPetition?.id === id) {
         setViewingPetition({ ...viewingPetition, status });
       }
+      setNotification({
+        type: 'success',
+        message: `Peticao ${status === 'approved' ? 'deferida' : 'indeferida'} com sucesso.`
+      });
     } catch (err) {
       console.error('Error updating petition:', err);
-      alert('Erro ao atualizar status da petição.');
+      setNotification({
+        type: 'error',
+        message: err?.message || 'Nao foi possivel atualizar a peticao.'
+      });
     }
   };
 
@@ -372,9 +392,16 @@ const JudiciaryManager = () => {
       setIsHearingModalOpen(false);
       fetchData();
       setHearingForm({ case_number: '', date_time: '', target_name: '', type: 'instruction', location: 'Sala 1', notes: '' });
+      setNotification({
+        type: 'success',
+        message: 'Audiencia agendada com sucesso.'
+      });
     } catch (err) {
       console.error('Error creating hearing:', err);
-      alert('Erro ao agendar audiência.');
+      setNotification({
+        type: 'error',
+        message: err?.message || 'Nao foi possivel agendar a audiencia.'
+      });
     } finally {
       setHearingFormLoading(false);
     }
@@ -395,9 +422,16 @@ const JudiciaryManager = () => {
       setIsReleaseModalOpen(false);
       fetchData();
       setReleaseForm({ prisoner_name: '', prisoner_passport: '', case_number: '', details: '' });
+      setNotification({
+        type: 'success',
+        message: 'Alvara emitido com sucesso.'
+      });
     } catch (err) {
       console.error('Error issuing release:', err);
-      alert('Erro ao emitir alvará.');
+      setNotification({
+        type: 'error',
+        message: err?.message || 'Nao foi possivel emitir o alvara.'
+      });
     } finally {
       setReleaseFormLoading(false);
     }
@@ -511,9 +545,16 @@ const JudiciaryManager = () => {
       if (data && data[0]) {
         sendWebhookNotification(data[0], 'active');
       }
+      setNotification({
+        type: 'success',
+        message: 'Mandado judicial criado com sucesso.'
+      });
     } catch (err) {
       console.error("Erro ao criar mandado:", err);
-      alert("Erro ao criar mandado: " + err.message);
+      setNotification({
+        type: 'error',
+        message: err?.message || 'Nao foi possivel criar o mandado.'
+      });
     } finally {
       setWarrantFormLoading(false);
     }
@@ -541,15 +582,28 @@ const JudiciaryManager = () => {
         if (warrant) {
              sendWebhookNotification({ ...warrant, status: newStatus }, newStatus);
         }
+        setNotification({
+          type: 'success',
+          message: `Mandado ${newStatus === 'executed' ? 'marcado como cumprido' : 'revogado'} com sucesso.`
+        });
 
     } catch (err) {
       console.error("Erro ao atualizar mandado:", err);
-      alert("Erro ao atualizar mandado.");
+      setNotification({
+        type: 'error',
+        message: err?.message || 'Nao foi possivel atualizar o mandado.'
+      });
     }
   };
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col md:flex-row gap-6">
+    <div className="space-y-4">
+      <NotificationBanner
+        notification={notification}
+        onClose={() => setNotification(null)}
+      />
+
+      <div className="h-[calc(100vh-6rem)] flex flex-col md:flex-row gap-6">
       
       {/* Warrant Document Viewer Modal */}
       {viewingWarrant && (
@@ -1246,6 +1300,7 @@ const JudiciaryManager = () => {
             )}
         </div>
         )}
+      </div>
       </div>
     </div>
   );

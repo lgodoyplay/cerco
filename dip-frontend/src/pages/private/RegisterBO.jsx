@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useNavigate } from 'react-router-dom';
+import NotificationBanner from '../../components/feedback/NotificationBanner';
 
 const RegisterBO = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const RegisterBO = () => {
       setReformulating(true);
       const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
       if (!OPENAI_API_KEY) {
-        alert('Chave da API OpenAI não configurada!');
+        setNotification({ type: 'warning', message: 'Chave da API OpenAI nao configurada.' });
         return;
       }
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -69,7 +70,7 @@ const RegisterBO = () => {
       setFormData(prev => ({ ...prev, description: reformulated }));
     } catch (error) {
       console.error('Erro ao reformular:', error);
-      alert('Erro ao reformular a descrição. Tente novamente.');
+      setNotification({ type: 'error', message: 'Erro ao reformular a descricao. Tente novamente.' });
     } finally {
       setReformulating(false);
     }
@@ -95,6 +96,13 @@ const RegisterBO = () => {
 
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!notification) return undefined;
+
+    const timer = window.setTimeout(() => setNotification(null), 3500);
+    return () => window.clearTimeout(timer);
+  }, [notification]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -231,8 +239,6 @@ const RegisterBO = () => {
       setLoading(false);
     }
     
-    // Clear notification after 3s
-    setTimeout(() => setNotification(null), 3000);
   };
 
   return (
@@ -247,21 +253,11 @@ const RegisterBO = () => {
         <p className="text-slate-400 mt-2">Preencha os dados abaixo para registrar uma nova ocorrência no sistema.</p>
       </div>
 
-      {/* Notification Toast */}
-      {notification && (
-        <div className={clsx(
-          "fixed top-4 right-4 z-50 px-6 py-4 rounded-xl shadow-2xl border flex items-center gap-3 animate-fade-in-up",
-          notification.type === 'success' 
-            ? "bg-emerald-900/90 border-emerald-500 text-emerald-100" 
-            : "bg-red-900/90 border-red-500 text-red-100"
-        )}>
-          {notification.type === 'success' ? <CheckCircle size={24} /> : <AlertCircle size={24} />}
-          <div>
-            <h4 className="font-bold">{notification.type === 'success' ? 'Sucesso' : 'Erro'}</h4>
-            <p className="text-sm opacity-90">{notification.message}</p>
-          </div>
-        </div>
-      )}
+      <NotificationBanner
+        notification={notification}
+        onClose={() => setNotification(null)}
+        className="mb-6"
+      />
 
       <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 space-y-8">
         

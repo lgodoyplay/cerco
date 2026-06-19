@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Save, Eraser, User, FileText, Camera, CheckCircle, AlertCircle, Shield, Siren, AlertTriangle, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import ImageUploadArea from '../../components/ImageUploadArea';
+import NotificationBanner from '../../components/feedback/NotificationBanner';
 import { supabase } from '../../lib/supabase';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -48,7 +49,7 @@ const RegisterWanted = () => {
       setReformulating(true);
       const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
       if (!OPENAI_API_KEY) {
-        alert('Chave da API OpenAI não configurada!');
+        setNotification({ type: 'warning', message: 'Chave da API OpenAI nao configurada.' });
         return;
       }
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -80,7 +81,7 @@ const RegisterWanted = () => {
       setFormData(prev => ({ ...prev, observations: reformulated }));
     } catch (error) {
       console.error('Erro ao reformular:', error);
-      alert('Erro ao reformular a descrição. Tente novamente.');
+      setNotification({ type: 'error', message: 'Erro ao reformular a descricao. Tente novamente.' });
     } finally {
       setReformulating(false);
     }
@@ -106,6 +107,13 @@ const RegisterWanted = () => {
 
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!notification) return undefined;
+
+    const timer = window.setTimeout(() => setNotification(null), 3500);
+    return () => window.clearTimeout(timer);
+  }, [notification]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -219,15 +227,14 @@ const RegisterWanted = () => {
         }
       }
 
-      setNotification({
-        type: 'success',
-        message: 'Procurado registrado com sucesso!'
+      navigate('/dashboard/wanted', {
+        state: {
+          notification: {
+            type: 'success',
+            message: 'Procurado registrado com sucesso.'
+          }
+        }
       });
-
-      setTimeout(() => {
-        setNotification(null);
-        navigate('/dashboard/wanted');
-      }, 2000);
 
     } catch (error) {
       console.error('Erro ao registrar procurado:', error);
@@ -254,21 +261,11 @@ const RegisterWanted = () => {
         </div>
       </div>
 
-      {/* Notification Toast */}
-      {notification && (
-        <div className={clsx(
-          "fixed top-4 right-4 z-50 px-6 py-4 rounded-xl shadow-2xl border flex items-center gap-3 animate-fade-in-up",
-          notification.type === 'success' 
-            ? "bg-emerald-900/90 border-emerald-500 text-emerald-100" 
-            : "bg-red-900/90 border-red-500 text-red-100"
-        )}>
-          {notification.type === 'success' ? <CheckCircle size={24} /> : <AlertCircle size={24} />}
-          <div>
-            <h4 className="font-bold">{notification.type === 'success' ? 'Sucesso' : 'Erro'}</h4>
-            <p className="text-sm opacity-90">{notification.message}</p>
-          </div>
-        </div>
-      )}
+      <NotificationBanner
+        notification={notification}
+        onClose={() => setNotification(null)}
+        className="mb-6"
+      />
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         

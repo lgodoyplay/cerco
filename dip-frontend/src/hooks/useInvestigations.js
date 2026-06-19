@@ -5,7 +5,21 @@ export const useInvestigations = () => {
   const [investigations, setInvestigations] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const mapInvestigation = (inv) => ({
+  const mapInvestigation = (inv) => {
+    const proofs = [...(inv.provas || [])]
+      .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0))
+      .map(ev => ({
+        id: ev.id,
+        type: ev.tipo,
+        title: ev.descricao ? ev.descricao.split(' - ')[0] : 'Evidência',
+        description: ev.descricao ? (ev.descricao.includes(' - ') ? ev.descricao.split(' - ').slice(1).join(' - ') : ev.descricao) : '',
+        content: ev.url,
+        author: ev.uploader?.full_name || 'Agente',
+        authorBadge: ev.uploader?.badge || '',
+        createdAt: ev.created_at
+      }));
+
+    return {
     id: inv.id,
     title: inv.titulo,
     category: inv.categoria || 'criminal',
@@ -20,15 +34,14 @@ export const useInvestigations = () => {
       badge: inv.investigator.badge,
       role: inv.investigator.role
     } : null,
-    proofs: inv.provas?.map(ev => ({
-      id: ev.id,
-      type: ev.tipo,
-      title: ev.descricao ? ev.descricao.split(' - ')[0] : 'Evidência',
-      description: ev.descricao ? (ev.descricao.includes(' - ') ? ev.descricao.split(' - ').slice(1).join(' - ') : ev.descricao) : '',
-      content: ev.url,
-      author: 'Agente',
-      createdAt: ev.created_at
-    })) || [],
+    delegaciaResponsavel: inv.delegacia_responsavel || 'Delegacia Central de Investigações',
+    nomeInvestigado: inv.nome_investigado || '',
+    cpfInvestigado: inv.cpf_investigado || '',
+    dataNascimento: inv.data_nascimento || '',
+    enderecoInvestigado: inv.endereco_investigado || '',
+    telefoneInvestigado: inv.telefone_investigado || '',
+    nomeDelegado: inv.nome_delegado || '',
+    proofs,
     // Dados específicos para busca e apreensão
     tipoEntidade: inv.tipo_entidade,
     nomeEntidade: inv.nome_entidade,
@@ -40,7 +53,8 @@ export const useInvestigations = () => {
     nomesCarros: inv.nomes_carros,
     casas: inv.casas || [],
     carros: inv.carros || []
-  });
+    };
+  };
 
   const fetchInvestigations = useCallback(async () => {
     setLoading(true);
@@ -56,7 +70,10 @@ export const useInvestigations = () => {
       if (error) throw error;
 
       // Buscar perfis separadamente para evitar erro 400 se FK não existir
-      const userIds = [...new Set(data.map(inv => inv.created_by).filter(Boolean))];
+      const userIds = [...new Set([
+        ...data.map(inv => inv.created_by).filter(Boolean),
+        ...data.flatMap(inv => (inv.provas || []).map(prova => prova.uploaded_by).filter(Boolean))
+      ])];
       let profilesMap = {};
       
       if (userIds.length > 0) {
@@ -81,7 +98,11 @@ export const useInvestigations = () => {
             full_name: profile.full_name,
             badge: profile.badge,
             role: profile.role
-          } : null
+          } : null,
+          provas: (inv.provas || []).map(prova => ({
+            ...prova,
+            uploader: profilesMap[prova.uploaded_by] || null
+          }))
         };
       });
 
@@ -106,6 +127,13 @@ export const useInvestigations = () => {
         envolvidos: data.involved,
         prioridade: data.priority,
         status: 'Em Andamento',
+        delegacia_responsavel: data.delegaciaResponsavel,
+        nome_investigado: data.nomeInvestigado,
+        cpf_investigado: data.cpfInvestigado,
+        data_nascimento: data.dataNascimento || null,
+        endereco_investigado: data.enderecoInvestigado,
+        telefone_investigado: data.telefoneInvestigado,
+        nome_delegado: data.nomeDelegado,
         // Dados específicos para busca e apreensão
         tipo_entidade: data.tipoEntidade,
         nome_entidade: data.nomeEntidade,
@@ -161,9 +189,30 @@ export const useInvestigations = () => {
         if (profile) investigatorProfile = profile;
       }
 
+      const uploaderIds = [...new Set((data.provas || []).map(prova => prova.uploaded_by).filter(Boolean))];
+      let uploadersMap = {};
+
+      if (uploaderIds.length > 0) {
+        const { data: uploaders } = await supabase
+          .from('profiles')
+          .select('id, full_name, badge, role')
+          .in('id', uploaderIds);
+
+        if (uploaders) {
+          uploadersMap = uploaders.reduce((acc, profile) => {
+            acc[profile.id] = profile;
+            return acc;
+          }, {});
+        }
+      }
+
       const dataWithProfile = {
         ...data,
-        investigator: investigatorProfile
+        investigator: investigatorProfile,
+        provas: (data.provas || []).map(prova => ({
+          ...prova,
+          uploader: uploadersMap[prova.uploaded_by] || null
+        }))
       };
 
       return mapInvestigation(dataWithProfile);
@@ -246,15 +295,17 @@ export const useInvestigations = () => {
 
   const closeInvestigation = useCallback(async (id) => {
     try {
+      const closedAt = new Date().toISOString();
+
       const { error } = await supabase
         .from('investigacoes')
-        .update({ status: 'Finalizada' })
+        .update({ status: 'Finalizada', data_fim: closedAt })
         .eq('id', id);
 
       if (error) throw error;
 
       setInvestigations(prev => prev.map(inv => 
-        inv.id === id ? { ...inv, status: 'Finalizada', closedAt: new Date().toISOString() } : inv
+        inv.id === id ? { ...inv, status: 'Finalizada', closedAt } : inv
       ));
     } catch (error) {
       console.error('Erro ao finalizar investigação:', error);
@@ -341,7 +392,14 @@ export const useInvestigations = () => {
         categoria: data.category || 'criminal',
         descricao: data.description,
         envolvidos: data.involved,
-        prioridade: data.priority
+        prioridade: data.priority,
+        delegacia_responsavel: data.delegaciaResponsavel,
+        nome_investigado: data.nomeInvestigado,
+        cpf_investigado: data.cpfInvestigado,
+        data_nascimento: data.dataNascimento || null,
+        endereco_investigado: data.enderecoInvestigado,
+        telefone_investigado: data.telefoneInvestigado,
+        nome_delegado: data.nomeDelegado
       };
 
       const { error } = await supabase

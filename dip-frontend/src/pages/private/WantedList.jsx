@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, Filter, AlertTriangle, MoreVertical, ShieldAlert, Eye, FileText, Printer, X, Siren, Lock, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
 import { usePermissions } from '../../hooks/usePermissions';
 import { generateWantedPDF } from '../../utils/pdfGenerator';
+import NotificationBanner from '../../components/feedback/NotificationBanner';
 
 const WantedList = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { can } = usePermissions();
   const { templates } = useSettings();
@@ -18,11 +20,14 @@ const WantedList = () => {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ show: false, person: null });
   const [deletePassword, setDeletePassword] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState(location.state?.notification || null);
 
   const canManage = can('wanted_manage');
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         // Fetch wanted
         const { data: wantedData, error: wantedError } = await supabase
@@ -56,11 +61,31 @@ const WantedList = () => {
         setWantedList(formattedWanted);
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
+        setNotification({
+          type: 'error',
+          message: error?.message || 'Nao foi possivel carregar os procurados.'
+        });
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.notification) {
+      setNotification(location.state.notification);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.pathname, location.state, navigate]);
+
+  useEffect(() => {
+    if (!notification) return undefined;
+
+    const timer = window.setTimeout(() => setNotification(null), 3500);
+    return () => window.clearTimeout(timer);
+  }, [notification]);
 
   const filteredList = wantedList.filter(person => 
     (person.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -72,7 +97,10 @@ const WantedList = () => {
       await generateWantedPDF(person, user, templates?.wanted);
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
-      alert("Erro ao gerar PDF do procurado.");
+      setNotification({
+        type: 'error',
+        message: error?.message || 'Nao foi possivel gerar o PDF do procurado.'
+      });
     }
   };
 
@@ -94,7 +122,7 @@ const WantedList = () => {
 
   const handleDeleteWanted = async () => {
     if (deletePassword !== '4907') {
-      alert('Senha incorreta!');
+      setNotification({ type: 'warning', message: 'Senha incorreta para remover o procurado.' });
       return;
     }
 
@@ -109,15 +137,23 @@ const WantedList = () => {
       setWantedList(prev => prev.filter(p => p.id !== deleteModal.person.id));
       setDeleteModal({ show: false, person: null });
       setDeletePassword('');
-      alert('Procurado removido com sucesso!');
+      setNotification({ type: 'success', message: 'Procurado removido com sucesso.' });
     } catch (error) {
       console.error('Erro ao remover procurado:', error);
-      alert('Erro ao remover procurado.');
+      setNotification({
+        type: 'error',
+        message: error?.message || 'Nao foi possivel remover o procurado.'
+      });
     }
   };
 
   return (
     <div className="space-y-6">
+      <NotificationBanner
+        notification={notification}
+        onClose={() => setNotification(null)}
+      />
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -157,7 +193,12 @@ const WantedList = () => {
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredList.map((person) => (
+        {loading && (
+          <div className="col-span-full py-12 text-center text-slate-500">
+            Carregando procurados...
+          </div>
+        )}
+        {!loading && filteredList.map((person) => (
           <div key={person.id} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-federal-600/50 transition-all group flex flex-col">
             <div className="h-56 bg-slate-800 relative flex items-center justify-center overflow-hidden bg-slate-950">
               {person.images?.proof1 || person.image ? (
@@ -231,7 +272,7 @@ const WantedList = () => {
             </div>
           </div>
         ))}
-        {filteredList.length === 0 && (
+        {!loading && filteredList.length === 0 && (
           <div className="col-span-full py-12 text-center text-slate-500">
             Nenhum procurado encontrado com os critérios atuais.
           </div>

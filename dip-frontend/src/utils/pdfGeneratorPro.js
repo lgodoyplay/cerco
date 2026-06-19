@@ -64,6 +64,21 @@ const styles = {
     }
 };
 
+export const DEFAULT_TEMPLATE_LAYOUTS = {
+    investigation: {
+        coverTopLineY: 170,
+        coverBottomLineY: 620
+    },
+    arrest: {},
+    bo: {},
+    wanted: {}
+};
+
+export const getMergedTemplateLayout = (type = 'investigation', layoutConfig = {}) => ({
+    ...(DEFAULT_TEMPLATE_LAYOUTS[type] || {}),
+    ...(layoutConfig || {})
+});
+
 // --- FUNÇÕES AUXILIARES ---
 
 // Converter URL de imagem para Base64 com timeout e validação
@@ -125,11 +140,233 @@ const formatDate = (dateStr) => {
     });
 };
 
+const escapeHtml = (value = '') => String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const getProofTypeLabel = (type) => {
+    const labels = {
+        image: 'Imagem',
+        video: 'Vídeo',
+        link: 'Link',
+        file: 'Arquivo',
+        text: 'Texto'
+    };
+
+    return labels[type] || (type ? String(type).charAt(0).toUpperCase() + String(type).slice(1) : 'Documento');
+};
+
+const buildProofAttachmentHtml = (proof) => {
+    if (!proof?.content) return '[Arquivo vinculado]';
+
+    if (proof.type === 'link' || proof.type === 'video' || proof.type === 'file' || proof.type === 'image') {
+        const safeUrl = escapeHtml(proof.content);
+        return `<a href="${safeUrl}">Arquivo vinculado</a>`;
+    }
+
+    return escapeHtml('[Arquivo vinculado]');
+};
+
+const buildInvestigationProofsHtml = (proofs = []) => {
+    if (!proofs.length) {
+        return `<p><strong>PROVA 001 - Nenhuma prova catalogada</strong></p>
+<p>Tipo: Não informado</p>
+<p>Data de Inserção: Não informada</p>
+<p>Responsável: Sistema</p>
+<p>Descrição:</p>
+<p>Nenhuma prova foi inserida na pasta até o momento da geração do relatório.</p>
+<p>Anexo: [Arquivo vinculado]</p>`;
+    }
+
+    return proofs.map((proof, index) => {
+        const proofNumber = String(index + 1).padStart(3, '0');
+        return `<p><strong>PROVA ${proofNumber} - ${escapeHtml(proof.title || 'Sem título')}</strong></p>
+<p>Tipo: ${escapeHtml(getProofTypeLabel(proof.type))}</p>
+<p>Data de Inserção: ${escapeHtml(formatDate(proof.createdAt))}</p>
+<p>Responsável: ${escapeHtml(proof.author || 'Agente')}</p>
+<p>Descrição:</p>
+<p>${escapeHtml(proof.description || proof.content || 'Sem descrição informada.')}</p>
+<p>Anexo: ${buildProofAttachmentHtml(proof)}</p>
+<p><br></p>`;
+    }).join('');
+};
+
+const buildInvestigationProofsText = (proofs = []) => {
+    if (!proofs.length) return 'Nenhuma prova anexada.';
+
+    return proofs.map((proof, index) =>
+        `${String(index + 1).padStart(3, '0')} - ${proof.title || 'Sem título'} | ${getProofTypeLabel(proof.type)} | ${formatDate(proof.createdAt)} | ${proof.author || 'Agente'}`
+    ).join('\n');
+};
+
+const replaceTemplateVariables = (templateStr = '', variables = {}) => {
+    let processedHtml = templateStr || '';
+
+    Object.keys(variables).forEach(key => {
+        const regex = new RegExp(key, 'g');
+        processedHtml = processedHtml.replace(regex, variables[key] || '');
+    });
+
+    return processedHtml;
+};
+
+const getDocumentVariables = (data, user, type = 'investigation') => {
+    if (type === 'investigation') {
+        const listaProvas = buildInvestigationProofsText(data.proofs || []);
+        const blocoProvas = buildInvestigationProofsHtml(data.proofs || []);
+
+        return {
+            '{numero_inquerito}': data.id,
+            '{data_abertura}': formatDate(data.createdAt),
+            '{status}': data.status,
+            '{delegacia}': data.delegaciaResponsavel || 'Delegacia Central de Investigacoes',
+            '{nome_agente}': data.investigator ? data.investigator.nome : (user?.nome || 'Agente Responsavel'),
+            '{nome_investigado}': data.nomeInvestigado || (Array.isArray(data.involved) ? data.involved.join(', ') : (data.involved || 'Nao informado')),
+            '{cpf_investigado}': data.cpfInvestigado || 'Nao informado',
+            '{data_nascimento}': data.dataNascimento ? formatDate(data.dataNascimento) : 'Nao informado',
+            '{endereco}': data.enderecoInvestigado || 'Nao informado',
+            '{telefone}': data.telefoneInvestigado || 'Nao informado',
+            '{relato_fatos}': data.description || 'Conforme informacoes e provas anexadas.',
+            '{lista_provas}': listaProvas,
+            '{bloco_provas}': blocoProvas,
+            '{data_conclusao}': formatDate(data.closedAt || new Date()),
+            '{nome_delegado}': data.nomeDelegado || 'Delegado Responsavel',
+            '{nome_detido}': Array.isArray(data.involved) ? data.involved.join(', ') : 'Nao informado',
+            '{data_atual}': new Date().toLocaleDateString('pt-BR'),
+            '{local_prisao}': 'Local da Ocorrencia',
+            '{doc_detido}': 'RG/CPF nao informado',
+            '{protocolo}': `${new Date().getFullYear()}.${data.id}`,
+            '{natureza_ocorrencia}': 'Investigacao Criminal',
+            '{nome_comunicante}': user?.nome || 'Agente Responsavel',
+            '{conclusao}': 'Conforme relatorio de provas em anexo.',
+            '{assinatura_agente}': user?.nome || 'Agente',
+            '{cargo_agente}': 'Investigador CIVIL EUFORIA'
+        };
+    }
+
+    if (type === 'bo') {
+        return {
+            '{numero_inquerito}': data.id,
+            '{data_abertura}': formatDate(data.created_at),
+            '{status}': data.status || 'Registrado',
+            '{nome_investigado}': 'N/A',
+            '{cpf_investigado}': 'N/A',
+            '{nome_detido}': 'N/A',
+            '{data_atual}': new Date().toLocaleDateString('pt-BR'),
+            '{local_prisao}': data.localizacao || 'Nao informado',
+            '{doc_detido}': 'N/A',
+            '{protocolo}': `BO Nº ${data.id}/${new Date().getFullYear()}`,
+            '{natureza_ocorrencia}': 'Ocorrencia Policial',
+            '{nome_comunicante}': data.comunicante || 'Anonimo',
+            '{relato_fatos}': data.descricao || 'Sem descricao.',
+            '{conclusao}': 'Registro realizado para fins legais.',
+            '{assinatura_agente}': user?.nome || 'Agente de Plantao',
+            '{cargo_agente}': 'Agente da CIVIL EUFORIA'
+        };
+    }
+
+    if (type === 'arrest') {
+        return {
+            '{numero_inquerito}': data.id,
+            '{data_abertura}': formatDate(data.date || data.created_at),
+            '{status}': 'Detido',
+            '{nome_investigado}': data.name,
+            '{cpf_investigado}': data.passport || 'Nao informado',
+            '{nome_detido}': data.name,
+            '{data_atual}': new Date().toLocaleDateString('pt-BR'),
+            '{local_prisao}': 'Delegacia Central',
+            '{doc_detido}': data.passport || 'Nao informado',
+            '{protocolo}': `AP Nº ${data.id}/${new Date().getFullYear()}`,
+            '{natureza_ocorrencia}': data.articles || data.reason || 'Detencao',
+            '{nome_comunicante}': data.officer || 'Agente',
+            '{relato_fatos}': data.reason || data.description || 'Sem observacoes adicionais.',
+            '{conclusao}': 'Individuo detido e a disposicao da justica.',
+            '{assinatura_agente}': data.officer || user?.nome || 'Agente Responsavel',
+            '{cargo_agente}': 'Agente da CIVIL EUFORIA'
+        };
+    }
+
+    return {};
+};
+
+export const buildTemplatePreviewHtml = (data, user, templateStr = '', type = 'investigation', layoutConfig = {}) => {
+    const layout = getMergedTemplateLayout(type, layoutConfig);
+    const variables = getDocumentVariables(data, user, type);
+    const processedHtml = replaceTemplateVariables(templateStr, variables);
+
+    const contentPage = `
+        <section class="pdf-preview-page pdf-preview-body-page">
+            <div class="pdf-preview-page-header">
+                <div class="pdf-preview-page-line"></div>
+                <div class="pdf-preview-page-header-text">ESTADO DA EUFORIA</div>
+                <div class="pdf-preview-page-header-text">SECRETARIA DE SEGURANCA PUBLICA</div>
+                <div class="pdf-preview-page-header-text">CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGACAO DE NARCOTICOS</div>
+            </div>
+            <div class="pdf-preview-page-content">${processedHtml}</div>
+            <div class="pdf-preview-page-footer">
+                <div class="pdf-preview-page-line"></div>
+                <div class="pdf-preview-page-footer-text">Documento oficial gerado pelo sistema</div>
+            </div>
+        </section>
+    `;
+
+    if (type !== 'investigation') {
+        return contentPage;
+    }
+
+    return `
+        <section class="pdf-preview-page pdf-preview-cover-page">
+            <div class="pdf-preview-cover-line" data-line-key="coverTopLineY" style="top:${layout.coverTopLineY}px;"></div>
+            <div class="pdf-preview-cover-line" data-line-key="coverBottomLineY" style="top:${layout.coverBottomLineY}px;"></div>
+            <div class="pdf-preview-cover-content">
+                <p class="pdf-preview-cover-eyebrow">POLICIA CIVIL DO ESTADO DA EUFORIA</p>
+                <p class="pdf-preview-cover-eyebrow">DEPARTAMENTO DE INVESTIGACOES CRIMINAIS</p>
+                <div class="pdf-preview-cover-title-wrap">
+                    <p class="pdf-preview-cover-title">RELATORIO FINAL DE INQUERITO POLICIAL</p>
+                </div>
+                <p class="pdf-preview-cover-ref">PROTOCOLO Nº ${escapeHtml(String(data.id || '0001'))}/${new Date().getFullYear()}</p>
+                <p class="pdf-preview-cover-footer">"Servir e Proteger com Justica e Integridade"</p>
+            </div>
+        </section>
+        ${contentPage}
+    `;
+};
+
+const buildInvestigationCoverContent = (data, layoutConfig = {}) => {
+    const layout = getMergedTemplateLayout('investigation', layoutConfig);
+
+    return {
+        stack: [
+            {
+                canvas: [
+                    { type: 'line', x1: 0, y1: 0, x2: 481, y2: 0, lineWidth: 1.2 }
+                ],
+                absolutePosition: { x: 57, y: layout.coverTopLineY }
+            },
+            {
+                canvas: [
+                    { type: 'line', x1: 0, y1: 0, x2: 481, y2: 0, lineWidth: 1.2 }
+                ],
+                absolutePosition: { x: 57, y: layout.coverBottomLineY }
+            },
+            { text: 'POLICIA CIVIL DO ESTADO DA EUFORIA', alignment: 'center', bold: true, fontSize: 16, margin: [0, 180, 0, 12] },
+            { text: 'DEPARTAMENTO DE INVESTIGACOES CRIMINAIS', alignment: 'center', bold: true, fontSize: 13, margin: [0, 0, 0, 100] },
+            { text: 'RELATORIO FINAL DE INQUERITO POLICIAL', alignment: 'center', bold: true, fontSize: 20, margin: [0, 0, 0, 20] },
+            { text: `PROTOCOLO Nº ${String(data.id || '0001')}/${new Date().getFullYear()}`, alignment: 'center', fontSize: 11, margin: [0, 0, 0, 230] },
+            { text: '"Servir e Proteger com Justica e Integridade"', alignment: 'center', italics: true, fontSize: 11, color: '#444444' }
+        ],
+        pageBreak: 'after'
+    };
+};
+
 // Gerar Brasão (Placeholder Base64 - Imagem Transparente de 1x1 pixel para evitar erro)
 const coatOfArmsBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 // Gerar Documento
-export const generateProfessionalPDF = async (data, user, templateStr = null, type = 'investigation') => {
+export const generateProfessionalPDF = async (data, user, templateStr = null, type = 'investigation', layoutConfig = {}) => {
     console.log(`Iniciando geração de PDF Profissional (${type})...`, data);
     try {
         // Garantir configuração de VFS
@@ -211,6 +448,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         let standardContent = [];
         let docTitle = '';
         let docRef = '';
+        let templateHasProofPlaceholder = false;
         // --- HEADER PADRÃO ---
         const officialHeader = [
             (coatOfArmsBase64 && coatOfArmsBase64.startsWith('data:image')) ? {
@@ -222,45 +460,21 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1 }], margin: [0, 5, 0, 10] }
         ];
 
+        const mergedLayout = getMergedTemplateLayout(type, layoutConfig);
+
         if (type === 'investigation') {
             docTitle = 'RELATÓRIO FINAL DE INQUÉRITO POLICIAL';
             docRef = `PROTOCOLO Nº ${data.id.toString().padStart(3, '0')}/${new Date().getFullYear()}`;
+            templateHasProofPlaceholder = Boolean(templateStr && (templateStr.includes('{bloco_provas}') || templateStr.includes('{lista_provas}')));
             
             // Criar lista de provas formatada
-            let listaProvas = '';
-            if (data.proofs && data.proofs.length > 0) {
-                data.proofs.forEach((proof, i) => {
-                    listaProvas += `${i + 1}. ${proof.type ? proof.type.toUpperCase() : 'DOCUMENTO'} - ${proof.title || 'Sem título'}: ${proof.description || 'Sem descrição'}\n`;
-                });
-            } else {
-                listaProvas = 'Nenhuma prova anexada.';
-            }
+            const listaProvas = buildInvestigationProofsText(data.proofs || []);
+            const blocoProvas = buildInvestigationProofsHtml(data.proofs || []);
             
             variables = {
-                '{numero_inquerito}': data.id,
-                '{data_abertura}': formatDate(data.createdAt),
-                '{status}': data.status,
-                '{delegacia}': 'Delegacia Central de Investigações',
-                '{nome_agente}': data.investigator ? data.investigator.nome : (user?.nome || 'Agente Responsável'),
-                '{nome_investigado}': Array.isArray(data.involved) ? data.involved.join(', ') : (data.involved || 'Não informado'),
-                '{cpf_investigado}': 'Não informado',
-                '{data_nascimento}': 'Não informado',
-                '{endereco}': 'Não informado',
-                '{telefone}': 'Não informado',
-                '{relato_fatos}': data.description || 'Conforme informações e provas anexadas.',
+                ...getDocumentVariables(data, user, type),
                 '{lista_provas}': listaProvas,
-                '{data_conclusao}': formatDate(data.closedAt || new Date()),
-                '{nome_delegado}': 'Delegado Responsável',
-                '{nome_detido}': Array.isArray(data.involved) ? data.involved.join(', ') : 'Não informado',
-                '{data_atual}': new Date().toLocaleDateString('pt-BR'),
-                '{local_prisao}': 'Local da Ocorrência',
-                '{doc_detido}': 'RG/CPF não informado',
-                '{protocolo}': `${new Date().getFullYear()}.${data.id}`,
-                '{natureza_ocorrencia}': 'Investigação Criminal',
-                '{nome_comunicante}': user?.nome || 'Agente Responsável',
-                '{conclusao}': 'Conforme relatório de provas em anexo.',
-                '{assinatura_agente}': user?.nome || 'Agente',
-                '{cargo_agente}': 'Investigador CIVIL EUFORIA'
+                '{bloco_provas}': blocoProvas
             };
 
             standardContent = [
@@ -311,24 +525,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             docTitle = 'BOLETIM DE OCORRÊNCIA';
             docRef = `BO Nº ${data.id}/${new Date().getFullYear()}`;
             
-            variables = {
-                '{numero_inquerito}': data.id,
-                '{data_abertura}': formatDate(data.created_at),
-                '{status}': data.status || 'Registrado',
-                '{nome_investigado}': 'N/A',
-                '{cpf_investigado}': 'N/A',
-                '{nome_detido}': 'N/A',
-                '{data_atual}': new Date().toLocaleDateString('pt-BR'),
-                '{local_prisao}': data.localizacao || 'Não informado',
-                '{doc_detido}': 'N/A',
-                '{protocolo}': docRef,
-                '{natureza_ocorrencia}': 'Ocorrência Policial',
-                '{nome_comunicante}': data.comunicante || 'Anônimo',
-                '{relato_fatos}': data.descricao || 'Sem descrição.',
-                '{conclusao}': 'Registro realizado para fins legais.',
-                '{assinatura_agente}': user?.nome || 'Agente de Plantão',
-                '{cargo_agente}': 'Agente da CIVIL EUFORIA'
-            };
+            variables = getDocumentVariables(data, user, type);
 
             standardContent = [
                 ...officialHeader,
@@ -358,24 +555,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             docTitle = 'AUTO DE PRISÃO';
             docRef = `AP Nº ${data.id}/${new Date().getFullYear()}`;
             
-            variables = {
-                '{numero_inquerito}': data.id,
-                '{data_abertura}': formatDate(data.date || data.created_at),
-                '{status}': 'Detido',
-                '{nome_investigado}': data.name,
-                '{cpf_investigado}': data.passport || 'Não informado',
-                '{nome_detido}': data.name,
-                '{data_atual}': new Date().toLocaleDateString('pt-BR'),
-                '{local_prisao}': 'Delegacia Central',
-                '{doc_detido}': data.passport || 'Não informado',
-                '{protocolo}': docRef,
-                '{natureza_ocorrencia}': data.articles || data.reason || 'Detenção',
-                '{nome_comunicante}': data.officer || 'Agente',
-                '{relato_fatos}': data.reason || data.description || 'Sem observações adicionais.',
-                '{conclusao}': 'Indivíduo detido e à disposição da justiça.',
-                '{assinatura_agente}': data.officer || user?.nome || 'Agente Responsável',
-                '{cargo_agente}': 'Agente da CIVIL EUFORIA'
-            };
+            variables = getDocumentVariables(data, user, type);
 
             standardContent = [
                 ...officialHeader,
@@ -474,136 +654,177 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         if (templateStr) {
             // Primeiro substituir as variáveis!
             let processedHtml = templateStr;
-            Object.keys(variables).forEach(key => {
-                const regex = new RegExp(key, 'g');
-                processedHtml = processedHtml.replace(regex, variables[key] || '');
-            });
+            processedHtml = replaceTemplateVariables(processedHtml, variables);
 
             // Função para converter HTML em array pdfmake
             const htmlToPdfmake = (html) => {
-                // Criar um DOM temporário
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
-                const content = [];
 
-                const walk = (node) => {
-                    if (node.nodeType === Node.TEXT_NODE) {
-                        const text = node.textContent;
-                        if (text.trim()) {
-                            content.push(text);
-                        }
-                        return;
-                    }
+                const getAlignment = (node) => {
+                    if (!node || node.nodeType !== Node.ELEMENT_NODE) return undefined;
 
-                    if (node.nodeType === Node.ELEMENT_NODE) {
-                        const tag = node.tagName.toLowerCase();
-                        
-                        let children = [];
-                        node.childNodes.forEach(child => {
-                            const childContent = htmlToPdfmake(child.outerHTML || child.textContent);
-                            children = children.concat(childContent);
-                        });
+                    const styleAttr = (node.getAttribute('style') || '').toLowerCase();
+                    const classAttr = node.getAttribute('class') || '';
 
-                        if (tag === 'div') {
-                            // Check if it's our divider blot
-                            const classAttr = node.getAttribute('class');
-                            if (classAttr && classAttr.includes('divider-blot')) {
-                                content.push({ 
-                                    canvas: [
-                                        { type: 'line', x1: 0, y1: 0, x2: 500, y2: 0, lineWidth: 1 }
-                                    ],
-                                    margin: [0, 10, 0, 10]
-                                });
-                            } else {
-                                let paragraph = { text: children.length ? children : (node.textContent || '') };
-                                const styleAttr = node.getAttribute('style');
-                                if (styleAttr) {
-                                    if (styleAttr.includes('text-align: center')) {
-                                        paragraph.alignment = 'center';
-                                    }
-                                }
-                                content.push(paragraph);
-                            }
-                        } else if (tag === 'p') {
-                            let paragraph = { text: children.length ? children : (node.textContent || '') };
-                            const styleAttr = node.getAttribute('style');
-                            if (styleAttr) {
-                                if (styleAttr.includes('text-align: center')) {
-                                    paragraph.alignment = 'center';
-                                }
-                            }
-                            content.push(paragraph);
-                        } else if (tag === 'strong' || tag === 'b') {
-                            if (children.length === 1) {
-                                if (typeof children[0] === 'string') {
-                                    content.push({ text: children[0], bold: true });
-                                } else {
-                                    children[0].bold = true;
-                                    content.push(children[0]);
-                                }
-                            } else {
-                                content.push({ text: children, bold: true });
-                            }
-                        } else if (tag === 'em' || tag === 'i') {
-                            if (children.length === 1) {
-                                if (typeof children[0] === 'string') {
-                                    content.push({ text: children[0], italics: true });
-                                } else {
-                                    children[0].italics = true;
-                                    content.push(children[0]);
-                                }
-                            } else {
-                                content.push({ text: children, italics: true });
-                            }
-                        } else if (tag === 'u') {
-                            if (children.length === 1) {
-                                if (typeof children[0] === 'string') {
-                                    content.push({ text: children[0], decoration: 'underline' });
-                                } else {
-                                    children[0].decoration = 'underline';
-                                    content.push(children[0]);
-                                }
-                            } else {
-                                content.push({ text: children, decoration: 'underline' });
-                            }
-                        } else if (tag === 'br') {
-                            content.push('\n');
-                        } else if (tag === 'hr') {
-                            content.push({ 
-                                canvas: [
-                                    { type: 'line', x1: 0, y1: 0, x2: 500, y2: 0, lineWidth: 1 }
-                                ],
-                                margin: [0, 10, 0, 10]
-                            });
-                        } else if (tag === 'ul' || tag === 'ol') {
-                            const list = [];
-                            node.querySelectorAll('li').forEach(li => {
-                                list.push(htmlToPdfmake(li.innerHTML));
-                            });
-                            if (tag === 'ul') {
-                                content.push({ ul: list });
-                            } else {
-                                content.push({ ol: list });
-                            }
-                        } else if (tag === 'li') {
-                            return children;
-                        } else if (tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4' || tag === 'h5' || tag === 'h6') {
-                            const level = parseInt(tag.charAt(1));
-                            const sizes = [24, 20, 18, 16, 14, 12];
-                            content.push({ 
-                                text: children.length ? children : node.textContent, 
-                                fontSize: sizes[level-1], 
-                                bold: true, 
-                                margin: [0, 10, 0, 5] 
-                            });
-                        }
-                    }
+                    if (styleAttr.includes('text-align: center') || classAttr.includes('ql-align-center')) return 'center';
+                    if (styleAttr.includes('text-align: right') || classAttr.includes('ql-align-right')) return 'right';
+                    if (styleAttr.includes('text-align: justify') || classAttr.includes('ql-align-justify')) return 'justify';
+                    if (styleAttr.includes('text-align: left') || classAttr.includes('ql-align-left')) return 'left';
+
+                    return undefined;
                 };
 
-                // Percorrer o body
-                doc.body.childNodes.forEach(walk);
+                const applyInlineStyles = (node, item) => {
+                    if (!item || node.nodeType !== Node.ELEMENT_NODE) return item;
 
-                return content.filter(item => item !== null && item !== undefined);
+                    const tag = node.tagName.toLowerCase();
+                    const styleAttr = (node.getAttribute('style') || '').toLowerCase();
+
+                    if (tag === 'strong' || tag === 'b' || styleAttr.includes('font-weight: bold') || styleAttr.includes('font-weight:bold')) {
+                        item.bold = true;
+                    }
+
+                    if (tag === 'em' || tag === 'i' || styleAttr.includes('font-style: italic') || styleAttr.includes('font-style:italic')) {
+                        item.italics = true;
+                    }
+
+                    if (tag === 'u' || styleAttr.includes('text-decoration: underline')) {
+                        item.decoration = item.decoration ? [].concat(item.decoration, 'underline') : 'underline';
+                    }
+
+                    if (tag === 's' || tag === 'strike' || styleAttr.includes('text-decoration: line-through')) {
+                        item.decoration = item.decoration ? [].concat(item.decoration, 'lineThrough') : 'lineThrough';
+                    }
+
+                    if (tag === 'a') {
+                        const href = node.getAttribute('href');
+                        if (href) {
+                            item.link = href;
+                            item.color = item.color || '#2563eb';
+                            item.decoration = item.decoration || 'underline';
+                        }
+                    }
+
+                    return item;
+                };
+
+                const parseInlineNode = (node) => {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        return node.textContent || '';
+                    }
+
+                    if (node.nodeType !== Node.ELEMENT_NODE) {
+                        return '';
+                    }
+
+                    const tag = node.tagName.toLowerCase();
+
+                    if (tag === 'br') {
+                        return '\n';
+                    }
+
+                    if (tag === 'img') {
+                        return '';
+                    }
+
+                    const children = Array.from(node.childNodes)
+                        .map(parseInlineNode)
+                        .filter(item => item !== null && item !== undefined && item !== '');
+
+                    if (tag === 'span' || tag === 'strong' || tag === 'b' || tag === 'em' || tag === 'i' || tag === 'u' || tag === 's' || tag === 'strike' || tag === 'a') {
+                        const inlineItem = {
+                            text: children.length <= 1 ? (children[0] || '') : children
+                        };
+                        return applyInlineStyles(node, inlineItem);
+                    }
+
+                    return children.length <= 1 ? (children[0] || '') : children;
+                };
+
+                const parseBlockNode = (node) => {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        const text = node.textContent;
+                        return text && text.trim() ? { text: text.trim() } : null;
+                    }
+
+                    if (node.nodeType !== Node.ELEMENT_NODE) {
+                        return null;
+                    }
+
+                    const tag = node.tagName.toLowerCase();
+                    const classAttr = node.getAttribute('class') || '';
+                    const alignment = getAlignment(node);
+
+                    if (tag === 'div' && classAttr.includes('divider-blot')) {
+                        return {
+                            canvas: [
+                                { type: 'line', x1: 0, y1: 0, x2: 500, y2: 0, lineWidth: 1 }
+                            ],
+                            margin: [0, 10, 0, 10]
+                        };
+                    }
+
+                    if (tag === 'hr') {
+                        return {
+                            canvas: [
+                                { type: 'line', x1: 0, y1: 0, x2: 500, y2: 0, lineWidth: 1 }
+                            ],
+                            margin: [0, 10, 0, 10]
+                        };
+                    }
+
+                    if (tag === 'ul' || tag === 'ol') {
+                        const items = Array.from(node.children)
+                            .filter(child => child.tagName && child.tagName.toLowerCase() === 'li')
+                            .map(li => {
+                                const parsed = Array.from(li.childNodes)
+                                    .map(parseInlineNode)
+                                    .filter(item => item !== null && item !== undefined && item !== '');
+                                return parsed.length <= 1 ? (parsed[0] || '') : parsed;
+                            });
+
+                        return tag === 'ul' ? { ul: items } : { ol: items };
+                    }
+
+                    if (tag === 'p' || tag === 'div') {
+                        const parsed = Array.from(node.childNodes)
+                            .map(parseInlineNode)
+                            .filter(item => item !== null && item !== undefined && item !== '');
+                        const paragraph = { text: parsed.length <= 1 ? (parsed[0] || '') : parsed };
+                        if (alignment) paragraph.alignment = alignment;
+                        return paragraph;
+                    }
+
+                    if (tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4' || tag === 'h5' || tag === 'h6') {
+                        const level = parseInt(tag.charAt(1), 10);
+                        const sizes = [24, 20, 18, 16, 14, 12];
+                        const parsed = Array.from(node.childNodes)
+                            .map(parseInlineNode)
+                            .filter(item => item !== null && item !== undefined && item !== '');
+                        const heading = {
+                            text: parsed.length <= 1 ? (parsed[0] || '') : parsed,
+                            fontSize: sizes[level - 1],
+                            bold: true,
+                            margin: [0, 10, 0, 5]
+                        };
+                        if (alignment) heading.alignment = alignment;
+                        return heading;
+                    }
+
+                    const fallback = Array.from(node.childNodes)
+                        .map(parseBlockNode)
+                        .filter(Boolean);
+
+                    if (fallback.length === 1) return fallback[0];
+                    if (fallback.length > 1) return fallback;
+                    return null;
+                };
+
+                return Array.from(doc.body.childNodes)
+                    .map(parseBlockNode)
+                    .flat()
+                    .filter(item => item !== null && item !== undefined);
             };
 
             customContent = htmlToPdfmake(processedHtml);
@@ -614,6 +835,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             pageSize: 'A4',
             pageMargins: [85, 85, 57, 57],
             background: function(currentPage, pageCount) {
+                if (customContent && type !== 'investigation') return null;
+                if (type === 'investigation' && currentPage === 1) return null;
                 if (backgroundBase64) {
                     return {
                         image: backgroundBase64,
@@ -626,6 +849,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             
             // Cabeçalho em todas as páginas
             header: () => {
+                if (customContent && type !== 'investigation') return null;
+                if (type === 'investigation' && currentPage === 1) return null;
                 return {
                     stack: [
                         { text: 'ESTADO DA EUFORIA', alignment: 'center', fontSize: 10, bold: true, margin: [0, 15, 0, 0] },
@@ -638,6 +863,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
 
             // Rodapé com paginação
             footer: (currentPage, pageCount) => {
+                if (customContent && type !== 'investigation') return null;
+                if (type === 'investigation' && currentPage === 1) return null;
                 return {
                     columns: [
                         { text: `Documento Oficial - Uso Interno | ${docTitle} Nº ${data.id}`, alignment: 'left', fontSize: 10, margin: [85, 0, 0, 0] },
@@ -647,16 +874,17 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             },
 
             content: [
+                ...(type === 'investigation' ? [buildInvestigationCoverContent(data, mergedLayout)] : []),
                 // Se tiver template customizado, usa ele. Se não, usa o padrão.
                 ...(customContent ? customContent : standardContent),
 
                 // --- ANEXOS (Para Investigations ou se houver imagens em outros tipos) ---
-                (type === 'investigation' || validImages.length > 0) ? [
+                ((!customContent && type === 'investigation') || validImages.length > 0) ? [
                     { text: customContent ? '\n\n--- ANEXOS DO SISTEMA ---\n\n' : '', style: 'subHeader', pageBreak: customContent ? 'before' : undefined },
                 ] : [],
 
-                // --- PROVAS E EVIDÊNCIAS (Apenas Investigation) ---
-                (type === 'investigation') ? [
+                // --- PROVAS E EVIDÊNCIAS (Apenas Investigation sem bloco customizado) ---
+                (type === 'investigation' && !templateHasProofPlaceholder) ? [
                     { text: customContent ? 'REGISTRO DE PROVAS' : '5. PROVAS COLETADAS', style: 'sectionTitle', tocItem: !customContent },
                     processedProofs.length > 0 ? {
                         layout: 'headerLineOnly',
@@ -692,7 +920,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 ] : [],
 
                 // --- ANEXOS (IMAGENS) ---
-                validImages.length > 0 ? [
+                (validImages.length > 0 && (!customContent || type !== 'investigation')) ? [
                      { text: customContent ? 'REGISTRO FOTOGRÁFICO' : (type === 'investigation' ? '6. ANEXOS FOTOGRÁFICOS' : 'ANEXOS FOTOGRÁFICOS'), style: 'sectionTitle', pageBreak: 'before', tocItem: !customContent },
                      ...validImages.map((proof, index) => {
                         if (!proof.imgData) return null;

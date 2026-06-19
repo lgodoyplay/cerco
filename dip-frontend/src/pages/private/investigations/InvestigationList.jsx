@@ -1,9 +1,8 @@
-
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useInvestigations } from '../../../hooks/useInvestigations';
 import { usePermissions } from '../../../hooks/usePermissions';
-import { Search, Plus, FileText, Clock, CheckCircle, AlertTriangle, FolderOpen, Archive, Edit3, Trash2 } from 'lucide-react';
+import { Search, Plus, FileText, Clock, CheckCircle, AlertTriangle, FolderOpen, Archive, Edit3, Trash2, X } from 'lucide-react';
 import clsx from 'clsx';
 
 const InvestigationList = ({ category = 'criminal', title }) => {
@@ -12,8 +11,27 @@ const InvestigationList = ({ category = 'criminal', title }) => {
   const [filter, setFilter] = useState('active'); // 'active' | 'closed'
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const [notification, setNotification] = useState(location.state?.notification || null);
 
   const canManage = can('investigations_manage');
+
+  useEffect(() => {
+    if (location.state?.notification) {
+      setNotification(location.state.notification);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.pathname, location.state, navigate]);
+
+  useEffect(() => {
+    if (!notification) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setNotification(null);
+    }, 3500);
+
+    return () => window.clearTimeout(timer);
+  }, [notification]);
 
   const filteredInvestigations = investigations
     .filter(inv => inv.category === category) // Filter by category
@@ -36,6 +54,30 @@ const InvestigationList = ({ category = 'criminal', title }) => {
 
   return (
     <div className="max-w-7xl mx-auto pb-10">
+      {notification && (
+        <div
+          className={clsx(
+            "mb-6 rounded-2xl border px-4 py-3 flex items-start gap-3 shadow-lg",
+            notification.type === 'success'
+              ? "bg-emerald-950/70 border-emerald-500/30 text-emerald-100"
+              : "bg-red-950/70 border-red-500/30 text-red-100"
+          )}
+        >
+          {notification.type === 'success' ? <CheckCircle size={20} className="mt-0.5 shrink-0" /> : <AlertTriangle size={20} className="mt-0.5 shrink-0" />}
+          <div className="flex-1">
+            <p className="font-semibold">{notification.type === 'success' ? 'Sucesso' : 'Erro'}</p>
+            <p className="text-sm opacity-90">{notification.message}</p>
+          </div>
+          <button
+            onClick={() => setNotification(null)}
+            className="text-current/80 hover:text-current transition-colors"
+            aria-label="Fechar aviso"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div>
@@ -124,7 +166,19 @@ const InvestigationList = ({ category = 'criminal', title }) => {
                         onClick={async (e) => {
                           e.stopPropagation();
                           if (window.confirm('Tem certeza que deseja deletar esta investigação?')) {
-                            await deleteInvestigation(inv.id);
+                            try {
+                              await deleteInvestigation(inv.id);
+                              setNotification({
+                                type: 'success',
+                                message: 'Investigacao deletada com sucesso.'
+                              });
+                            } catch (error) {
+                              console.error('Erro ao deletar investigação:', error);
+                              setNotification({
+                                type: 'error',
+                                message: error?.message || 'Nao foi possivel deletar a investigacao.'
+                              });
+                            }
                           }
                         }}
                         className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
@@ -164,4 +218,3 @@ const InvestigationList = ({ category = 'criminal', title }) => {
 };
 
 export default InvestigationList;
-

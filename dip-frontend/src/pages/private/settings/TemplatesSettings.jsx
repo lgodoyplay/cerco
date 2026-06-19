@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FileText, Save, RefreshCw, Download } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
-import { generateProfessionalPDF } from '../../../utils/pdfGeneratorPro';
+import { buildTemplatePreviewHtml, DEFAULT_TEMPLATE_LAYOUTS, generateProfessionalPDF, getMergedTemplateLayout } from '../../../utils/pdfGeneratorPro';
 import ReactQuill from 'react-quill-new';
 import Quill from 'quill';
 import 'react-quill-new/dist/quill.snow.css';
+import NotificationBanner from '../../../components/feedback/NotificationBanner';
 
 // Register Divider Blot for Quill
 const BlockEmbed = Quill.import('blots/block/embed');
@@ -85,61 +86,182 @@ const quillStyles = `
   .divider-blot {
     margin: 16px 0;
   }
+  .pdf-preview-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .pdf-preview-page {
+    position: relative;
+    width: 100%;
+    max-width: 794px;
+    min-height: 1123px;
+    margin: 0 auto;
+    background: #ffffff;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
+    overflow: hidden;
+  }
+  .pdf-preview-cover-page {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
+  .pdf-preview-cover-content {
+    min-height: 1123px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 210px 72px 72px;
+    color: #0f172a;
+  }
+  .pdf-preview-cover-eyebrow {
+    margin: 0 0 12px;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.08em;
+  }
+  .pdf-preview-cover-title-wrap {
+    margin-top: 120px;
+  }
+  .pdf-preview-cover-title {
+    margin: 0;
+    font-weight: 800;
+    font-size: 34px;
+    letter-spacing: 0.06em;
+  }
+  .pdf-preview-cover-ref {
+    margin: 28px 0 0;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+  }
+  .pdf-preview-cover-footer {
+    margin-top: auto;
+    padding-bottom: 24px;
+    font-size: 14px;
+    font-style: italic;
+    color: #475569;
+  }
+  .pdf-preview-cover-line {
+    position: absolute;
+    left: 56px;
+    right: 56px;
+    border-top: 2px solid #0f172a;
+    cursor: ns-resize;
+    z-index: 3;
+  }
+  .pdf-preview-cover-line::after {
+    content: 'Arraste a linha';
+    position: absolute;
+    right: 0;
+    top: -18px;
+    font-size: 10px;
+    color: #334155;
+    background: rgba(255,255,255,0.92);
+    padding: 2px 6px;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+  }
+  .pdf-preview-body-page {
+    padding: 76px 58px 64px;
+    color: #111827;
+  }
+  .pdf-preview-page-header {
+    margin-bottom: 28px;
+    text-align: center;
+  }
+  .pdf-preview-page-line {
+    width: 100%;
+    border-top: 1px solid #0f172a;
+    margin-bottom: 8px;
+  }
+  .pdf-preview-page-header-text {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+  .pdf-preview-page-content {
+    min-height: 860px;
+  }
+  .pdf-preview-page-content p,
+  .pdf-preview-page-content li {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .pdf-preview-page-content .divider-blot,
+  .pdf-preview-page-content hr {
+    position: relative;
+    margin: 18px 0;
+    border: 0;
+    border-top: 1px solid #334155;
+  }
+  .pdf-preview-page-footer {
+    margin-top: 28px;
+  }
+  .pdf-preview-page-footer-text {
+    margin-top: 8px;
+    font-size: 11px;
+    text-align: center;
+    color: #475569;
+  }
 `;
 
 const TemplatesSettings = () => {
   const { templates: dbTemplates, updateTemplates } = useSettings();
+  const coverPreviewRef = useRef(null);
   
   const defaultTemplates = {
-    investigation: `<p style="text-align: center;"><strong>ESTADO DA EUFORIA</strong></p>
-<p style="text-align: center;"><strong>SECRETARIA DE SEGURANÇA PÚBLICA</strong></p>
-<p style="text-align: center;"><strong>CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS</strong></p>
+    investigation: `<p style="text-align: center;"><strong>POLÍCIA CIVIL DO ESTADO DA EUFORIA</strong></p>
+<p style="text-align: center;"><strong>DEPARTAMENTO DE INVESTIGAÇÕES CRIMINAIS</strong></p>
 <p style="text-align: center;"><br></p>
 <p style="text-align: center;"><strong>RELATÓRIO FINAL DE INQUÉRITO POLICIAL</strong></p>
 <p><br></p>
-<p><strong>DADOS DO INQUÉRITO</strong></p>
+<p><strong>1. DADOS DO INQUÉRITO</strong></p>
 <p>Número do Inquérito: {numero_inquerito}</p>
 <p>Data de Instauração: {data_abertura}</p>
 <p>Status: {status}</p>
 <p>Delegacia Responsável: {delegacia}</p>
-<p style="text-align: center;">Investigador Responsável: {nome_agente}</p>
+<p>Investigador Responsável: {nome_agente}</p>
 <p><br></p>
-<p><strong>IDENTIFICAÇÃO DO INVESTIGADO</strong></p>
+<p><strong>2. IDENTIFICAÇÃO DO INVESTIGADO</strong></p>
 <p>Nome Completo: {nome_investigado}</p>
 <p>CPF: {cpf_investigado}</p>
 <p>Data de Nascimento: {data_nascimento}</p>
+<p>Endereço: {endereco}</p>
 <p>Telefone: {telefone}</p>
 <p><br></p>
-<p><strong>OBJETO DA INVESTIGAÇÃO</strong></p>
-<p>O presente Inquérito Policial foi instaurado pela Polícia Civil do Estado da Euforia com a finalidade de apurar os fatos noticiados, identificar a autoria, materialidade e circunstâncias relacionadas à possível prática de infração penal atribuída ao investigado.</p>
+<p><strong>3. OBJETO DA INVESTIGAÇÃO</strong></p>
+<p>O presente Inquérito Policial foi instaurado pela Polícia Civil do Estado da Euforia com a finalidade de apurar os fatos noticiados, identificar autoria, materialidade e circunstâncias relacionadas à possível prática de infração penal, bem como reunir elementos suficientes para subsidiar as medidas legais cabíveis.</p>
 <p><br></p>
-<p><strong>RELATÓRIO DOS FATOS</strong></p>
+<p><strong>4. RELATÓRIO DOS FATOS</strong></p>
 <p>{relato_fatos}</p>
 <p><br></p>
-<p><strong>DILIGÊNCIAS REALIZADAS</strong></p>
-<p>Durante a instrução do presente inquérito foram realizadas as seguintes ações investigativas:</p>
+<p><strong>5. DILIGÊNCIAS REALIZADAS</strong></p>
+<p>Foram executadas as seguintes diligências investigativas:</p>
 <ul>
-  <li>Levantamento de informações e antecedentes;</li>
-  <li>Coleta de depoimentos e oitivas;</li>
-  <li>Análise documental;</li>
-  <li>Verificação de registros fotográficos e audiovisuais;</li>
-  <li>Levantamento de inteligência policial;</li>
-  <li>Demais diligências necessárias para o esclarecimento dos fatos.</li>
+<li>Levantamento de informações e antecedentes;</li>
+<li>Coleta de depoimentos e oitivas de testemunhas;</li>
+<li>Análise documental e material;</li>
+<li>Verificação de registros fotográficos e audiovisuais;</li>
+<li>Monitoramento e inteligência policial;</li>
+<li>Acompanhamento de alvos investigados;</li>
+<li>Demais diligências necessárias ao esclarecimento dos fatos.</li>
 </ul>
 <p><br></p>
-<p><strong>ELEMENTOS PROBATÓRIOS</strong></p>
-<p>Foram reunidos e anexados aos autos os seguintes elementos de prova:</p>
-<p>{lista_provas}</p>
-<p>Todos os materiais foram devidamente analisados e catalogados, passando a integrar o conjunto probatório deste procedimento investigativo.</p>
+<p><strong>6. ELEMENTOS PROBATÓRIOS (PROVAS DO SISTEMA)</strong></p>
+<p>Os elementos probatórios foram inseridos de forma dinâmica pelo sistema investigativo, sendo automaticamente catalogados, numerados e organizados para composição do presente relatório.</p>
 <p><br></p>
-<p><strong>ANÁLISE INVESTIGATIVA</strong></p>
-<p>Após análise técnica e confrontação dos elementos obtidos, verificou-se a existência de indícios consistentes relacionados aos fatos investigados, permitindo a formação de convicção acerca da dinâmica dos acontecimentos e da eventual responsabilidade do investigado.</p>
-<p>As informações coletadas demonstram coerência entre os depoimentos, documentos e demais evidências presentes nos autos.</p>
+{bloco_provas}
 <p><br></p>
-<p><strong>CONCLUSÃO</strong></p>
-<p>Diante dos fatos apurados e das provas produzidas ao longo da investigação, conclui-se que o presente Inquérito Policial atingiu seus objetivos, reunindo elementos suficientes para subsidiar as medidas legais cabíveis.</p>
-<p>Assim, os autos são encaminhados à autoridade competente para análise e deliberação quanto às providências subsequentes.</p>
-<p style="text-align: center;">Estado da Euforia, {data_conclusao}.</p>
+<p>As provas acima foram automaticamente organizadas pelo sistema, permanecendo integradas aos autos do inquérito policial para análise e instrução processual.</p>
+<p><br></p>
+<p><strong>7. ANÁLISE INVESTIGATIVA</strong></p>
+<p>Após análise técnica dos elementos probatórios reunidos, constatou-se a existência de indícios consistentes relacionados aos fatos investigados.</p>
+<p>As provas apresentadas demonstram coerência entre si, permitindo a reconstrução dos eventos e a identificação da possível participação do investigado nas condutas apuradas.</p>
+<p><br></p>
+<p><strong>8. CONCLUSÃO</strong></p>
+<p>Diante do conjunto probatório produzido, conclui-se que o presente Inquérito Policial atingiu sua finalidade, reunindo elementos suficientes para subsidiar as medidas legais cabíveis.</p>
+<p>Os autos seguem devidamente instruídos e são encaminhados à autoridade competente para análise e deliberação.</p>
+<p>Estado da Euforia, {data_conclusao}.</p>
 <p><br></p>
 <p style="text-align: center;">{nome_agente}</p>
 <p style="text-align: center;">Investigador de Polícia Civil</p>
@@ -186,13 +308,71 @@ const TemplatesSettings = () => {
   const [activeTab, setActiveTab] = useState('investigation');
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const [draggingLine, setDraggingLine] = useState(null);
+
+  const layoutConfigs = templates.__layoutConfig || DEFAULT_TEMPLATE_LAYOUTS;
+  const activeLayout = getMergedTemplateLayout(activeTab, layoutConfigs?.[activeTab]);
 
   useEffect(() => {
     setTemplates(prev => {
       const mergedTemplates = { ...defaultTemplates, ...(dbTemplates || {}) };
-      return hasChanges ? { ...mergedTemplates, ...prev } : mergedTemplates;
+      const mergedLayouts = { ...DEFAULT_TEMPLATE_LAYOUTS, ...((dbTemplates && dbTemplates.__layoutConfig) || {}) };
+      return hasChanges
+        ? {
+            ...mergedTemplates,
+            ...prev,
+            __layoutConfig: {
+              ...mergedLayouts,
+              ...((prev && prev.__layoutConfig) || {})
+            }
+          }
+        : {
+            ...mergedTemplates,
+            __layoutConfig: mergedLayouts
+          };
     });
   }, [dbTemplates, hasChanges]);
+
+  useEffect(() => {
+    if (!notification) return undefined;
+
+    const timer = window.setTimeout(() => setNotification(null), 3500);
+    return () => window.clearTimeout(timer);
+  }, [notification]);
+
+  useEffect(() => {
+    if (!draggingLine || activeTab !== 'investigation') return undefined;
+
+    const handleMove = (event) => {
+      if (!coverPreviewRef.current) return;
+
+      const rect = coverPreviewRef.current.getBoundingClientRect();
+      const nextY = Math.max(70, Math.min(980, event.clientY - rect.top));
+
+      setTemplates(prev => ({
+        ...prev,
+        __layoutConfig: {
+          ...(prev.__layoutConfig || {}),
+          [activeTab]: {
+            ...getMergedTemplateLayout(activeTab, prev.__layoutConfig?.[activeTab]),
+            [draggingLine]: Math.round(nextY)
+          }
+        }
+      }));
+      setHasChanges(true);
+    };
+
+    const stopDragging = () => setDraggingLine(null);
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', stopDragging);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', stopDragging);
+    };
+  }, [activeTab, draggingLine]);
 
   // Custom module to insert divider
   const modules = {
@@ -235,12 +415,24 @@ const TemplatesSettings = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const payload = { ...defaultTemplates, ...templates };
+      const payload = {
+        ...defaultTemplates,
+        ...templates,
+        __layoutConfig: {
+          ...DEFAULT_TEMPLATE_LAYOUTS,
+          ...(templates.__layoutConfig || {})
+        }
+      };
       const success = await updateTemplates(payload);
       if (success) {
         setTemplates(payload);
         setHasChanges(false);
+        setNotification({ type: 'success', message: 'Modelo salvo com sucesso.' });
+      } else {
+        setNotification({ type: 'error', message: 'Nao foi possivel salvar o modelo.' });
       }
+    } catch (_error) {
+      setNotification({ type: 'error', message: 'Falha ao salvar o modelo.' });
     } finally {
       setSaving(false);
     }
@@ -248,7 +440,14 @@ const TemplatesSettings = () => {
 
   const handleReset = () => {
     if (window.confirm('Deseja restaurar o modelo padrão? As alterações serão perdidas.')) {
-      setTemplates(prev => ({ ...prev, [activeTab]: defaultTemplates[activeTab] }));
+      setTemplates(prev => ({
+        ...prev,
+        [activeTab]: defaultTemplates[activeTab],
+        __layoutConfig: {
+          ...(prev.__layoutConfig || {}),
+          [activeTab]: DEFAULT_TEMPLATE_LAYOUTS[activeTab] || {}
+        }
+      }));
       setHasChanges(true);
     }
   };
@@ -259,16 +458,24 @@ const TemplatesSettings = () => {
       const dummyData = {
         id: '12345',
         createdAt: new Date().toISOString(),
-        status: 'Concluído',
+        status: 'Finalizada',
         priority: 'Alta',
         title: 'Inquérito de Exemplo',
         description: 'Descrição detalhada dos fatos apurados durante a investigação realizada.',
         involved: 'João da Silva',
+        delegaciaResponsavel: 'Delegacia Central de Investigações',
+        nomeInvestigado: 'João da Silva',
+        cpfInvestigado: '123.456.789-10',
+        dataNascimento: '1990-05-10',
+        enderecoInvestigado: 'Rua das Flores, 123 - Centro',
+        telefoneInvestigado: '(11) 99999-0000',
+        nomeDelegado: 'Carlos Almeida',
         investigator: { nome: 'Maria Oliveira' },
         closedAt: new Date().toISOString(),
         proofs: [
-          { title: 'Fotografia do Local', description: 'Imagem do local dos fatos', type: 'Imagem', createdAt: new Date().toISOString() },
-          { title: 'Depoimento da Vitima', description: 'Oitiva registrada no dia 15/06', type: 'Documento', createdAt: new Date().toISOString() },
+          { title: 'Fotografia do Local', description: 'Imagem do local dos fatos', type: 'image', content: 'https://exemplo.com/prova1.jpg', author: 'Maria Oliveira', createdAt: new Date().toISOString() },
+          { title: 'Depoimento da Vítima', description: 'Oitiva registrada no dia 15/06', type: 'file', content: 'https://exemplo.com/prova2.pdf', author: 'Paulo Mendes', createdAt: new Date().toISOString() },
+          { title: 'Relatório de Inteligência', description: 'Apontou o vínculo do investigado com os fatos apurados', type: 'text', content: 'Resumo analítico catalogado no sistema', author: 'Ana Souza', createdAt: new Date().toISOString() },
         ]
       };
 
@@ -281,13 +488,64 @@ const TemplatesSettings = () => {
         dummyData,
         dummyUser,
         templates[activeTab] || defaultTemplates[activeTab],
-        activeTab
+        activeTab,
+        layoutConfigs?.[activeTab]
       );
     } catch (e) {
       console.error('Erro ao gerar pré-visualização:', e);
-      alert('Erro ao gerar pré-visualização.');
+      setNotification({ type: 'error', message: 'Erro ao gerar a pre-visualizacao do PDF.' });
     }
   };
+
+  const handlePreviewMouseDown = (event) => {
+    const lineElement = event.target.closest('[data-line-key]');
+    if (!lineElement || activeTab !== 'investigation') return;
+
+    const lineKey = lineElement.getAttribute('data-line-key');
+    if (lineKey) {
+      setDraggingLine(lineKey);
+      event.preventDefault();
+    }
+  };
+
+  const previewHtml = useMemo(() => {
+    const dummyData = {
+      id: '12345',
+      createdAt: new Date().toISOString(),
+      status: 'Finalizada',
+      priority: 'Alta',
+      title: 'Inquerito de Exemplo',
+      description: 'Descricao detalhada dos fatos apurados durante a investigacao realizada.',
+      involved: 'Joao da Silva',
+      delegaciaResponsavel: 'Delegacia Central de Investigacoes',
+      nomeInvestigado: 'Joao da Silva',
+      cpfInvestigado: '123.456.789-10',
+      dataNascimento: '1990-05-10',
+      enderecoInvestigado: 'Rua das Flores, 123 - Centro',
+      telefoneInvestigado: '(11) 99999-0000',
+      nomeDelegado: 'Carlos Almeida',
+      investigator: { nome: 'Maria Oliveira' },
+      closedAt: new Date().toISOString(),
+      proofs: [
+        { title: 'Fotografia do Local', description: 'Imagem do local dos fatos', type: 'image', content: 'https://exemplo.com/prova1.jpg', author: 'Maria Oliveira', createdAt: new Date().toISOString() },
+        { title: 'Depoimento da Vitima', description: 'Oitiva registrada no dia 15/06', type: 'file', content: 'https://exemplo.com/prova2.pdf', author: 'Paulo Mendes', createdAt: new Date().toISOString() },
+        { title: 'Relatorio de Inteligencia', description: 'Apontou o vinculo do investigado com os fatos apurados', type: 'text', content: 'Resumo analitico catalogado no sistema', author: 'Ana Souza', createdAt: new Date().toISOString() },
+      ]
+    };
+
+    const dummyUser = {
+      nome: 'Maria Oliveira',
+      badge: 'PC-EUF-001'
+    };
+
+    return buildTemplatePreviewHtml(
+      dummyData,
+      dummyUser,
+      templates[activeTab] || defaultTemplates[activeTab],
+      activeTab,
+      layoutConfigs?.[activeTab]
+    );
+  }, [activeTab, defaultTemplates, layoutConfigs, templates]);
 
   const tabs = [
     { id: 'investigation', label: 'Relatório de Investigação' },
@@ -298,6 +556,10 @@ const TemplatesSettings = () => {
   return (
     <div className="space-y-6">
       <style dangerouslySetInnerHTML={{ __html: quillStyles }} />
+      <NotificationBanner
+        notification={notification}
+        onClose={() => setNotification(null)}
+      />
       <div>
         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
           <FileText className="text-federal-500" size={28} />
@@ -337,19 +599,78 @@ const TemplatesSettings = () => {
               />
             </div>
             <div className="absolute bottom-4 right-4 text-xs text-slate-600 bg-slate-900/80 px-2 py-1 rounded pointer-events-none z-10">
-              Variáveis disponíveis: {'{nome}'}, {'{data}'}, {'{numero}'}
+              Variáveis: {'{numero_inquerito}'}, {'{nome_investigado}'}, {'{bloco_provas}'}, {'{nome_delegado}'}
             </div>
           </div>
           <div className="min-h-0 bg-slate-900 flex flex-col">
             <div className="px-4 py-3 border-b border-slate-800 bg-slate-900/80">
-              <h3 className="text-sm font-bold text-white">Prévia do Documento Salvo</h3>
-              <p className="text-xs text-slate-400">A rolagem abaixo permite conferir o documento inteiro antes de salvar ou gerar o PDF.</p>
+              <h3 className="text-sm font-bold text-white">Previa em Tempo Real do Documento</h3>
+              <p className="text-xs text-slate-400">
+                A previa abaixo mostra a capa, as linhas e o corpo do PDF. No relatorio de investigacao, arraste as linhas da capa para ajustar a posicao.
+              </p>
             </div>
             <div className="flex-1 overflow-y-auto p-4 bg-slate-950 custom-scrollbar">
               <div
-                className="mx-auto w-full max-w-3xl min-h-full bg-white text-slate-900 rounded-lg shadow-xl p-6"
-                dangerouslySetInnerHTML={{ __html: templates[activeTab] || '' }}
+                ref={activeTab === 'investigation' ? coverPreviewRef : null}
+                className="mx-auto w-full max-w-[794px] min-h-full text-slate-900"
+                onMouseDown={handlePreviewMouseDown}
+                dangerouslySetInnerHTML={{ __html: previewHtml }}
               />
+              {activeTab === 'investigation' && (
+                <div className="mx-auto mt-4 w-full max-w-[794px] rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+                  <p className="text-xs font-bold text-white mb-3">Ajuste fino das linhas da capa</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label className="text-xs text-slate-300">
+                      Linha superior: {activeLayout.coverTopLineY}px
+                      <input
+                        type="range"
+                        min="70"
+                        max="400"
+                        value={activeLayout.coverTopLineY}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          setTemplates(prev => ({
+                            ...prev,
+                            __layoutConfig: {
+                              ...(prev.__layoutConfig || {}),
+                              [activeTab]: {
+                                ...getMergedTemplateLayout(activeTab, prev.__layoutConfig?.[activeTab]),
+                                coverTopLineY: value
+                              }
+                            }
+                          }));
+                          setHasChanges(true);
+                        }}
+                        className="mt-2 w-full"
+                      />
+                    </label>
+                    <label className="text-xs text-slate-300">
+                      Linha inferior: {activeLayout.coverBottomLineY}px
+                      <input
+                        type="range"
+                        min="420"
+                        max="980"
+                        value={activeLayout.coverBottomLineY}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          setTemplates(prev => ({
+                            ...prev,
+                            __layoutConfig: {
+                              ...(prev.__layoutConfig || {}),
+                              [activeTab]: {
+                                ...getMergedTemplateLayout(activeTab, prev.__layoutConfig?.[activeTab]),
+                                coverBottomLineY: value
+                              }
+                            }
+                          }));
+                          setHasChanges(true);
+                        }}
+                        className="mt-2 w-full"
+                      />
+                    </label>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, Filter, FileText, Eye, Printer, Shield, Calendar, MapPin, User, Download, ChevronLeft, ChevronRight, Trash2, Lock } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -8,9 +8,11 @@ import { useAuth } from '../../context/AuthContext';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { generateBOReportPDF } from '../../utils/pdfGenerator';
+import NotificationBanner from '../../components/feedback/NotificationBanner';
 
 const BOList = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { templates, logAction } = useSettingsContext();
   const { can } = usePermissions();
@@ -24,6 +26,8 @@ const BOList = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [boToDelete, setBoToDelete] = useState(null);
   const [deletePassword, setDeletePassword] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState(location.state?.notification || null);
   const itemsPerPage = 10;
   
   const canManage = can('bo_manage');
@@ -32,7 +36,22 @@ const BOList = () => {
     fetchBoletins();
   }, []);
 
+  useEffect(() => {
+    if (location.state?.notification) {
+      setNotification(location.state.notification);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.pathname, location.state, navigate]);
+
+  useEffect(() => {
+    if (!notification) return undefined;
+
+    const timer = window.setTimeout(() => setNotification(null), 3500);
+    return () => window.clearTimeout(timer);
+  }, [notification]);
+
   const fetchBoletins = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('boletins')
@@ -44,6 +63,12 @@ const BOList = () => {
       setBoletins(data);
     } catch (error) {
       console.error('Erro ao buscar boletins:', error);
+      setNotification({
+        type: 'error',
+        message: error?.message || 'Nao foi possivel carregar os boletins.'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,7 +102,10 @@ const BOList = () => {
       await generateBOReportPDF(bo, user, templates?.bo);
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
-      alert("Erro ao gerar PDF do BO.");
+      setNotification({
+        type: 'error',
+        message: error?.message || 'Nao foi possivel gerar o PDF do BO.'
+      });
     }
   };
 
@@ -114,7 +142,7 @@ const BOList = () => {
 
   const handleDeleteConfirm = async () => {
     if (deletePassword !== '4907') {
-      alert('Senha incorreta!');
+      setNotification({ type: 'warning', message: 'Senha incorreta para excluir o BO.' });
       return;
     }
 
@@ -130,16 +158,26 @@ const BOList = () => {
       logAction('DELETE_BO', 'boletins', boToDelete.id, boToDelete, null);
 
       setBoletins(boletins.filter(bo => bo.id !== boToDelete.id));
-      alert('BO excluído com sucesso!');
       setDeleteModalOpen(false);
+      setBoToDelete(null);
+      setDeletePassword('');
+      setNotification({ type: 'success', message: 'BO excluido com sucesso.' });
     } catch (error) {
       console.error('Erro ao excluir BO:', error);
-      alert('Erro ao excluir BO.');
+      setNotification({
+        type: 'error',
+        message: error?.message || 'Nao foi possivel excluir o BO.'
+      });
     }
   };
 
   return (
     <div className="space-y-6">
+      <NotificationBanner
+        notification={notification}
+        onClose={() => setNotification(null)}
+      />
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -227,7 +265,14 @@ const BOList = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {paginatedBoletins.map((bo) => (
+              {loading && (
+                <tr>
+                  <td colSpan="6" className="p-8 text-center text-slate-500">
+                    Carregando boletins...
+                  </td>
+                </tr>
+              )}
+              {!loading && paginatedBoletins.map((bo) => (
                 <tr key={bo.id} className="hover:bg-slate-800/50 transition-colors group">
                   <td className="p-4">
                     <div className="flex flex-col">
@@ -291,7 +336,7 @@ const BOList = () => {
                   </td>
                 </tr>
               ))}
-              {paginatedBoletins.length === 0 && (
+              {!loading && paginatedBoletins.length === 0 && (
                 <tr>
                   <td colSpan="6" className="p-8 text-center text-slate-500">
                     Nenhum boletim encontrado.

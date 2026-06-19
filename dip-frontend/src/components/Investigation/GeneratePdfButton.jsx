@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { FileText, Loader2, Download } from 'lucide-react';
-import { generateInvestigationPDF } from '../../utils/pdfGenerator';
+import { FileText, Loader2 } from 'lucide-react';
+import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 import { useSettings } from '../../hooks/useSettings';
 
 const GeneratePdfButton = ({ investigation, user, className }) => {
@@ -16,7 +16,13 @@ const GeneratePdfButton = ({ investigation, user, className }) => {
                 badge: 'N/A'
             };
 
-            await generateInvestigationPDF(investigation, currentUser);
+            await generateProfessionalPDF(
+                investigation,
+                currentUser,
+                templates?.investigation,
+                'investigation',
+                templates?.__layoutConfig?.investigation
+            );
         } catch (error) {
             console.error(error);
         } finally {
