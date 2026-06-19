@@ -858,8 +858,6 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             pageSize: 'A4',
             pageMargins: [85, 85, 57, 57],
             background: function(currentPage, pageCount) {
-                if (customContent && type !== 'investigation') return null;
-                if (type === 'investigation' && currentPage === 1) return null;
                 if (backgroundBase64) {
                     return {
                         image: backgroundBase64,
