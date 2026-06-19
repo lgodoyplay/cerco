@@ -442,14 +442,20 @@ export const useInvestigations = () => {
         }
       }
 
-      const { error: deleteError } = await supabase
+      const { data: deletedRows, error: deleteError } = await supabase
         .from('investigacoes')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select('id');
 
       if (deleteError) throw deleteError;
 
-      fetchInvestigations();
+      if (!deletedRows || deletedRows.length === 0) {
+        throw new Error('A investigacao nao foi excluida. Verifique suas permissoes ou regras do banco.');
+      }
+
+      setInvestigations(prev => prev.filter(inv => inv.id !== id));
+      await fetchInvestigations();
     } catch (error) {
       console.error('Erro ao deletar investigação:', error);
       throw error;

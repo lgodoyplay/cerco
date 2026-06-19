@@ -183,13 +183,16 @@ const buildInvestigationProofsHtml = (proofs = []) => {
 
     return proofs.map((proof, index) => {
         const proofNumber = String(index + 1).padStart(3, '0');
+        const attachmentNote = proof.type === 'image'
+            ? 'Imagem vinculada ao sistema. O registro fotografico segue anexado no final do documento.'
+            : buildProofAttachmentHtml(proof);
         return `<p><strong>PROVA ${proofNumber} - ${escapeHtml(proof.title || 'Sem título')}</strong></p>
 <p>Tipo: ${escapeHtml(getProofTypeLabel(proof.type))}</p>
 <p>Data de Inserção: ${escapeHtml(formatDate(proof.createdAt))}</p>
 <p>Responsável: ${escapeHtml(proof.author || 'Agente')}</p>
 <p>Descrição:</p>
 <p>${escapeHtml(proof.description || proof.content || 'Sem descrição informada.')}</p>
-<p>Anexo: ${buildProofAttachmentHtml(proof)}</p>
+<p>Anexo: ${attachmentNote}</p>
 <p><br></p>`;
     }).join('');
 };
@@ -211,6 +214,20 @@ const replaceTemplateVariables = (templateStr = '', variables = {}) => {
     });
 
     return processedHtml;
+};
+
+const normalizeInvestigationTemplateHtml = (templateStr = '') => {
+    if (!templateStr) return '';
+
+    let normalized = templateStr;
+
+    normalized = normalized.replace(/<p[^>]*>\s*(?:<strong>)?\s*POL[ÍI]CIA CIVIL DO ESTADO DA EUFORIA\s*(?:<\/strong>)?\s*<\/p>\s*/i, '');
+    normalized = normalized.replace(/<p[^>]*>\s*(?:<strong>)?\s*DEPARTAMENTO DE INVESTIGA[ÇC][ÕO]ES CRIMINAIS\s*(?:<\/strong>)?\s*<\/p>\s*/i, '');
+    normalized = normalized.replace(/<p[^>]*>\s*<br>\s*<\/p>\s*/i, '');
+    normalized = normalized.replace(/<p[^>]*>\s*(?:<strong>)?\s*RELAT[ÓO]RIO FINAL DE INQU[ÉE]RITO POLICIAL\s*(?:<\/strong>)?\s*<\/p>\s*/i, '');
+    normalized = normalized.replace(/<p[^>]*>\s*(?:<strong>)?\s*POL[ÍI]CIA CIVIL DO ESTADO DA EUFORIA\s*(?:<\/strong>)?\s*<\/p>\s*<p[^>]*>\s*"Servir e Proteger com Justi[çc]a e Integridade"\s*<\/p>\s*$/i, '');
+
+    return normalized.trim();
 };
 
 const getDocumentVariables = (data, user, type = 'investigation') => {
@@ -295,7 +312,10 @@ const getDocumentVariables = (data, user, type = 'investigation') => {
 export const buildTemplatePreviewHtml = (data, user, templateStr = '', type = 'investigation', layoutConfig = {}) => {
     const layout = getMergedTemplateLayout(type, layoutConfig);
     const variables = getDocumentVariables(data, user, type);
-    const processedHtml = replaceTemplateVariables(templateStr, variables);
+    const sourceTemplate = type === 'investigation'
+        ? normalizeInvestigationTemplateHtml(templateStr)
+        : templateStr;
+    const processedHtml = replaceTemplateVariables(sourceTemplate, variables);
 
     const contentPage = `
         <section class="pdf-preview-page pdf-preview-body-page">
@@ -654,6 +674,9 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         if (templateStr) {
             // Primeiro substituir as variáveis!
             let processedHtml = templateStr;
+            if (type === 'investigation') {
+                processedHtml = normalizeInvestigationTemplateHtml(processedHtml);
+            }
             processedHtml = replaceTemplateVariables(processedHtml, variables);
 
             // Função para converter HTML em array pdfmake
@@ -920,8 +943,13 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 ] : [],
 
                 // --- ANEXOS (IMAGENS) ---
-                (validImages.length > 0 && (!customContent || type !== 'investigation')) ? [
+                (validImages.length > 0) ? [
                      { text: customContent ? 'REGISTRO FOTOGRÁFICO' : (type === 'investigation' ? '6. ANEXOS FOTOGRÁFICOS' : 'ANEXOS FOTOGRÁFICOS'), style: 'sectionTitle', pageBreak: 'before', tocItem: !customContent },
+                     ...(type === 'investigation' ? [{
+                        text: 'As imagens abaixo foram importadas automaticamente da pasta de investigação.',
+                        style: 'normalText',
+                        margin: [0, 0, 0, 12]
+                     }] : []),
                      ...validImages.map((proof, index) => {
                         if (!proof.imgData) return null;
                         return [
