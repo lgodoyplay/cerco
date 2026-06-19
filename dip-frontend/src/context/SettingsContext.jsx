@@ -69,6 +69,7 @@ export const SettingsProvider = ({ children }) => {
 
   // System Logs (Supabase)
   const [logs, setLogs] = useState([]);
+  const [unreadLogsCount, setUnreadLogsCount] = useState(0);
 
   // Fetch Settings
   const fetchSettings = useCallback(async () => {
@@ -143,8 +144,10 @@ export const SettingsProvider = ({ children }) => {
         .select('*');
       
       if (error) throw error;
-      setCrimes(prev => [...prev, data[0]]);
-      return data[0];
+      const newCrime = data[0];
+      setCrimes(prev => [...prev, newCrime]);
+      await logAction('CREATE_CRIME', 'crimes', newCrime.id, null, newCrime);
+      return newCrime;
     } catch (error) {
       console.error('Error adding crime:', error);
       throw error;
@@ -154,6 +157,9 @@ export const SettingsProvider = ({ children }) => {
   // Update Crime
   const updateCrime = useCallback(async (id, crime) => {
     try {
+      // Busca dados antigos para log
+      const { data: oldData } = await supabase.from('crimes').select('*').eq('id', id).single();
+      
       const { data, error } = await supabase
         .from('crimes')
         .update({
@@ -166,8 +172,10 @@ export const SettingsProvider = ({ children }) => {
         .select('*');
       
       if (error) throw error;
-      setCrimes(prev => prev.map(c => c.id === id ? data[0] : c));
-      return data[0];
+      const updatedCrime = data[0];
+      setCrimes(prev => prev.map(c => c.id === id ? updatedCrime : c));
+      await logAction('UPDATE_CRIME', 'crimes', id, oldData, updatedCrime);
+      return updatedCrime;
     } catch (error) {
       console.error('Error updating crime:', error);
       throw error;
@@ -177,6 +185,9 @@ export const SettingsProvider = ({ children }) => {
   // Delete Crime
   const deleteCrime = useCallback(async (id) => {
     try {
+      // Busca dados antigos para log
+      const { data: oldData } = await supabase.from('crimes').select('*').eq('id', id).single();
+      
       const { error } = await supabase
         .from('crimes')
         .delete()
@@ -184,6 +195,7 @@ export const SettingsProvider = ({ children }) => {
       
       if (error) throw error;
       setCrimes(prev => prev.filter(c => c.id !== id));
+      await logAction('DELETE_CRIME', 'crimes', id, oldData, null);
     } catch (error) {
       console.error('Error deleting crime:', error);
       throw error;
@@ -220,22 +232,29 @@ export const SettingsProvider = ({ children }) => {
   const fetchLogs = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from('system_logs')
+        .from('audit_logs')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(100);
 
       if (error) throw error;
+      setLogs(data || []);
 
-      const mappedLogs = data.map(l => ({
-        id: l.id,
-        action: l.action,
-        timestamp: l.created_at,
-        user: 'Sistema'
-      }));
-      setLogs(mappedLogs);
+      // Conta logs não lidos
+      const unreadCount = (data || []).filter(log => !log.is_read).length;
+      setUnreadLogsCount(unreadCount);
     } catch (error) {
       console.error('Error fetching logs:', error);
+    }
+  }, []);
+
+  // Marcar logs como lidos
+  const markLogsAsRead = useCallback(async () => {
+    try {
+      await supabase.from('audit_logs').update({ is_read: true }).eq('is_read', false);
+      setUnreadLogsCount(0);
+    } catch (error) {
+      console.error('Error marking logs as read:', error);
     }
   }, []);
 
@@ -244,6 +263,18 @@ export const SettingsProvider = ({ children }) => {
     fetchLogs();
     fetchSettings();
     fetchCrimes();
+
+    // Inscreve-se para mudanças em tempo real nos logs
+    const logsSubscription = supabase
+      .channel('audit_logs_changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, () => {
+        fetchLogs();
+      })
+      .subscribe();
+
+    return () => {
+      logsSubscription.unsubscribe();
+    };
   }, [fetchUsers, fetchLogs, fetchSettings, fetchCrimes]);
 
   // --- Actions ---
@@ -252,15 +283,31 @@ export const SettingsProvider = ({ children }) => {
     setCrimes(newCrimes);
   };
 
-  const logAction = async (action) => {
+  const logAction = async (action, tableName = null, recordId = null, oldData = null, newData = null) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      await supabase.from('system_logs').insert([{
+      
+      // Busca perfil do usuário para obter nome
+      let userName = 'Sistema';
+      if (user?.id) {
+        const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', user.id).single();
+        if (profile) {
+          userName = `${profile.full_name} (${profile.role})`;
+        }
+      }
+
+      await supabase.from('audit_logs').insert([{
         user_id: user?.id,
+        user_name: userName,
         action: action,
-        details: action // Simple mapping
+        table_name: tableName,
+        record_id: recordId,
+        old_data: oldData,
+        new_data: newData,
+        is_read: false
       }]);
-      fetchLogs();
+      
+      await fetchLogs();
     } catch (error) {
       console.error('Error logging action:', error);
     }
@@ -395,6 +442,8 @@ export const SettingsProvider = ({ children }) => {
     deleteCrime,
     fetchCrimes,
     logs,
+    unreadLogsCount,
+    markLogsAsRead,
     addUser,
     updateUser,
     toggleUserStatus,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { usePermissions } from '../../../hooks/usePermissions';
+import { useSettingsContext } from '../../../context/SettingsContext';
 import { 
   Users, 
   Building, 
@@ -23,6 +24,7 @@ import clsx from 'clsx';
 
 const SettingsLayout = () => {
   const { can } = usePermissions();
+  const { unreadLogsCount } = useSettingsContext();
 
   const menuItems = [
     { to: '/dashboard/settings/users', icon: Users, label: 'Usuários & Permissões', permission: 'settings_manage' },
@@ -39,7 +41,7 @@ const SettingsLayout = () => {
     { to: '/dashboard/settings/security', icon: Shield, label: 'Segurança', permission: 'security_view' },
     { to: '/dashboard/settings/backup', icon: Database, label: 'Backup & Dados', permission: 'backup_view' },
     { to: '/dashboard/settings/health', icon: Activity, label: 'Diagnóstico do Sistema', permission: 'health_view' },
-    { to: '/dashboard/settings/logs', icon: ScrollText, label: 'Logs do Sistema', permission: 'logs_view' },
+    { to: '/dashboard/settings/logs', icon: ScrollText, label: 'Logs do Sistema', permission: 'logs_view', badge: unreadLogsCount },
   ];
 
   const filteredItems = menuItems.filter(item => !item.permission || can(item.permission));
@@ -66,14 +68,21 @@ const SettingsLayout = () => {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) => clsx(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                  "flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all",
                   isActive 
                     ? "bg-federal-600 text-white shadow-lg shadow-federal-900/50" 
                     : "text-slate-400 hover:bg-slate-800 hover:text-white"
                 )}
               >
-                <item.icon size={18} />
-                {item.label}
+                <div className="flex items-center gap-3">
+                  <item.icon size={18} />
+                  {item.label}
+                </div>
+                {item.badge && item.badge > 0 && (
+                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                    {item.badge > 99 ? '99+' : item.badge}
+                  </span>
+                )}
               </NavLink>
             ))}
           </nav>
