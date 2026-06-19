@@ -5,12 +5,34 @@ export const useInvestigations = () => {
   const [investigations, setInvestigations] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const normalizeProofType = (type, content = '') => {
+    const normalizedType = String(type || '').trim().toLowerCase();
+    const normalizedContent = String(content || '').toLowerCase();
+
+    if (
+      normalizedType === 'image' ||
+      normalizedType === 'imagem' ||
+      normalizedType === 'foto' ||
+      normalizedType === 'fotografia' ||
+      /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/.test(normalizedContent)
+    ) {
+      return 'image';
+    }
+
+    if (normalizedType === 'vídeo' || normalizedType === 'video') return 'video';
+    if (normalizedType === 'arquivo' || normalizedType === 'documento') return 'file';
+    if (normalizedType === 'texto') return 'text';
+    if (normalizedType === 'link') return 'link';
+
+    return normalizedType || 'file';
+  };
+
   const mapInvestigation = (inv) => {
     const proofs = [...(inv.provas || [])]
       .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0))
       .map(ev => ({
         id: ev.id,
-        type: ev.tipo,
+        type: normalizeProofType(ev.tipo, ev.url),
         title: ev.descricao ? ev.descricao.split(' - ')[0] : 'Evidência',
         description: ev.descricao ? (ev.descricao.includes(' - ') ? ev.descricao.split(' - ').slice(1).join(' - ') : ev.descricao) : '',
         content: ev.url,

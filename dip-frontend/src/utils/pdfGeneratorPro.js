@@ -182,6 +182,19 @@ const getProofTypeLabel = (type) => {
     return labels[type] || (type ? String(type).charAt(0).toUpperCase() + String(type).slice(1) : 'Documento');
 };
 
+const isImageProof = (proof = {}) => {
+    const type = String(proof?.type || '').trim().toLowerCase();
+    const content = String(proof?.content || '').toLowerCase();
+
+    return (
+        type === 'image' ||
+        type === 'imagem' ||
+        type === 'foto' ||
+        type === 'fotografia' ||
+        /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/.test(content)
+    );
+};
+
 const buildProofAttachmentHtml = (proof) => {
     if (!proof?.content) return '[Arquivo vinculado]';
 
@@ -206,7 +219,7 @@ const buildInvestigationProofsHtml = (proofs = []) => {
 
     return proofs.map((proof, index) => {
         const proofNumber = String(index + 1).padStart(3, '0');
-        const attachmentNote = proof.type === 'image'
+        const attachmentNote = isImageProof(proof)
             ? 'Imagem vinculada ao sistema. O registro fotografico segue anexado no final do documento.'
             : buildProofAttachmentHtml(proof);
         return `<p><strong>PROVA ${proofNumber} - ${escapeHtml(proof.title || 'Sem título')}</strong></p>
@@ -472,7 +485,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
         if (type === 'investigation' && data.proofs && data.proofs.length > 0) {
             processedProofs = await Promise.all(data.proofs.map(async (proof) => {
                 let imgData = null;
-                if (proof.type === 'image' && proof.content) {
+                if (isImageProof(proof) && proof.content) {
                     try {
                         imgData = await getBase64ImageFromURL(proof.content);
                         if (!imgData || typeof imgData !== 'string' || !imgData.startsWith('data:image')) {
@@ -967,7 +980,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                                         stack: [
                                             { text: proof.title || 'Sem título', bold: true, fontSize: 10 },
                                             { text: proof.description || '', fontSize: 10, margin: [0, 2, 0, 2] },
-                                            (proof.type === 'image') ? { text: '(Visualizar na seção de Anexos)', fontSize: 9, italics: true, color: '#666666' } : null,
+                                            isImageProof(proof) ? { text: '(Visualizar na seção de Anexos)', fontSize: 9, italics: true, color: '#666666' } : null,
                                             (proof.type === 'link' || proof.type === 'video') ? { text: proof.content || '', link: proof.content, color: '#2563eb', decoration: 'underline', fontSize: 9, margin: [0, 2, 0, 0] } : null,
                                             (proof.type === 'file') ? { text: `Arquivo/Ref: ${proof.content || 'Não informado'}`, fontSize: 9, italics: true, color: '#4b5563', margin: [0, 2, 0, 0] } : null,
                                             (proof.type === 'text') ? { text: `"${proof.content || ''}"`, fontSize: 9, italics: true, background: '#f3f4f6', margin: [0, 2, 0, 0] } : null

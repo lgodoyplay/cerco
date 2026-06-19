@@ -42,6 +42,7 @@ const quillStyles = `
   }
   .template-quill {
     height: 100%;
+    min-height: 720px;
     display: flex;
     flex-direction: column;
   }
@@ -52,14 +53,14 @@ const quillStyles = `
   }
   .template-quill .ql-container {
     flex: 1;
-    min-height: 0;
-    overflow: hidden;
+    min-height: 620px;
+    overflow-y: auto;
   }
   .template-quill .ql-editor {
-    height: 100%;
-    min-height: 100% !important;
+    height: auto;
+    min-height: 620px !important;
     overflow-y: auto;
-    padding-bottom: 80px !important;
+    padding-bottom: 120px !important;
   }
   .ql-editor strong {
     font-weight: bold !important;
@@ -767,7 +768,7 @@ const TemplatesSettings = () => {
         <p className="text-slate-400 mt-1">Gerencie os templates padrão utilizados na geração de documentos oficiais.</p>
       </div>
 
-      <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col min-h-[720px] max-h-[calc(100vh-10rem)]">
+      <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col min-h-[720px]">
         <div className="flex border-b border-slate-800 bg-slate-900 flex-wrap">
           {tabs.map(tab => (
             <button
@@ -997,7 +998,7 @@ const TemplatesSettings = () => {
 
         <div className="flex-1 min-h-0">
           <div className="h-full flex flex-col">
-            <div className="px-4 py-3 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between gap-3 flex-wrap">
+            <div className="px-4 py-3 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between gap-3 flex-wrap sticky top-0 z-10">
               <div>
                 <h3 className="text-sm font-bold text-white">Editor do Documento</h3>
                 <p className="text-xs text-slate-400">
@@ -1012,7 +1013,7 @@ const TemplatesSettings = () => {
                 Abrir Prévia
               </button>
             </div>
-            <div className="relative flex-1 overflow-hidden bg-slate-50">
+            <div className="relative flex-1 min-h-[720px] overflow-auto bg-slate-50">
               <ReactQuill
                 key={activeTab}
                 theme="snow"
@@ -1022,7 +1023,7 @@ const TemplatesSettings = () => {
                 formats={formats}
                 className="template-quill"
               />
-              <div className="absolute bottom-4 right-4 text-xs text-slate-600 bg-slate-900/80 px-2 py-1 rounded pointer-events-none z-10">
+              <div className="sticky bottom-4 ml-auto mr-4 mb-4 w-fit text-xs text-slate-200 bg-slate-900/90 px-2 py-1 rounded pointer-events-none z-10">
                 Variáveis: {'{numero_inquerito}'}, {'{nome_investigado}'}, {'{bloco_provas}'}, {'{nome_delegado}'}
               </div>
             </div>
@@ -1039,6 +1040,13 @@ const TemplatesSettings = () => {
           </button>
           
           <div className="flex gap-3 flex-wrap">
+            <button 
+              onClick={handlePreview}
+              className="flex items-center gap-2 px-5 py-2 rounded-xl font-bold bg-emerald-700 hover:bg-emerald-600 text-white shadow-lg transition-all"
+            >
+              <ExternalLink size={18} />
+              Abrir Prévia
+            </button>
             <button 
               onClick={handleSave}
               disabled={!hasChanges || saving}
