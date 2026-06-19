@@ -16,6 +16,9 @@ const BOList = () => {
   const { can } = usePermissions();
   const [boletins, setBoletins] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterDateStart, setFilterDateStart] = useState('');
+  const [filterDateEnd, setFilterDateEnd] = useState('');
   const [selectedBO, setSelectedBO] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -44,12 +47,23 @@ const BOList = () => {
     }
   };
 
-  const filteredBoletins = boletins.filter(bo => 
-    (bo.comunicante || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (bo.descricao || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (bo.localizacao || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (bo.id || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredBoletins = boletins.filter(bo => {
+    const matchesSearch = (bo.comunicante || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (bo.descricao || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (bo.localizacao || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (bo.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = !filterStatus || bo.status === filterStatus;
+    
+    const boDate = bo.data_fato ? new Date(bo.data_fato).setHours(0,0,0,0) : null;
+    const startDate = filterDateStart ? new Date(filterDateStart).setHours(0,0,0,0) : null;
+    const endDate = filterDateEnd ? new Date(filterDateEnd).setHours(0,0,0,0) : null;
+    
+    const matchesDateStart = !startDate || (boDate && boDate >= startDate);
+    const matchesDateEnd = !endDate || (boDate && boDate <= endDate);
+    
+    return matchesSearch && matchesStatus && matchesDateStart && matchesDateEnd;
+  });
 
   // Pagination
   const totalPages = Math.ceil(filteredBoletins.length / itemsPerPage);
@@ -65,6 +79,31 @@ const BOList = () => {
       console.error("Erro ao gerar PDF:", error);
       alert("Erro ao gerar PDF do BO.");
     }
+  };
+
+  const exportToCSV = () => {
+    const headers = ['ID', 'Data Fato', 'Comunicante', 'Localização', 'Descrição', 'Status', 'Policial Responsável'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredBoletins.map(bo => [
+        bo.id,
+        bo.data_fato || '',
+        `"${(bo.comunicante || '').replace(/"/g, '""')}"`,
+        `"${(bo.localizacao || '').replace(/"/g, '""')}"`,
+        `"${(bo.descricao || '').replace(/"/g, '""')}"`,
+        bo.status || '',
+        `"${(bo.policial_responsavel || '').replace(/"/g, '""')}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `boletins_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleDeleteClick = (bo) => {
@@ -110,32 +149,67 @@ const BOList = () => {
           <p className="text-slate-400 mt-1">Consulta de ocorrências registradas no sistema.</p>
         </div>
         {canManage && (
-          <button 
-            onClick={() => navigate('/dashboard/bo')}
-            className="px-4 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-federal-900/20 flex items-center gap-2"
-          >
-            <FileText size={18} />
-            + Novo BO
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => navigate('/dashboard/bo')}
+              className="px-4 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-federal-900/20 flex items-center gap-2"
+            >
+              <FileText size={18} />
+              + Novo BO
+            </button>
+            <button 
+              onClick={exportToCSV}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-colors shadow-lg flex items-center gap-2"
+            >
+              <Download size={18} />
+              Exportar CSV
+            </button>
+          </div>
         )}
       </div>
 
       {/* Filters */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
+            <input 
+              type="text" 
+              placeholder="Buscar por comunicante, local, descrição ou ID..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-slate-200 focus:outline-none focus:border-federal-500 transition-colors"
+            />
+          </div>
+        </div>
+        <div className="flex flex-col md:flex-row gap-4 flex-wrap">
+          <select 
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:border-federal-500 transition-colors"
+          >
+            <option value="">Todos os Status</option>
+            <option value="Registrado">Registrado</option>
+            <option value="Em Andamento">Em Andamento</option>
+            <option value="Resolvido">Resolvido</option>
+          </select>
+          
           <input 
-            type="text" 
-            placeholder="Buscar por comunicante, local, descrição ou ID..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-slate-200 focus:outline-none focus:border-federal-500 transition-colors"
+            type="date"
+            value={filterDateStart}
+            onChange={(e) => setFilterDateStart(e.target.value)}
+            className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:border-federal-500 transition-colors"
+            placeholder="Data Início"
+          />
+          
+          <input 
+            type="date"
+            value={filterDateEnd}
+            onChange={(e) => setFilterDateEnd(e.target.value)}
+            className="bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:border-federal-500 transition-colors"
+            placeholder="Data Fim"
           />
         </div>
-        <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg flex items-center gap-2 transition-colors">
-          <Filter size={18} />
-          Filtros
-        </button>
       </div>
 
       {/* Table */}
