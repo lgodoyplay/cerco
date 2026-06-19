@@ -269,7 +269,6 @@ const getPreviewSampleUser = () => ({
 
 const TemplatesSettings = () => {
   const { templates: dbTemplates, updateTemplates } = useSettings();
-  const coverPreviewRef = useRef(null);
   const previewWindowRef = useRef(null);
   const previewChannelRef = useRef(null);
   
@@ -373,7 +372,6 @@ const TemplatesSettings = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const [notification, setNotification] = useState(null);
-  const [draggingLine, setDraggingLine] = useState(null);
   const tabs = [
     { id: 'investigation', label: 'Relatório de Investigação' },
     { id: 'arrest', label: 'Auto de Prisão' },
@@ -451,39 +449,6 @@ const TemplatesSettings = () => {
       previewChannelRef.current = null;
     };
   }, [activeTab, defaultTemplates, layoutConfigs, templates]);
-
-  useEffect(() => {
-    if (!draggingLine || activeTab !== 'investigation') return undefined;
-
-    const handleMove = (event) => {
-      if (!coverPreviewRef.current) return;
-
-      const rect = coverPreviewRef.current.getBoundingClientRect();
-      const nextY = Math.max(70, Math.min(980, event.clientY - rect.top));
-
-      setTemplates(prev => ({
-        ...prev,
-        __layoutConfig: {
-          ...(prev.__layoutConfig || {}),
-          [activeTab]: {
-            ...getMergedTemplateLayout(activeTab, prev.__layoutConfig?.[activeTab]),
-            [draggingLine]: Math.round(nextY)
-          }
-        }
-      }));
-      setHasChanges(true);
-    };
-
-    const stopDragging = () => setDraggingLine(null);
-
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', stopDragging);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('mouseup', stopDragging);
-    };
-  }, [activeTab, draggingLine]);
 
   // Custom module to insert divider
   const modules = {
@@ -568,17 +533,6 @@ const TemplatesSettings = () => {
         }
       }));
       setHasChanges(true);
-    }
-  };
-
-  const handlePreviewMouseDown = (event) => {
-    const lineElement = event.target.closest('[data-line-key]');
-    if (!lineElement || activeTab !== 'investigation') return;
-
-    const lineKey = lineElement.getAttribute('data-line-key');
-    if (lineKey) {
-      setDraggingLine(lineKey);
-      event.preventDefault();
     }
   };
 
@@ -880,9 +834,83 @@ const TemplatesSettings = () => {
           </p>
         </div>
 
-        <div className="flex-1 min-h-0 grid grid-rows-[minmax(0,1fr)_minmax(220px,320px)]">
-          <div className="relative overflow-hidden border-b border-slate-800">
-            <div className="h-full bg-slate-50">
+        {activeTab === 'investigation' && (
+          <div className="border-b border-slate-800 bg-slate-950/60 px-4 py-4">
+            <p className="text-xs font-bold text-white mb-3">Ajuste da capa do relatorio</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="text-xs text-slate-300">
+                Linha superior: {activeLayout.coverTopLineY}px
+                <input
+                  type="range"
+                  min="70"
+                  max="400"
+                  value={activeLayout.coverTopLineY}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    setTemplates(prev => ({
+                      ...prev,
+                      __layoutConfig: {
+                        ...(prev.__layoutConfig || {}),
+                        [activeTab]: {
+                          ...getMergedTemplateLayout(activeTab, prev.__layoutConfig?.[activeTab]),
+                          coverTopLineY: value
+                        }
+                      }
+                    }));
+                    setHasChanges(true);
+                  }}
+                  className="mt-2 w-full"
+                />
+              </label>
+              <label className="text-xs text-slate-300">
+                Linha inferior: {activeLayout.coverBottomLineY}px
+                <input
+                  type="range"
+                  min="420"
+                  max="980"
+                  value={activeLayout.coverBottomLineY}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    setTemplates(prev => ({
+                      ...prev,
+                      __layoutConfig: {
+                        ...(prev.__layoutConfig || {}),
+                        [activeTab]: {
+                          ...getMergedTemplateLayout(activeTab, prev.__layoutConfig?.[activeTab]),
+                          coverBottomLineY: value
+                        }
+                      }
+                    }));
+                    setHasChanges(true);
+                  }}
+                  className="mt-2 w-full"
+                />
+              </label>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-2">
+              A visualizacao da capa fica disponivel apenas pela janela de previa.
+            </p>
+          </div>
+        )}
+
+        <div className="flex-1 min-h-0">
+          <div className="h-full flex flex-col">
+            <div className="px-4 py-3 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="text-sm font-bold text-white">Editor do Documento</h3>
+                <p className="text-xs text-slate-400">
+                  Edite o documento aqui. A visualizacao foi movida para o botao `Abrir Previa`.
+                </p>
+              </div>
+              <button 
+                onClick={handlePreview}
+                className="flex items-center gap-2 px-5 py-2 rounded-xl font-bold bg-emerald-700 hover:bg-emerald-600 text-white shadow-lg transition-all"
+              >
+                <ExternalLink size={18} />
+                Abrir Prévia
+              </button>
+            </div>
+            <div className="relative flex-1 overflow-hidden bg-slate-50">
               <ReactQuill
                 key={activeTab}
                 theme="snow"
@@ -892,80 +920,9 @@ const TemplatesSettings = () => {
                 formats={formats}
                 className="template-quill"
               />
-            </div>
-            <div className="absolute bottom-4 right-4 text-xs text-slate-600 bg-slate-900/80 px-2 py-1 rounded pointer-events-none z-10">
-              Variáveis: {'{numero_inquerito}'}, {'{nome_investigado}'}, {'{bloco_provas}'}, {'{nome_delegado}'}
-            </div>
-          </div>
-          <div className="min-h-0 bg-slate-900 flex flex-col">
-            <div className="px-4 py-3 border-b border-slate-800 bg-slate-900/80">
-              <h3 className="text-sm font-bold text-white">Previa em Tempo Real do Documento</h3>
-              <p className="text-xs text-slate-400">
-                A previa abaixo mostra a capa, as linhas e o corpo do PDF. No relatorio de investigacao, arraste as linhas da capa para ajustar a posicao.
-              </p>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 bg-slate-950 custom-scrollbar">
-              <div
-                ref={activeTab === 'investigation' ? coverPreviewRef : null}
-                className="mx-auto w-full max-w-[794px] min-h-full text-slate-900"
-                onMouseDown={handlePreviewMouseDown}
-                dangerouslySetInnerHTML={{ __html: previewHtml }}
-              />
-              {activeTab === 'investigation' && (
-                <div className="mx-auto mt-4 w-full max-w-[794px] rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-                  <p className="text-xs font-bold text-white mb-3">Ajuste fino das linhas da capa</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <label className="text-xs text-slate-300">
-                      Linha superior: {activeLayout.coverTopLineY}px
-                      <input
-                        type="range"
-                        min="70"
-                        max="400"
-                        value={activeLayout.coverTopLineY}
-                        onChange={(e) => {
-                          const value = Number(e.target.value);
-                          setTemplates(prev => ({
-                            ...prev,
-                            __layoutConfig: {
-                              ...(prev.__layoutConfig || {}),
-                              [activeTab]: {
-                                ...getMergedTemplateLayout(activeTab, prev.__layoutConfig?.[activeTab]),
-                                coverTopLineY: value
-                              }
-                            }
-                          }));
-                          setHasChanges(true);
-                        }}
-                        className="mt-2 w-full"
-                      />
-                    </label>
-                    <label className="text-xs text-slate-300">
-                      Linha inferior: {activeLayout.coverBottomLineY}px
-                      <input
-                        type="range"
-                        min="420"
-                        max="980"
-                        value={activeLayout.coverBottomLineY}
-                        onChange={(e) => {
-                          const value = Number(e.target.value);
-                          setTemplates(prev => ({
-                            ...prev,
-                            __layoutConfig: {
-                              ...(prev.__layoutConfig || {}),
-                              [activeTab]: {
-                                ...getMergedTemplateLayout(activeTab, prev.__layoutConfig?.[activeTab]),
-                                coverBottomLineY: value
-                              }
-                            }
-                          }));
-                          setHasChanges(true);
-                        }}
-                        className="mt-2 w-full"
-                      />
-                    </label>
-                  </div>
-                </div>
-              )}
+              <div className="absolute bottom-4 right-4 text-xs text-slate-600 bg-slate-900/80 px-2 py-1 rounded pointer-events-none z-10">
+                Variáveis: {'{numero_inquerito}'}, {'{nome_investigado}'}, {'{bloco_provas}'}, {'{nome_delegado}'}
+              </div>
             </div>
           </div>
         </div>
@@ -980,14 +937,6 @@ const TemplatesSettings = () => {
           </button>
           
           <div className="flex gap-3 flex-wrap">
-            <button 
-              onClick={handlePreview}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl font-bold bg-emerald-700 hover:bg-emerald-600 text-white shadow-lg transition-all"
-            >
-              <ExternalLink size={18} />
-              Abrir Prévia
-            </button>
-            
             <button 
               onClick={handleSave}
               disabled={!hasChanges || saving}
