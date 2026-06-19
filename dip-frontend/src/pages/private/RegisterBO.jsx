@@ -11,6 +11,7 @@ const RegisterBO = () => {
   const { logAction, discordConfig } = useSettingsContext();
   const { can } = usePermissions();
   const [reformulating, setReformulating] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   // Protect route
   if (!can('bo_manage')) {
@@ -98,14 +99,52 @@ const RegisterBO = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user types
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: null }));
+    }
   };
 
-  const isFormValid = () => {
-    return formData.complainant && formData.description && formData.location && formData.date && formData.officer;
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formData.complainant.trim()) {
+      errors.complainant = 'Nome do comunicante é obrigatório';
+    }
+    
+    if (!formData.description.trim()) {
+      errors.description = 'Descrição da ocorrência é obrigatória';
+    }
+    
+    if (!formData.location.trim()) {
+      errors.location = 'Local da ocorrência é obrigatório';
+    }
+    
+    if (!formData.date) {
+      errors.date = 'Data e hora do fato são obrigatórios';
+    } else {
+      const factDate = new Date(formData.date);
+      const now = new Date();
+      if (factDate > now) {
+        errors.date = 'Data e hora do fato não podem ser futuras';
+      }
+    }
+    
+    if (!formData.officer.trim()) {
+      errors.officer = 'Nome do policial responsável é obrigatório';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -181,6 +220,7 @@ const RegisterBO = () => {
         arrestOfficerName: '',
         arrestOfficerId: '',
       });
+      setFormErrors({});
     } catch (error) {
       console.error('Erro ao registrar BO:', error);
       setNotification({
@@ -237,11 +277,21 @@ const RegisterBO = () => {
                 name="complainant"
                 value={formData.complainant}
                 onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                className={clsx(
+                  "w-full pl-12 pr-4 py-3 bg-slate-950 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none transition-all",
+                  formErrors.complainant 
+                    ? "border border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+                    : "border border-slate-700 focus:border-federal-500 focus:ring-1 focus:ring-federal-500"
+                )}
                 placeholder="Quem está reportando o fato?"
-                required
               />
             </div>
+            {formErrors.complainant && (
+              <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                <AlertTriangle size={12} />
+                {formErrors.complainant}
+              </p>
+            )}
           </div>
 
           {/* Local */}
@@ -254,11 +304,21 @@ const RegisterBO = () => {
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                className={clsx(
+                  "w-full pl-12 pr-4 py-3 bg-slate-950 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none transition-all",
+                  formErrors.location 
+                    ? "border border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+                    : "border border-slate-700 focus:border-federal-500 focus:ring-1 focus:ring-federal-500"
+                )}
                 placeholder="Endereço ou Ponto de Referência"
-                required
               />
             </div>
+            {formErrors.location && (
+              <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                <AlertTriangle size={12} />
+                {formErrors.location}
+              </p>
+            )}
           </div>
 
           {/* Data e Hora */}
@@ -271,10 +331,20 @@ const RegisterBO = () => {
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
-                required
+                className={clsx(
+                  "w-full pl-12 pr-4 py-3 bg-slate-950 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none transition-all",
+                  formErrors.date 
+                    ? "border border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+                    : "border border-slate-700 focus:border-federal-500 focus:ring-1 focus:ring-federal-500"
+                )}
               />
             </div>
+            {formErrors.date && (
+              <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                <AlertTriangle size={12} />
+                {formErrors.date}
+              </p>
+            )}
           </div>
 
           {/* Nome do Policial Responsável pela Prisão em Flagrante */}
@@ -334,10 +404,20 @@ const RegisterBO = () => {
               value={formData.description}
               onChange={handleChange}
               rows={6}
-              className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none resize-none"
+              className={clsx(
+                "w-full px-4 py-3 bg-slate-950 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none transition-all resize-none",
+                formErrors.description 
+                  ? "border border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+                  : "border border-slate-700 focus:border-federal-500 focus:ring-1 focus:ring-federal-500"
+              )}
               placeholder="Descreva detalhadamente o que aconteceu..."
-              required
             />
+            {formErrors.description && (
+              <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                <AlertTriangle size={12} />
+                {formErrors.description}
+              </p>
+            )}
           </div>
 
           {/* Policial Responsável */}
@@ -350,11 +430,21 @@ const RegisterBO = () => {
                 name="officer"
                 value={formData.officer}
                 onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                className={clsx(
+                  "w-full pl-12 pr-4 py-3 bg-slate-950 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none transition-all",
+                  formErrors.officer 
+                    ? "border border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
+                    : "border border-slate-700 focus:border-federal-500 focus:ring-1 focus:ring-federal-500"
+                )}
                 placeholder="Seu nome ou distintivo"
-                required
               />
             </div>
+            {formErrors.officer && (
+              <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                <AlertTriangle size={12} />
+                {formErrors.officer}
+              </p>
+            )}
           </div>
 
         </div>
@@ -375,6 +465,7 @@ const RegisterBO = () => {
                 arrestOfficerName: '',
                 arrestOfficerId: '',
               });
+              setFormErrors({});
             }}
             className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition-colors flex items-center gap-2"
           >
@@ -384,16 +475,16 @@ const RegisterBO = () => {
           
           <button
             type="submit"
-            disabled={!isFormValid()}
+            disabled={loading}
             className={clsx(
               "px-8 py-3 font-bold rounded-xl transition-all shadow-lg flex items-center gap-2",
-              isFormValid() 
+              !loading 
                 ? "bg-federal-600 hover:bg-federal-500 text-white shadow-federal-900/50 hover:shadow-federal-600/20 transform hover:-translate-y-0.5" 
                 : "bg-slate-800 text-slate-500 cursor-not-allowed opacity-50"
             )}
           >
             <FileText size={18} />
-            Registrar BO
+            {loading ? 'Registrando...' : 'Registrar BO'}
           </button>
         </div>
 
