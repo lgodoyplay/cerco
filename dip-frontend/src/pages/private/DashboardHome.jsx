@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, AlertTriangle, FileText, TrendingUp, Search, Clock, ShieldAlert, BadgeCheck, Sun, Moon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
 // Hook para data e hora em tempo real
 const useCurrentDateTime = () => {
@@ -86,6 +87,10 @@ const DashboardHome = () => {
   const [loading, setLoading] = useState(true);
   const [functionalCode, setFunctionalCode] = useState(null);
   const [userName, setUserName] = useState('');
+  const [chartData, setChartData] = useState({
+    boByMonth: [],
+    crimesByType: []
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -133,16 +138,22 @@ const DashboardHome = () => {
           { count: procuradosCount },
           { count: investigacoesCount },
           { count: bosCount },
-          { data: logs }
+          { data: logs },
+          { data: boData },
+          { data: crimesData },
+          { data: boCrimesData }
         ] = await Promise.all([
           supabase.from('prisoes').select('*', { count: 'exact', head: true }),
           supabase.from('procurados').select('*', { count: 'exact', head: true }),
           supabase.from('investigacoes').select('*', { count: 'exact', head: true }),
           supabase.from('boletins').select('*', { count: 'exact', head: true }),
-          supabase.from('system_logs')
-            .select('*, profiles(full_name, role)')
+          supabase.from('audit_logs')
+            .select('*')
             .order('created_at', { ascending: false })
-            .limit(5)
+            .limit(5),
+          supabase.from('boletins').select('created_at'),
+          supabase.from('crimes').select('name'),
+          supabase.from('boletins').select('tipo_crime')
         ]);
 
         if (isMounted) {
@@ -155,15 +166,39 @@ const DashboardHome = () => {
           
           const activities = (logs || []).map(log => ({
             action: log.action,
-            details: log.details,
+            details: log.new_data ? JSON.stringify(log.new_data).substring(0, 100) : log.action,
             createdAt: log.created_at,
             user: {
-               nome: log.profiles?.full_name,
-               patente: log.profiles?.role
+               nome: log.user_name?.split(' (')[0] || 'Sistema',
+               patente: log.user_name?.split('(')[1]?.replace(')', '') || 'N/A'
             }
           }));
   
           setRecentActivities(activities);
+
+          // Processar dados para gráfico de BO por mês
+          const boByMonth = (boData || []).reduce((acc, bo) => {
+            const date = new Date(bo.created_at);
+            const monthKey = date.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+            acc[monthKey] = (acc[monthKey] || 0) + 1;
+            return acc;
+          }, {});
+
+          const boByMonthArray = Object.entries(boByMonth).map(([month, count]) => ({ month, count }));
+
+          // Processar dados para gráfico de crimes por tipo
+          const crimesByType = (boCrimesData || []).reduce((acc, bo) => {
+            const type = bo.tipo_crime || 'Outro';
+            acc[type] = (acc[type] || 0) + 1;
+            return acc;
+          }, {});
+
+          const crimesByTypeArray = Object.entries(crimesByType).map(([type, count]) => ({ type, count }));
+
+          setChartData({
+            boByMonth: boByMonthArray,
+            crimesByType: crimesByTypeArray
+          });
         }
 
       } catch (error) {
@@ -262,6 +297,57 @@ const DashboardHome = () => {
         />
       </div>
 
+      {/* Gráficos Analíticos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+          <h3 className="font-bold text-lg md:text-xl text-white mb-4 flex items-center gap-2">
+            <TrendingUp size={20} className="text-federal-400" />
+            B.O.s por Mês
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData.boByMonth}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis dataKey="month" stroke="#94a3b8" />
+              <YAxis stroke="#94a3b8" />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }}
+                labelStyle={{ color: '#f1f5f9' }}
+              />
+              <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+          <h3 className="font-bold text-lg md:text-xl text-white mb-4 flex items-center gap-2">
+            <FileText size={20} className="text-emerald-400" />
+            Crimes por Tipo
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie 
+                data={chartData.crimesByType}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ type, percent }) => `${type} ${(percent * 100).toFixed(0)}%`}
+                outerRadius={100}
+                fill="#8884d8"
+                dataKey="count"
+              >
+                {chartData.crimesByType.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][index % 5]} />
+                ))}
+              </Pie>
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }}
+                labelStyle={{ color: '#f1f5f9' }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Activity Feed */}
         <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
@@ -272,7 +358,12 @@ const DashboardHome = () => {
               </div>
               <h3 className="font-bold text-lg md:text-xl text-white">Atividade Recente</h3>
             </div>
-            <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-xl transition-all">Ver Histórico</button>
+            <button 
+              onClick={() => navigate('/dashboard/settings/logs')} 
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-xl transition-all"
+            >
+              Ver Histórico
+            </button>
           </div>
           
           <div className="space-y-4">
