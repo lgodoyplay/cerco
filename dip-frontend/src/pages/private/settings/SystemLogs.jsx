@@ -87,7 +87,7 @@ const SystemLogs = () => {
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <Scroll className="text-federal-500" size={28} />
-            Logs do Sistema
+            Atividade Recente
           </h2>
           <p className="text-slate-400 mt-1">Registro de auditoria de todas as ações.</p>
         </div>

@@ -150,6 +150,8 @@ const DashboardHome = () => {
           supabase.from('prisoes').select('artigo, created_at')
         ]);
 
+        console.log('Debug Dashboard Data:', { crimesData, prisoesData });
+
         if (isMounted) {
           setStats({
             totalPresos: presosCount || 0,
@@ -174,42 +176,42 @@ const DashboardHome = () => {
           // Processar dados para gráfico de crimes por tipo (dados reais de prisoes)
           let crimesByTypeArray = [];
           
-          if (crimesData && crimesData.length > 0 && prisoesData) {
+          if (crimesData && crimesData.length > 0) {
             // Contar quantas vezes cada artigo aparece nas prisões
             const crimeCounts = {};
             crimesData.forEach(crime => {
               crimeCounts[crime.id] = { name: crime.name, count: 0 };
             });
 
-            prisoesData.forEach(prisao => {
-              if (prisao.artigo) {
-                const artigoList = prisao.artigo.split(', ').map(a => a.trim());
-                artigoList.forEach(artigoStr => {
-                  const artigoNum = artigoStr.replace('Art. ', '');
-                  const matchingCrime = crimesData.find(c => String(c.article) === artigoNum);
-                  if (matchingCrime) {
-                    crimeCounts[matchingCrime.id].count++;
-                  }
-                });
-              }
-            });
+            if (prisoesData && prisoesData.length > 0) {
+              prisoesData.forEach(prisao => {
+                if (prisao.artigo) {
+                  console.log('Prisão artigo:', prisao.artigo);
+                  const artigoList = prisao.artigo.split(',').map(a => a.trim());
+                  artigoList.forEach(artigoStr => {
+                    const artigoNum = artigoStr.replace(/Art\.?\s*/gi, '').trim();
+                    console.log('Artigo processado:', artigoNum);
+                    const matchingCrime = crimesData.find(c => {
+                      // Compara tanto como string quanto como número
+                      const crimeArticleStr = String(c.article).trim();
+                      return crimeArticleStr === artigoNum;
+                    });
+                    console.log('Matching crime:', matchingCrime);
+                    if (matchingCrime) {
+                      crimeCounts[matchingCrime.id].count++;
+                    }
+                  });
+                }
+              });
+            }
 
+            // Mostrar todos os crimes ordenados por contagem (incluindo os com 0)
             crimesByTypeArray = Object.values(crimeCounts)
-              .filter(c => c.count > 0)
               .sort((a, b) => b.count - a.count)
               .slice(0, 8);
           }
           
-          // Fallback se não houver dados suficientes
-          if (crimesByTypeArray.length === 0) {
-            crimesByTypeArray = [
-              { name: 'Furto', count: 12 },
-              { name: 'Roubo', count: 8 },
-              { name: 'Agressão', count: 5 },
-              { name: 'Dano', count: 3 },
-              { name: 'Outro', count: 4 }
-            ];
-          }
+          console.log('Final crimesByTypeArray:', crimesByTypeArray);
 
           setChartData({
             boByWeek: boByWeekArray,
