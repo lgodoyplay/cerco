@@ -133,7 +133,8 @@ const InvestigationDetail = () => {
           templates?.investigation,
           'investigation',
           templates?.__layoutConfig?.investigation,
-          templates?.__pageHeaderConfig
+          templates?.__pageHeaderConfig,
+          templates?.__investigationCoverConfig
         );
         setNotification({
           type: 'success',
@@ -160,7 +161,8 @@ const InvestigationDetail = () => {
         templates?.investigation,
         'investigation',
         templates?.__layoutConfig?.investigation,
-        templates?.__pageHeaderConfig
+        templates?.__pageHeaderConfig,
+        templates?.__investigationCoverConfig
       );
       setNotification({
         type: 'success',

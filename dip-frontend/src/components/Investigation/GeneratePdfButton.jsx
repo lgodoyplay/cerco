@@ -22,7 +22,8 @@ const GeneratePdfButton = ({ investigation, user, className }) => {
                 templates?.investigation,
                 'investigation',
                 templates?.__layoutConfig?.investigation,
-                templates?.__pageHeaderConfig
+                templates?.__pageHeaderConfig,
+                templates?.__investigationCoverConfig
             );
         } catch (error) {
             console.error(error);

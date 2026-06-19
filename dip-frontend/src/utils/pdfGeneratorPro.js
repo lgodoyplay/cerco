@@ -80,6 +80,13 @@ export const DEFAULT_PAGE_HEADER_CONFIG = {
     line3: 'CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGACAO DE NARCOTICOS'
 };
 
+export const DEFAULT_INVESTIGATION_COVER_CONFIG = {
+    eyebrow1: 'POLICIA CIVIL DO ESTADO DA EUFORIA',
+    eyebrow2: 'DEPARTAMENTO DE INVESTIGACOES CRIMINAIS',
+    title: 'RELATORIO FINAL DE INQUERITO POLICIAL',
+    footer: '"Servir e Proteger com Justica e Integridade"'
+};
+
 export const getMergedTemplateLayout = (type = 'investigation', layoutConfig = {}) => ({
     ...(DEFAULT_TEMPLATE_LAYOUTS[type] || {}),
     ...(layoutConfig || {})
@@ -88,6 +95,11 @@ export const getMergedTemplateLayout = (type = 'investigation', layoutConfig = {
 export const getMergedPageHeaderConfig = (headerConfig = {}) => ({
     ...DEFAULT_PAGE_HEADER_CONFIG,
     ...(headerConfig || {})
+});
+
+export const getMergedInvestigationCoverConfig = (coverConfig = {}) => ({
+    ...DEFAULT_INVESTIGATION_COVER_CONFIG,
+    ...(coverConfig || {})
 });
 
 // --- FUNÇÕES AUXILIARES ---
@@ -230,13 +242,13 @@ const replaceTemplateVariables = (templateStr = '', variables = {}) => {
 const normalizeInvestigationTemplateHtml = (templateStr = '') => {
     if (!templateStr) return '';
 
-    let normalized = templateStr;
+    let normalized = templateStr.replace(/&nbsp;/gi, ' ');
 
-    normalized = normalized.replace(/<p[^>]*>\s*(?:<strong>)?\s*POL[ÍI]CIA CIVIL DO ESTADO DA EUFORIA\s*(?:<\/strong>)?\s*<\/p>\s*/i, '');
-    normalized = normalized.replace(/<p[^>]*>\s*(?:<strong>)?\s*DEPARTAMENTO DE INVESTIGA[ÇC][ÕO]ES CRIMINAIS\s*(?:<\/strong>)?\s*<\/p>\s*/i, '');
+    normalized = normalized.replace(/<p[^>]*>\s*(?:<strong>)?\s*POL[ÍI]CIA\s+CIVIL\s+DO\s+ESTADO\s+DA\s+EUFORIA\s*(?:<\/strong>)?\s*<\/p>\s*/i, '');
+    normalized = normalized.replace(/<p[^>]*>\s*(?:<strong>)?\s*DEPARTAMENTO\s+DE\s+INVESTIGA[ÇC][ÕO]ES\s+CRIMINAIS\s*(?:<\/strong>)?\s*<\/p>\s*/i, '');
     normalized = normalized.replace(/<p[^>]*>\s*<br>\s*<\/p>\s*/i, '');
-    normalized = normalized.replace(/<p[^>]*>\s*(?:<strong>)?\s*RELAT[ÓO]RIO FINAL DE INQU[ÉE]RITO POLICIAL\s*(?:<\/strong>)?\s*<\/p>\s*/i, '');
-    normalized = normalized.replace(/<p[^>]*>\s*(?:<strong>)?\s*POL[ÍI]CIA CIVIL DO ESTADO DA EUFORIA\s*(?:<\/strong>)?\s*<\/p>\s*<p[^>]*>\s*"Servir e Proteger com Justi[çc]a e Integridade"\s*<\/p>\s*$/i, '');
+    normalized = normalized.replace(/<p[^>]*>\s*(?:<strong>)?\s*RELAT[ÓO]RIO\s+FINAL\s+DE\s+INQU[ÉE]RITO\s+POLICIAL\s*(?:<\/strong>)?\s*<\/p>\s*/i, '');
+    normalized = normalized.replace(/<p[^>]*>\s*(?:<strong>)?\s*POL[ÍI]CIA\s+CIVIL\s+DO\s+ESTADO\s+DA\s+EUFORIA\s*(?:<\/strong>)?\s*<\/p>\s*<p[^>]*>\s*"Servir\s+e\s+Proteger\s+com\s+Justi[çc]a\s+e\s+Integridade"\s*<\/p>\s*$/i, '');
 
     return normalized.trim();
 };
@@ -344,8 +356,9 @@ const buildPdfHeaderContent = (headerConfig = {}) => {
     ];
 };
 
-export const buildTemplatePreviewHtml = (data, user, templateStr = '', type = 'investigation', layoutConfig = {}, pageHeaderConfig = {}) => {
+export const buildTemplatePreviewHtml = (data, user, templateStr = '', type = 'investigation', layoutConfig = {}, pageHeaderConfig = {}, coverConfig = {}) => {
     const layout = getMergedTemplateLayout(type, layoutConfig);
+    const cover = getMergedInvestigationCoverConfig(coverConfig);
     const variables = getDocumentVariables(data, user, type);
     const sourceTemplate = type === 'investigation'
         ? normalizeInvestigationTemplateHtml(templateStr)
@@ -372,21 +385,22 @@ export const buildTemplatePreviewHtml = (data, user, templateStr = '', type = 'i
             <div class="pdf-preview-cover-line" data-line-key="coverTopLineY" style="top:${layout.coverTopLineY}px;"></div>
             <div class="pdf-preview-cover-line" data-line-key="coverBottomLineY" style="top:${layout.coverBottomLineY}px;"></div>
             <div class="pdf-preview-cover-content">
-                <p class="pdf-preview-cover-eyebrow">POLICIA CIVIL DO ESTADO DA EUFORIA</p>
-                <p class="pdf-preview-cover-eyebrow">DEPARTAMENTO DE INVESTIGACOES CRIMINAIS</p>
+                <p class="pdf-preview-cover-eyebrow">${escapeHtml(cover.eyebrow1)}</p>
+                <p class="pdf-preview-cover-eyebrow">${escapeHtml(cover.eyebrow2)}</p>
                 <div class="pdf-preview-cover-title-wrap">
-                    <p class="pdf-preview-cover-title">RELATORIO FINAL DE INQUERITO POLICIAL</p>
+                    <p class="pdf-preview-cover-title">${escapeHtml(cover.title)}</p>
                 </div>
                 <p class="pdf-preview-cover-ref">PROTOCOLO Nº ${escapeHtml(String(data.id || '0001'))}/${new Date().getFullYear()}</p>
-                <p class="pdf-preview-cover-footer">"Servir e Proteger com Justica e Integridade"</p>
+                <p class="pdf-preview-cover-footer">${escapeHtml(cover.footer)}</p>
             </div>
         </section>
         ${contentPage}
     `;
 };
 
-const buildInvestigationCoverContent = (data, layoutConfig = {}) => {
+const buildInvestigationCoverContent = (data, layoutConfig = {}, coverConfig = {}) => {
     const layout = getMergedTemplateLayout('investigation', layoutConfig);
+    const cover = getMergedInvestigationCoverConfig(coverConfig);
 
     return {
         stack: [
@@ -402,11 +416,11 @@ const buildInvestigationCoverContent = (data, layoutConfig = {}) => {
                 ],
                 absolutePosition: { x: 57, y: layout.coverBottomLineY }
             },
-            { text: 'POLICIA CIVIL DO ESTADO DA EUFORIA', alignment: 'center', bold: true, fontSize: 16, margin: [0, 180, 0, 12] },
-            { text: 'DEPARTAMENTO DE INVESTIGACOES CRIMINAIS', alignment: 'center', bold: true, fontSize: 13, margin: [0, 0, 0, 100] },
-            { text: 'RELATORIO FINAL DE INQUERITO POLICIAL', alignment: 'center', bold: true, fontSize: 20, margin: [0, 0, 0, 20] },
+            { text: cover.eyebrow1, alignment: 'center', bold: true, fontSize: 16, margin: [0, 180, 0, 12] },
+            { text: cover.eyebrow2, alignment: 'center', bold: true, fontSize: 13, margin: [0, 0, 0, 100] },
+            { text: cover.title, alignment: 'center', bold: true, fontSize: 20, margin: [0, 0, 0, 20] },
             { text: `PROTOCOLO Nº ${String(data.id || '0001')}/${new Date().getFullYear()}`, alignment: 'center', fontSize: 11, margin: [0, 0, 0, 230] },
-            { text: '"Servir e Proteger com Justica e Integridade"', alignment: 'center', italics: true, fontSize: 11, color: '#444444' }
+            { text: cover.footer, alignment: 'center', italics: true, fontSize: 11, color: '#444444' }
         ],
         pageBreak: 'after'
     };
@@ -416,7 +430,7 @@ const buildInvestigationCoverContent = (data, layoutConfig = {}) => {
 const coatOfArmsBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 // Gerar Documento
-export const generateProfessionalPDF = async (data, user, templateStr = null, type = 'investigation', layoutConfig = {}, pageHeaderConfig = {}) => {
+export const generateProfessionalPDF = async (data, user, templateStr = null, type = 'investigation', layoutConfig = {}, pageHeaderConfig = {}, coverConfig = {}) => {
     console.log(`Iniciando geração de PDF Profissional (${type})...`, data);
     try {
         // Garantir configuração de VFS
@@ -922,7 +936,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             },
 
             content: [
-                ...(type === 'investigation' ? [buildInvestigationCoverContent(data, mergedLayout)] : []),
+                ...(type === 'investigation' ? [buildInvestigationCoverContent(data, mergedLayout, coverConfig)] : []),
                 // Se tiver template customizado, usa ele. Se não, usa o padrão.
                 ...(customContent ? customContent : standardContent),
 

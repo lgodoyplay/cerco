@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ExternalLink, FileText, Save, RefreshCw } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
-import { buildTemplatePreviewHtml, DEFAULT_PAGE_HEADER_CONFIG, DEFAULT_TEMPLATE_LAYOUTS, generateProfessionalPDF, getMergedPageHeaderConfig, getMergedTemplateLayout } from '../../../utils/pdfGeneratorPro';
+import { buildTemplatePreviewHtml, DEFAULT_INVESTIGATION_COVER_CONFIG, DEFAULT_PAGE_HEADER_CONFIG, DEFAULT_TEMPLATE_LAYOUTS, generateProfessionalPDF, getMergedInvestigationCoverConfig, getMergedPageHeaderConfig, getMergedTemplateLayout } from '../../../utils/pdfGeneratorPro';
 import ReactQuill from 'react-quill-new';
 import Quill from 'quill';
 import 'react-quill-new/dist/quill.snow.css';
@@ -191,6 +191,18 @@ const quillStyles = `
     font-size: 15px;
     line-height: 1.6;
   }
+  .pdf-preview-page-content .ql-align-center {
+    text-align: center;
+  }
+  .pdf-preview-page-content .ql-align-right {
+    text-align: right;
+  }
+  .pdf-preview-page-content .ql-align-justify {
+    text-align: justify;
+  }
+  .pdf-preview-page-content .ql-align-left {
+    text-align: left;
+  }
   .pdf-preview-page-content .divider-blot,
   .pdf-preview-page-content hr {
     position: relative;
@@ -273,12 +285,7 @@ const TemplatesSettings = () => {
   const previewChannelRef = useRef(null);
   
   const defaultTemplates = {
-    investigation: `<p style="text-align: center;"><strong>POLÍCIA CIVIL DO ESTADO DA EUFORIA</strong></p>
-<p style="text-align: center;"><strong>DEPARTAMENTO DE INVESTIGAÇÕES CRIMINAIS</strong></p>
-<p style="text-align: center;"><br></p>
-<p style="text-align: center;"><strong>RELATÓRIO FINAL DE INQUÉRITO POLICIAL</strong></p>
-<p><br></p>
-<p><strong>1. DADOS DO INQUÉRITO</strong></p>
+    investigation: `<p><strong>1. DADOS DO INQUÉRITO</strong></p>
 <p>Número do Inquérito: {numero_inquerito}</p>
 <p>Data de Instauração: {data_abertura}</p>
 <p>Status: {status}</p>
@@ -331,9 +338,7 @@ const TemplatesSettings = () => {
 <p><br></p>
 <p style="text-align: center;">{nome_delegado}</p>
 <p style="text-align: center;">Delegado de Polícia Civil</p>
-<p><br></p>
-<p style="text-align: center;"><strong>POLÍCIA CIVIL DO ESTADO DA EUFORIA</strong></p>
-<p style="text-align: center;">"Servir e Proteger com Justiça e Integridade"</p>`,
+<p><br></p>`,
     arrest: `<p><strong>AUTO DE PRISÃO</strong></p>
 <p><br></p>
 <p><strong>DADOS DA OCORRÊNCIA</strong></p>
@@ -380,8 +385,10 @@ const TemplatesSettings = () => {
 
   const layoutConfigs = templates.__layoutConfig || DEFAULT_TEMPLATE_LAYOUTS;
   const pageHeaderConfig = templates.__pageHeaderConfig || DEFAULT_PAGE_HEADER_CONFIG;
+  const investigationCoverConfig = templates.__investigationCoverConfig || DEFAULT_INVESTIGATION_COVER_CONFIG;
   const activeLayout = getMergedTemplateLayout(activeTab, layoutConfigs?.[activeTab]);
   const mergedPageHeaderConfig = getMergedPageHeaderConfig(pageHeaderConfig);
+  const mergedInvestigationCoverConfig = getMergedInvestigationCoverConfig(investigationCoverConfig);
   const previewSampleData = useMemo(() => getPreviewSampleData(activeTab), [activeTab]);
   const previewSampleUser = useMemo(() => getPreviewSampleUser(), []);
   const activeTabLabel = tabs.find(tab => tab.id === activeTab)?.label || 'Documento';
@@ -391,6 +398,7 @@ const TemplatesSettings = () => {
       const mergedTemplates = { ...defaultTemplates, ...(dbTemplates || {}) };
       const mergedLayouts = { ...DEFAULT_TEMPLATE_LAYOUTS, ...((dbTemplates && dbTemplates.__layoutConfig) || {}) };
       const mergedPageHeader = { ...DEFAULT_PAGE_HEADER_CONFIG, ...((dbTemplates && dbTemplates.__pageHeaderConfig) || {}) };
+      const mergedInvestigationCover = { ...DEFAULT_INVESTIGATION_COVER_CONFIG, ...((dbTemplates && dbTemplates.__investigationCoverConfig) || {}) };
       return hasChanges
         ? {
             ...mergedTemplates,
@@ -402,12 +410,17 @@ const TemplatesSettings = () => {
             __pageHeaderConfig: {
               ...mergedPageHeader,
               ...((prev && prev.__pageHeaderConfig) || {})
+            },
+            __investigationCoverConfig: {
+              ...mergedInvestigationCover,
+              ...((prev && prev.__investigationCoverConfig) || {})
             }
           }
         : {
             ...mergedTemplates,
             __layoutConfig: mergedLayouts,
-            __pageHeaderConfig: mergedPageHeader
+            __pageHeaderConfig: mergedPageHeader,
+            __investigationCoverConfig: mergedInvestigationCover
           };
     });
   }, [dbTemplates, hasChanges]);
@@ -435,7 +448,8 @@ const TemplatesSettings = () => {
           templates[event.data.tab || activeTab] || defaultTemplates[event.data.tab || activeTab],
           event.data.tab || activeTab,
           layoutConfigs?.[event.data.tab || activeTab],
-          pageHeaderConfig
+          pageHeaderConfig,
+          investigationCoverConfig
         );
       } catch (error) {
         console.error('Erro ao gerar PDF da previa:', error);
@@ -501,6 +515,10 @@ const TemplatesSettings = () => {
         __pageHeaderConfig: {
           ...DEFAULT_PAGE_HEADER_CONFIG,
           ...(templates.__pageHeaderConfig || {})
+        },
+        __investigationCoverConfig: {
+          ...DEFAULT_INVESTIGATION_COVER_CONFIG,
+          ...(templates.__investigationCoverConfig || {})
         }
       };
       const success = await updateTemplates(payload);
@@ -530,6 +548,10 @@ const TemplatesSettings = () => {
         __pageHeaderConfig: {
           ...DEFAULT_PAGE_HEADER_CONFIG,
           ...(prev.__pageHeaderConfig || {})
+        },
+        __investigationCoverConfig: {
+          ...DEFAULT_INVESTIGATION_COVER_CONFIG,
+          ...(prev.__investigationCoverConfig || {})
         }
       }));
       setHasChanges(true);
@@ -543,9 +565,10 @@ const TemplatesSettings = () => {
       templates[activeTab] || defaultTemplates[activeTab],
       activeTab,
       layoutConfigs?.[activeTab],
-      pageHeaderConfig
+      pageHeaderConfig,
+      investigationCoverConfig
     );
-  }, [activeTab, defaultTemplates, layoutConfigs, pageHeaderConfig, previewSampleData, previewSampleUser, templates]);
+  }, [activeTab, defaultTemplates, investigationCoverConfig, layoutConfigs, pageHeaderConfig, previewSampleData, previewSampleUser, templates]);
 
   const previewWindowDocument = useMemo(() => `<!doctype html>
 <html lang="pt-BR">
@@ -836,6 +859,85 @@ const TemplatesSettings = () => {
 
         {activeTab === 'investigation' && (
           <div className="border-b border-slate-800 bg-slate-950/60 px-4 py-4">
+            <p className="text-xs font-bold text-white mb-3">Texto da capa do relatorio</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <label className="text-xs text-slate-300">
+                Linha superior da capa
+                <input
+                  type="text"
+                  value={mergedInvestigationCoverConfig.eyebrow1}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setTemplates(prev => ({
+                      ...prev,
+                      __investigationCoverConfig: {
+                        ...getMergedInvestigationCoverConfig(prev.__investigationCoverConfig),
+                        eyebrow1: value
+                      }
+                    }));
+                    setHasChanges(true);
+                  }}
+                  className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-federal-500"
+                />
+              </label>
+              <label className="text-xs text-slate-300">
+                Linha secundária da capa
+                <input
+                  type="text"
+                  value={mergedInvestigationCoverConfig.eyebrow2}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setTemplates(prev => ({
+                      ...prev,
+                      __investigationCoverConfig: {
+                        ...getMergedInvestigationCoverConfig(prev.__investigationCoverConfig),
+                        eyebrow2: value
+                      }
+                    }));
+                    setHasChanges(true);
+                  }}
+                  className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-federal-500"
+                />
+              </label>
+              <label className="text-xs text-slate-300 md:col-span-2">
+                Título principal da capa
+                <input
+                  type="text"
+                  value={mergedInvestigationCoverConfig.title}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setTemplates(prev => ({
+                      ...prev,
+                      __investigationCoverConfig: {
+                        ...getMergedInvestigationCoverConfig(prev.__investigationCoverConfig),
+                        title: value
+                      }
+                    }));
+                    setHasChanges(true);
+                  }}
+                  className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-federal-500"
+                />
+              </label>
+              <label className="text-xs text-slate-300 md:col-span-2">
+                Rodapé da capa
+                <input
+                  type="text"
+                  value={mergedInvestigationCoverConfig.footer}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setTemplates(prev => ({
+                      ...prev,
+                      __investigationCoverConfig: {
+                        ...getMergedInvestigationCoverConfig(prev.__investigationCoverConfig),
+                        footer: value
+                      }
+                    }));
+                    setHasChanges(true);
+                  }}
+                  className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-federal-500"
+                />
+              </label>
+            </div>
             <p className="text-xs font-bold text-white mb-3">Ajuste da capa do relatorio</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label className="text-xs text-slate-300">
@@ -899,7 +1001,7 @@ const TemplatesSettings = () => {
               <div>
                 <h3 className="text-sm font-bold text-white">Editor do Documento</h3>
                 <p className="text-xs text-slate-400">
-                  Edite o documento aqui. A visualizacao foi movida para o botao `Abrir Previa`.
+                  Edite aqui apenas o corpo do documento. A capa do relatorio e o cabecalho das paginas sao configurados nos blocos acima.
                 </p>
               </div>
               <button 
