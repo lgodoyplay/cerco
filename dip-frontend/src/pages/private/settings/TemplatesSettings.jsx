@@ -1,9 +1,27 @@
-import React, { useState } from 'react';
-import { FileText, Save, RefreshCw, Download } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { FileText, Save, RefreshCw, Download, Minus } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 import { generateProfessionalPDF } from '../../../utils/pdfGeneratorPro';
 import ReactQuill from 'react-quill-new';
+import Quill from 'quill';
 import 'react-quill-new/dist/quill.snow.css';
+
+// Register Divider Blot for Quill
+const BlockEmbed = Quill.import('blots/block/embed');
+
+class DividerBlot extends BlockEmbed {
+  static create() {
+    const node = super.create();
+    node.innerHTML = '<hr style="margin: 16px 0; border: none; border-top: 1px solid #ccc;">';
+    return node;
+  }
+}
+
+DividerBlot.blotName = 'divider';
+DividerBlot.tagName = 'div';
+DividerBlot.className = 'divider-blot';
+
+Quill.register(DividerBlot);
 
 // Custom Quill styles for dark mode
 const quillStyles = `
@@ -30,14 +48,33 @@ const quillStyles = `
   .ql-editor.ql-blank::before {
     color: #64748b !important;
   }
+  .ql-divider::before {
+    content: '—';
+    font-size: 20px;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+  .ql-divider:hover {
+    background-color: #334155 !important;
+  }
+  .divider-blot {
+    margin: 16px 0;
+  }
 `;
 
 const TemplatesSettings = () => {
   const { templates: dbTemplates, updateTemplates, logAction } = useSettings();
   
   const defaultTemplates = {
-    investigation: `<p style="text-align: center;"><strong>POLÍCIA CIVIL DO ESTADO DA EUFORIA</strong></p>
-<p style="text-align: center;"><strong>DEPARTAMENTO DE INVESTIGAÇÕES CRIMINAIS</strong></p>
+    investigation: `<p style="text-align: center;"><strong>ESTADO DA EUFORIA</strong></p>
+<p style="text-align: center;"><strong>SECRETARIA DE SEGURANÇA PÚBLICA</strong></p>
+<p style="text-align: center;"><strong>CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS</strong></p>
+<p style="text-align: center;"><br></p>
+<hr>
 <p style="text-align: center;"><strong>RELATÓRIO FINAL DE INQUÉRITO POLICIAL</strong></p>
 <p><br></p>
 <p><strong>DADOS DO INQUÉRITO</strong></p>
@@ -91,6 +128,7 @@ const TemplatesSettings = () => {
 <p style="text-align: center;">{nome_delegado}</p>
 <p style="text-align: center;">Delegado de Polícia Civil</p>
 <p><br></p>
+<hr>
 <p style="text-align: center;"><strong>POLÍCIA CIVIL DO ESTADO DA EUFORIA</strong></p>
 <p style="text-align: center;">"Servir e Proteger com Justiça e Integridade"</p>`,
     arrest: `<p><strong>AUTO DE PRISÃO</strong></p>
@@ -130,6 +168,7 @@ const TemplatesSettings = () => {
   const [activeTab, setActiveTab] = useState('investigation');
   const [hasChanges, setHasChanges] = useState(false);
 
+  // Custom module to insert divider
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
@@ -139,13 +178,23 @@ const TemplatesSettings = () => {
       [{ 'align': [] }],
       [{ 'color': [] }, { 'background': [] }],
       ['link', 'image'],
+      ['divider'], // Custom divider button
       ['clean']
-    ]
+    ],
+    handlers: {
+      divider: function() {
+        const quill = this.quill;
+        const range = quill.getSelection(true);
+        quill.insertText(range.index, '\n');
+        quill.insertEmbed(range.index + 1, 'divider', true);
+        quill.setSelection(range.index + 2);
+      }
+    }
   };
 
   const formats = [
     'header', 'font', 'bold', 'italic', 'underline', 'strike', 'list', 
-    'align', 'color', 'background', 'link', 'image'
+    'align', 'color', 'background', 'link', 'image', 'divider'
   ];
 
   const handleTemplateChange = (value) => {

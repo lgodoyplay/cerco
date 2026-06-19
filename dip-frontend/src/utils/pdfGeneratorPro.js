@@ -504,7 +504,27 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                             children = children.concat(childContent);
                         });
 
-                        if (tag === 'p' || tag === 'div') {
+                        if (tag === 'div') {
+                            // Check if it's our divider blot
+                            const classAttr = node.getAttribute('class');
+                            if (classAttr && classAttr.includes('divider-blot')) {
+                                content.push({ 
+                                    canvas: [
+                                        { type: 'line', x1: 0, y1: 0, x2: 500, y2: 0, lineWidth: 1 }
+                                    ],
+                                    margin: [0, 10, 0, 10]
+                                });
+                            } else {
+                                let paragraph = { text: children.length ? children : (node.textContent || '') };
+                                const styleAttr = node.getAttribute('style');
+                                if (styleAttr) {
+                                    if (styleAttr.includes('text-align: center')) {
+                                        paragraph.alignment = 'center';
+                                    }
+                                }
+                                content.push(paragraph);
+                            }
+                        } else if (tag === 'p') {
                             let paragraph = { text: children.length ? children : (node.textContent || '') };
                             const styleAttr = node.getAttribute('style');
                             if (styleAttr) {
@@ -548,6 +568,13 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                             }
                         } else if (tag === 'br') {
                             content.push('\n');
+                        } else if (tag === 'hr') {
+                            content.push({ 
+                                canvas: [
+                                    { type: 'line', x1: 0, y1: 0, x2: 500, y2: 0, lineWidth: 1 }
+                                ],
+                                margin: [0, 10, 0, 10]
+                            });
                         } else if (tag === 'ul' || tag === 'ol') {
                             const list = [];
                             node.querySelectorAll('li').forEach(li => {
