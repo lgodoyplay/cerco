@@ -170,24 +170,28 @@ const TemplatesSettings = () => {
 
   // Custom module to insert divider
   const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-      [{ 'font': [] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'align': [] }],
-      [{ 'color': [] }, { 'background': [] }],
-      ['link', 'image'],
-      ['divider'], // Custom divider button
-      ['clean']
-    ],
-    handlers: {
-      divider: function() {
-        const quill = this.quill;
-        const range = quill.getSelection(true);
-        quill.insertText(range.index, '\n');
-        quill.insertEmbed(range.index + 1, 'divider', true);
-        quill.setSelection(range.index + 2);
+    toolbar: {
+      container: [
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{ 'font': [] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'align': [] }],
+        [{ 'color': [] }, { 'background': [] }],
+        ['link', 'image'],
+        [{ 'divider': true }], // Custom divider button
+        ['clean']
+      ],
+      handlers: {
+        divider: function() {
+          const quill = this.quill;
+          const range = quill.getSelection(true);
+          if (range) {
+            quill.insertText(range.index, '\n');
+            quill.insertEmbed(range.index + 1, 'divider', true);
+            quill.setSelection(range.index + 2);
+          }
+        }
       }
     }
   };
@@ -270,13 +274,13 @@ const TemplatesSettings = () => {
         <p className="text-slate-400 mt-1">Gerencie os templates padrão utilizados na geração de documentos oficiais.</p>
       </div>
 
-      <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col h-[700px]">
-        <div className="flex border-b border-slate-800 bg-slate-900">
+      <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col min-h-[650px] max-h-[800px]">
+        <div className="flex border-b border-slate-800 bg-slate-900 flex-wrap">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 text-sm font-medium transition-colors border-r border-slate-800 ${
+              className={`px-6 py-3 text-sm font-medium transition-colors border-r border-slate-800 flex-1 min-w-[150px] ${
                 activeTab === tab.id 
                   ? 'bg-slate-800 text-white border-b-2 border-b-federal-500' 
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
@@ -287,7 +291,7 @@ const TemplatesSettings = () => {
           ))}
         </div>
 
-        <div className="flex-1 p-0 relative">
+        <div className="flex-1 p-0 relative overflow-hidden">
           <div className="h-full bg-slate-50">
             <ReactQuill
               theme="snow"
@@ -303,7 +307,7 @@ const TemplatesSettings = () => {
           </div>
         </div>
 
-        <div className="bg-slate-900 border-t border-slate-800 p-4 flex justify-between items-center gap-3">
+        <div className="bg-slate-900 border-t border-slate-800 p-4 flex justify-between items-center gap-3 flex-wrap">
           <button 
             onClick={handleReset}
             className="text-slate-400 hover:text-white text-sm flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors"
@@ -312,7 +316,7 @@ const TemplatesSettings = () => {
             Restaurar Padrão
           </button>
           
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <button 
               onClick={handlePreview}
               className="flex items-center gap-2 px-5 py-2 rounded-xl font-bold bg-emerald-700 hover:bg-emerald-600 text-white shadow-lg transition-all"
