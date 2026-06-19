@@ -457,7 +457,7 @@ export const useInvestigations = () => {
       if (deleteError) throw deleteError;
 
       if (!deletedRows || deletedRows.length === 0) {
-        throw new Error('A investigacao nao foi excluida. Verifique suas permissoes ou regras do banco.');
+        throw new Error('A investigacao nao foi excluida pelo banco. Execute as politicas de DELETE no Supabase e tente novamente.');
       }
 
       setInvestigations(prev => prev.filter(inv => inv.id !== id));
