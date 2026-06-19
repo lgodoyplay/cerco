@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FileText, Save, RefreshCw, Download } from 'lucide-react';
+import { ExternalLink, FileText, Save, RefreshCw } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 import { buildTemplatePreviewHtml, DEFAULT_TEMPLATE_LAYOUTS, generateProfessionalPDF, getMergedTemplateLayout } from '../../../utils/pdfGeneratorPro';
 import ReactQuill from 'react-quill-new';
@@ -100,9 +100,13 @@ const quillStyles = `
     background: #ffffff;
     box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
     overflow: hidden;
+    background-image: url('/PDF/fundo.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
   }
   .pdf-preview-cover-page {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    background-color: #ffffff;
   }
   .pdf-preview-cover-content {
     min-height: 1123px;
@@ -205,9 +209,69 @@ const quillStyles = `
   }
 `;
 
+const getPreviewSampleData = (type) => {
+  const baseInvestigation = {
+    id: '12345',
+    createdAt: new Date().toISOString(),
+    status: 'Finalizada',
+    priority: 'Alta',
+    title: 'Inquerito de Exemplo',
+    description: 'Descricao detalhada dos fatos apurados durante a investigacao realizada.',
+    involved: 'Joao da Silva',
+    delegaciaResponsavel: 'Delegacia Central de Investigacoes',
+    nomeInvestigado: 'Joao da Silva',
+    cpfInvestigado: '123.456.789-10',
+    dataNascimento: '1990-05-10',
+    enderecoInvestigado: 'Rua das Flores, 123 - Centro',
+    telefoneInvestigado: '(11) 99999-0000',
+    nomeDelegado: 'Carlos Almeida',
+    investigator: { nome: 'Maria Oliveira' },
+    closedAt: new Date().toISOString(),
+    proofs: [
+      { title: 'Fotografia do Local', description: 'Imagem do local dos fatos', type: 'image', content: '/imagem1.jpg', author: 'Maria Oliveira', createdAt: new Date().toISOString() },
+      { title: 'Depoimento da Vitima', description: 'Oitiva registrada no dia 15/06', type: 'file', content: 'Arquivo interno do sistema', author: 'Paulo Mendes', createdAt: new Date().toISOString() },
+      { title: 'Relatorio de Inteligencia', description: 'Apontou o vinculo do investigado com os fatos apurados', type: 'text', content: 'Resumo analitico catalogado no sistema', author: 'Ana Souza', createdAt: new Date().toISOString() },
+    ]
+  };
+
+  if (type === 'arrest') {
+    return {
+      id: '67890',
+      date: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      name: 'Carlos Pereira',
+      passport: 'DEN3635',
+      reason: 'Prisão em flagrante durante diligencia policial.',
+      description: 'Detido conduzido sem resistencia, com apreensao de material probatorio.',
+      officer: 'Maria Oliveira',
+      articles: 'Art. 157 e Art. 288'
+    };
+  }
+
+  if (type === 'bo') {
+    return {
+      id: 'BO-5421',
+      created_at: new Date().toISOString(),
+      status: 'Registrado',
+      localizacao: 'Centro da Cidade - Estado da Euforia',
+      comunicante: 'Paulo Henrique',
+      descricao: 'Compareceu a unidade policial relatando fato delituoso para providencias cabiveis.'
+    };
+  }
+
+  return baseInvestigation;
+};
+
+const getPreviewSampleUser = () => ({
+  nome: 'Maria Oliveira',
+  badge: 'PC-EUF-001'
+});
+
 const TemplatesSettings = () => {
   const { templates: dbTemplates, updateTemplates } = useSettings();
   const coverPreviewRef = useRef(null);
+  const previewWindowRef = useRef(null);
+  const previewChannelRef = useRef(null);
   
   const defaultTemplates = {
     investigation: `<p style="text-align: center;"><strong>POLÍCIA CIVIL DO ESTADO DA EUFORIA</strong></p>
@@ -310,9 +374,17 @@ const TemplatesSettings = () => {
   const [saving, setSaving] = useState(false);
   const [notification, setNotification] = useState(null);
   const [draggingLine, setDraggingLine] = useState(null);
+  const tabs = [
+    { id: 'investigation', label: 'Relatório de Investigação' },
+    { id: 'arrest', label: 'Auto de Prisão' },
+    { id: 'bo', label: 'Boletim de Ocorrência' },
+  ];
 
   const layoutConfigs = templates.__layoutConfig || DEFAULT_TEMPLATE_LAYOUTS;
   const activeLayout = getMergedTemplateLayout(activeTab, layoutConfigs?.[activeTab]);
+  const previewSampleData = useMemo(() => getPreviewSampleData(activeTab), [activeTab]);
+  const previewSampleUser = useMemo(() => getPreviewSampleUser(), []);
+  const activeTabLabel = tabs.find(tab => tab.id === activeTab)?.label || 'Documento';
 
   useEffect(() => {
     setTemplates(prev => {
@@ -340,6 +412,36 @@ const TemplatesSettings = () => {
     const timer = window.setTimeout(() => setNotification(null), 3500);
     return () => window.clearTimeout(timer);
   }, [notification]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof BroadcastChannel === 'undefined') {
+      return undefined;
+    }
+
+    const channel = new BroadcastChannel('templates-preview-channel');
+    channel.onmessage = async (event) => {
+      if (!event.data || event.data.type !== 'template-preview-download-pdf') return;
+
+      try {
+        await generateProfessionalPDF(
+          getPreviewSampleData(event.data.tab || activeTab),
+          getPreviewSampleUser(),
+          templates[event.data.tab || activeTab] || defaultTemplates[event.data.tab || activeTab],
+          event.data.tab || activeTab,
+          layoutConfigs?.[event.data.tab || activeTab]
+        );
+      } catch (error) {
+        console.error('Erro ao gerar PDF da previa:', error);
+        setNotification({ type: 'error', message: 'Nao foi possivel baixar o PDF da previa.' });
+      }
+    };
+    previewChannelRef.current = channel;
+
+    return () => {
+      channel.close();
+      previewChannelRef.current = null;
+    };
+  }, [activeTab, defaultTemplates, layoutConfigs, templates]);
 
   useEffect(() => {
     if (!draggingLine || activeTab !== 'investigation') return undefined;
@@ -452,51 +554,6 @@ const TemplatesSettings = () => {
     }
   };
 
-  const handlePreview = async () => {
-    try {
-      // Dados de exemplo para pré-visualização
-      const dummyData = {
-        id: '12345',
-        createdAt: new Date().toISOString(),
-        status: 'Finalizada',
-        priority: 'Alta',
-        title: 'Inquérito de Exemplo',
-        description: 'Descrição detalhada dos fatos apurados durante a investigação realizada.',
-        involved: 'João da Silva',
-        delegaciaResponsavel: 'Delegacia Central de Investigações',
-        nomeInvestigado: 'João da Silva',
-        cpfInvestigado: '123.456.789-10',
-        dataNascimento: '1990-05-10',
-        enderecoInvestigado: 'Rua das Flores, 123 - Centro',
-        telefoneInvestigado: '(11) 99999-0000',
-        nomeDelegado: 'Carlos Almeida',
-        investigator: { nome: 'Maria Oliveira' },
-        closedAt: new Date().toISOString(),
-        proofs: [
-          { title: 'Fotografia do Local', description: 'Imagem do local dos fatos', type: 'image', content: '/imagem1.jpg', author: 'Maria Oliveira', createdAt: new Date().toISOString() },
-          { title: 'Depoimento da Vítima', description: 'Oitiva registrada no dia 15/06', type: 'file', content: 'https://exemplo.com/prova2.pdf', author: 'Paulo Mendes', createdAt: new Date().toISOString() },
-          { title: 'Relatório de Inteligência', description: 'Apontou o vínculo do investigado com os fatos apurados', type: 'text', content: 'Resumo analítico catalogado no sistema', author: 'Ana Souza', createdAt: new Date().toISOString() },
-        ]
-      };
-
-      const dummyUser = {
-        nome: 'Maria Oliveira',
-        badge: 'PC-EUF-001'
-      };
-
-      await generateProfessionalPDF(
-        dummyData,
-        dummyUser,
-        templates[activeTab] || defaultTemplates[activeTab],
-        activeTab,
-        layoutConfigs?.[activeTab]
-      );
-    } catch (e) {
-      console.error('Erro ao gerar pré-visualização:', e);
-      setNotification({ type: 'error', message: 'Erro ao gerar a pre-visualizacao do PDF.' });
-    }
-  };
-
   const handlePreviewMouseDown = (event) => {
     const lineElement = event.target.closest('[data-line-key]');
     if (!lineElement || activeTab !== 'investigation') return;
@@ -509,49 +566,196 @@ const TemplatesSettings = () => {
   };
 
   const previewHtml = useMemo(() => {
-    const dummyData = {
-      id: '12345',
-      createdAt: new Date().toISOString(),
-      status: 'Finalizada',
-      priority: 'Alta',
-      title: 'Inquerito de Exemplo',
-      description: 'Descricao detalhada dos fatos apurados durante a investigacao realizada.',
-      involved: 'Joao da Silva',
-      delegaciaResponsavel: 'Delegacia Central de Investigacoes',
-      nomeInvestigado: 'Joao da Silva',
-      cpfInvestigado: '123.456.789-10',
-      dataNascimento: '1990-05-10',
-      enderecoInvestigado: 'Rua das Flores, 123 - Centro',
-      telefoneInvestigado: '(11) 99999-0000',
-      nomeDelegado: 'Carlos Almeida',
-      investigator: { nome: 'Maria Oliveira' },
-      closedAt: new Date().toISOString(),
-      proofs: [
-        { title: 'Fotografia do Local', description: 'Imagem do local dos fatos', type: 'image', content: '/imagem1.jpg', author: 'Maria Oliveira', createdAt: new Date().toISOString() },
-        { title: 'Depoimento da Vitima', description: 'Oitiva registrada no dia 15/06', type: 'file', content: 'https://exemplo.com/prova2.pdf', author: 'Paulo Mendes', createdAt: new Date().toISOString() },
-        { title: 'Relatorio de Inteligencia', description: 'Apontou o vinculo do investigado com os fatos apurados', type: 'text', content: 'Resumo analitico catalogado no sistema', author: 'Ana Souza', createdAt: new Date().toISOString() },
-      ]
-    };
-
-    const dummyUser = {
-      nome: 'Maria Oliveira',
-      badge: 'PC-EUF-001'
-    };
-
     return buildTemplatePreviewHtml(
-      dummyData,
-      dummyUser,
+      previewSampleData,
+      previewSampleUser,
       templates[activeTab] || defaultTemplates[activeTab],
       activeTab,
       layoutConfigs?.[activeTab]
     );
-  }, [activeTab, defaultTemplates, layoutConfigs, templates]);
+  }, [activeTab, defaultTemplates, layoutConfigs, previewSampleData, previewSampleUser, templates]);
 
-  const tabs = [
-    { id: 'investigation', label: 'Relatório de Investigação' },
-    { id: 'arrest', label: 'Auto de Prisão' },
-    { id: 'bo', label: 'Boletim de Ocorrência' },
-  ];
+  const previewWindowDocument = useMemo(() => `<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prévia do Documento</title>
+    <style>
+      body {
+        margin: 0;
+        background: #020617;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      .preview-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 20px;
+        background: rgba(15, 23, 42, 0.94);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+        backdrop-filter: blur(10px);
+      }
+      .preview-toolbar-title {
+        color: #f8fafc;
+      }
+      .preview-toolbar-title strong {
+        display: block;
+        font-size: 14px;
+      }
+      .preview-toolbar-title span {
+        display: block;
+        font-size: 12px;
+        color: #94a3b8;
+        margin-top: 2px;
+      }
+      .preview-toolbar-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .preview-toolbar-actions button {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+      }
+      .preview-toolbar-actions button:hover {
+        opacity: 0.92;
+      }
+      .preview-btn-download {
+        background: #2563eb;
+        color: #fff;
+      }
+      .preview-btn-print {
+        background: #059669;
+        color: #fff;
+      }
+      .preview-btn-close {
+        background: #334155;
+        color: #fff;
+      }
+      .preview-shell {
+        min-height: 100vh;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+      @media print {
+        .preview-toolbar {
+          display: none !important;
+        }
+        body {
+          background: #fff;
+        }
+        .preview-shell {
+          padding: 0;
+        }
+      }
+      ${quillStyles}
+    </style>
+  </head>
+  <body>
+    <div class="preview-toolbar">
+      <div class="preview-toolbar-title">
+        <strong id="preview-title">${activeTabLabel}</strong>
+        <span>Prévia sincronizada em tempo real com o editor</span>
+      </div>
+      <div class="preview-toolbar-actions">
+        <button type="button" class="preview-btn-download" id="preview-download">Baixar PDF</button>
+        <button type="button" class="preview-btn-print" id="preview-print">Imprimir</button>
+        <button type="button" class="preview-btn-close" id="preview-close">Fechar</button>
+      </div>
+    </div>
+    <div class="preview-shell">
+      <div id="preview-root">${previewHtml}</div>
+    </div>
+    <script>
+      const channel = typeof BroadcastChannel !== 'undefined'
+        ? new BroadcastChannel('templates-preview-channel')
+        : null;
+      const titleElement = document.getElementById('preview-title');
+
+      if (channel) {
+        channel.onmessage = (event) => {
+          if (!event.data || event.data.type !== 'template-preview-update') return;
+          document.title = event.data.title || 'Prévia do Documento';
+          if (titleElement) {
+            titleElement.textContent = event.data.title || 'Documento';
+          }
+          const root = document.getElementById('preview-root');
+          if (root) {
+            root.innerHTML = event.data.html || '';
+          }
+        };
+      }
+
+      const downloadButton = document.getElementById('preview-download');
+      const printButton = document.getElementById('preview-print');
+      const closeButton = document.getElementById('preview-close');
+
+      if (downloadButton) {
+        downloadButton.addEventListener('click', () => {
+          if (channel) {
+            channel.postMessage({ type: 'template-preview-download-pdf', tab: '${activeTab}' });
+          }
+        });
+      }
+
+      if (printButton) {
+        printButton.addEventListener('click', () => window.print());
+      }
+
+      if (closeButton) {
+        closeButton.addEventListener('click', () => window.close());
+      }
+    </script>
+  </body>
+</html>`, [activeTab, activeTabLabel, previewHtml]);
+
+  useEffect(() => {
+    if (!previewChannelRef.current) return;
+
+    previewChannelRef.current.postMessage({
+      type: 'template-preview-update',
+      title: `Prévia - ${activeTabLabel}`,
+      html: previewHtml
+    });
+  }, [activeTabLabel, previewHtml]);
+
+  useEffect(() => {
+    return () => {
+      if (previewWindowRef.current && !previewWindowRef.current.closed) {
+        previewWindowRef.current.close();
+      }
+    };
+  }, []);
+
+  const handlePreview = () => {
+    try {
+      const previewWindow = window.open('', 'template-preview-window', 'width=1100,height=900,scrollbars=yes,resizable=yes');
+
+      if (!previewWindow) {
+        setNotification({ type: 'error', message: 'Nao foi possivel abrir a janela de previa. Verifique se o navegador bloqueou pop-up.' });
+        return;
+      }
+
+      previewWindowRef.current = previewWindow;
+      previewWindow.document.open();
+      previewWindow.document.write(previewWindowDocument);
+      previewWindow.document.close();
+      previewWindow.focus();
+    } catch (e) {
+      console.error('Erro ao abrir pré-visualização:', e);
+      setNotification({ type: 'error', message: 'Erro ao abrir a janela de pre-visualizacao.' });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -689,8 +893,8 @@ const TemplatesSettings = () => {
               onClick={handlePreview}
               className="flex items-center gap-2 px-5 py-2 rounded-xl font-bold bg-emerald-700 hover:bg-emerald-600 text-white shadow-lg transition-all"
             >
-              <Download size={18} />
-              Pré-visualizar
+              <ExternalLink size={18} />
+              Abrir Prévia
             </button>
             
             <button 
