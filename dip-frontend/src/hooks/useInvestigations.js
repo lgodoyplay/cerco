@@ -284,7 +284,7 @@ export const useInvestigations = () => {
       if (error) throw error;
 
       // Refresh list
-      fetchInvestigations();
+      await fetchInvestigations();
 
     } catch (error) {
       console.error('Erro ao adicionar prova:', error);
@@ -304,14 +304,20 @@ export const useInvestigations = () => {
 
       if (error) throw error;
 
-      setInvestigations(prev => prev.map(inv => 
-        inv.id === id ? { ...inv, status: 'Finalizada', closedAt } : inv
-      ));
+      const refreshedInvestigation = await getInvestigation(id);
+
+      if (refreshedInvestigation) {
+        setInvestigations(prev => prev.map(inv =>
+          inv.id === id ? refreshedInvestigation : inv
+        ));
+      } else {
+        await fetchInvestigations();
+      }
     } catch (error) {
       console.error('Erro ao finalizar investigação:', error);
       throw error;
     }
-  }, []);
+  }, [fetchInvestigations, getInvestigation]);
 
   const deleteProof = useCallback(async (proofId, investigationId) => {
     try {
@@ -342,7 +348,7 @@ export const useInvestigations = () => {
 
       if (deleteError) throw deleteError;
 
-      fetchInvestigations();
+      await fetchInvestigations();
     } catch (error) {
       console.error('Erro ao deletar prova:', error);
       throw error;
@@ -378,7 +384,7 @@ export const useInvestigations = () => {
 
       if (error) throw error;
 
-      fetchInvestigations();
+      await fetchInvestigations();
     } catch (error) {
       console.error('Erro ao editar prova:', error);
       throw error;
