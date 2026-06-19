@@ -26,6 +26,10 @@ Quill.register(DividerBlot);
 
 // Custom Quill styles for dark mode
 const quillStyles = `
+  @page {
+    size: A4;
+    margin: 0;
+  }
   .ql-toolbar {
     background-color: #1e293b !important;
     border-color: #334155 !important;
@@ -94,13 +98,14 @@ const quillStyles = `
   }
   .pdf-preview-page {
     position: relative;
-    width: 100%;
-    max-width: 794px;
-    min-height: 1123px;
+    width: 210mm;
+    max-width: 210mm;
+    min-height: 297mm;
     margin: 0 auto;
     background: #ffffff;
     box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
     overflow: hidden;
+    box-sizing: border-box;
     background-image: url('/PDF/fundo.png');
     background-size: cover;
     background-repeat: no-repeat;
@@ -110,11 +115,12 @@ const quillStyles = `
     background-color: #ffffff;
   }
   .pdf-preview-cover-content {
-    min-height: 1123px;
+    min-height: 297mm;
     display: flex;
     flex-direction: column;
     padding: 210px 72px 72px;
     color: #0f172a;
+    box-sizing: border-box;
   }
   .pdf-preview-cover-content p,
   .pdf-preview-cover-content li {
@@ -585,6 +591,10 @@ const TemplatesSettings = () => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Prévia do Documento</title>
     <style>
+      @page {
+        size: A4;
+        margin: 0;
+      }
       body {
         margin: 0;
         background: #020617;
@@ -651,6 +661,10 @@ const TemplatesSettings = () => {
         box-sizing: border-box;
       }
       @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
         .preview-toolbar {
           display: none !important;
         }
@@ -659,6 +673,22 @@ const TemplatesSettings = () => {
         }
         .preview-shell {
           padding: 0;
+        }
+        .pdf-preview-stack {
+          gap: 0;
+        }
+        .pdf-preview-page {
+          width: 210mm;
+          max-width: 210mm;
+          min-height: 297mm;
+          box-shadow: none;
+          margin: 0 auto;
+          break-after: page;
+          page-break-after: always;
+        }
+        .pdf-preview-page:last-child {
+          break-after: auto;
+          page-break-after: auto;
         }
       }
       ${quillStyles}
