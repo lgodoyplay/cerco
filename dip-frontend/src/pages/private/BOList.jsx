@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
-import { generateBOReportPDF } from '../../utils/pdfGenerator';
+import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
 
 const BOList = () => {
@@ -99,7 +99,14 @@ const BOList = () => {
 
   const handlePrint = async (bo) => {
     try {
-      await generateBOReportPDF(bo, user, templates?.bo);
+      await generateProfessionalPDF(
+        bo,
+        user,
+        templates?.bo,
+        'bo',
+        templates?.__layoutConfig?.bo,
+        templates?.__pageHeaderConfig
+      );
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
       setNotification({

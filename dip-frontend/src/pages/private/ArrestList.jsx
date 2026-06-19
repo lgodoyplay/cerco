@@ -8,7 +8,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
 import { usePermissions } from '../../hooks/usePermissions';
-import { generateArrestPDF } from '../../utils/pdfGenerator';
+import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
 
 const ArrestList = () => {
@@ -111,7 +111,14 @@ const ArrestList = () => {
 
   const handleDownloadReport = async (arrest) => {
     try {
-      await generateArrestPDF(arrest, user, templates?.arrest);
+      await generateProfessionalPDF(
+        arrest,
+        user,
+        templates?.arrest,
+        'arrest',
+        templates?.__layoutConfig?.arrest,
+        templates?.__pageHeaderConfig
+      );
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
       setNotification({
