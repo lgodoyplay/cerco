@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, FileText, Eye, Printer, Shield, Calendar, MapPin, User, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Filter, FileText, Eye, Printer, Shield, Calendar, MapPin, User, Download, ChevronLeft, ChevronRight, Trash2, Lock } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
@@ -18,6 +18,9 @@ const BOList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBO, setSelectedBO] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [boToDelete, setBoToDelete] = useState(null);
+  const [deletePassword, setDeletePassword] = useState('');
   const itemsPerPage = 10;
   
   const canManage = can('bo_manage');
@@ -61,6 +64,35 @@ const BOList = () => {
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
       alert("Erro ao gerar PDF do BO.");
+    }
+  };
+
+  const handleDeleteClick = (bo) => {
+    setBoToDelete(bo);
+    setDeletePassword('');
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deletePassword !== '4907') {
+      alert('Senha incorreta!');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('boletins')
+        .delete()
+        .eq('id', boToDelete.id);
+
+      if (error) throw error;
+
+      setBoletins(boletins.filter(bo => bo.id !== boToDelete.id));
+      alert('BO excluído com sucesso!');
+      setDeleteModalOpen(false);
+    } catch (error) {
+      console.error('Erro ao excluir BO:', error);
+      alert('Erro ao excluir BO.');
     }
   };
 
@@ -171,6 +203,13 @@ const BOList = () => {
                       >
                         <Printer size={18} />
                       </button>
+                      <button 
+                        onClick={() => handleDeleteClick(bo)}
+                        className="p-2 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
+                        title="Excluir"
+                      >
+                        <Trash2 size={18} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -280,6 +319,65 @@ const BOList = () => {
                   <p className="text-sm font-bold text-white">Policial Responsável pelo BO</p>
                   <p className="text-xs text-slate-400">{selectedBO.policial_responsavel}</p>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Modal */}
+      {deleteModalOpen && boToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl animate-fade-in-up">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <Trash2 className="text-red-500" />
+                Excluir BO
+              </h3>
+              <button onClick={() => setDeleteModalOpen(false)} className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
+                <ChevronLeft className="text-slate-400 hover:text-white" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <p className="text-slate-300 text-sm">
+                Tem certeza que deseja excluir este BO? Esta ação é irreversível!
+              </p>
+              
+              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                <p className="text-xs text-slate-500 uppercase mb-1">Comunicante</p>
+                <p className="text-white font-medium">{boToDelete.comunicante}</p>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-500 uppercase font-bold block mb-2">
+                  <Lock size={12} className="inline-block mr-1" />
+                  Senha de Confirmação
+                </label>
+                <input 
+                  type="password" 
+                  placeholder="Digite a senha para confirmar" 
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleDeleteConfirm()}
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-red-500 transition-colors"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button 
+                  onClick={() => setDeleteModalOpen(false)}
+                  className="flex-1 px-4 py-2 rounded-lg text-slate-400 hover:text-white font-medium transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={handleDeleteConfirm}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg shadow-lg transition-colors"
+                >
+                  Excluir
+                </button>
               </div>
             </div>
           </div>
