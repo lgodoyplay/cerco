@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Save, RefreshCw, Download, Minus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText, Save, RefreshCw, Download } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 import { generateProfessionalPDF } from '../../../utils/pdfGeneratorPro';
 import ReactQuill from 'react-quill-new';
@@ -39,6 +39,27 @@ const quillStyles = `
     font-size: 16px !important;
     min-height: 400px !important;
   }
+  .template-quill {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .template-quill .ql-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  .template-quill .ql-container {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .template-quill .ql-editor {
+    height: 100%;
+    min-height: 100% !important;
+    overflow-y: auto;
+    padding-bottom: 80px !important;
+  }
   .ql-editor strong {
     font-weight: bold !important;
   }
@@ -67,7 +88,7 @@ const quillStyles = `
 `;
 
 const TemplatesSettings = () => {
-  const { templates: dbTemplates, updateTemplates, logAction } = useSettings();
+  const { templates: dbTemplates, updateTemplates } = useSettings();
   
   const defaultTemplates = {
     investigation: `<p style="text-align: center;"><strong>ESTADO DA EUFORIA</strong></p>
@@ -161,9 +182,17 @@ const TemplatesSettings = () => {
 <p>Foi determinado o registro da ocorrência para devida apuração...</p>`
   };
 
-  const [templates, setTemplates] = useState(dbTemplates || defaultTemplates);
+  const [templates, setTemplates] = useState(() => ({ ...defaultTemplates, ...(dbTemplates || {}) }));
   const [activeTab, setActiveTab] = useState('investigation');
   const [hasChanges, setHasChanges] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setTemplates(prev => {
+      const mergedTemplates = { ...defaultTemplates, ...(dbTemplates || {}) };
+      return hasChanges ? { ...mergedTemplates, ...prev } : mergedTemplates;
+    });
+  }, [dbTemplates, hasChanges]);
 
   // Custom module to insert divider
   const modules = {
@@ -204,10 +233,16 @@ const TemplatesSettings = () => {
   };
 
   const handleSave = async () => {
-    const success = await updateTemplates(templates);
-    if (success) {
-      logAction(`Modelo de documento atualizado: ${activeTab}`);
-      setHasChanges(false);
+    setSaving(true);
+    try {
+      const payload = { ...defaultTemplates, ...templates };
+      const success = await updateTemplates(payload);
+      if (success) {
+        setTemplates(payload);
+        setHasChanges(false);
+      }
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -245,7 +280,7 @@ const TemplatesSettings = () => {
       await generateProfessionalPDF(
         dummyData,
         dummyUser,
-        templates[activeTab],
+        templates[activeTab] || defaultTemplates[activeTab],
         activeTab
       );
     } catch (e) {
@@ -271,7 +306,7 @@ const TemplatesSettings = () => {
         <p className="text-slate-400 mt-1">Gerencie os templates padrão utilizados na geração de documentos oficiais.</p>
       </div>
 
-      <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col min-h-[650px] max-h-[800px]">
+      <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col min-h-[720px] max-h-[calc(100vh-10rem)]">
         <div className="flex border-b border-slate-800 bg-slate-900 flex-wrap">
           {tabs.map(tab => (
             <button
@@ -288,19 +323,34 @@ const TemplatesSettings = () => {
           ))}
         </div>
 
-        <div className="flex-1 p-0 relative overflow-hidden">
-          <div className="h-full bg-slate-50">
-            <ReactQuill
-              theme="snow"
-              value={templates[activeTab]}
-              onChange={handleTemplateChange}
-              modules={modules}
-              formats={formats}
-              className="h-full"
-            />
+        <div className="flex-1 min-h-0 grid grid-rows-[minmax(0,1fr)_minmax(220px,320px)]">
+          <div className="relative overflow-hidden border-b border-slate-800">
+            <div className="h-full bg-slate-50">
+              <ReactQuill
+                key={activeTab}
+                theme="snow"
+                value={templates[activeTab] || ''}
+                onChange={handleTemplateChange}
+                modules={modules}
+                formats={formats}
+                className="template-quill"
+              />
+            </div>
+            <div className="absolute bottom-4 right-4 text-xs text-slate-600 bg-slate-900/80 px-2 py-1 rounded pointer-events-none z-10">
+              Variáveis disponíveis: {'{nome}'}, {'{data}'}, {'{numero}'}
+            </div>
           </div>
-          <div className="absolute bottom-4 right-4 text-xs text-slate-600 bg-slate-900/80 px-2 py-1 rounded pointer-events-none z-10">
-            Variáveis disponíveis: {'{nome}'}, {'{data}'}, {'{numero}'}
+          <div className="min-h-0 bg-slate-900 flex flex-col">
+            <div className="px-4 py-3 border-b border-slate-800 bg-slate-900/80">
+              <h3 className="text-sm font-bold text-white">Prévia do Documento Salvo</h3>
+              <p className="text-xs text-slate-400">A rolagem abaixo permite conferir o documento inteiro antes de salvar ou gerar o PDF.</p>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 bg-slate-950 custom-scrollbar">
+              <div
+                className="mx-auto w-full max-w-3xl min-h-full bg-white text-slate-900 rounded-lg shadow-xl p-6"
+                dangerouslySetInnerHTML={{ __html: templates[activeTab] || '' }}
+              />
+            </div>
           </div>
         </div>
 
@@ -324,15 +374,15 @@ const TemplatesSettings = () => {
             
             <button 
               onClick={handleSave}
-              disabled={!hasChanges}
+              disabled={!hasChanges || saving}
               className={`flex items-center gap-2 px-6 py-2 rounded-xl font-bold transition-all ${
-                hasChanges 
+                hasChanges && !saving
                   ? 'bg-federal-600 hover:bg-federal-500 text-white shadow-lg' 
                   : 'bg-slate-800 text-slate-500 cursor-not-allowed'
               }`}
             >
               <Save size={18} />
-              Salvar Alterações
+              {saving ? 'Salvando...' : 'Salvar Alterações'}
             </button>
           </div>
         </div>

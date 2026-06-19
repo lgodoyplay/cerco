@@ -332,6 +332,7 @@ export const SettingsProvider = ({ children }) => {
       if (key === 'security') setSecurity(value);
 
       logAction(`Configuração atualizada: ${key}`);
+      return true;
     } catch (error) {
       console.error(`Error saving setting ${key}:`, error);
       if (error.code === '42P01' || error.message?.includes('system_settings')) {
@@ -339,6 +340,7 @@ export const SettingsProvider = ({ children }) => {
       } else {
         alert('Erro ao salvar configuração.');
       }
+      return false;
     }
   };
 
