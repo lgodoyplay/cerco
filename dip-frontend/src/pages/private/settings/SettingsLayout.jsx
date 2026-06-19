@@ -36,12 +36,12 @@ const SettingsLayout = () => {
     { to: '/dashboard/settings/corporation', icon: Building, label: 'Estrutura da Corporação', permission: 'corporation_view' },
     { to: '/dashboard/settings/roles', icon: BadgeCheck, label: 'Cargos & Patentes', permission: 'settings_manage' },
     { to: '/dashboard/settings/crimes', icon: Gavel, label: 'Tipos de Crimes', permission: 'settings_manage' },
-    { to: '/dashboard/settings/logs', icon: ScrollText, label: 'Atividade Recente', permission: 'logs_view', badge: unreadLogsCount },
+    { to: '/dashboard/settings/logs', icon: Activity, label: 'Atividade Recente', permission: 'logs_view', badge: unreadLogsCount },
     { to: '/dashboard/settings/templates', icon: FileText, label: 'Modelos de Documentos', permission: 'templates_view' },
     { to: '/dashboard/settings/appearance', icon: Palette, label: 'Aparência', permission: 'appearance_view' },
     { to: '/dashboard/settings/security', icon: Shield, label: 'Segurança', permission: 'security_view' },
     { to: '/dashboard/settings/backup', icon: Database, label: 'Backup & Dados', permission: 'backup_view' },
-    { to: '/dashboard/settings/health', icon: Activity, label: 'Diagnóstico do Sistema', permission: 'health_view' },
+    { to: '/dashboard/settings/health', icon: ScrollText, label: 'Diagnóstico do Sistema', permission: 'health_view' },
   ];
 
   const filteredItems = menuItems.filter(item => !item.permission || can(item.permission));

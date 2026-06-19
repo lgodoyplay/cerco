@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Users, AlertTriangle, FileText, TrendingUp, Search, Clock, ShieldAlert, BadgeCheck, Sun, Moon } from 'lucide-react';
+import { Users, AlertTriangle, FileText, TrendingUp, Search, BadgeCheck, Sun, Moon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 // Hook para data e hora em tempo real
 const useCurrentDateTime = () => {
@@ -83,12 +83,11 @@ const DashboardHome = () => {
     totalInvestigacoes: 0,
     totalBos: 0
   });
-  const [recentActivities, setRecentActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [functionalCode, setFunctionalCode] = useState(null);
   const [userName, setUserName] = useState('');
   const [chartData, setChartData] = useState({
-    boByMonth: [],
+    boByWeek: [],
     crimesByType: []
   });
 
@@ -138,22 +137,17 @@ const DashboardHome = () => {
           { count: procuradosCount },
           { count: investigacoesCount },
           { count: bosCount },
-          { data: logs, error: logsError },
           { data: boData },
           { data: crimesData },
-          { data: boCrimesData, error: boCrimesError }
+          { data: prisoesData }
         ] = await Promise.all([
           supabase.from('prisoes').select('*', { count: 'exact', head: true }),
           supabase.from('procurados').select('*', { count: 'exact', head: true }),
           supabase.from('investigacoes').select('*', { count: 'exact', head: true }),
           supabase.from('boletins').select('*', { count: 'exact', head: true }),
-          supabase.from('audit_logs')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(5),
           supabase.from('boletins').select('created_at'),
-          supabase.from('crimes').select('name'),
-          supabase.from('boletins').select('id')
+          supabase.from('crimes').select('id, name, article'),
+          supabase.from('prisoes').select('artigo, created_at')
         ]);
 
         if (isMounted) {
@@ -163,51 +157,62 @@ const DashboardHome = () => {
             totalInvestigacoes: investigacoesCount || 0,
             totalBos: bosCount || 0
           });
-          
-          const activities = (logs || []).map(log => ({
-            action: log.action,
-            details: log.new_data ? JSON.stringify(log.new_data).substring(0, 100) : log.action,
-            createdAt: log.created_at,
-            user: {
-               nome: log.user_name?.split(' (')[0] || 'Sistema',
-               patente: log.user_name?.split('(')[1]?.replace(')', '') || 'N/A'
-            }
-          }));
-  
-          setRecentActivities(activities);
 
-          // Processar dados para gráfico de BO por mês
-          const boByMonth = (boData || []).reduce((acc, bo) => {
+          // Processar dados para gráfico de BO por SEMANA
+          const boByWeek = (boData || []).reduce((acc, bo) => {
             const date = new Date(bo.created_at);
-            const monthKey = date.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
-            acc[monthKey] = (acc[monthKey] || 0) + 1;
+            // Obter semana do ano
+            const startOfWeek = new Date(date);
+            startOfWeek.setDate(date.getDate() - date.getDay());
+            const weekKey = startOfWeek.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            acc[weekKey] = (acc[weekKey] || 0) + 1;
             return acc;
           }, {});
 
-          const boByMonthArray = Object.entries(boByMonth).map(([month, count]) => ({ month, count }));
+          const boByWeekArray = Object.entries(boByWeek).map(([week, count]) => ({ week, count })).slice(-8);
 
-          // Processar dados para gráfico de crimes por tipo
+          // Processar dados para gráfico de crimes por tipo (dados reais de prisoes)
           let crimesByTypeArray = [];
           
-          // Se temos dados de crimes, usar tipos predefinidos
-          if (crimesData && crimesData.length > 0) {
-            crimesByTypeArray = crimesData.slice(0, 5).map((crime, i) => ({
-              type: crime.name || `Crime ${i + 1}`,
-              count: Math.floor(Math.random() * 10) + 1
-            }));
-          } else {
-            // Fallback para dados de exemplo
+          if (crimesData && crimesData.length > 0 && prisoesData) {
+            // Contar quantas vezes cada artigo aparece nas prisões
+            const crimeCounts = {};
+            crimesData.forEach(crime => {
+              crimeCounts[crime.id] = { name: crime.name, count: 0 };
+            });
+
+            prisoesData.forEach(prisao => {
+              if (prisao.artigo) {
+                const artigoList = prisao.artigo.split(', ').map(a => a.trim());
+                artigoList.forEach(artigoStr => {
+                  const artigoNum = artigoStr.replace('Art. ', '');
+                  const matchingCrime = crimesData.find(c => String(c.article) === artigoNum);
+                  if (matchingCrime) {
+                    crimeCounts[matchingCrime.id].count++;
+                  }
+                });
+              }
+            });
+
+            crimesByTypeArray = Object.values(crimeCounts)
+              .filter(c => c.count > 0)
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 8);
+          }
+          
+          // Fallback se não houver dados suficientes
+          if (crimesByTypeArray.length === 0) {
             crimesByTypeArray = [
-              { type: 'Furto', count: 12 },
-              { type: 'Roubo', count: 8 },
-              { type: 'Agressão', count: 5 },
-              { type: 'Dano', count: 3 },
-              { type: 'Outro', count: 4 }
+              { name: 'Furto', count: 12 },
+              { name: 'Roubo', count: 8 },
+              { name: 'Agressão', count: 5 },
+              { name: 'Dano', count: 3 },
+              { name: 'Outro', count: 4 }
             ];
           }
 
           setChartData({
-            boByMonth: boByMonthArray,
+            boByWeek: boByWeekArray,
             crimesByType: crimesByTypeArray
           });
         }
@@ -226,26 +231,6 @@ const DashboardHome = () => {
       isMounted = false;
     };
   }, []);
-
-  const formatTimeAgo = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
-    
-    if (diffInSeconds < 60) return `${diffInSeconds}s atrás`;
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m atrás`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h atrás`;
-    return `${Math.floor(diffInSeconds / 86400)}d atrás`;
-  };
-
-    const getIconForActivity = (action) => {
-    const lower = (action || '').toLowerCase();
-    if (lower.includes('prisão')) return { icon: Users, color: 'blue' };
-    if (lower.includes('procurado')) return { icon: ShieldAlert, color: 'red' };
-    if (lower.includes('investigação')) return { icon: FileText, color: 'amber' };
-    if (lower.includes('b.o.') || lower.includes('boletim')) return { icon: FileText, color: 'emerald' };
-    return { icon: AlertTriangle, color: 'slate' };
-  };
 
   return (
     <div className="space-y-6 pb-20 md:pb-6">
@@ -313,12 +298,12 @@ const DashboardHome = () => {
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
           <h3 className="font-bold text-lg md:text-xl text-white mb-4 flex items-center gap-2">
             <TrendingUp size={20} className="text-federal-400" />
-            B.O.s por Mês
+            B.O.s por Semana
           </h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData.boByMonth}>
+            <LineChart data={chartData.boByWeek}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis dataKey="month" stroke="#94a3b8" />
+              <XAxis dataKey="week" stroke="#94a3b8" />
               <YAxis stroke="#94a3b8" />
               <Tooltip 
                 contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }}
@@ -332,7 +317,7 @@ const DashboardHome = () => {
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
           <h3 className="font-bold text-lg md:text-xl text-white mb-4 flex items-center gap-2">
             <FileText size={20} className="text-emerald-400" />
-            Crimes por Tipo
+            Crimes por Tipo (Prisões)
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -341,13 +326,13 @@ const DashboardHome = () => {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ type, percent }) => `${type} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="count"
               >
                 {chartData.crimesByType.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][index % 5]} />
+                  <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'][index % 8]} />
                 ))}
               </Pie>
               <Tooltip 
@@ -360,70 +345,6 @@ const DashboardHome = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activity Feed */}
-        <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-          <div className="flex items-center justify-between mb-7">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-federal-500 to-federal-700 rounded-xl">
-                <Clock size={20} className="text-white" />
-              </div>
-              <h3 className="font-bold text-lg md:text-xl text-white">Atividade Recente</h3>
-            </div>
-            <button 
-              onClick={() => navigate('/dashboard/settings/logs')} 
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-xl transition-all"
-            >
-              Ver Histórico
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            {recentActivities.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 bg-slate-950/30 rounded-2xl border border-dashed border-slate-700">
-                <Clock size={48} className="text-slate-600 mb-3" />
-                <p className="text-slate-500 text-sm font-medium">Nenhuma atividade recente registrada.</p>
-                <p className="text-slate-600 text-xs mt-1">Todas as ações aparecerão aqui automaticamente.</p>
-              </div>
-            ) : (
-              recentActivities.map((item, i) => {
-                const { icon: Icon, color } = getIconForActivity(item.action);
-                return (
-                  <div 
-                    key={i} 
-                    className={`
-                      flex items-start gap-4 p-4 md:p-5 rounded-xl bg-slate-950/40 border border-slate-800 
-                      hover:border-${color}-500/40 hover:bg-slate-900/60 transition-all duration-300
-                      animate-in slide-in-from-left-4
-                    `}
-                    style={{ animationDelay: `${i * 80}ms` }}
-                  >
-                    <div className={`
-                      mt-0.5 p-3 rounded-xl flex-shrink-0 
-                      bg-gradient-to-br from-${color}-500/20 to-${color}-600/10 
-                      text-${color}-400 border border-${color}-500/20
-                    `}>
-                      <Icon size={20} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <h4 className="text-sm md:text-base font-bold text-slate-200 truncate pr-2">{item.action}</h4>
-                        <span className="text-xs text-slate-500 whitespace-nowrap flex items-center gap-1 bg-slate-800/50 px-2 py-1 rounded-full">
-                          <Clock size={10} />
-                          {formatTimeAgo(item.createdAt)}
-                        </span>
-                      </div>
-                      <p className="text-sm text-slate-400 mt-2 line-clamp-2">{item.details}</p>
-                      <p className="text-[11px] text-slate-500 mt-3 font-semibold uppercase tracking-widest flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
-                        Por: {item.user?.nome || 'Sistema'} ({item.user?.patente || 'N/A'})
-                      </p>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
 
         {/* Quick Actions / Notices */}
         <div className="space-y-6">
