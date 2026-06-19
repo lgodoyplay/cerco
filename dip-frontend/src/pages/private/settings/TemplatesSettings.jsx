@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { FileText, Save, RefreshCw, Download } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 import { generateProfessionalPDF } from '../../../utils/pdfGeneratorPro';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 const TemplatesSettings = () => {
   const { templates: dbTemplates, updateTemplates, logAction } = useSettings();
