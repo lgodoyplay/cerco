@@ -12,7 +12,9 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/dashboard';
+  const fromPathname = location.state?.from?.pathname || '/dashboard';
+  const fromSearch = location.state?.from?.search || '';
+  const from = `${fromPathname}${fromSearch}`;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import {
   Shield,
@@ -43,6 +43,7 @@ const getEmbedUrl = (url) => {
 };
 
 const Home = () => {
+  const navigate = useNavigate();
   const [wantedList, setWantedList] = useState([]);
   const [newsList, setNewsList] = useState([]);
   const [liveStreams, setLiveStreams] = useState([]);
@@ -56,6 +57,14 @@ const Home = () => {
     contact: ''
   });
   const [tipStatus, setTipStatus] = useState('idle');
+  const [weaponRequestModalOpen, setWeaponRequestModalOpen] = useState(false);
+  const [weaponRequestStatus, setWeaponRequestStatus] = useState('idle');
+  const [weaponRequestError, setWeaponRequestError] = useState('');
+  const [weaponRequestLead, setWeaponRequestLead] = useState({
+    fullName: '',
+    passportId: '',
+    phone: ''
+  });
 
   const images = [
     '/imagem1.jpg',
@@ -161,6 +170,40 @@ const Home = () => {
     }
   };
 
+  const handleWeaponRequestLeadSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!weaponRequestLead.fullName || !weaponRequestLead.passportId || !weaponRequestLead.phone) {
+      setWeaponRequestError('Preencha nome, passaporte e telefone do jogo.');
+      return;
+    }
+
+    setWeaponRequestStatus('submitting');
+    setWeaponRequestError('');
+
+    try {
+      window.localStorage.setItem('weaponLicenseDraft', JSON.stringify(weaponRequestLead));
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        navigate('/dashboard/weapons?request=new');
+      } else {
+        navigate('/login', {
+          state: {
+            from: {
+              pathname: '/dashboard/weapons',
+              search: '?request=new'
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao iniciar solicitacao de porte:', error);
+      setWeaponRequestStatus('error');
+      setWeaponRequestError('Nao foi possivel iniciar a solicitacao agora.');
+    }
+  };
+
   return (
     <div className="space-y-20 pb-20">
       <section className="relative overflow-hidden bg-slate-950">
@@ -192,6 +235,17 @@ const Home = () => {
               >
                 Corregedoria
               </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setWeaponRequestModalOpen(true);
+                  setWeaponRequestStatus('idle');
+                  setWeaponRequestError('');
+                }}
+                className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-sm tracking-wide shadow-lg shadow-emerald-900/40 transition-transform hover:-translate-y-0.5"
+              >
+                Solicitar Porte
+              </button>
               <a
                 href="#regra-de-ouro"
                 className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-800 text-slate-100 font-semibold text-sm tracking-wide transition-colors"
@@ -463,6 +517,92 @@ const Home = () => {
       </section>
 
       {/* NEWS MODAL */}
+      {weaponRequestModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setWeaponRequestModalOpen(false)}>
+          <div
+            className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800">
+              <div>
+                <h2 className="text-xl font-bold text-white">Solicitar Porte de Armas</h2>
+                <p className="text-sm text-slate-400 mt-1">
+                  Informe os dados iniciais para continuar dentro do painel.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setWeaponRequestModalOpen(false)}
+                className="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleWeaponRequestLeadSubmit} className="p-6 space-y-4">
+              {weaponRequestError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                  {weaponRequestError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Nome</label>
+                <input
+                  type="text"
+                  value={weaponRequestLead.fullName}
+                  onChange={(e) => setWeaponRequestLead(prev => ({ ...prev, fullName: e.target.value }))}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                  placeholder="Nome do solicitante"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Passaporte</label>
+                <input
+                  type="text"
+                  value={weaponRequestLead.passportId}
+                  onChange={(e) => setWeaponRequestLead(prev => ({ ...prev, passportId: e.target.value }))}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                  placeholder="Ex: DEN3635"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Telefone do jogo</label>
+                <input
+                  type="text"
+                  value={weaponRequestLead.phone}
+                  onChange={(e) => setWeaponRequestLead(prev => ({ ...prev, phone: e.target.value }))}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                  placeholder="Numero para contato"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setWeaponRequestModalOpen(false)}
+                  className="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={weaponRequestStatus === 'submitting'}
+                  className="px-5 py-3 rounded-xl bg-federal-600 hover:bg-federal-500 text-white font-bold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {weaponRequestStatus === 'submitting' ? 'Continuando...' : 'Continuar no Painel'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {selectedNews && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedNews(null)}>
           <div
