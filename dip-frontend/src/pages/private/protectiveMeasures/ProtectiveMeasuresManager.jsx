@@ -644,7 +644,7 @@ const ProtectiveMeasuresManager = () => {
           onClick={() => !creating && setCreateOpen(false)}
         >
           <div
-            className="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl"
+            className="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl max-h-[calc(100vh-2rem)] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800">
@@ -663,7 +663,7 @@ const ProtectiveMeasuresManager = () => {
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="p-6 space-y-6">
+            <form onSubmit={handleCreate} className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-300">Nome da vitima</label>
@@ -839,7 +839,7 @@ const ProtectiveMeasuresManager = () => {
           onClick={() => !withdrawing && setWithdrawOpen(false)}
         >
           <div
-            className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl"
+            className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl max-h-[calc(100vh-2rem)] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800">
@@ -858,7 +858,7 @@ const ProtectiveMeasuresManager = () => {
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 overflow-y-auto custom-scrollbar">
               <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
                 <p className="text-sm text-slate-300 font-bold">Vitima</p>
                 <p className="text-sm text-slate-400 mt-1">{selectedMeasure.victim_name} ({selectedMeasure.victim_passport})</p>
