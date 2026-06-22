@@ -84,6 +84,7 @@ const PrivateLayout = () => {
         { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados', prefetchKey: 'WantedList', permission: 'wanted_view' },
         { to: '/dashboard/bo', icon: FileText, label: 'Registrar BO', prefetchKey: 'RegisterBO', permission: 'bo_manage' },
         { to: '/dashboard/bo-list', icon: FileText, label: 'Consultar BOs', prefetchKey: 'BOList', permission: 'bo_view' },
+        { to: '/dashboard/protective-measures', icon: ShieldAlert, label: 'Medida Protetiva', prefetchKey: 'ProtectiveMeasuresManager', permission: 'protective_measures_view' },
         { to: '/dashboard/reports', icon: AlertTriangle, label: 'Denúncias', prefetchKey: 'ReportList', permission: 'reports_view' },
       ]
     },

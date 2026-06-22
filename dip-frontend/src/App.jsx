@@ -58,6 +58,7 @@ const RevenueList = React.lazy(() => lazyImport(routeLoaders.RevenueList));
 const RevenueDetail = React.lazy(() => lazyImport(routeLoaders.RevenueDetail));
 
 const WeaponsManager = React.lazy(() => lazyImport(routeLoaders.WeaponsManager));
+const ProtectiveMeasuresManager = React.lazy(() => lazyImport(routeLoaders.ProtectiveMeasuresManager));
 const JudiciaryManager = React.lazy(() => lazyImport(routeLoaders.JudiciaryManager));
 const PMIntegration = React.lazy(() => lazyImport(routeLoaders.PMIntegration));
 const LawyerDashboard = React.lazy(() => lazyImport(routeLoaders.LawyerDashboard));
@@ -169,6 +170,12 @@ function App() {
             <Route path="bo-list" element={
               <PermissionGuard permission="bo_view">
                 <BOList />
+              </PermissionGuard>
+            } />
+
+            <Route path="protective-measures" element={
+              <PermissionGuard permission="protective_measures_view">
+                <ProtectiveMeasuresManager />
               </PermissionGuard>
             } />
             
