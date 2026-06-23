@@ -4,6 +4,13 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
 
+const normalizeExternalUrl = (value = '') => {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return '';
+  if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+};
+
 const CorregedoriaList = () => {
   const [denuncias, setDenuncias] = useState([]);
   const [selectedDenuncia, setSelectedDenuncia] = useState(null);
@@ -44,7 +51,7 @@ const CorregedoriaList = () => {
   };
 
   const getItemUrl = (item) => {
-    return typeof item === 'string' ? item : item.url;
+    return normalizeExternalUrl(typeof item === 'string' ? item : item.url);
   };
 
   const getItemName = (item) => {
@@ -178,7 +185,7 @@ const CorregedoriaList = () => {
                         <div className="flex-1">
                           {typeof item === 'object' && item.type === 'link' ? (
                             <a
-                              href={item.url}
+                              href={normalizeExternalUrl(item.url)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-sm text-blue-400 truncate hover:underline"

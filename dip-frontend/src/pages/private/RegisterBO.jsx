@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Eraser, FileText, CheckCircle, AlertCircle, Shield, MapPin, Calendar, User, RefreshCw } from 'lucide-react';
+import { Save, Eraser, FileText, CheckCircle, AlertCircle, AlertTriangle, Shield, MapPin, Calendar, User, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
 import { useSettingsContext } from '../../context/SettingsContext';

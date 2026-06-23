@@ -3,6 +3,13 @@ import { Shield, Send, FileText, Upload, CheckCircle, AlertCircle, X, Link as Li
 import { clsx } from 'clsx';
 import { supabase } from '../../lib/supabase';
 
+const normalizeExternalUrl = (value = '') => {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+};
+
 const Corregedoria = () => {
   const [formData, setFormData] = useState({
     nome: '',
@@ -53,25 +60,44 @@ const Corregedoria = () => {
       const fileName = `corregedoria/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const { error } = await supabase.storage.from('public').upload(fileName, f.file);
       if (error) {
-        console.error('Upload error:', error);
+        throw error;
       } else {
         const { data: publicUrlData } = supabase.storage.from('public').getPublicUrl(fileName);
-        uploadedUrls.push({ type: 'file', url: publicUrlData.publicUrl, name: f.file.name });
+        uploadedUrls.push(publicUrlData.publicUrl);
       }
     }
-    const linkItems = items.filter(item => item.type === 'link').map(item => ({ type: 'link', url: item.url }));
+    const linkItems = items
+      .filter(item => item.type === 'link')
+      .map(item => item.url.trim())
+      .filter(Boolean);
+
     return [...uploadedUrls, ...linkItems];
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const nome = formData.nome.trim();
+    const detalhes = formData.detalhes.trim();
+
+    if (!nome) {
+      setStatus('error');
+      setNotification({ type: 'error', message: 'Informe o nome para enviar a denuncia.' });
+      return;
+    }
+
+    if (!detalhes) {
+      setStatus('error');
+      setNotification({ type: 'error', message: 'Informe os detalhes da denuncia.' });
+      return;
+    }
+
     setStatus('submitting');
 
     try {
       const allItems = await uploadFiles();
       const { error } = await supabase.from('corregedoria').insert([{
-        nome: formData.nome,
-        detalhes: formData.detalhes,
+        nome,
+        detalhes,
         arquivos: allItems,
       }]);
       if (error) throw error;
@@ -133,7 +159,8 @@ const Corregedoria = () => {
                 value={formData.nome}
                 onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
                 className="w-full px-6 py-4 bg-slate-950 border border-slate-700 rounded-2xl text-white placeholder-slate-600 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all"
-                placeholder="Seu nome completo (opcional)"
+                placeholder="Seu nome completo"
+                required
               />
             </div>
 
@@ -173,12 +200,12 @@ const Corregedoria = () => {
                 </label>
                 <div className="flex gap-2">
                   <input
-                    type="url"
+                    type="text"
                     value={linkInput}
                     onChange={(e) => setLinkInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLink())}
                     className="flex-1 px-4 py-4 bg-slate-950 border border-slate-700 rounded-2xl text-white placeholder-slate-600 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all"
-                    placeholder="https://exemplo.com"
+                    placeholder="Cole qualquer link"
                   />
                   <button
                     type="button"
@@ -217,7 +244,7 @@ const Corregedoria = () => {
                           <p className="text-xs text-slate-500">{(item.file.size / 1024 / 1024).toFixed(2)} MB</p>
                         </>
                       ) : (
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 truncate hover:underline">
+                        <a href={normalizeExternalUrl(item.url)} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 truncate hover:underline">
                           {item.url}
                         </a>
                       )}
