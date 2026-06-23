@@ -21,7 +21,8 @@ const DEFAULT_APPEARANCE = {
   theme: 'dark',
   primaryColor: 'blue',
   compactMode: false,
-  logoUrl: null
+  logoUrl: null,
+  discordInviteUrl: 'https://discord.gg/PWUENE7MJh'
 };
 
 const DEFAULT_SECURITY = {
@@ -39,7 +40,13 @@ const DEFAULT_DISCORD_CONFIG = {
   wantedWebhook: '',
   bulletinsWebhook: '',
   reportsWebhook: '',
-  forensicsWebhook: ''
+  forensicsWebhook: '',
+  weaponsWebhook: '',
+  corregedoriaWebhook: '',
+  exonerationsWebhook: '',
+  laudosWebhook: '',
+  searchSeizureWebhook: '',
+  protectiveMeasuresWebhook: ''
 };
 
 export const SettingsProvider = ({ children }) => {

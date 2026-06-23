@@ -63,6 +63,7 @@ const WeaponsManager = React.lazy(() => lazyImport(routeLoaders.WeaponsManager))
 const ProtectiveMeasuresManager = React.lazy(() => lazyImport(routeLoaders.ProtectiveMeasuresManager));
 const ExonerationsManager = React.lazy(() => lazyImport(routeLoaders.ExonerationsManager));
 const ExonerationCreate = React.lazy(() => lazyImport(routeLoaders.ExonerationCreate));
+const IntegrationManager = React.lazy(() => lazyImport(routeLoaders.IntegrationManager));
 const JudiciaryManager = React.lazy(() => lazyImport(routeLoaders.JudiciaryManager));
 const PMIntegration = React.lazy(() => lazyImport(routeLoaders.PMIntegration));
 const LawyerDashboard = React.lazy(() => lazyImport(routeLoaders.LawyerDashboard));
@@ -170,6 +171,11 @@ function App() {
                 <RegisterBO />
               </PermissionGuard>
             } />
+            <Route path="bo/:id/edit" element={
+              <PermissionGuard permission="bo_manage">
+                <RegisterBO />
+              </PermissionGuard>
+            } />
             
             <Route path="bo-list" element={
               <PermissionGuard permission="bo_view">
@@ -204,6 +210,11 @@ function App() {
             <Route path="exonerations/new" element={
               <PermissionGuard permission="exonerations_manage">
                 <ExonerationCreate />
+              </PermissionGuard>
+            } />
+            <Route path="integration" element={
+              <PermissionGuard permission="integration_view">
+                <IntegrationManager />
               </PermissionGuard>
             } />
             

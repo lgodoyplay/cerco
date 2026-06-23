@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
 
 const createPersonEntry = () => ({ name: '', passport: '' });
@@ -44,12 +44,38 @@ const buildFallbackDescription = (complainants, reportedPeople, description) => 
   ].join('\n');
 };
 
+const parseStoredPeople = (value, fallback = '') => {
+  if (Array.isArray(value) && value.length) {
+    const normalized = value
+      .map((person) => ({
+        name: String(person?.name || '').trim(),
+        passport: String(person?.passport || '').trim()
+      }))
+      .filter((person) => person.name || person.passport);
+
+    if (normalized.length) return normalized;
+  }
+
+  return fallback ? [{ name: fallback, passport: '' }] : [createPersonEntry()];
+};
+
+const stripFallbackDescription = (value = '') => {
+  const text = String(value || '');
+  if (!text.startsWith('PARTES ENVOLVIDAS\n')) return text;
+
+  const sections = text.split('\n\n');
+  return sections.length > 1 ? sections.slice(1).join('\n\n').trim() : text;
+};
+
 const RegisterBO = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const { logAction, discordConfig } = useSettingsContext();
   const { can } = usePermissions();
   const [reformulating, setReformulating] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+  const [loadingData, setLoadingData] = useState(Boolean(id));
+  const [existingStatus, setExistingStatus] = useState('Registrado');
 
   // Protect route
   if (!can('bo_manage')) {
@@ -59,7 +85,7 @@ const RegisterBO = () => {
         <h2 className="text-xl font-bold text-white">Acesso Negado</h2>
         <p>Você não tem permissão para registrar boletins.</p>
         <button 
-          onClick={() => navigate('/dashboard/bo')}
+          onClick={() => navigate('/dashboard/bo-list')}
           className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white transition-colors"
         >
           Voltar para Lista
@@ -126,11 +152,52 @@ const RegisterBO = () => {
 
   // Auto-fill current date and time on component load
   useEffect(() => {
+    if (id) return;
     const now = new Date();
     // Format as YYYY-MM-DDTHH:MM for datetime-local input
     const formattedDate = now.toISOString().slice(0, 16);
     setFormData(prev => ({ ...prev, date: formattedDate }));
-  }, []);
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchBoletim = async () => {
+      setLoadingData(true);
+      try {
+        const { data, error } = await supabase
+          .from('boletins')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        setFormData({
+          complainants: parseStoredPeople(data.comunicantes_json, data.comunicante),
+          reportedPeople: parseStoredPeople(data.denunciados_json),
+          description: stripFallbackDescription(data.descricao || ''),
+          location: data.localizacao || '',
+          date: data.data_fato ? new Date(data.data_fato).toISOString().slice(0, 16) : '',
+          officer: data.policial_responsavel || '',
+          arrestOfficerName: data.nome_policial_prisao || '',
+          arrestOfficerId: data.id_policial_prisao || '',
+        });
+        setExistingStatus(data.status || 'Registrado');
+      } catch (error) {
+        console.error('Erro ao carregar BO para edicao:', error);
+        setNotification({
+          type: 'error',
+          message: 'Nao foi possivel carregar o boletim para edicao.'
+        });
+        navigate('/dashboard/bo-list');
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    fetchBoletim();
+  }, [id, navigate]);
 
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -242,40 +309,67 @@ const RegisterBO = () => {
         policial_responsavel: officerName,
         nome_policial_prisao: formData.arrestOfficerName,
         id_policial_prisao: formData.arrestOfficerId,
-        status: 'Registrado',
-        created_by: user?.id
+        status: id ? existingStatus : 'Registrado'
       };
 
-      let { data, error } = await supabase
-        .from('boletins')
-        .insert([{
-          ...basePayload,
-          comunicantes_json: validComplainants,
-          denunciados_json: validReportedPeople
-        }])
-        .select('*');
+      let data;
+      let error;
 
-      if (error && /comunicantes_json|denunciados_json|column/i.test(error.message || '')) {
+      if (id) {
+        ({ data, error } = await supabase
+          .from('boletins')
+          .update({
+            ...basePayload,
+            comunicantes_json: validComplainants,
+            denunciados_json: validReportedPeople
+          })
+          .eq('id', id)
+          .select('*'));
+
+        if (error && /comunicantes_json|denunciados_json|column/i.test(error.message || '')) {
+          ({ data, error } = await supabase
+            .from('boletins')
+            .update({
+              ...basePayload,
+              descricao: buildFallbackDescription(validComplainants, validReportedPeople, formData.description)
+            })
+            .eq('id', id)
+            .select('*'));
+        }
+      } else {
         ({ data, error } = await supabase
           .from('boletins')
           .insert([{
             ...basePayload,
-            descricao: buildFallbackDescription(validComplainants, validReportedPeople, formData.description)
+            created_by: user?.id,
+            comunicantes_json: validComplainants,
+            denunciados_json: validReportedPeople
           }])
           .select('*'));
+
+        if (error && /comunicantes_json|denunciados_json|column/i.test(error.message || '')) {
+          ({ data, error } = await supabase
+            .from('boletins')
+            .insert([{
+              ...basePayload,
+              created_by: user?.id,
+              descricao: buildFallbackDescription(validComplainants, validReportedPeople, formData.description)
+            }])
+            .select('*'));
+        }
       }
 
       if (error) throw error;
       const newBO = data[0];
 
       // Log action
-      logAction('CREATE_BO', 'boletins', newBO.id, null, newBO);
+      logAction(id ? 'UPDATE_BO' : 'CREATE_BO', 'boletins', newBO.id, null, newBO);
 
       // Send Discord Notification
       if (discordConfig?.bulletinsWebhook) {
         try {
           const embed = {
-            title: "📄 Novo Boletim de Ocorrência",
+            title: id ? "📝 Boletim de Ocorrência Atualizado" : "📄 Novo Boletim de Ocorrência",
             description: formData.description,
             color: 0x9333ea, // Purple
             fields: [
@@ -301,25 +395,36 @@ const RegisterBO = () => {
       }
 
       // Success
-      setNotification({
-        type: 'success',
-        message: 'Boletim de ocorrência registrado com sucesso'
-      });
-      
-      // Clear form and reset date to current time
-      const now = new Date();
-      const formattedDate = now.toISOString().slice(0, 16);
-      setFormData({
-        complainants: [createPersonEntry()],
-        reportedPeople: [createPersonEntry()],
-        description: '',
-        location: '',
-        date: formattedDate,
-        officer: '',
-        arrestOfficerName: '',
-        arrestOfficerId: '',
-      });
-      setFormErrors({});
+      if (id) {
+        navigate('/dashboard/bo-list', {
+          state: {
+            notification: {
+              type: 'success',
+              message: 'Boletim de ocorrência atualizado com sucesso.'
+            }
+          }
+        });
+      } else {
+        setNotification({
+          type: 'success',
+          message: 'Boletim de ocorrência registrado com sucesso'
+        });
+        
+        // Clear form and reset date to current time
+        const now = new Date();
+        const formattedDate = now.toISOString().slice(0, 16);
+        setFormData({
+          complainants: [createPersonEntry()],
+          reportedPeople: [createPersonEntry()],
+          description: '',
+          location: '',
+          date: formattedDate,
+          officer: '',
+          arrestOfficerName: '',
+          arrestOfficerId: '',
+        });
+        setFormErrors({});
+      }
     } catch (error) {
       console.error('Erro ao registrar BO:', error);
       setNotification({
@@ -332,16 +437,33 @@ const RegisterBO = () => {
     
   };
 
+  if (loadingData) {
+    return (
+      <div className="max-w-4xl mx-auto pb-10 flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-federal-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto pb-10">
       
       {/* Header */}
       <div className="mb-8">
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard/bo-list')}
+          className="mb-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white transition-colors"
+        >
+          Voltar para Lista
+        </button>
         <h2 className="text-3xl font-bold text-white flex items-center gap-3">
           <Shield className="text-federal-500" size={32} />
-          Registrar Boletim de Ocorrência
+          {id ? 'Editar Boletim de Ocorrência' : 'Registrar Boletim de Ocorrência'}
         </h2>
-        <p className="text-slate-400 mt-2">Preencha os dados abaixo para registrar uma nova ocorrência no sistema.</p>
+        <p className="text-slate-400 mt-2">
+          {id ? 'Atualize os dados do boletim de ocorrência já criado.' : 'Preencha os dados abaixo para registrar uma nova ocorrência no sistema.'}
+        </p>
       </div>
 
       <NotificationBanner
@@ -656,7 +778,7 @@ const RegisterBO = () => {
             )}
           >
             <FileText size={18} />
-            {loading ? 'Registrando...' : 'Registrar BO'}
+            {loading ? (id ? 'Salvando...' : 'Registrando...') : (id ? 'Salvar Alterações' : 'Registrar BO')}
           </button>
         </div>
 

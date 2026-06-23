@@ -31,7 +31,8 @@ import {
   Building2,
   Stethoscope,
   FileCheck,
-  BadgeX
+  BadgeX,
+  UserCog
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
@@ -118,6 +119,7 @@ const PrivateLayout = () => {
       items: [
         { to: '/dashboard/corregedoria', icon: ShieldAlert, label: 'Corregedoria', prefetchKey: 'CorregedoriaList' },
         { to: '/dashboard/exonerations', icon: BadgeX, label: 'Exoneração', prefetchKey: 'ExonerationsManager', permission: 'exonerations_view' },
+        { to: '/dashboard/integration', icon: UserCog, label: 'Integração', prefetchKey: 'IntegrationManager', permission: 'integration_view' },
         { to: '/dashboard/pm', icon: Car, label: 'Integração PM', prefetchKey: 'PMIntegration', permission: 'pm_view' },
         { to: '/dashboard/news', icon: Newspaper, label: 'Notícias', permission: 'news_manage' },
         { to: '/dashboard/communication', icon: Radio, label: 'Comunicação', prefetchKey: 'CommunicationHub', permission: 'communication_view' },

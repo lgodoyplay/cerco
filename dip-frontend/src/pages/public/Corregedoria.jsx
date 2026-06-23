@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Shield, Send, FileText, Upload, CheckCircle, AlertCircle, X, Link as LinkIcon, Plus } from 'lucide-react';
 import { clsx } from 'clsx';
 import { supabase } from '../../lib/supabase';
+import { useSettings } from '../../hooks/useSettings';
+import { createBaseWebhookEmbed, formatWebhookAttachments, postWebhookEmbed } from '../../utils/discordWebhook';
 
 const normalizeExternalUrl = (value = '') => {
   const trimmed = value.trim();
@@ -11,6 +13,7 @@ const normalizeExternalUrl = (value = '') => {
 };
 
 const Corregedoria = () => {
+  const { discordConfig } = useSettings();
   const [formData, setFormData] = useState({
     nome: '',
     detalhes: '',
@@ -54,7 +57,7 @@ const Corregedoria = () => {
 
   const uploadFiles = async () => {
     const fileItems = items.filter(item => item.type === 'file');
-    const uploadedUrls = [];
+    const uploadedItems = [];
     for (const f of fileItems) {
       const fileExt = f.file.name.split('.').pop();
       const fileName = `corregedoria/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -63,15 +66,43 @@ const Corregedoria = () => {
         throw error;
       } else {
         const { data: publicUrlData } = supabase.storage.from('public').getPublicUrl(fileName);
-        uploadedUrls.push(publicUrlData.publicUrl);
+        uploadedItems.push({
+          title: f.file.name,
+          url: publicUrlData.publicUrl
+        });
       }
     }
     const linkItems = items
       .filter(item => item.type === 'link')
-      .map(item => item.url.trim())
-      .filter(Boolean);
+      .map(item => ({
+        title: item.url.trim(),
+        url: normalizeExternalUrl(item.url.trim())
+      }))
+      .filter(item => item.url);
 
-    return [...uploadedUrls, ...linkItems];
+    return [...uploadedItems, ...linkItems];
+  };
+
+  const sendCorregedoriaWebhook = async ({ nome, detalhes, anexos }) => {
+    if (!discordConfig?.corregedoriaWebhook) return;
+
+    try {
+      const embed = createBaseWebhookEmbed({
+        title: 'Corregedoria - Nova Denuncia',
+        description: detalhes,
+        color: 0xdc2626,
+        actorName: nome,
+        footerText: 'Sistema CIVIL EUFORIA - Corregedoria',
+        fields: [
+          { name: 'Origem', value: 'Formulario publico', inline: true },
+          { name: 'Anexos / Provas', value: formatWebhookAttachments(anexos), inline: false }
+        ]
+      });
+
+      await postWebhookEmbed(discordConfig.corregedoriaWebhook, embed);
+    } catch (webhookError) {
+      console.error('Erro ao enviar webhook da corregedoria:', webhookError);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -94,13 +125,19 @@ const Corregedoria = () => {
     setStatus('submitting');
 
     try {
-      const allItems = await uploadFiles();
+      const uploadedItems = await uploadFiles();
+      const arquivos = uploadedItems
+        .map((item) => item.url.trim())
+      .filter(Boolean);
+
       const { error } = await supabase.from('corregedoria').insert([{
         nome,
         detalhes,
-        arquivos: allItems,
+        arquivos,
       }]);
       if (error) throw error;
+
+      await sendCorregedoriaWebhook({ nome, detalhes, anexos: uploadedItems });
 
       setStatus('success');
       setNotification({ type: 'success', message: 'Denúncia enviada com sucesso!' });

@@ -34,6 +34,11 @@ const AppearanceSettings = () => {
     logAction(`Modo compacto ${checked ? 'ativado' : 'desativado'}`);
   };
 
+  const handleDiscordInviteChange = (value) => {
+    updateAppearance({ ...appearance, discordInviteUrl: value });
+    logAction('Link do Discord atualizado na home');
+  };
+
   const handleLogoSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -177,6 +182,20 @@ const AppearanceSettings = () => {
                 onChange={(e) => handleCompactModeChange(e.target.checked)}
               />
             </label>
+
+            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+              <label className="block text-sm font-medium text-white mb-2">Link do Discord na Home</label>
+              <input
+                type="text"
+                value={appearance.discordInviteUrl || 'https://discord.gg/PWUENE7MJh'}
+                onChange={(e) => handleDiscordInviteChange(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-federal-500 transition-colors"
+                placeholder="https://discord.gg/PWUENE7MJh"
+              />
+              <p className="text-sm text-slate-400 mt-2">
+                Esse link alimenta o botão do Discord exibido na página inicial.
+              </p>
+            </div>
           </div>
         </section>
 

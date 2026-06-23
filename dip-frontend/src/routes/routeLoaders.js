@@ -58,6 +58,7 @@ export const routeLoaders = {
   ProtectiveMeasuresManager: () => import('../pages/private/protectiveMeasures/ProtectiveMeasuresManager'),
   ExonerationsManager: () => import('../pages/private/exonerations/ExonerationsManager'),
   ExonerationCreate: () => import('../pages/private/exonerations/ExonerationCreate'),
+  IntegrationManager: () => import('../pages/private/integration/IntegrationManager'),
   JudiciaryManager: () => import('../pages/private/judiciary/JudiciaryManager'),
   PMIntegration: () => import('../pages/private/pm/PMIntegration'),
   LawyerDashboard: () => import('../pages/private/lawyers/LawyerDashboard'),

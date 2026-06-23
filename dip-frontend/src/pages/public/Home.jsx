@@ -25,6 +25,8 @@ import {
   Link2
 } from 'lucide-react';
 import clsx from 'clsx';
+import { useSettings } from '../../hooks/useSettings';
+import { createBaseWebhookEmbed, postWebhookEmbed } from '../../utils/discordWebhook';
 
 const getEmbedUrl = (url) => {
   // YouTube
@@ -44,6 +46,7 @@ const getEmbedUrl = (url) => {
 
 const Home = () => {
   const navigate = useNavigate();
+  const { appearance, discordConfig } = useSettings();
   const [wantedList, setWantedList] = useState([]);
   const [newsList, setNewsList] = useState([]);
   const [liveStreams, setLiveStreams] = useState([]);
@@ -65,12 +68,24 @@ const Home = () => {
     passportId: '',
     phone: ''
   });
+  const [loginRequestModalOpen, setLoginRequestModalOpen] = useState(false);
+  const [loginRequestStatus, setLoginRequestStatus] = useState('idle');
+  const [loginRequestError, setLoginRequestError] = useState('');
+  const [loginRequestForm, setLoginRequestForm] = useState({
+    fullName: '',
+    passportId: '',
+    phone: '',
+    desiredLogin: '',
+    discordName: '',
+    details: ''
+  });
 
   const images = [
     '/imagem1.jpg',
     '/imagem2.jpg',
     '/imagem3.jpg'
   ];
+  const discordInviteUrl = appearance?.discordInviteUrl || 'https://discord.gg/PWUENE7MJh';
 
   useEffect(() => {
     fetchWanted();
@@ -204,6 +219,78 @@ const Home = () => {
     }
   };
 
+  const handleLoginRequestSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!loginRequestForm.fullName || !loginRequestForm.passportId || !loginRequestForm.phone || !loginRequestForm.desiredLogin) {
+      setLoginRequestError('Preencha nome, passaporte, telefone do jogo e login desejado.');
+      return;
+    }
+
+    setLoginRequestStatus('submitting');
+    setLoginRequestError('');
+
+    try {
+      const payload = {
+        full_name: loginRequestForm.fullName.trim(),
+        passport_id: loginRequestForm.passportId.trim(),
+        phone: loginRequestForm.phone.trim(),
+        desired_login: loginRequestForm.desiredLogin.trim(),
+        discord_name: loginRequestForm.discordName.trim() || null,
+        details: loginRequestForm.details.trim() || null,
+        status: 'pendente'
+      };
+
+      const { error } = await supabase
+        .from('integration_requests')
+        .insert([payload]);
+
+      if (error) throw error;
+
+      if (discordConfig?.formsWebhook) {
+        try {
+          const embed = createBaseWebhookEmbed({
+            title: 'Pedido de Login - Nova Solicitacao',
+            description: payload.details || 'Solicitacao enviada pela pagina inicial.',
+            color: 0x2563eb,
+            actorName: payload.full_name,
+            footerText: 'Sistema CIVIL EUFORIA - Integracao',
+            fields: [
+              { name: 'Passaporte', value: payload.passport_id, inline: true },
+              { name: 'Telefone', value: payload.phone, inline: true },
+              { name: 'Login desejado', value: payload.desired_login, inline: true },
+              { name: 'Discord', value: payload.discord_name || 'Nao informado', inline: true },
+              { name: 'Origem', value: 'Pagina inicial', inline: true },
+              { name: 'Status', value: 'Pendente', inline: true }
+            ]
+          });
+
+          await postWebhookEmbed(discordConfig.formsWebhook, embed);
+        } catch (webhookError) {
+          console.error('Erro ao enviar webhook do pedido de login:', webhookError);
+        }
+      }
+
+      setLoginRequestStatus('success');
+      setLoginRequestForm({
+        fullName: '',
+        passportId: '',
+        phone: '',
+        desiredLogin: '',
+        discordName: '',
+        details: ''
+      });
+      setTimeout(() => {
+        setLoginRequestModalOpen(false);
+        setLoginRequestStatus('idle');
+      }, 1200);
+    } catch (error) {
+      console.error('Erro ao enviar pedido de login:', error);
+      setLoginRequestStatus('error');
+      setLoginRequestError('Nao foi possivel enviar o pedido de login agora.');
+    }
+  };
+
   return (
     <div className="space-y-20 pb-20">
       <section className="relative overflow-hidden bg-slate-950">
@@ -246,6 +333,26 @@ const Home = () => {
               >
                 Solicitar Porte
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginRequestModalOpen(true);
+                  setLoginRequestStatus('idle');
+                  setLoginRequestError('');
+                }}
+                className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-amber-700 hover:bg-amber-600 text-white font-bold text-sm tracking-wide shadow-lg shadow-amber-900/40 transition-transform hover:-translate-y-0.5"
+              >
+                Pedir Login
+              </button>
+              <a
+                href={discordInviteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-sm tracking-wide shadow-lg shadow-indigo-900/40 transition-transform hover:-translate-y-0.5"
+              >
+                <Link2 size={18} />
+                Entrar no Discord
+              </a>
               <a
                 href="#regra-de-ouro"
                 className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-800 text-slate-100 font-semibold text-sm tracking-wide transition-colors"
@@ -596,6 +703,131 @@ const Home = () => {
                   className="px-5 py-3 rounded-xl bg-federal-600 hover:bg-federal-500 text-white font-bold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {weaponRequestStatus === 'submitting' ? 'Continuando...' : 'Continuar no Painel'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {loginRequestModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setLoginRequestModalOpen(false)}>
+          <div
+            className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl max-h-[92vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800">
+              <div>
+                <h2 className="text-xl font-bold text-white">Pedir Login</h2>
+                <p className="text-sm text-slate-400 mt-1">
+                  Envie seus dados para a equipe analisar e liberar o acesso.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setLoginRequestModalOpen(false)}
+                className="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleLoginRequestSubmit} className="p-6 space-y-4">
+              {loginRequestError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                  {loginRequestError}
+                </div>
+              )}
+
+              {loginRequestStatus === 'success' && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm">
+                  Pedido enviado com sucesso. Aguarde a análise no painel interno.
+                </div>
+              )}
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Nome</label>
+                  <input
+                    type="text"
+                    value={loginRequestForm.fullName}
+                    onChange={(e) => setLoginRequestForm(prev => ({ ...prev, fullName: e.target.value }))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                    placeholder="Seu nome"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Passaporte</label>
+                  <input
+                    type="text"
+                    value={loginRequestForm.passportId}
+                    onChange={(e) => setLoginRequestForm(prev => ({ ...prev, passportId: e.target.value }))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                    placeholder="Ex: DEN3635"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Telefone do jogo</label>
+                  <input
+                    type="text"
+                    value={loginRequestForm.phone}
+                    onChange={(e) => setLoginRequestForm(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                    placeholder="Numero para contato"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Login desejado</label>
+                  <input
+                    type="text"
+                    value={loginRequestForm.desiredLogin}
+                    onChange={(e) => setLoginRequestForm(prev => ({ ...prev, desiredLogin: e.target.value }))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                    placeholder="Usuario que deseja usar"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Discord</label>
+                <input
+                  type="text"
+                  value={loginRequestForm.discordName}
+                  onChange={(e) => setLoginRequestForm(prev => ({ ...prev, discordName: e.target.value }))}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
+                  placeholder="Ex: usuario#0001"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Observações</label>
+                <textarea
+                  rows={4}
+                  value={loginRequestForm.details}
+                  onChange={(e) => setLoginRequestForm(prev => ({ ...prev, details: e.target.value }))}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors resize-none"
+                  placeholder="Informe algo importante para a liberação do login."
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setLoginRequestModalOpen(false)}
+                  className="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={loginRequestStatus === 'submitting'}
+                  className="px-5 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {loginRequestStatus === 'submitting' ? 'Enviando...' : 'Enviar Pedido'}
                 </button>
               </div>
             </form>

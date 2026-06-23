@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { useAuth } from '../../../context/AuthContext';
+import { useSettings } from '../../../hooks/useSettings';
 import NotificationBanner from '../../../components/feedback/NotificationBanner';
 import { ArrowLeft, BadgeX, CheckCircle, Link as LinkIcon, Plus, RefreshCw, Upload, X } from 'lucide-react';
+import { createBaseWebhookEmbed, formatWebhookAttachments, postWebhookEmbed, resolveWebhookActorName } from '../../../utils/discordWebhook';
 
 const createEmptyForm = () => {
   const now = new Date();
@@ -26,6 +28,7 @@ const createEmptyForm = () => {
 const ExonerationCreate = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { discordConfig } = useSettings();
   const { can } = usePermissions();
   const canManage = can('exonerations_manage');
 
@@ -116,10 +119,37 @@ const ExonerationCreate = () => {
       });
     }
 
-    if (!rows.length) return;
+    if (!rows.length) return [];
 
     const { error } = await supabase.from('exoneration_proofs').insert(rows);
     if (error) throw error;
+    return rows;
+  };
+
+  const sendExonerationWebhook = async (payload) => {
+    if (!discordConfig?.exonerationsWebhook) return;
+
+    try {
+      const embed = createBaseWebhookEmbed({
+        title: 'Exoneracao - Novo Catalogo',
+        description: payload.reason,
+        color: 0xbe123c,
+        actorName: resolveWebhookActorName(user),
+        footerText: 'Sistema CIVIL EUFORIA - Exoneracao',
+        fields: [
+          { name: 'Nome', value: payload.fullName, inline: true },
+          { name: 'Passaporte', value: payload.passportId, inline: true },
+          { name: 'Cargo / Patente', value: payload.roleName || 'Nao informado', inline: true },
+          { name: 'Setor', value: payload.department || 'Nao informado', inline: true },
+          { name: 'Data da decisao', value: payload.decisionDate, inline: true },
+          { name: 'Provas / Documentos', value: formatWebhookAttachments(payload.proofs), inline: false }
+        ]
+      });
+
+      await postWebhookEmbed(discordConfig.exonerationsWebhook, embed);
+    } catch (webhookError) {
+      console.error('Erro ao enviar webhook da exoneração:', webhookError);
+    }
   };
 
   const handleCreate = async (event) => {
@@ -174,8 +204,12 @@ const ExonerationCreate = () => {
 
       if (insertError) throw insertError;
 
-      await uploadProofs(exonerationId);
+      const proofRows = await uploadProofs(exonerationId);
       proofs.forEach((proof) => proof.preview && URL.revokeObjectURL(proof.preview));
+      await sendExonerationWebhook({
+        ...formData,
+        proofs: proofRows
+      });
 
       navigate('/dashboard/exonerations', {
         replace: true,

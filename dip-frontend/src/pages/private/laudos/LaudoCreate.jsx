@@ -10,11 +10,16 @@ import {
   FileText
 } from 'lucide-react';
 import { useLaudos } from '../../../hooks/useLaudos';
+import { useSettings } from '../../../hooks/useSettings';
+import { useAuth } from '../../../context/AuthContext';
 import ImageUploadArea from '../../../components/ImageUploadArea';
+import { createBaseWebhookEmbed, formatWebhookAttachments, postWebhookEmbed, resolveWebhookActorName } from '../../../utils/discordWebhook';
 
 const LaudoCreate = () => {
   const navigate = useNavigate();
-  const { addLaudo } = useLaudos();
+  const { addLaudo, getLaudo } = useLaudos();
+  const { discordConfig } = useSettings();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     paciente_nome: '',
     paciente_documento: '',
@@ -49,7 +54,38 @@ const LaudoCreate = () => {
     setLoading(true);
     
     try {
-      await addLaudo(formData, arquivos);
+      const laudoId = await addLaudo(formData, arquivos);
+
+      if (discordConfig?.laudosWebhook && laudoId) {
+        try {
+          const laudo = await getLaudo(laudoId);
+          const embed = createBaseWebhookEmbed({
+            title: 'Laudo Medico - Novo Registro',
+            description: formData.conteudo,
+            color: 0x059669,
+            actorName: resolveWebhookActorName(user),
+            footerText: 'Sistema CIVIL EUFORIA - Laudos Medicos',
+            fields: [
+              { name: 'Paciente', value: formData.paciente_nome, inline: true },
+              { name: 'Documento', value: formData.paciente_documento, inline: true },
+              { name: 'Tipo do laudo', value: formData.tipo_laudo, inline: true },
+              {
+                name: 'Arquivos / Documentos',
+                value: formatWebhookAttachments((laudo?.laudo_arquivos || []).map((arquivo) => ({
+                  title: arquivo.descricao || arquivo.url,
+                  url: arquivo.url
+                }))),
+                inline: false
+              }
+            ]
+          });
+
+          await postWebhookEmbed(discordConfig.laudosWebhook, embed);
+        } catch (webhookError) {
+          console.error('Erro ao enviar webhook de laudo:', webhookError);
+        }
+      }
+
       navigate('/dashboard/laudos');
     } catch (error) {
       console.error('Erro ao criar laudo:', error);

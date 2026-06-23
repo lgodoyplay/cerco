@@ -1,20 +1,43 @@
-import React, { useState } from 'react';
-import { Share2, Save, MessageSquare, AlertCircle, CheckCircle, Microscope, ShieldAlert, Target } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Share2, Save, MessageSquare, AlertCircle, CheckCircle, Microscope, ShieldAlert, Target, Stethoscope, FileSearch, BadgeX, Scale } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 
 const WebhookSettings = () => {
   const { discordConfig, updateDiscordConfig } = useSettings();
   
   const [config, setConfig] = useState(() => ({
+    weaponsWebhook: discordConfig?.weaponsWebhook || '',
     formsWebhook: discordConfig?.formsWebhook || discordConfig?.webhookUrl || '',
     arrestsWebhook: discordConfig?.arrestsWebhook || '',
     wantedWebhook: discordConfig?.wantedWebhook || '',
     bulletinsWebhook: discordConfig?.bulletinsWebhook || '',
     reportsWebhook: discordConfig?.reportsWebhook || '',
-    forensicsWebhook: discordConfig?.forensicsWebhook || ''
+    forensicsWebhook: discordConfig?.forensicsWebhook || '',
+    corregedoriaWebhook: discordConfig?.corregedoriaWebhook || '',
+    exonerationsWebhook: discordConfig?.exonerationsWebhook || '',
+    laudosWebhook: discordConfig?.laudosWebhook || '',
+    searchSeizureWebhook: discordConfig?.searchSeizureWebhook || '',
+    protectiveMeasuresWebhook: discordConfig?.protectiveMeasuresWebhook || ''
   }));
 
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setConfig({
+      weaponsWebhook: discordConfig?.weaponsWebhook || '',
+      formsWebhook: discordConfig?.formsWebhook || discordConfig?.webhookUrl || '',
+      arrestsWebhook: discordConfig?.arrestsWebhook || '',
+      wantedWebhook: discordConfig?.wantedWebhook || '',
+      bulletinsWebhook: discordConfig?.bulletinsWebhook || '',
+      reportsWebhook: discordConfig?.reportsWebhook || '',
+      forensicsWebhook: discordConfig?.forensicsWebhook || '',
+      corregedoriaWebhook: discordConfig?.corregedoriaWebhook || '',
+      exonerationsWebhook: discordConfig?.exonerationsWebhook || '',
+      laudosWebhook: discordConfig?.laudosWebhook || '',
+      searchSeizureWebhook: discordConfig?.searchSeizureWebhook || '',
+      protectiveMeasuresWebhook: discordConfig?.protectiveMeasuresWebhook || ''
+    });
+  }, [discordConfig]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -166,6 +189,148 @@ const WebhookSettings = () => {
             >
               Testar
             </button>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-slate-800 rounded-lg text-red-400">
+                <ShieldAlert size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Corregedoria</h3>
+                <p className="text-sm text-slate-400">Denúncias com links, vídeos, imagens e arquivos anexados.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <input
+                type="text"
+                name="corregedoriaWebhook"
+                value={config.corregedoriaWebhook}
+                onChange={handleChange}
+                placeholder="https://discord.com/api/webhooks/..."
+                className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
+              />
+              <button
+                onClick={() => handleTestWebhook(config.corregedoriaWebhook, 'Corregedoria')}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition-colors"
+              >
+                Testar
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-slate-800 rounded-lg text-rose-400">
+                <BadgeX size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Exoneração</h3>
+                <p className="text-sm text-slate-400">Catálogo de exonerações com provas em imagem e links.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <input
+                type="text"
+                name="exonerationsWebhook"
+                value={config.exonerationsWebhook}
+                onChange={handleChange}
+                placeholder="https://discord.com/api/webhooks/..."
+                className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
+              />
+              <button
+                onClick={() => handleTestWebhook(config.exonerationsWebhook, 'Exoneração')}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition-colors"
+              >
+                Testar
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-slate-800 rounded-lg text-emerald-400">
+                <Stethoscope size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Laudos Médicos</h3>
+                <p className="text-sm text-slate-400">Envio de laudos com documentos e anexos médicos.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <input
+                type="text"
+                name="laudosWebhook"
+                value={config.laudosWebhook}
+                onChange={handleChange}
+                placeholder="https://discord.com/api/webhooks/..."
+                className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
+              />
+              <button
+                onClick={() => handleTestWebhook(config.laudosWebhook, 'Laudos Médicos')}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition-colors"
+              >
+                Testar
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-slate-800 rounded-lg text-blue-400">
+                <FileSearch size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Busca e Apreensão</h3>
+                <p className="text-sm text-slate-400">Operações com documentos, fotos do alvo, casas e veículos.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <input
+                type="text"
+                name="searchSeizureWebhook"
+                value={config.searchSeizureWebhook}
+                onChange={handleChange}
+                placeholder="https://discord.com/api/webhooks/..."
+                className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
+              />
+              <button
+                onClick={() => handleTestWebhook(config.searchSeizureWebhook, 'Busca e Apreensão')}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition-colors"
+              >
+                Testar
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 md:col-span-2">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-slate-800 rounded-lg text-orange-400">
+                <Scale size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Medida Protetiva</h3>
+                <p className="text-sm text-slate-400">Notificações com dados da medida, validade e documento oficial anexado.</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <input
+                type="text"
+                name="protectiveMeasuresWebhook"
+                value={config.protectiveMeasuresWebhook}
+                onChange={handleChange}
+                placeholder="https://discord.com/api/webhooks/..."
+                className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-federal-500"
+              />
+              <button
+                onClick={() => handleTestWebhook(config.protectiveMeasuresWebhook, 'Medida Protetiva')}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition-colors"
+              >
+                Testar
+              </button>
+            </div>
           </div>
         </div>
 

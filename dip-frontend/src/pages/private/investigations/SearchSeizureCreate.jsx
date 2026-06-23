@@ -7,12 +7,15 @@ import { Save, ArrowLeft } from 'lucide-react';
 import ImageUploadArea from '../../../components/ImageUploadArea';
 import FileUploadArea from '../../../components/FileUploadArea';
 import { supabase } from '../../../lib/supabase';
+import { useSettings } from '../../../hooks/useSettings';
+import { createBaseWebhookEmbed, formatWebhookAttachments, postWebhookEmbed, resolveWebhookActorName } from '../../../utils/discordWebhook';
 
 const SearchSeizureCreate = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { addInvestigation, getInvestigation, editInvestigation, updateSearchSeizureData } = useInvestigations();
   const { user } = useAuth();
+  const { discordConfig } = useSettings();
   const [loading, setLoading] = useState(!!id);
   
   const [formData, setFormData] = useState({
@@ -133,6 +136,60 @@ const SearchSeizureCreate = () => {
     setFormData(prev => ({ ...prev, documentoOrdem: dataUrl }));
   };
 
+  const buildSearchSeizureAttachments = (payload) => {
+    const attachments = [];
+
+    if (payload.documentoOrdem) {
+      attachments.push({ title: 'Documento da ordem', url: payload.documentoOrdem });
+    }
+
+    if (payload.fotoRosto) {
+      attachments.push({ title: 'Foto do alvo', url: payload.fotoRosto });
+    }
+
+    (payload.casas || []).forEach((casa, index) => {
+      if (casa.fotoTranca) attachments.push({ title: `Casa ${index + 1} - Tranca`, url: casa.fotoTranca });
+      if (casa.fotoInterior) attachments.push({ title: `Casa ${index + 1} - Interior`, url: casa.fotoInterior });
+    });
+
+    (payload.carros || []).forEach((carro, index) => {
+      if (carro.fotoPortaMala) attachments.push({ title: `Carro ${index + 1} - Porta-malas`, url: carro.fotoPortaMala });
+    });
+
+    return attachments;
+  };
+
+  const sendSearchSeizureWebhook = async (savedInvestigation, payload, isEditing) => {
+    if (!discordConfig?.searchSeizureWebhook) return;
+
+    try {
+      const entityLabel = payload.tipoEntidade === 'organizacao' ? 'Organização' : 'Pessoa';
+      const entityName = payload.nomeEntidade || savedInvestigation?.nomeEntidade || 'Nao informado';
+      const attachments = buildSearchSeizureAttachments(savedInvestigation || payload);
+
+      const embed = createBaseWebhookEmbed({
+        title: `Busca e Apreensao - ${isEditing ? 'Atualizada' : 'Nova Operacao'}`,
+        description: payload.description,
+        color: 0x2563eb,
+        actorName: resolveWebhookActorName(user),
+        footerText: 'Sistema CIVIL EUFORIA - Busca e Apreensao',
+        fields: [
+          { name: 'Titulo', value: payload.title, inline: true },
+          { name: 'Tipo de entidade', value: entityLabel, inline: true },
+          { name: 'Nome da entidade', value: entityName, inline: true },
+          { name: 'Prioridade', value: payload.priority, inline: true },
+          { name: 'Casas', value: String(payload.quantidadeCasas || 0), inline: true },
+          { name: 'Carros', value: String(payload.quantidadeCarros || 0), inline: true },
+          { name: 'Provas / Documentos', value: formatWebhookAttachments(attachments), inline: false }
+        ]
+      });
+
+      await postWebhookEmbed(discordConfig.searchSeizureWebhook, embed);
+    } catch (webhookError) {
+      console.error('Erro ao enviar webhook de busca e apreensão:', webhookError);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -223,12 +280,16 @@ const SearchSeizureCreate = () => {
         carros: finalCarros
       };
 
+      let savedId = id;
       if (id) {
         await editInvestigation(id, payload);
         await updateSearchSeizureData(id, payload);
       } else {
-        await addInvestigation(payload);
+        savedId = await addInvestigation(payload);
       }
+
+      const savedInvestigation = savedId ? await getInvestigation(savedId) : null;
+      await sendSearchSeizureWebhook(savedInvestigation, payload, Boolean(id));
 
       navigate('/dashboard/search-seizure');
     } catch (error) {

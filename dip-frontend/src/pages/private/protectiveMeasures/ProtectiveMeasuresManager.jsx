@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { useAuth } from '../../../context/AuthContext';
+import { useSettings } from '../../../hooks/useSettings';
 import NotificationBanner from '../../../components/feedback/NotificationBanner';
 import {
   ShieldAlert,
@@ -14,6 +15,7 @@ import {
   AlertTriangle,
   X
 } from 'lucide-react';
+import { createBaseWebhookEmbed, formatWebhookAttachments, postWebhookEmbed, resolveWebhookActorName } from '../../../utils/discordWebhook';
 
 const STATUS_STYLES = {
   active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -95,6 +97,7 @@ const createEmptyForm = () => ({
 
 const ProtectiveMeasuresManager = () => {
   const { user } = useAuth();
+  const { discordConfig } = useSettings();
   const { can } = usePermissions();
   const canView = can('protective_measures_view');
   const canManage = can('protective_measures_manage');
@@ -218,6 +221,37 @@ const ProtectiveMeasuresManager = () => {
     setCreateForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const sendProtectiveMeasureWebhook = async (measure, actionLabel = 'Nova Medida') => {
+    if (!discordConfig?.protectiveMeasuresWebhook || !measure) return;
+
+    try {
+      const attachments = (measure.protective_measure_attachments || []).map((attachment) => ({
+        title: attachment.file_name || 'Documento oficial',
+        url: attachment.url
+      }));
+
+      const embed = createBaseWebhookEmbed({
+        title: `Medida Protetiva - ${actionLabel}`,
+        description: measure.details || measure.restrictions || 'Sem detalhes adicionais.',
+        color: actionLabel === 'Retirada' ? 0xdc2626 : 0xf59e0b,
+        actorName: resolveWebhookActorName(user),
+        footerText: 'Sistema CIVIL EUFORIA - Medida Protetiva',
+        fields: [
+          { name: 'Vitima', value: `${measure.victim_name} (${measure.victim_passport})`, inline: true },
+          { name: 'Agressor', value: `${measure.aggressor_name} (${measure.aggressor_passport})`, inline: true },
+          { name: 'Validade', value: `${formatDate(measure.valid_from)} ate ${formatDate(measure.valid_until)}`, inline: true },
+          { name: 'Autoridade', value: measure.authority || 'Nao informada', inline: true },
+          { name: 'Status', value: STATUS_LABELS[measure.status] || measure.status || 'Ativa', inline: true },
+          { name: 'Documento / Prova', value: formatWebhookAttachments(attachments), inline: false }
+        ]
+      });
+
+      await postWebhookEmbed(discordConfig.protectiveMeasuresWebhook, embed);
+    } catch (webhookError) {
+      console.error('Erro ao enviar webhook da medida protetiva:', webhookError);
+    }
+  };
+
   const handleCreate = async (event) => {
     event.preventDefault();
 
@@ -336,6 +370,8 @@ const ProtectiveMeasuresManager = () => {
 
       if (fetchError) throw fetchError;
 
+      await sendProtectiveMeasureWebhook(createdMeasure, 'Nova Medida');
+
       setNotification({
         type: 'success',
         title: 'Medida criada',
@@ -375,6 +411,8 @@ const ProtectiveMeasuresManager = () => {
         .single();
 
       if (error) throw error;
+
+      await sendProtectiveMeasureWebhook(updated, 'Retirada');
 
       setSelectedMeasure(updated);
       setNotification({

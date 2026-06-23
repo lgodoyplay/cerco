@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Shield, Menu, X, Lock } from 'lucide-react';
+import { Shield, Menu, X, Lock, Link2 } from 'lucide-react';
 import clsx from 'clsx';
+import { useSettings } from '../hooks/useSettings';
 
 const PublicLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const location = useLocation();
+  const { appearance } = useSettings();
+  const discordInviteUrl = appearance?.discordInviteUrl || 'https://discord.gg/PWUENE7MJh';
 
   const navItems = [
     { name: 'Início', path: '/' },
@@ -123,6 +126,15 @@ const PublicLayout = () => {
               <h3 className="font-semibold text-white mb-4">Contato de Emergência</h3>
               <p className="text-slate-500 text-sm mb-2">Em caso de emergência:</p>
               <p className="text-sm font-medium text-federal-400">Dirija-se à DP Euforia da Praia</p>
+              <a
+                href={discordInviteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white text-sm font-semibold transition-colors"
+              >
+                <Link2 size={16} />
+                Entrar no Discord
+              </a>
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-slate-900 text-center text-slate-600 text-xs">

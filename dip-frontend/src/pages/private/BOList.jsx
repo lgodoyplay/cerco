@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Filter, FileText, Eye, Printer, Shield, Calendar, MapPin, User, Download, ChevronLeft, ChevronRight, Trash2, Lock } from 'lucide-react';
+import { Search, Filter, FileText, Eye, Printer, Shield, Calendar, MapPin, User, Download, ChevronLeft, ChevronRight, Trash2, Lock, Edit3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
@@ -369,6 +369,15 @@ const BOList = () => {
                       >
                         <Printer size={18} />
                       </button>
+                      {canManage && (
+                        <button 
+                          onClick={() => navigate(`/dashboard/bo/${bo.id}/edit`)}
+                          className="p-2 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 rounded-lg transition-colors"
+                          title="Editar"
+                        >
+                          <Edit3 size={18} />
+                        </button>
+                      )}
                       <button 
                         onClick={() => handleDeleteClick(bo)}
                         className="p-2 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
@@ -428,9 +437,24 @@ const BOList = () => {
                 <FileText className="text-federal-500" />
                 Detalhes do BO
               </h3>
-              <button onClick={() => setSelectedBO(null)} className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
-                <ChevronLeft className="text-slate-400 hover:text-white" />
-              </button>
+              <div className="flex items-center gap-2">
+                {canManage && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigate(`/dashboard/bo/${selectedBO.id}/edit`);
+                      setSelectedBO(null);
+                    }}
+                    className="inline-flex items-center gap-2 px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg transition-colors"
+                  >
+                    <Edit3 size={16} />
+                    Editar
+                  </button>
+                )}
+                <button onClick={() => setSelectedBO(null)} className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
+                  <ChevronLeft className="text-slate-400 hover:text-white" />
+                </button>
+              </div>
             </div>
             
             <div className="p-6 space-y-6">
