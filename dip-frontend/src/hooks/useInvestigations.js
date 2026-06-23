@@ -1,6 +1,59 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
+const createEmptyInvestigated = () => ({ nome: '', cpf: '' });
+
+const normalizeInvestigatedList = (value) => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => ({
+      nome: String(item?.nome || item?.name || '').trim(),
+      cpf: String(item?.cpf || item?.documento || '').trim()
+    }))
+    .filter((item) => item.nome || item.cpf);
+};
+
+const buildLegacyInvestigatedList = (inv) => {
+  const nome = String(inv.nome_investigado || '').trim();
+  const cpf = String(inv.cpf_investigado || '').trim();
+  return nome || cpf ? [{ nome, cpf }] : [];
+};
+
+const getInvestigationPayload = (data) => {
+  const investigados = normalizeInvestigatedList(data.investigados);
+  const principalInvestigado = investigados[0] || {};
+
+  return {
+    titulo: data.title,
+    categoria: data.category || 'criminal',
+    descricao: data.description,
+    envolvidos: data.involved,
+    prioridade: data.priority,
+    delegacia_responsavel: data.delegaciaResponsavel,
+    nome_investigado: data.nomeInvestigado || principalInvestigado.nome || '',
+    cpf_investigado: data.cpfInvestigado || principalInvestigado.cpf || '',
+    data_nascimento: data.dataNascimento || null,
+    endereco_investigado: data.enderecoInvestigado,
+    telefone_investigado: data.telefoneInvestigado,
+    nome_delegado: data.nomeDelegado,
+    tipo_alvo_investigacao: data.tipoAlvoInvestigacao || 'pessoa',
+    nome_organizacao_investigada: data.nomeOrganizacaoInvestigada || '',
+    investigados_json: investigados,
+    // Dados específicos para busca e apreensão
+    tipo_entidade: data.tipoEntidade,
+    nome_entidade: data.nomeEntidade,
+    documento_pessoa: data.documentoPessoa,
+    foto_rosto: data.fotoRosto,
+    documento_ordem: data.documentoOrdem,
+    quantidade_casas: data.quantidadeCasas,
+    quantidade_carros: data.quantidadeCarros,
+    nomes_carros: data.nomesCarros,
+    casas: data.casas || [],
+    carros: data.carros || []
+  };
+};
+
 export const useInvestigations = () => {
   const [investigations, setInvestigations] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -28,6 +81,9 @@ export const useInvestigations = () => {
   };
 
   const mapInvestigation = (inv) => {
+    const investigados = normalizeInvestigatedList(inv.investigados_json);
+    const investigadosFallback = investigados.length ? investigados : buildLegacyInvestigatedList(inv);
+    const principalInvestigado = investigadosFallback[0] || createEmptyInvestigated();
     const proofs = [...(inv.provas || [])]
       .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0))
       .map(ev => ({
@@ -57,12 +113,15 @@ export const useInvestigations = () => {
       role: inv.investigator.role
     } : null,
     delegaciaResponsavel: inv.delegacia_responsavel || 'Delegacia Central de Investigações',
-    nomeInvestigado: inv.nome_investigado || '',
-    cpfInvestigado: inv.cpf_investigado || '',
+    nomeInvestigado: inv.nome_investigado || principalInvestigado.nome || '',
+    cpfInvestigado: inv.cpf_investigado || principalInvestigado.cpf || '',
     dataNascimento: inv.data_nascimento || '',
     enderecoInvestigado: inv.endereco_investigado || '',
     telefoneInvestigado: inv.telefone_investigado || '',
     nomeDelegado: inv.nome_delegado || '',
+    tipoAlvoInvestigacao: inv.tipo_alvo_investigacao || 'pessoa',
+    nomeOrganizacaoInvestigada: inv.nome_organizacao_investigada || '',
+    investigados: investigadosFallback,
     proofs,
     // Dados específicos para busca e apreensão
     tipoEntidade: inv.tipo_entidade,
@@ -143,37 +202,28 @@ export const useInvestigations = () => {
   const addInvestigation = useCallback(async (data) => {
     try {
       const payload = {
-        titulo: data.title,
-        categoria: data.category || 'criminal',
-        descricao: data.description,
-        envolvidos: data.involved,
-        prioridade: data.priority,
-        status: 'Em Andamento',
-        delegacia_responsavel: data.delegaciaResponsavel,
-        nome_investigado: data.nomeInvestigado,
-        cpf_investigado: data.cpfInvestigado,
-        data_nascimento: data.dataNascimento || null,
-        endereco_investigado: data.enderecoInvestigado,
-        telefone_investigado: data.telefoneInvestigado,
-        nome_delegado: data.nomeDelegado,
-        // Dados específicos para busca e apreensão
-        tipo_entidade: data.tipoEntidade,
-        nome_entidade: data.nomeEntidade,
-        documento_pessoa: data.documentoPessoa,
-        foto_rosto: data.fotoRosto,
-        documento_ordem: data.documentoOrdem,
-        quantidade_casas: data.quantidadeCasas,
-        quantidade_carros: data.quantidadeCarros,
-        nomes_carros: data.nomesCarros,
-        casas: data.casas || [],
-        carros: data.carros || []
+        ...getInvestigationPayload(data),
+        status: 'Em Andamento'
       };
 
-      const { data: newInv, error } = await supabase
+      let { data: newInv, error } = await supabase
         .from('investigacoes')
         .insert([payload])
         .select(`*`)
         .single();
+
+      if (error && /tipo_alvo_investigacao|nome_organizacao_investigada|investigados_json|column/i.test(error.message || '')) {
+        const fallbackPayload = { ...payload };
+        delete fallbackPayload.tipo_alvo_investigacao;
+        delete fallbackPayload.nome_organizacao_investigada;
+        delete fallbackPayload.investigados_json;
+
+        ({ data: newInv, error } = await supabase
+          .from('investigacoes')
+          .insert([fallbackPayload])
+          .select(`*`)
+          .single());
+      }
 
       if (error) throw error;
 
@@ -415,25 +465,24 @@ export const useInvestigations = () => {
 
   const editInvestigation = useCallback(async (id, data) => {
     try {
-      const payload = {
-        titulo: data.title,
-        categoria: data.category || 'criminal',
-        descricao: data.description,
-        envolvidos: data.involved,
-        prioridade: data.priority,
-        delegacia_responsavel: data.delegaciaResponsavel,
-        nome_investigado: data.nomeInvestigado,
-        cpf_investigado: data.cpfInvestigado,
-        data_nascimento: data.dataNascimento || null,
-        endereco_investigado: data.enderecoInvestigado,
-        telefone_investigado: data.telefoneInvestigado,
-        nome_delegado: data.nomeDelegado
-      };
+      const payload = getInvestigationPayload(data);
 
-      const { error } = await supabase
+      let { error } = await supabase
         .from('investigacoes')
         .update(payload)
         .eq('id', id);
+
+      if (error && /tipo_alvo_investigacao|nome_organizacao_investigada|investigados_json|column/i.test(error.message || '')) {
+        const fallbackPayload = { ...payload };
+        delete fallbackPayload.tipo_alvo_investigacao;
+        delete fallbackPayload.nome_organizacao_investigada;
+        delete fallbackPayload.investigados_json;
+
+        ({ error } = await supabase
+          .from('investigacoes')
+          .update(fallbackPayload)
+          .eq('id', id));
+      }
 
       if (error) throw error;
 

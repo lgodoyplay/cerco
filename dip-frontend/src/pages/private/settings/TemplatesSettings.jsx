@@ -233,8 +233,14 @@ const getPreviewSampleData = (type) => {
     description: 'Descricao detalhada dos fatos apurados durante a investigacao realizada.',
     involved: 'Joao da Silva',
     delegaciaResponsavel: 'Delegacia Central de Investigacoes',
+    tipoAlvoInvestigacao: 'organizacao',
+    nomeOrganizacaoInvestigada: 'Grupo Euforia Logistica',
     nomeInvestigado: 'Joao da Silva',
     cpfInvestigado: '123.456.789-10',
+    investigados: [
+      { nome: 'Joao da Silva', cpf: '123.456.789-10' },
+      { nome: 'Carlos Pereira', cpf: '987.654.321-00' }
+    ],
     dataNascimento: '1990-05-10',
     enderecoInvestigado: 'Rua das Flores, 123 - Centro',
     telefoneInvestigado: '(11) 99999-0000',
@@ -293,10 +299,14 @@ const TemplatesSettings = () => {
 <p>Status: {status}</p>
 <p>Delegacia Responsável: {delegacia}</p>
 <p>Investigador Responsável: {nome_agente}</p>
+<p>Tipo do Alvo: {tipo_alvo_investigacao}</p>
+<p>Organização/Empresa Investigada: {nome_organizacao_investigada}</p>
 <p><br></p>
 <p><strong>2. IDENTIFICAÇÃO DO INVESTIGADO</strong></p>
 <p>Nome Completo: {nome_investigado}</p>
 <p>CPF: {cpf_investigado}</p>
+<p>Lista de Investigados:</p>
+<p>{lista_investigados}</p>
 <p>Data de Nascimento: {data_nascimento}</p>
 <p>Endereço: {endereco}</p>
 <p>Telefone: {telefone}</p>

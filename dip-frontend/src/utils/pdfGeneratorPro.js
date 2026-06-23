@@ -342,11 +342,55 @@ const normalizeInvestigationTemplateHtml = (templateStr = '') => {
     return normalized.trim();
 };
 
+const normalizeInvestigadosList = (investigados = []) => {
+    if (!Array.isArray(investigados)) return [];
+
+    return investigados
+        .map((item) => ({
+            nome: String(item?.nome || item?.name || '').trim(),
+            cpf: String(item?.cpf || item?.documento || '').trim()
+        }))
+        .filter((item) => item.nome || item.cpf);
+};
+
+const formatInvestigadosNames = (investigados = [], fallback = 'Nao informado') => {
+    const normalized = normalizeInvestigadosList(investigados);
+    if (!normalized.length) return fallback;
+    return normalized.map((item) => item.nome || 'Nao informado').join(', ');
+};
+
+const formatInvestigadosDocuments = (investigados = [], fallback = 'Nao informado') => {
+    const normalized = normalizeInvestigadosList(investigados);
+    if (!normalized.length) return fallback;
+    return normalized.map((item) => item.cpf || 'Nao informado').join(', ');
+};
+
+const formatInvestigadosDetailedList = (investigados = [], fallback = 'Nao informado') => {
+    const normalized = normalizeInvestigadosList(investigados);
+    if (!normalized.length) return fallback;
+
+    return normalized
+        .map((item, index) => `${String(index + 1).padStart(2, '0')} - ${item.nome || 'Nao informado'}${item.cpf ? ` | CPF/Documento: ${item.cpf}` : ''}`)
+        .join('\n');
+};
+
+const getInvestigationTargetTypeLabel = (value = 'pessoa') => {
+    if (value === 'empresa') return 'Empresa';
+    if (value === 'organizacao') return 'Organizacao';
+    return 'Pessoa';
+};
+
 const getDocumentVariables = (data, user, type = 'investigation', investigationNumberConfig = {}) => {
     if (type === 'investigation') {
         const listaProvas = buildInvestigationProofsText(data.proofs || []);
         const blocoProvas = buildInvestigationProofsHtml(data.proofs || []);
         const investigationNumber = formatInvestigationNumber(data, investigationNumberConfig);
+        const investigados = normalizeInvestigadosList(data.investigados);
+        const investigadosNames = formatInvestigadosNames(investigados, data.nomeInvestigado || (Array.isArray(data.involved) ? data.involved.join(', ') : (data.involved || 'Nao informado')));
+        const investigadosDocuments = formatInvestigadosDocuments(investigados, data.cpfInvestigado || 'Nao informado');
+        const investigadosDetailed = formatInvestigadosDetailedList(investigados, data.nomeInvestigado || 'Nao informado');
+        const targetTypeLabel = getInvestigationTargetTypeLabel(data.tipoAlvoInvestigacao);
+        const organizationName = data.nomeOrganizacaoInvestigada || 'Nao informado';
 
         return {
             '{numero_inquerito}': investigationNumber,
@@ -354,8 +398,11 @@ const getDocumentVariables = (data, user, type = 'investigation', investigationN
             '{status}': data.status,
             '{delegacia}': data.delegaciaResponsavel || 'Delegacia Central de Investigacoes',
             '{nome_agente}': data.investigator ? data.investigator.nome : (user?.nome || 'Agente Responsavel'),
-            '{nome_investigado}': data.nomeInvestigado || (Array.isArray(data.involved) ? data.involved.join(', ') : (data.involved || 'Nao informado')),
-            '{cpf_investigado}': data.cpfInvestigado || 'Nao informado',
+            '{tipo_alvo_investigacao}': targetTypeLabel,
+            '{nome_organizacao_investigada}': organizationName,
+            '{lista_investigados}': investigadosDetailed,
+            '{nome_investigado}': investigadosNames,
+            '{cpf_investigado}': investigadosDocuments,
             '{data_nascimento}': data.dataNascimento ? formatDate(data.dataNascimento) : 'Nao informado',
             '{endereco}': data.enderecoInvestigado || 'Nao informado',
             '{telefone}': data.telefoneInvestigado || 'Nao informado',

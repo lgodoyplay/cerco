@@ -373,17 +373,25 @@ const InvestigationDetail = () => {
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Investigado</label>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Alvo / Investigados</label>
             <div className="text-white font-medium flex items-center gap-2">
               <User size={16} className="text-slate-400" />
-              <span className="truncate">{investigation.nomeInvestigado || investigation.involved || 'Não informado'}</span>
+              <span className="truncate">
+                {investigation.tipoAlvoInvestigacao === 'organizacao' || investigation.tipoAlvoInvestigacao === 'empresa'
+                  ? `${investigation.nomeOrganizacaoInvestigada || 'Não informado'}${investigation.investigados?.length ? ` | ${investigation.investigados.map((item) => item.nome || 'Nao informado').join(', ')}` : ''}`
+                  : (investigation.investigados?.map((item) => item.nome || 'Nao informado').join(', ') || investigation.nomeInvestigado || investigation.involved || 'Não informado')}
+              </span>
             </div>
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">CPF / Documento</label>
             <div className="text-white font-medium flex items-center gap-2">
               <Users size={16} className="text-slate-400" />
-              <span className="truncate">{investigation.cpfInvestigado || 'Não informado'}</span>
+              <span className="truncate">
+                {investigation.investigados?.length
+                  ? investigation.investigados.map((item) => item.cpf || 'Nao informado').join(', ')
+                  : (investigation.cpfInvestigado || 'Não informado')}
+              </span>
             </div>
           </div>
           <div>

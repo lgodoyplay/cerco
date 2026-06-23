@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useInvestigations } from '../../../hooks/useInvestigations';
-import { Save, ArrowLeft, FolderPlus, DollarSign, Edit3, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { Save, ArrowLeft, FolderPlus, DollarSign, Edit3, AlertCircle, CheckCircle, X, Plus, Trash2, Building2, Users } from 'lucide-react';
 import clsx from 'clsx';
+
+const createEmptyInvestigated = () => ({ nome: '', cpf: '' });
+
+const normalizeInvestigatedList = (value) => {
+  if (!Array.isArray(value) || !value.length) return [createEmptyInvestigated()];
+
+  const sanitized = value
+    .map((item) => ({
+      nome: String(item?.nome || '').trim(),
+      cpf: String(item?.cpf || '').trim()
+    }))
+    .filter((item) => item.nome || item.cpf);
+
+  return sanitized.length ? sanitized : [createEmptyInvestigated()];
+};
 
 const InvestigationCreate = () => {
   const navigate = useNavigate();
@@ -18,8 +33,11 @@ const InvestigationCreate = () => {
     priority: 'Média',
     category: categoryParam || 'criminal',
     delegaciaResponsavel: 'Delegacia Central de Investigações',
+    tipoAlvoInvestigacao: 'pessoa',
+    nomeOrganizacaoInvestigada: '',
     nomeInvestigado: '',
     cpfInvestigado: '',
+    investigados: [createEmptyInvestigated()],
     dataNascimento: '',
     enderecoInvestigado: '',
     telefoneInvestigado: '',
@@ -42,8 +60,11 @@ const InvestigationCreate = () => {
               priority: inv.priority,
               category: inv.category,
               delegaciaResponsavel: inv.delegaciaResponsavel || 'Delegacia Central de Investigações',
+              tipoAlvoInvestigacao: inv.tipoAlvoInvestigacao || 'pessoa',
+              nomeOrganizacaoInvestigada: inv.nomeOrganizacaoInvestigada || '',
               nomeInvestigado: inv.nomeInvestigado || '',
               cpfInvestigado: inv.cpfInvestigado || '',
+              investigados: normalizeInvestigatedList(inv.investigados),
               dataNascimento: inv.dataNascimento || '',
               enderecoInvestigado: inv.enderecoInvestigado || '',
               telefoneInvestigado: inv.telefoneInvestigado || '',
@@ -82,6 +103,46 @@ const InvestigationCreate = () => {
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleInvestigadoChange = (index, field, value) => {
+    setFormData((prev) => {
+      const investigados = prev.investigados.map((item, itemIndex) => (
+        itemIndex === index
+          ? { ...item, [field]: value }
+          : item
+      ));
+      const principal = investigados[0] || createEmptyInvestigated();
+
+      return {
+        ...prev,
+        investigados,
+        nomeInvestigado: principal.nome,
+        cpfInvestigado: principal.cpf
+      };
+    });
+  };
+
+  const addInvestigado = () => {
+    setFormData((prev) => ({
+      ...prev,
+      investigados: [...prev.investigados, createEmptyInvestigated()]
+    }));
+  };
+
+  const removeInvestigado = (index) => {
+    setFormData((prev) => {
+      const investigados = prev.investigados.filter((_, itemIndex) => itemIndex !== index);
+      const normalized = investigados.length ? investigados : [createEmptyInvestigated()];
+      const principal = normalized[0] || createEmptyInvestigated();
+
+      return {
+        ...prev,
+        investigados: normalized,
+        nomeInvestigado: principal.nome,
+        cpfInvestigado: principal.cpf
+      };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -127,6 +188,7 @@ const InvestigationCreate = () => {
 
   const isFinancial = formData.category === 'financial';
   const backLink = isFinancial ? '/dashboard/revenue' : '/dashboard/investigations';
+  const isEntityTarget = formData.tipoAlvoInvestigacao === 'organizacao' || formData.tipoAlvoInvestigacao === 'empresa';
 
   if (loading) {
     return (
@@ -251,21 +313,92 @@ const InvestigationCreate = () => {
             <div>
               <h3 className="text-sm font-bold text-white uppercase tracking-wider">Identificação do Investigado</h3>
               <p className="text-sm text-slate-400 mt-1">
-                Preencha os dados principais para o documento final sair pronto sem edição manual.
+                Escolha se a investigação é contra pessoa, organização ou empresa e informe todos os investigados necessários.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Nome Completo</label>
-                <input
-                  type="text"
-                  name="nomeInvestigado"
-                  value={formData.nomeInvestigado}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Tipo do Alvo</label>
+                <select
+                  name="tipoAlvoInvestigacao"
+                  value={formData.tipoAlvoInvestigacao}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
-                  placeholder="Nome completo do investigado"
-                />
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                >
+                  <option value="pessoa">Pessoa</option>
+                  <option value="organizacao">Organização</option>
+                  <option value="empresa">Empresa</option>
+                </select>
+              </div>
+
+              {isEntityTarget && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
+                    {formData.tipoAlvoInvestigacao === 'empresa' ? 'Nome da Empresa' : 'Nome da Organização'}
+                  </label>
+                  <div className="relative">
+                    <Building2 className="absolute left-4 top-3.5 text-slate-600" size={20} />
+                    <input
+                      type="text"
+                      name="nomeOrganizacaoInvestigada"
+                      value={formData.nomeOrganizacaoInvestigada}
+                      onChange={handleChange}
+                      className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                      placeholder={formData.tipoAlvoInvestigacao === 'empresa' ? 'Razão social ou nome fantasia' : 'Nome da organização investigada'}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Lista de Investigados</label>
+                  <button
+                    type="button"
+                    onClick={addInvestigado}
+                    className="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition-colors"
+                  >
+                    <Plus size={14} />
+                    Adicionar Investigado
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {formData.investigados.map((investigado, index) => (
+                    <div key={`investigado-${index}`} className="grid grid-cols-1 md:grid-cols-[1fr_220px_auto] gap-3">
+                      <div className="relative">
+                        <Users className="absolute left-4 top-3.5 text-slate-600" size={20} />
+                        <input
+                          type="text"
+                          value={investigado.nome}
+                          onChange={(e) => handleInvestigadoChange(index, 'nome', e.target.value)}
+                          className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                          placeholder={`Nome do investigado ${index + 1}`}
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          value={investigado.cpf}
+                          onChange={(e) => handleInvestigadoChange(index, 'cpf', e.target.value)}
+                          className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                          placeholder="CPF / Documento"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeInvestigado(index)}
+                        className="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors flex items-center justify-center"
+                        title="Remover investigado"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div>
