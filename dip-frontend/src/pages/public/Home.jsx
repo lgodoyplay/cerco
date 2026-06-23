@@ -310,156 +310,213 @@ const Home = () => {
               Unidade especializada da Polícia Civil, atuando na preservação da ordem pública.
             </p>
             <div className="space-y-5">
-              <div className="rounded-3xl border border-federal-500/20 bg-gradient-to-br from-federal-700/20 via-slate-900/90 to-slate-950 p-6 shadow-2xl shadow-federal-950/20">
-                <div className="flex flex-col gap-5">
-                  <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-federal-200">
-                    <span className="px-3 py-1 rounded-full border border-federal-500/25 bg-federal-500/10">
-                      Destaque Inicial
-                    </span>
-                    <span className="text-slate-400">
-                      Entre, solicite acesso e acompanhe os canais oficiais da corporação
-                    </span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h2 className="text-2xl sm:text-3xl font-bold text-white">
-                      Acesso principal da CIVIL EUFORIA
-                    </h2>
-                    <p className="text-sm sm:text-base text-slate-300 max-w-2xl">
-                      Centralizamos aqui os atalhos mais importantes para quem quer entrar na organização,
-                      solicitar liberação de acesso ou começar um novo atendimento.
-                    </p>
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <Link
-                      to="/join"
-                      className="group rounded-2xl border border-federal-400/30 bg-federal-600/15 px-5 py-4 transition-all hover:-translate-y-1 hover:border-federal-300/60 hover:bg-federal-600/20 hover:shadow-lg hover:shadow-federal-950/30"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-federal-400/30 bg-federal-500/15 text-federal-200">
-                          <ClipboardCheck size={22} />
-                        </div>
-                        <div className="text-left space-y-1">
-                          <p className="text-base font-bold text-white">Como Fazer Parte</p>
-                          <p className="text-sm text-slate-200">
-                            Veja o recrutamento, requisitos e o caminho para entrar na facção.
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setLoginRequestModalOpen(true);
-                        setLoginRequestStatus('idle');
-                        setLoginRequestError('');
-                      }}
-                      className="group rounded-2xl border border-amber-400/30 bg-amber-600/15 px-5 py-4 text-left transition-all hover:-translate-y-1 hover:border-amber-300/60 hover:bg-amber-600/20 hover:shadow-lg hover:shadow-amber-950/30"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/30 bg-amber-500/15 text-amber-200">
-                          <User size={22} />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-base font-bold text-white">Pedir Login</p>
-                          <p className="text-sm text-slate-200">
-                            Envie seus dados para a equipe analisar e liberar seu acesso ao painel.
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
+              <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                <span className="px-3 py-1 rounded-full border border-slate-700 bg-slate-900/70 text-slate-300">
+                  Acessos Oficiais
+                </span>
+                <span className="text-slate-500">
+                  Cards organizados para entrada, solicitações e canais institucionais
+                </span>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  <span className="px-3 py-1 rounded-full border border-slate-700 bg-slate-900/70 text-slate-300">
-                    Atalhos Secundários
-                  </span>
-                  <span className="text-slate-500">
-                    Outros acessos importantes organizados para navegação rápida
-                  </span>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setWeaponRequestModalOpen(true);
-                      setWeaponRequestStatus('idle');
-                      setWeaponRequestError('');
-                    }}
-                    className="group rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-600/20 via-emerald-700/10 to-slate-900 px-5 py-4 text-left transition-all hover:-translate-y-1 hover:border-emerald-400/60 hover:shadow-lg hover:shadow-emerald-950/30"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
-                        <Target size={20} />
+              <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                <Link
+                  to="/join"
+                  className="group relative overflow-hidden rounded-[28px] border border-federal-400/25 bg-[linear-gradient(135deg,rgba(37,99,235,0.22),rgba(15,23,42,0.96)_48%,rgba(2,6,23,1))] p-6 text-left shadow-[0_20px_60px_rgba(2,6,23,0.45)] transition-all hover:-translate-y-1 hover:border-federal-300/50 hover:shadow-[0_24px_70px_rgba(30,64,175,0.28)]"
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(96,165,250,0.18),transparent_36%)]" />
+                  <div className="relative flex h-full flex-col justify-between gap-8">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-federal-400/20 bg-white/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-federal-200">
+                          <ClipboardCheck size={14} />
+                          Recrutamento
+                        </div>
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-federal-300/20 bg-federal-400/10 text-federal-200">
+                          <ClipboardCheck size={22} />
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-bold text-white">Solicitar Porte</p>
-                        <p className="text-xs text-slate-300">
-                          Inicie o pedido de porte com nome, passaporte e telefone.
+                      <div className="space-y-2">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                          Como Fazer Parte
+                        </h2>
+                        <p className="max-w-xl text-sm sm:text-base leading-relaxed text-slate-300">
+                          Acesse o fluxo de entrada da corporação, confira requisitos e veja como iniciar
+                          seu processo de participação dentro da CIVIL EUFORIA.
                         </p>
                       </div>
                     </div>
-                  </button>
 
-                  <Link
-                    to="/corregedoria"
-                    className="group rounded-2xl border border-red-500/30 bg-gradient-to-br from-red-600/20 via-red-700/10 to-slate-900 px-5 py-4 text-left transition-all hover:-translate-y-1 hover:border-red-400/60 hover:shadow-lg hover:shadow-red-950/30"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-500/15 border border-red-500/30 text-red-300">
-                        <AlertTriangle size={20} />
-                      </div>
+                    <div className="flex flex-wrap items-end justify-between gap-4 border-t border-white/10 pt-5">
                       <div className="space-y-1">
-                        <p className="text-sm font-bold text-white">Corregedoria</p>
-                        <p className="text-xs text-slate-300">
-                          Envie denúncias, provas e informações para análise interna.
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-federal-200/80">
+                          Acesso Principal
+                        </p>
+                        <p className="text-sm text-slate-300">
+                          Recrutamento, orientação inicial e entrada organizada.
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center gap-2 rounded-full bg-white/8 px-4 py-2 text-sm font-bold text-white transition-colors group-hover:bg-white/12">
+                        Abrir agora
+                        <ChevronRight size={16} />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginRequestModalOpen(true);
+                    setLoginRequestStatus('idle');
+                    setLoginRequestError('');
+                  }}
+                  className="group relative overflow-hidden rounded-[28px] border border-amber-400/25 bg-[linear-gradient(135deg,rgba(217,119,6,0.20),rgba(15,23,42,0.96)_44%,rgba(2,6,23,1))] p-6 text-left shadow-[0_20px_60px_rgba(2,6,23,0.45)] transition-all hover:-translate-y-1 hover:border-amber-300/50 hover:shadow-[0_24px_70px_rgba(180,83,9,0.28)]"
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.16),transparent_34%)]" />
+                  <div className="relative flex h-full flex-col justify-between gap-8">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/20 bg-white/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-200">
+                          <User size={14} />
+                          Liberação de Acesso
+                        </div>
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-300/20 bg-amber-400/10 text-amber-200">
+                          <User size={22} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                          Pedir Login
+                        </h2>
+                        <p className="max-w-xl text-sm sm:text-base leading-relaxed text-slate-300">
+                          Envie nome, passaporte, telefone e dados complementares para a equipe analisar
+                          e liberar seu acesso ao painel interno.
                         </p>
                       </div>
                     </div>
-                  </Link>
 
-                  <a
-                    href={discordInviteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-600/20 via-indigo-700/10 to-slate-900 px-5 py-4 text-left transition-all hover:-translate-y-1 hover:border-indigo-400/60 hover:shadow-lg hover:shadow-indigo-950/30"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
-                        <Link2 size={20} />
-                      </div>
+                    <div className="flex flex-wrap items-end justify-between gap-4 border-t border-white/10 pt-5">
                       <div className="space-y-1">
-                        <p className="text-sm font-bold text-white">Entrar no Discord</p>
-                        <p className="text-xs text-slate-300">
-                          Acesse o servidor oficial e acompanhe os canais da facção.
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/80">
+                          Solicitação Pública
+                        </p>
+                        <p className="text-sm text-slate-300">
+                          Cadastro rápido com análise posterior pela equipe.
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center gap-2 rounded-full bg-white/8 px-4 py-2 text-sm font-bold text-white transition-colors group-hover:bg-white/12">
+                        Solicitar
+                        <ChevronRight size={16} />
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWeaponRequestModalOpen(true);
+                    setWeaponRequestStatus('idle');
+                    setWeaponRequestError('');
+                  }}
+                  className="group relative overflow-hidden rounded-[24px] border border-emerald-400/18 bg-slate-900/95 p-5 text-left shadow-[0_16px_40px_rgba(2,6,23,0.32)] transition-all hover:-translate-y-1 hover:border-emerald-300/40 hover:shadow-[0_20px_50px_rgba(4,120,87,0.18)]"
+                >
+                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400/0 via-emerald-400/80 to-emerald-400/0 opacity-70" />
+                  <div className="flex h-full flex-col justify-between gap-6">
+                    <div className="space-y-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+                        <Target size={21} />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-base font-bold text-white">Solicitar Porte</p>
+                        <p className="text-sm leading-relaxed text-slate-400">
+                          Inicie o pedido de porte com nome, passaporte e telefone do jogo.
                         </p>
                       </div>
                     </div>
-                  </a>
+                    <div className="flex items-center justify-between border-t border-slate-800 pt-4 text-sm font-semibold text-emerald-300">
+                      <span>Nova solicitação</span>
+                      <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </button>
 
-                  <a
-                    href="#regra-de-ouro"
-                    className="group rounded-2xl border border-slate-700 bg-slate-900/80 px-5 py-4 text-left transition-all hover:-translate-y-1 hover:border-slate-500 hover:bg-slate-800"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-800 border border-slate-700 text-slate-200">
-                        <FileText size={20} />
+                <Link
+                  to="/corregedoria"
+                  className="group relative overflow-hidden rounded-[24px] border border-red-400/18 bg-slate-900/95 p-5 text-left shadow-[0_16px_40px_rgba(2,6,23,0.32)] transition-all hover:-translate-y-1 hover:border-red-300/40 hover:shadow-[0_20px_50px_rgba(153,27,27,0.18)]"
+                >
+                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-400/0 via-red-400/80 to-red-400/0 opacity-70" />
+                  <div className="flex h-full flex-col justify-between gap-6">
+                    <div className="space-y-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-red-400/20 bg-red-400/10 text-red-300">
+                        <AlertTriangle size={21} />
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-bold text-white">Ver Regras e Deveres</p>
-                        <p className="text-xs text-slate-300">
-                          Consulte os deveres fundamentais e o regime disciplinar.
+                      <div className="space-y-2">
+                        <p className="text-base font-bold text-white">Corregedoria</p>
+                        <p className="text-sm leading-relaxed text-slate-400">
+                          Envie denúncias, links, vídeos, imagens e demais provas para análise.
                         </p>
                       </div>
                     </div>
-                  </a>
-                </div>
+                    <div className="flex items-center justify-between border-t border-slate-800 pt-4 text-sm font-semibold text-red-300">
+                      <span>Abrir canal</span>
+                      <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </Link>
+
+                <a
+                  href={discordInviteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative overflow-hidden rounded-[24px] border border-indigo-400/18 bg-slate-900/95 p-5 text-left shadow-[0_16px_40px_rgba(2,6,23,0.32)] transition-all hover:-translate-y-1 hover:border-indigo-300/40 hover:shadow-[0_20px_50px_rgba(67,56,202,0.18)]"
+                >
+                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-400/0 via-indigo-400/80 to-indigo-400/0 opacity-70" />
+                  <div className="flex h-full flex-col justify-between gap-6">
+                    <div className="space-y-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-indigo-400/20 bg-indigo-400/10 text-indigo-300">
+                        <Link2 size={21} />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-base font-bold text-white">Entrar no Discord</p>
+                        <p className="text-sm leading-relaxed text-slate-400">
+                          Acesse o servidor oficial para acompanhar avisos e movimentações.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-slate-800 pt-4 text-sm font-semibold text-indigo-300">
+                      <span>Canal oficial</span>
+                      <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </a>
+
+                <a
+                  href="#regra-de-ouro"
+                  className="group relative overflow-hidden rounded-[24px] border border-slate-700 bg-slate-900/95 p-5 text-left shadow-[0_16px_40px_rgba(2,6,23,0.32)] transition-all hover:-translate-y-1 hover:border-slate-500 hover:shadow-[0_20px_50px_rgba(15,23,42,0.26)]"
+                >
+                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-slate-500/0 via-slate-400/70 to-slate-500/0 opacity-70" />
+                  <div className="flex h-full flex-col justify-between gap-6">
+                    <div className="space-y-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-600 bg-slate-800 text-slate-200">
+                        <FileText size={21} />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-base font-bold text-white">Ver Regras e Deveres</p>
+                        <p className="text-sm leading-relaxed text-slate-400">
+                          Consulte o regime disciplinar, deveres fundamentais e orientação institucional.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-slate-800 pt-4 text-sm font-semibold text-slate-300">
+                      <span>Consultar agora</span>
+                      <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </a>
               </div>
             </div>
           </div>
