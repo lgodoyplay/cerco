@@ -10,6 +10,26 @@ import { usePermissions } from '../../hooks/usePermissions';
 import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
 
+const getPeopleList = (value, fallback = '') => {
+  if (Array.isArray(value) && value.length) return value;
+  return fallback ? [{ name: fallback, passport: '' }] : [];
+};
+
+const formatPeopleSummary = (people = [], fallback = 'Nao informado') => {
+  const validPeople = (Array.isArray(people) ? people : [])
+    .map((person) => ({
+      name: (person?.name || '').trim(),
+      passport: (person?.passport || '').trim()
+    }))
+    .filter((person) => person.name || person.passport);
+
+  if (!validPeople.length) return fallback;
+
+  return validPeople
+    .map((person) => person.passport ? `${person.name || 'Nao identificado'} (${person.passport})` : person.name)
+    .join(', ');
+};
+
 const BOList = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,7 +93,9 @@ const BOList = () => {
   };
 
   const filteredBoletins = boletins.filter(bo => {
+    const denunciados = formatPeopleSummary(getPeopleList(bo.denunciados_json), '');
     const matchesSearch = (bo.comunicante || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      denunciados.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (bo.descricao || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (bo.localizacao || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (bo.id || '').toLowerCase().includes(searchTerm.toLowerCase());
@@ -117,13 +139,14 @@ const BOList = () => {
   };
 
   const exportToCSV = () => {
-    const headers = ['ID', 'Data Fato', 'Comunicante', 'Localização', 'Descrição', 'Status', 'Policial Responsável'];
+    const headers = ['ID', 'Data Fato', 'Comunicantes', 'Denunciados', 'Localização', 'Descrição', 'Status', 'Policial Responsável'];
     const csvContent = [
       headers.join(','),
       ...filteredBoletins.map(bo => [
         bo.id,
         bo.data_fato || '',
-        `"${(bo.comunicante || '').replace(/"/g, '""')}"`,
+        `"${(formatPeopleSummary(getPeopleList(bo.comunicantes_json, bo.comunicante), bo.comunicante || '').replace(/"/g, '""'))}"`,
+        `"${(formatPeopleSummary(getPeopleList(bo.denunciados_json), '').replace(/"/g, '""'))}"`,
         `"${(bo.localizacao || '').replace(/"/g, '""')}"`,
         `"${(bo.descricao || '').replace(/"/g, '""')}"`,
         bo.status || '',
@@ -264,7 +287,7 @@ const BOList = () => {
             <thead>
               <tr className="bg-slate-950 border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
                 <th className="p-4 font-bold">ID / Data</th>
-                <th className="p-4 font-bold">Comunicante</th>
+                <th className="p-4 font-bold">Partes</th>
                 <th className="p-4 font-bold">Local / Descrição</th>
                 <th className="p-4 font-bold">Responsável</th>
                 <th className="p-4 font-bold">Status</th>
@@ -280,6 +303,10 @@ const BOList = () => {
                 </tr>
               )}
               {!loading && paginatedBoletins.map((bo) => (
+                (() => {
+                  const complainants = getPeopleList(bo.comunicantes_json, bo.comunicante);
+                  const reportedPeople = getPeopleList(bo.denunciados_json);
+                  return (
                 <tr key={bo.id} className="hover:bg-slate-800/50 transition-colors group">
                   <td className="p-4">
                     <div className="flex flex-col">
@@ -293,9 +320,19 @@ const BOList = () => {
                     </div>
                   </td>
                   <td className="p-4">
-                    <div className="flex items-center gap-2 text-white font-medium">
-                      <User size={16} className="text-slate-500" />
-                      {bo.comunicante}
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-2 text-white font-medium">
+                        <User size={16} className="text-slate-500 mt-0.5" />
+                        <div>
+                          <p>{formatPeopleSummary(complainants, bo.comunicante || 'Nao informado')}</p>
+                          <p className="text-[11px] text-slate-500 uppercase tracking-wider">Comunicantes</p>
+                        </div>
+                      </div>
+                      {reportedPeople.length > 0 && (
+                        <div className="text-xs text-red-300">
+                          Contra: {formatPeopleSummary(reportedPeople, '')}
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="p-4">
@@ -342,6 +379,8 @@ const BOList = () => {
                     </div>
                   </td>
                 </tr>
+                  );
+                })()
               ))}
               {!loading && paginatedBoletins.length === 0 && (
                 <tr>
@@ -411,8 +450,33 @@ const BOList = () => {
               </div>
 
               <div>
-                <span className="text-xs text-slate-500 uppercase font-bold">Comunicante</span>
-                <p className="text-white text-lg font-medium border-b border-slate-800 pb-2">{selectedBO.comunicante}</p>
+                <span className="text-xs text-slate-500 uppercase font-bold">Comunicantes</span>
+                <div className="mt-2 space-y-2 border-b border-slate-800 pb-3">
+                  {getPeopleList(selectedBO.comunicantes_json, selectedBO.comunicante).map((person, index) => (
+                    <div key={`complainant-${index}`} className="bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3">
+                      <p className="text-white font-medium">{person.name || 'Nao informado'}</p>
+                      {person.passport && (
+                        <p className="text-xs text-slate-400 mt-1">Passaporte: {person.passport}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <span className="text-xs text-slate-500 uppercase font-bold">Pessoas Denunciadas</span>
+                <div className="mt-2 space-y-2">
+                  {getPeopleList(selectedBO.denunciados_json).length > 0 ? getPeopleList(selectedBO.denunciados_json).map((person, index) => (
+                    <div key={`reported-${index}`} className="bg-red-500/5 border border-red-500/10 rounded-xl px-4 py-3">
+                      <p className="text-white font-medium">{person.name || 'Nao informado'}</p>
+                      {person.passport && (
+                        <p className="text-xs text-red-200/80 mt-1">Passaporte: {person.passport}</p>
+                      )}
+                    </div>
+                  )) : (
+                    <p className="text-sm text-slate-500">Nenhuma pessoa denunciada informada.</p>
+                  )}
+                </div>
               </div>
 
               <div>

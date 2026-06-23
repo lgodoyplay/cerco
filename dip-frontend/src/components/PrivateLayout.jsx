@@ -30,7 +30,8 @@ import {
   Newspaper,
   Building2,
   Stethoscope,
-  FileCheck
+  FileCheck,
+  BadgeX
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
@@ -116,6 +117,7 @@ const PrivateLayout = () => {
       label: 'Outros',
       items: [
         { to: '/dashboard/corregedoria', icon: ShieldAlert, label: 'Corregedoria', prefetchKey: 'CorregedoriaList' },
+        { to: '/dashboard/exonerations', icon: BadgeX, label: 'Exoneração', prefetchKey: 'ExonerationsManager', permission: 'exonerations_view' },
         { to: '/dashboard/pm', icon: Car, label: 'Integração PM', prefetchKey: 'PMIntegration', permission: 'pm_view' },
         { to: '/dashboard/news', icon: Newspaper, label: 'Notícias', permission: 'news_manage' },
         { to: '/dashboard/communication', icon: Radio, label: 'Comunicação', prefetchKey: 'CommunicationHub', permission: 'communication_view' },

@@ -44,6 +44,7 @@ const UsersSettings = () => {
     { id: 'wanted', label: 'Procurados' },
     { id: 'bo', label: 'Boletins de Ocorrência' },
     { id: 'protective_measures', label: 'Medida Protetiva' },
+    { id: 'exonerations', label: 'Exoneração' },
     { id: 'reports', label: 'Denúncias' },
     { id: 'investigations', label: 'Investigações' },
     { id: 'forensics', label: 'Perícias' },

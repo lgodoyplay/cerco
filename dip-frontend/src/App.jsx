@@ -59,6 +59,7 @@ const RevenueDetail = React.lazy(() => lazyImport(routeLoaders.RevenueDetail));
 
 const WeaponsManager = React.lazy(() => lazyImport(routeLoaders.WeaponsManager));
 const ProtectiveMeasuresManager = React.lazy(() => lazyImport(routeLoaders.ProtectiveMeasuresManager));
+const ExonerationsManager = React.lazy(() => lazyImport(routeLoaders.ExonerationsManager));
 const JudiciaryManager = React.lazy(() => lazyImport(routeLoaders.JudiciaryManager));
 const PMIntegration = React.lazy(() => lazyImport(routeLoaders.PMIntegration));
 const LawyerDashboard = React.lazy(() => lazyImport(routeLoaders.LawyerDashboard));
@@ -187,6 +188,12 @@ function App() {
             
             <Route path="corregedoria" element={
               <CorregedoriaList />
+            } />
+
+            <Route path="exonerations" element={
+              <PermissionGuard permission="exonerations_view">
+                <ExonerationsManager />
+              </PermissionGuard>
             } />
             
             <Route path="register-wanted" element={

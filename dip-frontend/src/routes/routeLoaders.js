@@ -54,6 +54,7 @@ export const routeLoaders = {
   WeaponsManager: () => import('../pages/private/weapons/WeaponsManager'),
   RequestWeaponLicense: () => import('../pages/private/weapons/RequestWeaponLicense'),
   ProtectiveMeasuresManager: () => import('../pages/private/protectiveMeasures/ProtectiveMeasuresManager'),
+  ExonerationsManager: () => import('../pages/private/exonerations/ExonerationsManager'),
   JudiciaryManager: () => import('../pages/private/judiciary/JudiciaryManager'),
   PMIntegration: () => import('../pages/private/pm/PMIntegration'),
   LawyerDashboard: () => import('../pages/private/lawyers/LawyerDashboard'),

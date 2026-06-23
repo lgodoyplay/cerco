@@ -1,11 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Eraser, FileText, CheckCircle, AlertCircle, AlertTriangle, Shield, MapPin, Calendar, User, RefreshCw } from 'lucide-react';
+import { Eraser, FileText, AlertTriangle, Shield, MapPin, Calendar, User, RefreshCw, Users, Plus, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useNavigate } from 'react-router-dom';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
+
+const createPersonEntry = () => ({ name: '', passport: '' });
+
+const sanitizePeople = (people = []) => (
+  people
+    .map((person) => ({
+      name: (person?.name || '').trim(),
+      passport: (person?.passport || '').trim()
+    }))
+    .filter((person) => person.name || person.passport)
+);
+
+const formatPeopleSummary = (people = []) => {
+  const validPeople = sanitizePeople(people);
+  if (!validPeople.length) return '';
+
+  return validPeople
+    .map((person) => (
+      person.passport
+        ? `${person.name || 'Nao identificado'} (${person.passport})`
+        : person.name
+    ))
+    .join(', ');
+};
+
+const buildFallbackDescription = (complainants, reportedPeople, description) => {
+  const complainantsText = formatPeopleSummary(complainants) || 'Nao informado';
+  const reportedPeopleText = formatPeopleSummary(reportedPeople) || 'Nao informado';
+
+  return [
+    'PARTES ENVOLVIDAS',
+    `Comunicantes: ${complainantsText}`,
+    `Denunciados: ${reportedPeopleText}`,
+    '',
+    description
+  ].join('\n');
+};
 
 const RegisterBO = () => {
   const navigate = useNavigate();
@@ -77,7 +114,8 @@ const RegisterBO = () => {
   };
 
   const [formData, setFormData] = useState({
-    complainant: '',
+    complainants: [createPersonEntry()],
+    reportedPeople: [createPersonEntry()],
     description: '',
     location: '',
     date: '',
@@ -113,11 +151,44 @@ const RegisterBO = () => {
     }
   };
 
+  const handlePersonChange = (group, index, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [group]: prev[group].map((person, personIndex) => (
+        personIndex === index
+          ? { ...person, [field]: value }
+          : person
+      ))
+    }));
+
+    if (group === 'complainants' && formErrors.complainants) {
+      setFormErrors((prev) => ({ ...prev, complainants: null }));
+    }
+  };
+
+  const addPersonField = (group) => {
+    setFormData((prev) => ({
+      ...prev,
+      [group]: [...prev[group], createPersonEntry()]
+    }));
+  };
+
+  const removePersonField = (group, index) => {
+    setFormData((prev) => {
+      const nextGroup = prev[group].filter((_, personIndex) => personIndex !== index);
+      return {
+        ...prev,
+        [group]: nextGroup.length ? nextGroup : [createPersonEntry()]
+      };
+    });
+  };
+
   const validateForm = () => {
     const errors = {};
+    const validComplainants = sanitizePeople(formData.complainants);
     
-    if (!formData.complainant.trim()) {
-      errors.complainant = 'Nome do comunicante é obrigatório';
+    if (!validComplainants.length || !validComplainants[0].name) {
+      errors.complainants = 'Informe pelo menos uma pessoa fazendo o boletim';
     }
     
     if (!formData.description.trim()) {
@@ -157,24 +228,42 @@ const RegisterBO = () => {
     
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      const validComplainants = sanitizePeople(formData.complainants);
+      const validReportedPeople = sanitizePeople(formData.reportedPeople);
+      const complainantSummary = formatPeopleSummary(validComplainants) || 'Nao informado';
 
       // Auto-fill policial_responsavel from user if possible, or keep what user typed
       const officerName = formData.officer || (user?.email || user?.id || '');
+      const basePayload = {
+        comunicante: complainantSummary,
+        descricao: formData.description,
+        localizacao: formData.location,
+        data_fato: formData.date,
+        policial_responsavel: officerName,
+        nome_policial_prisao: formData.arrestOfficerName,
+        id_policial_prisao: formData.arrestOfficerId,
+        status: 'Registrado',
+        created_by: user?.id
+      };
 
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('boletins')
         .insert([{
-          comunicante: formData.complainant,
-          descricao: formData.description,
-          localizacao: formData.location,
-          data_fato: formData.date,
-          policial_responsavel: officerName,
-          nome_policial_prisao: formData.arrestOfficerName,
-          id_policial_prisao: formData.arrestOfficerId,
-          status: 'Registrado',
-          created_by: user?.id
+          ...basePayload,
+          comunicantes_json: validComplainants,
+          denunciados_json: validReportedPeople
         }])
         .select('*');
+
+      if (error && /comunicantes_json|denunciados_json|column/i.test(error.message || '')) {
+        ({ data, error } = await supabase
+          .from('boletins')
+          .insert([{
+            ...basePayload,
+            descricao: buildFallbackDescription(validComplainants, validReportedPeople, formData.description)
+          }])
+          .select('*'));
+      }
 
       if (error) throw error;
       const newBO = data[0];
@@ -190,7 +279,8 @@ const RegisterBO = () => {
             description: formData.description,
             color: 0x9333ea, // Purple
             fields: [
-              { name: "Comunicante", value: formData.complainant, inline: true },
+              { name: "Comunicantes", value: complainantSummary, inline: false },
+              ...(validReportedPeople.length ? [{ name: "Denunciados", value: formatPeopleSummary(validReportedPeople), inline: false }] : []),
               { name: "Local", value: formData.location, inline: true },
               { name: "Data e Hora do Fato", value: formData.date, inline: true },
               { name: "Policial Responsável pelo BO", value: officerName, inline: true },
@@ -220,7 +310,8 @@ const RegisterBO = () => {
       const now = new Date();
       const formattedDate = now.toISOString().slice(0, 16);
       setFormData({
-        complainant: '',
+        complainants: [createPersonEntry()],
+        reportedPeople: [createPersonEntry()],
         description: '',
         location: '',
         date: formattedDate,
@@ -265,29 +356,113 @@ const RegisterBO = () => {
           
           {/* Comunicante */}
           <div className="md:col-span-2">
-            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Nome do Comunicante</label>
-            <div className="relative">
-              <User className="absolute left-4 top-3.5 text-slate-600" size={20} />
-              <input
-                type="text"
-                name="complainant"
-                value={formData.complainant}
-                onChange={handleChange}
-                className={clsx(
-                  "w-full pl-12 pr-4 py-3 bg-slate-950 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none transition-all",
-                  formErrors.complainant 
-                    ? "border border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500" 
-                    : "border border-slate-700 focus:border-federal-500 focus:ring-1 focus:ring-federal-500"
-                )}
-                placeholder="Quem está reportando o fato?"
-              />
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Pessoas Fazendo o Boletim</label>
+              <button
+                type="button"
+                onClick={() => addPersonField('complainants')}
+                className="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition-colors"
+              >
+                <Plus size={14} />
+                Adicionar Pessoa
+              </button>
             </div>
-            {formErrors.complainant && (
+
+            <div className="space-y-3">
+              {formData.complainants.map((person, index) => (
+                <div key={`complainant-${index}`} className="grid grid-cols-1 md:grid-cols-[1fr_220px_auto] gap-3">
+                  <div className="relative">
+                    <User className="absolute left-4 top-3.5 text-slate-600" size={20} />
+                    <input
+                      type="text"
+                      value={person.name}
+                      onChange={(e) => handlePersonChange('complainants', index, 'name', e.target.value)}
+                      className={clsx(
+                        "w-full pl-12 pr-4 py-3 bg-slate-950 rounded-xl text-slate-100 placeholder-slate-600 focus:outline-none transition-all",
+                        formErrors.complainants
+                          ? "border border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                          : "border border-slate-700 focus:border-federal-500 focus:ring-1 focus:ring-federal-500"
+                      )}
+                      placeholder={`Nome do comunicante ${index + 1}`}
+                    />
+                  </div>
+                  <div className="relative">
+                    <Users className="absolute left-4 top-3.5 text-slate-600" size={20} />
+                    <input
+                      type="text"
+                      value={person.passport}
+                      onChange={(e) => handlePersonChange('complainants', index, 'passport', e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                      placeholder="Passaporte"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removePersonField('complainants', index)}
+                    className="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors flex items-center justify-center"
+                    title="Remover pessoa"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {formErrors.complainants && (
               <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
                 <AlertTriangle size={12} />
-                {formErrors.complainant}
+                {formErrors.complainants}
               </p>
             )}
+          </div>
+
+          <div className="md:col-span-2">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Pessoas Denunciadas</label>
+              <button
+                type="button"
+                onClick={() => addPersonField('reportedPeople')}
+                className="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition-colors"
+              >
+                <Plus size={14} />
+                Adicionar Pessoa
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {formData.reportedPeople.map((person, index) => (
+                <div key={`reported-${index}`} className="grid grid-cols-1 md:grid-cols-[1fr_220px_auto] gap-3">
+                  <div className="relative">
+                    <User className="absolute left-4 top-3.5 text-slate-600" size={20} />
+                    <input
+                      type="text"
+                      value={person.name}
+                      onChange={(e) => handlePersonChange('reportedPeople', index, 'name', e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                      placeholder={`Nome do denunciado ${index + 1}`}
+                    />
+                  </div>
+                  <div className="relative">
+                    <Users className="absolute left-4 top-3.5 text-slate-600" size={20} />
+                    <input
+                      type="text"
+                      value={person.passport}
+                      onChange={(e) => handlePersonChange('reportedPeople', index, 'passport', e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                      placeholder="Passaporte"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removePersonField('reportedPeople', index)}
+                    className="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors flex items-center justify-center"
+                    title="Remover pessoa"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Local */}
@@ -453,7 +628,8 @@ const RegisterBO = () => {
               const now = new Date();
               const formattedDate = now.toISOString().slice(0, 16);
               setFormData({ 
-                complainant: '', 
+                complainants: [createPersonEntry()],
+                reportedPeople: [createPersonEntry()],
                 description: '', 
                 location: '', 
                 date: formattedDate, 
