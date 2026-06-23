@@ -831,7 +831,7 @@ const Home = () => {
                   value={weaponRequestLead.passportId}
                   onChange={(e) => setWeaponRequestLead(prev => ({ ...prev, passportId: e.target.value }))}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-federal-500 focus:outline-none transition-colors"
-                  placeholder="Ex: DEN3635"
+                  placeholder="Ex: 3635"
                   required
                 />
               </div>
