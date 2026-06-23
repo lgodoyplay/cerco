@@ -22,6 +22,7 @@ export const routeLoaders = {
   BOList: () => import('../pages/private/BOList'),
   ReportList: () => import('../pages/private/ReportList'),
   CorregedoriaList: () => import('../pages/private/CorregedoriaList'),
+  CorregedoriaDetail: () => import('../pages/private/CorregedoriaDetail'),
   
   // Investigations
   InvestigationList: () => import('../pages/private/investigations/InvestigationList'),
@@ -55,6 +56,7 @@ export const routeLoaders = {
   RequestWeaponLicense: () => import('../pages/private/weapons/RequestWeaponLicense'),
   ProtectiveMeasuresManager: () => import('../pages/private/protectiveMeasures/ProtectiveMeasuresManager'),
   ExonerationsManager: () => import('../pages/private/exonerations/ExonerationsManager'),
+  ExonerationCreate: () => import('../pages/private/exonerations/ExonerationCreate'),
   JudiciaryManager: () => import('../pages/private/judiciary/JudiciaryManager'),
   PMIntegration: () => import('../pages/private/pm/PMIntegration'),
   LawyerDashboard: () => import('../pages/private/lawyers/LawyerDashboard'),

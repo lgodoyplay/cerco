@@ -1,25 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Shield, Eye, X, FileText, Image, Video, Calendar, User, Trash2, Link as LinkIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Shield, Eye, FileText, Calendar, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '../../lib/supabase';
-
-const normalizeExternalUrl = (value = '') => {
-  const trimmed = String(value || '').trim();
-  if (!trimmed) return '';
-  if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(trimmed)) return trimmed;
-  return `https://${trimmed}`;
-};
-
-const openExternalLink = (value) => {
-  const normalized = normalizeExternalUrl(value);
-  if (!normalized) return;
-  window.open(normalized, '_blank', 'noopener,noreferrer');
-};
+import { parseCorregedoriaAttachment } from '../../utils/corregedoriaMedia';
 
 const CorregedoriaList = () => {
+  const navigate = useNavigate();
   const [denuncias, setDenuncias] = useState([]);
-  const [selectedDenuncia, setSelectedDenuncia] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,28 +35,6 @@ const CorregedoriaList = () => {
     } catch (err) {
       console.error('Error deleting:', err);
     }
-  };
-
-  const renderItemIcon = (item) => {
-    if (item.type === 'link') return <LinkIcon size={18} className="text-blue-400" />;
-    const url = item.url || item;
-    if (/\.(jpg|jpeg|png|gif|webp)$/i.test(url)) return <Image size={18} className="text-blue-400" />;
-    if (/\.(mp4|webm|mov)$/i.test(url)) return <Video size={18} className="text-purple-400" />;
-    return <FileText size={18} className="text-yellow-400" />;
-  };
-
-  const getItemUrl = (item) => {
-    return normalizeExternalUrl(typeof item === 'string' ? item : item.url);
-  };
-
-  const getItemName = (item) => {
-    if (typeof item === 'string') {
-      return decodeURIComponent(item.split('/').pop().split('?')[0]);
-    }
-    if (item.type === 'link') {
-      return item.url;
-    }
-    return item.name || decodeURIComponent(item.url.split('/').pop().split('?')[0]);
   };
 
   if (loading) {
@@ -113,14 +80,14 @@ const CorregedoriaList = () => {
                   {denuncia.arquivos?.length > 0 && (
                     <span className="flex items-center gap-1">
                       <FileText size={14} />
-                      {denuncia.arquivos.length} item(s)
+                      {denuncia.arquivos.map(parseCorregedoriaAttachment).filter((item) => item.url).length} item(s)
                     </span>
                   )}
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setSelectedDenuncia(denuncia)}
+                  onClick={() => navigate(`/dashboard/corregedoria/${denuncia.id}`)}
                   className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors"
                 >
                   <Eye size={20} />
@@ -134,89 +101,6 @@ const CorregedoriaList = () => {
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Modal */}
-      {selectedDenuncia && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedDenuncia(null)}>
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-4xl max-h-[calc(100vh-2rem)] flex flex-col overflow-hidden shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-800 sticky top-0 bg-slate-900 z-20 shrink-0">
-              <h3 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Shield size={24} className="text-red-500" />
-                Detalhes da Denúncia
-              </h3>
-              <button onClick={() => setSelectedDenuncia(null)} className="p-2 hover:bg-slate-800 rounded-xl transition-colors">
-                <X size={24} className="text-slate-400" />
-              </button>
-            </div>
-
-            <div className="p-8 space-y-8 overflow-y-auto custom-scrollbar">
-              <div>
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">
-                  Nome do Envio
-                </span>
-                <p className="text-xl text-white font-medium">
-                  {selectedDenuncia.nome || 'Denúncia Anônima'}
-                </p>
-              </div>
-
-              <div>
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">
-                  Data e Hora
-                </span>
-                <p className="text-lg text-slate-300">
-                  {format(new Date(selectedDenuncia.created_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm:ss", { locale: ptBR })}
-                </p>
-              </div>
-
-              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-3">
-                  Detalhes
-                </span>
-                <p className="text-slate-200 leading-relaxed whitespace-pre-wrap">
-                  {selectedDenuncia.detalhes}
-                </p>
-              </div>
-
-              {selectedDenuncia.arquivos?.length > 0 && (
-                <div>
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-4">
-                    Arquivos e Provas
-                  </span>
-                  <div className="grid gap-4">
-                    {selectedDenuncia.arquivos.map((item, index) => (
-                      <div key={index} className="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex items-center gap-4">
-                        {renderItemIcon(item)}
-                        <div className="flex-1">
-                          {typeof item === 'object' && item.type === 'link' ? (
-                            <button
-                              type="button"
-                              onClick={() => openExternalLink(item.url)}
-                              className="text-sm text-blue-400 truncate hover:underline"
-                            >
-                              {item.url}
-                            </button>
-                          ) : (
-                            <p className="text-sm text-white truncate">
-                              {getItemName(item)}
-                            </p>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => openExternalLink(getItemUrl(item))}
-                          className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white text-sm font-semibold rounded-xl transition-colors"
-                        >
-                          Abrir
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       )}
     </div>

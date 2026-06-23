@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { useAuth } from '../../../context/AuthContext';
@@ -72,6 +73,8 @@ const createEmptyForm = () => ({
 });
 
 const ExonerationsManager = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { can } = usePermissions();
   const canView = can('exonerations_view');
@@ -81,7 +84,7 @@ const ExonerationsManager = () => {
   const [activeTab, setActiveTab] = useState('catalogado');
   const [records, setRecords] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [notification, setNotification] = useState(null);
+  const [notification, setNotification] = useState(location.state?.notification || null);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -128,11 +131,14 @@ const ExonerationsManager = () => {
     fetchRecords();
   }, [activeTab]);
 
+  useEffect(() => {
+    if (location.state?.notification) {
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   const handleOpenCreate = () => {
-    setFormData(createEmptyForm());
-    setProofs([]);
-    setLinkInput('');
-    setCreateOpen(true);
+    navigate('/dashboard/exonerations/new');
     setNotification(null);
   };
 
