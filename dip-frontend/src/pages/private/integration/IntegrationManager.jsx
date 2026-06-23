@@ -51,6 +51,13 @@ const IntegrationManager = () => {
     );
   }, [requests, searchTerm]);
 
+  const stats = useMemo(() => ({
+    total: requests.length,
+    pendente: requests.filter((item) => item.status === 'pendente').length,
+    aprovado: requests.filter((item) => item.status === 'aprovado').length,
+    recusado: requests.filter((item) => item.status === 'recusado').length
+  }), [requests]);
+
   const handleStatusChange = async (requestId, status) => {
     try {
       const { data, error } = await supabase
@@ -93,26 +100,55 @@ const IntegrationManager = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-8">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <UserCog className="text-federal-500" size={30} />
-            Integração
-          </h1>
-          <p className="text-slate-400 mt-2">
-            Todos os pedidos de login enviados pela página inicial ficam salvos aqui.
-          </p>
+      <div className="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-6 lg:p-7">
+        <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-federal-500/20 bg-federal-500/10 text-federal-200 text-xs font-semibold uppercase tracking-[0.18em]">
+              <UserCog size={14} />
+              Pedidos de Login
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                <UserCog className="text-federal-500" size={30} />
+                Integração
+              </h1>
+              <p className="text-slate-400 mt-2 max-w-2xl">
+                Todos os pedidos enviados pela página inicial ficam salvos aqui para análise, aprovação ou recusa.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full xl:w-auto xl:min-w-[560px]">
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4">
+              <p className="text-xs uppercase font-bold tracking-wide text-slate-500">Total</p>
+              <p className="text-2xl font-bold text-white mt-2">{stats.total}</p>
+            </div>
+            <div className="rounded-2xl border border-amber-500/15 bg-amber-500/5 p-4">
+              <p className="text-xs uppercase font-bold tracking-wide text-amber-300/80">Pendentes</p>
+              <p className="text-2xl font-bold text-amber-200 mt-2">{stats.pendente}</p>
+            </div>
+            <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/5 p-4">
+              <p className="text-xs uppercase font-bold tracking-wide text-emerald-300/80">Aprovados</p>
+              <p className="text-2xl font-bold text-emerald-200 mt-2">{stats.aprovado}</p>
+            </div>
+            <div className="rounded-2xl border border-red-500/15 bg-red-500/5 p-4">
+              <p className="text-xs uppercase font-bold tracking-wide text-red-300/80">Recusados</p>
+              <p className="text-2xl font-bold text-red-200 mt-2">{stats.recusado}</p>
+            </div>
+          </div>
         </div>
 
-        <div className="relative w-full lg:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por nome, passaporte ou login..."
-            className="w-full pl-10 pr-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-federal-500"
-          />
+        <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar por nome, passaporte, telefone, login ou Discord..."
+              className="w-full pl-10 pr-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-federal-500"
+            />
+          </div>
         </div>
       </div>
 
@@ -137,7 +173,7 @@ const IntegrationManager = () => {
           {filteredRequests.map((request) => {
             const meta = STATUS_META[request.status] || STATUS_META.pendente;
             return (
-              <div key={request.id} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-5">
+              <div key={request.id} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-5 shadow-xl shadow-slate-950/10">
                 <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-4">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-3">
@@ -152,28 +188,36 @@ const IntegrationManager = () => {
                   </div>
 
                   {can('integration_manage') && (
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleStatusChange(request.id, 'em_analise')}
-                        className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
-                      >
-                        Em análise
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleStatusChange(request.id, 'aprovado')}
-                        className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors"
-                      >
-                        Aprovar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleStatusChange(request.id, 'recusado')}
-                        className="px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-semibold transition-colors"
-                      >
-                        Recusar
-                      </button>
+                    <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3">
+                      <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-500 mb-3">
+                        Ações Rápidas
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleStatusChange(request.id, 'em_analise')}
+                          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-600/90 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+                        >
+                          <Clock3 size={15} />
+                          Em análise
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleStatusChange(request.id, 'aprovado')}
+                          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors"
+                        >
+                          <CheckCircle2 size={15} />
+                          Aprovar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleStatusChange(request.id, 'recusado')}
+                          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-red-600/90 hover:bg-red-500 text-white text-sm font-semibold transition-colors"
+                        >
+                          <XCircle size={15} />
+                          Recusar
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -228,7 +272,7 @@ const IntegrationManager = () => {
                     <button
                       type="button"
                       onClick={() => handleDelete(request.id)}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 transition-colors"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-300 font-semibold transition-colors"
                     >
                       <Trash2 size={16} />
                       Excluir
