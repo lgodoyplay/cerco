@@ -20,7 +20,6 @@ import {
   CheckCircle,
   AlertCircle,
   X,
-  ExternalLink,
   Edit3,
   Trash2,
   Building2
@@ -41,7 +40,6 @@ const InvestigationDetail = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-  const [selectedProof, setSelectedProof] = useState(null);
   const [proofToEdit, setProofToEdit] = useState(null);
   const [notification, setNotification] = useState(location.state?.notification || null);
   const [loading, setLoading] = useState(true);
@@ -189,10 +187,6 @@ const InvestigationDetail = () => {
       // Refresh investigation data
       const data = await getInvestigation(id);
       if (data) setInvestigation(data);
-      // Fechar o modal se a prova deletada estiver aberta
-      if (selectedProof && selectedProof.id === proofId) {
-        setSelectedProof(null);
-      }
       setNotification({
         type: 'success',
         message: 'Prova removida com sucesso.'
@@ -204,6 +198,14 @@ const InvestigationDetail = () => {
         message: error?.message || 'Nao foi possivel remover a prova.'
       });
     }
+  };
+
+  const handleOpenProof = (proof) => {
+    const basePath = isRevenueRoute
+      ? `/dashboard/revenue/investigations/${id}/proofs/${proof.id}`
+      : `/dashboard/investigations/${id}/proofs/${proof.id}`;
+
+    navigate(basePath);
   };
 
   const handleEditProof = async (proofId, proofData) => {
@@ -450,7 +452,7 @@ const InvestigationDetail = () => {
               <ProofCard 
                 key={proof.id} 
                 proof={proof} 
-                onClick={setSelectedProof} 
+                onClick={handleOpenProof} 
                 onDelete={handleDeleteProof}
                 onEdit={(proof) => {
                   setProofToEdit(proof);
@@ -485,100 +487,6 @@ const InvestigationDetail = () => {
         onSave={handleEditProof}
         proof={proofToEdit}
       />
-
-      {/* Proof Viewer Modal */}
-      {selectedProof && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80" onClick={() => setSelectedProof(null)}>
-          <div className="bg-slate-900 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b border-slate-800">
-              <div>
-                <h3 className="text-lg font-bold text-white">{selectedProof.title}</h3>
-                <p className="text-sm text-slate-400">{selectedProof.description}</p>
-              </div>
-              <button 
-                onClick={() => setSelectedProof(null)}
-                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
-              >
-                <X size={24} className="text-slate-400" />
-              </button>
-            </div>
-            
-            <div className="p-4 overflow-auto max-h-[calc(90vh-80px)]">
-              {selectedProof.type === 'image' && (
-                <img 
-                  src={selectedProof.content} 
-                  alt={selectedProof.title}
-                  className="w-full h-auto rounded-lg"
-                />
-              )}
-              
-              {selectedProof.type === 'video' && (() => {
-                // Try to extract YouTube video ID
-                const youtubeMatch = selectedProof.content.match(
-                  /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
-                );
-                
-                if (youtubeMatch) {
-                  const youtubeId = youtubeMatch[1];
-                  return (
-                    <div className="aspect-video w-full rounded-lg overflow-hidden">
-                      <iframe
-                        width="100%"
-                        height="100%"
-                        src={`https://www.youtube.com/embed/${youtubeId}`}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        title={selectedProof.title}
-                      />
-                    </div>
-                  );
-                }
-                
-                // Fallback for non-YouTube videos
-                return (
-                  <div className="space-y-4">
-                    <video 
-                      src={selectedProof.content} 
-                      controls
-                      className="w-full rounded-lg"
-                    />
-                    <a 
-                      href={selectedProof.content} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-400 text-sm hover:underline break-all flex items-center gap-2"
-                    >
-                      <ExternalLink size={16} />
-                      Abrir vídeo externo
-                    </a>
-                  </div>
-                );
-              })()}
-              
-              {selectedProof.type === 'link' && (
-                <div className="flex flex-col items-center gap-4 p-8">
-                  <ExternalLink size={48} className="text-blue-400" />
-                  <a 
-                    href={selectedProof.content} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-400 text-lg hover:underline break-all"
-                  >
-                    {selectedProof.content}
-                  </a>
-                  <button 
-                    onClick={() => window.open(selectedProof.content, '_blank')}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-bold transition-colors"
-                  >
-                    Abrir Link
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

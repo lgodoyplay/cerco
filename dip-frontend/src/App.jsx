@@ -38,6 +38,7 @@ const CorregedoriaDetail = React.lazy(() => lazyImport(routeLoaders.Corregedoria
 const InvestigationList = React.lazy(() => lazyImport(routeLoaders.InvestigationList));
 const InvestigationCreate = React.lazy(() => lazyImport(routeLoaders.InvestigationCreate));
 const InvestigationDetail = React.lazy(() => lazyImport(routeLoaders.InvestigationDetail));
+const InvestigationProofDetail = React.lazy(() => lazyImport(routeLoaders.InvestigationProofDetail));
 const SearchSeizureList = React.lazy(() => lazyImport(routeLoaders.SearchSeizureList));
 const SearchSeizureCreate = React.lazy(() => lazyImport(routeLoaders.SearchSeizureCreate));
 const SearchSeizureDetail = React.lazy(() => lazyImport(routeLoaders.SearchSeizureDetail));
@@ -239,6 +240,11 @@ function App() {
                 <InvestigationDetail />
               </PermissionGuard>
             } />
+            <Route path="investigations/:id/proofs/:proofId" element={
+              <PermissionGuard permission="investigations_view">
+                <InvestigationProofDetail />
+              </PermissionGuard>
+            } />
 
             {/* Search and Seizure Routes */}
             <Route path="search-seizure" element={
@@ -320,6 +326,11 @@ function App() {
             <Route path="revenue/investigations/:id" element={
               <PermissionGuard permission="revenue_view">
                 <InvestigationDetail />
+              </PermissionGuard>
+            } />
+            <Route path="revenue/investigations/:id/proofs/:proofId" element={
+              <PermissionGuard permission="revenue_view">
+                <InvestigationProofDetail />
               </PermissionGuard>
             } />
             <Route path="revenue/:id" element={

@@ -1,6 +1,8 @@
 import React from 'react';
-import { Image, Video, Link as LinkIcon, FileText, File, Calendar, User, ExternalLink, ZoomIn, Trash2, Edit2 } from 'lucide-react';
+import { Image, Video, Link as LinkIcon, FileText, File, User, ExternalLink, ZoomIn, Trash2, Edit2 } from 'lucide-react';
 import clsx from 'clsx';
+import ProofVideoPlayer from './ProofVideoPlayer';
+import { normalizeInvestigationProofUrl } from '../../utils/investigationProofMedia';
 
 const ProofCard = ({ proof, onClick, onDelete, onEdit, canEdit }) => {
   const getIcon = () => {
@@ -41,19 +43,20 @@ const ProofCard = ({ proof, onClick, onDelete, onEdit, canEdit }) => {
 
       {/* Video Preview Placeholder */}
       {proof.type === 'video' && proof.content && (
-        <div 
-          className={clsx("h-48 w-full bg-slate-950 relative overflow-hidden flex items-center justify-center", isViewable && "cursor-pointer")}
-          onClick={() => isViewable && onClick && onClick(proof)}
-        >
-          <div className="text-slate-500 flex flex-col items-center gap-2">
-            <Video size={48} className="opacity-50" />
-            <span className="text-xs">Vídeo</span>
+        <div className="h-48 w-full bg-slate-950 relative overflow-hidden">
+          <div className="absolute inset-0">
+            <ProofVideoPlayer url={proof.content} title={proof.title} compact />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60" />
-          {isViewable && (
-            <div className="absolute top-3 right-3 bg-black/50 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-900 to-transparent opacity-90" />
+          {onClick && (
+            <button
+              type="button"
+              onClick={() => onClick(proof)}
+              className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 p-2 rounded-full transition-colors"
+              title="Abrir prova"
+            >
               <ZoomIn size={16} className="text-white" />
-            </div>
+            </button>
           )}
         </div>
       )}
@@ -111,7 +114,7 @@ const ProofCard = ({ proof, onClick, onDelete, onEdit, canEdit }) => {
         {/* Special Content Display */}
         {proof.type === 'link' && (
           <div className="text-blue-400 text-xs flex items-center gap-1 mb-4 break-all">
-            <ExternalLink size={12} /> {proof.content}
+            <ExternalLink size={12} /> {normalizeInvestigationProofUrl(proof.content)}
           </div>
         )}
 
@@ -126,6 +129,17 @@ const ProofCard = ({ proof, onClick, onDelete, onEdit, canEdit }) => {
           <User size={14} />
           <span>{proof.author}</span>
         </div>
+
+        {isViewable && onClick && (
+          <button
+            type="button"
+            onClick={() => onClick(proof)}
+            className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg transition-colors"
+          >
+            <ZoomIn size={16} />
+            Abrir prova
+          </button>
+        )}
       </div>
     </div>
   );

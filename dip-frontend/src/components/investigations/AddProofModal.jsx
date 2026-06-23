@@ -115,11 +115,11 @@ const AddProofModal = ({ isOpen, onClose, onSave }) => {
                   value={formData.content}
                   onChange={handleChange}
                   className="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
-                  placeholder="Link do vídeo no YouTube (obrigatório)"
+                  placeholder="Cole o link do vídeo, embed ou arquivo direto"
                   required
                 />
                 <p className="text-xs text-slate-500">
-                  Recomendamos usar o link do YouTube para melhor visualização no inquérito
+                  Aceita YouTube, Vimeo, Dailymotion, Google Drive, Streamable, Loom e links diretos de video.
                 </p>
               </div>
             )}
