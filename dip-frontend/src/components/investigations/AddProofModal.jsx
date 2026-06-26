@@ -108,7 +108,7 @@ const AddProofModal = ({ isOpen, onClose, onSave }) => {
                   aspect={9/16}
                 />
                 <p className="text-xs text-slate-500">
-                  Aceita imagem vertical `1080x1920` estilo status e horizontal `1920x1080`. No recorte voce pode trocar entre `9:16` e `16:9`.
+                  Aceita imagem vertical `1080x1920` estilo status e horizontal `1920x1080`. No recorte voce pode usar `9:16`, `16:9` ou `Livre` para selecionar como quiser.
                 </p>
               </div>
             )}

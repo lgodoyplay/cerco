@@ -1,14 +1,35 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
-import { X, Check, ZoomIn, ZoomOut, RotateCw, Square, RectangleHorizontal, LayoutTemplate, RectangleVertical } from 'lucide-react';
+import { X, Check, ZoomIn, ZoomOut, RotateCw, Square, RectangleHorizontal, LayoutTemplate, RectangleVertical, ScanLine } from 'lucide-react';
 import getCroppedImg from '../../utils/cropUtils';
 import clsx from 'clsx';
+
+const DEFAULT_FREE_CROP_SIZE = { width: 260, height: 260 };
+
+const createCropSizeFromAspect = (ratio) => {
+  if (!ratio || Number.isNaN(ratio)) return DEFAULT_FREE_CROP_SIZE;
+
+  const base = 300;
+  if (ratio >= 1) {
+    return {
+      width: base,
+      height: Math.max(160, Math.round(base / ratio))
+    };
+  }
+
+  return {
+    width: Math.max(160, Math.round(base * ratio)),
+    height: base
+  };
+};
 
 const ImageCropperModal = ({ imageSrc, isOpen, onClose, onCropComplete, aspect: initialAspect = 4 / 3, forceAspect = false }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [aspect, setAspect] = useState(initialAspect);
+  const [freeCrop, setFreeCrop] = useState(false);
+  const [freeCropSize, setFreeCropSize] = useState(createCropSizeFromAspect(initialAspect));
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -18,6 +39,8 @@ const ImageCropperModal = ({ imageSrc, isOpen, onClose, onCropComplete, aspect: 
   useEffect(() => {
     if (isOpen) {
         setAspect(initialAspect);
+        setFreeCrop(false);
+        setFreeCropSize(createCropSizeFromAspect(initialAspect));
         setZoom(1);
         setRotation(0);
         setCrop({ x: 0, y: 0 });
@@ -35,6 +58,28 @@ const ImageCropperModal = ({ imageSrc, isOpen, onClose, onCropComplete, aspect: 
   const onCropCompleteHandler = useCallback((croppedArea, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
+
+  const selectPresetAspect = (nextAspect) => {
+    setFreeCrop(false);
+    setAspect(nextAspect);
+    setFreeCropSize(createCropSizeFromAspect(nextAspect));
+  };
+
+  const enableFreeCrop = () => {
+    setFreeCrop(true);
+  };
+
+  const handleFreeCropSizeChange = (field, value) => {
+    const numericValue = Number(value);
+    setFreeCropSize((prev) => {
+      const next = {
+        ...prev,
+        [field]: numericValue
+      };
+      setAspect(next.width / next.height);
+      return next;
+    });
+  };
 
   const handleSave = async () => {
     try {
@@ -81,6 +126,7 @@ const ImageCropperModal = ({ imageSrc, isOpen, onClose, onCropComplete, aspect: 
             zoom={zoom}
             rotation={rotation}
             aspect={aspect}
+            cropSize={freeCrop ? freeCropSize : undefined}
             onCropChange={onCropChange}
             onCropComplete={onCropCompleteHandler}
             onZoomChange={onZoomChange}
@@ -97,42 +143,89 @@ const ImageCropperModal = ({ imageSrc, isOpen, onClose, onCropComplete, aspect: 
             {!forceAspect && (
                 <div className="flex justify-center gap-2">
                     <button 
-                        onClick={() => setAspect(1)}
+                        onClick={() => selectPresetAspect(1)}
                         className={clsx(
                             "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors",
-                            aspect === 1 ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
+                            !freeCrop && aspect === 1 ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
                         )}
                     >
                         <Square size={14} /> 1:1 (Quadrado)
                     </button>
                     <button 
-                        onClick={() => setAspect(4/3)}
+                        onClick={() => selectPresetAspect(4/3)}
                         className={clsx(
                             "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors",
-                            isAspectSelected(4/3) ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
+                            !freeCrop && isAspectSelected(4/3) ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
                         )}
                     >
                         <LayoutTemplate size={14} /> 4:3 (Padrão)
                     </button>
                     <button 
-                        onClick={() => setAspect(9/16)}
+                        onClick={() => selectPresetAspect(9/16)}
                         className={clsx(
                             "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors",
-                            isAspectSelected(9/16) ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
+                            !freeCrop && isAspectSelected(9/16) ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
                         )}
                     >
                         <RectangleVertical size={14} /> 9:16 (Status)
                     </button>
                     <button 
-                        onClick={() => setAspect(16/9)}
+                        onClick={() => selectPresetAspect(16/9)}
                         className={clsx(
                             "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors",
-                            isAspectSelected(16/9) ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
+                            !freeCrop && isAspectSelected(16/9) ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
                         )}
                     >
                         <RectangleHorizontal size={14} /> 16:9 (Largo)
                     </button>
+                    <button 
+                        onClick={enableFreeCrop}
+                        className={clsx(
+                            "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors",
+                            freeCrop ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
+                        )}
+                    >
+                        <ScanLine size={14} /> Livre
+                    </button>
                 </div>
+            )}
+
+            {!forceAspect && freeCrop && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                    <span>Largura da seleção</span>
+                    <span>{freeCropSize.width}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={140}
+                    max={420}
+                    step={10}
+                    value={freeCropSize.width}
+                    onChange={(e) => handleFreeCropSizeChange('width', e.target.value)}
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-federal-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                    <span>Altura da seleção</span>
+                    <span>{freeCropSize.height}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={140}
+                    max={420}
+                    step={10}
+                    value={freeCropSize.height}
+                    onChange={(e) => handleFreeCropSizeChange('height', e.target.value)}
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-federal-500"
+                  />
+                </div>
+                <p className="md:col-span-2 text-xs text-slate-500">
+                  No modo livre, voce escolhe manualmente o tamanho da area de corte e posiciona a imagem do jeito que quiser.
+                </p>
+              </div>
             )}
 
             {/* Zoom Control */}
