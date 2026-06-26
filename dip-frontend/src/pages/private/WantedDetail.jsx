@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, ChevronDown, ChevronUp, FileText, Lock, Printer, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ChevronDown, ChevronUp, FileText, Lock, Printer, ShieldAlert, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
 import { usePermissions } from '../../hooks/usePermissions';
-import { generateWantedPDF } from '../../utils/pdfGenerator';
+import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
 import { buildWantedRecord } from '../../utils/arrestWantedMedia';
 
@@ -20,6 +20,7 @@ const WantedDetail = () => {
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
   const [showCrimeInfo, setShowCrimeInfo] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const canManage = can('wanted_manage');
 
@@ -74,7 +75,14 @@ const WantedDetail = () => {
   const handleGenerateFile = async () => {
     if (!wantedPerson) return;
     try {
-      await generateWantedPDF(wantedPerson, user, templates?.wanted);
+      await generateProfessionalPDF(
+        wantedPerson,
+        user,
+        templates?.wanted,
+        'wanted',
+        templates?.__layoutConfig?.wanted,
+        templates?.__pageHeaderConfig
+      );
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
       setNotification({
@@ -160,7 +168,11 @@ const WantedDetail = () => {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="space-y-4">
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-              <div className="aspect-[3/4] rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => wantedPerson.image && setSelectedImage({ url: wantedPerson.image, label: 'Foto Principal' })}
+                className="w-full aspect-[3/4] rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative flex items-center justify-center"
+              >
                 {wantedPerson.image ? (
                   <img src={wantedPerson.image} alt={wantedPerson.name} className="w-full h-full object-contain" />
                 ) : (
@@ -172,7 +184,10 @@ const WantedDetail = () => {
                 <div className="absolute bottom-0 inset-x-0 bg-red-600 text-white text-center py-2 font-bold uppercase text-sm">
                   Procurado
                 </div>
-              </div>
+              </button>
+              {wantedPerson.image && (
+                <p className="text-xs text-slate-500 mt-3 text-center">Clique na imagem para ampliar</p>
+              )}
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
@@ -183,12 +198,17 @@ const WantedDetail = () => {
               {additionalMedia.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3">
                   {additionalMedia.map((entry) => (
-                    <div key={entry.key} className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+                    <button
+                      key={entry.key}
+                      type="button"
+                      onClick={() => setSelectedImage({ url: entry.url, label: entry.label })}
+                      className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden text-left"
+                    >
                       <div className="aspect-square flex items-center justify-center bg-slate-950">
                         <img src={entry.url} alt={entry.label} className="w-full h-full object-contain" />
                       </div>
                       <div className="px-3 py-2 text-xs text-slate-300 border-t border-slate-800">{entry.label}</div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               ) : (
@@ -289,6 +309,29 @@ const WantedDetail = () => {
                   </button>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedImage && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm p-4 flex items-center justify-center">
+          <div className="relative w-full max-w-6xl bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+              <div>
+                <p className="text-sm font-bold text-white">{selectedImage.label}</p>
+                <p className="text-xs text-slate-500">Visualização ampliada da foto do procurado</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedImage(null)}
+                className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <X className="text-slate-400 hover:text-white" size={18} />
+              </button>
+            </div>
+            <div className="max-h-[82vh] overflow-auto bg-slate-950 flex items-center justify-center p-4">
+              <img src={selectedImage.url} alt={selectedImage.label} className="max-w-full max-h-[76vh] object-contain rounded-xl" />
             </div>
           </div>
         </div>

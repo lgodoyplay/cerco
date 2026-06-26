@@ -812,16 +812,30 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             }));
 
             validImages = processedArrestImages.filter(Boolean);
-        } else if (type === 'wanted' && (data.image || (data.images && data.images.proof1))) {
-            try {
-                const imgUrl = data.image || (data.images && data.images.proof1);
-                const imgData = await getBase64ImageFromURL(imgUrl);
-                if (imgData && typeof imgData === 'string' && imgData.startsWith('data:image')) {
-                    validImages = [{ title: 'FOTO DO PROCURADO', imgData, description: 'Registro fotográfico.' }];
+        } else if (type === 'wanted') {
+            const wantedImageEntries = Array.isArray(data.mediaEntries) && data.mediaEntries.length > 0
+                ? data.mediaEntries
+                : ((data.image || (data.images && data.images.proof1))
+                    ? [{ key: 'proof1', label: 'Foto do Procurado', url: data.image || (data.images && data.images.proof1) }]
+                    : []);
+
+            const processedWantedImages = await Promise.all(wantedImageEntries.map(async (entry, index) => {
+                try {
+                    const imgData = await getBase64ImageFromURL(entry.url);
+                    if (imgData && typeof imgData === 'string' && imgData.startsWith('data:image')) {
+                        return {
+                            title: (entry.label || `Foto ${index + 1}`).toUpperCase(),
+                            imgData,
+                            description: index === 0 ? 'Registro fotográfico principal do procurado.' : 'Registro fotográfico complementar.'
+                        };
+                    }
+                } catch (_error) {
+                    return null;
                 }
-            } catch (_error) {
-                console.warn("Erro ao carregar foto do procurado");
-            }
+                return null;
+            }));
+
+            validImages = processedWantedImages.filter(Boolean);
         }
 
         // Definição de Variáveis e Conteúdo Padrão baseada no Tipo
@@ -1023,8 +1037,6 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 { text: '\n\n', fontSize: 1 },
                 { text: 'Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades da CIVIL EUFORIA.', style: 'normalText', alignment: 'center', italics: true }
             ].filter(Boolean);
-            
-            validImages = []; // Evitar duplicação
         }
 
         // Processar Template Personalizado (se houver)
@@ -1101,6 +1113,11 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 (type === 'arrest' && validImages.length > 0) ? [
                     { text: customContent ? 'REGISTRO FOTOGRÁFICO' : '4. REGISTRO FOTOGRÁFICO', style: 'sectionTitle', tocItem: !customContent },
                     ...buildArrestImageBlocksPdf(validImages)
+                ] : [],
+
+                (type === 'wanted' && validImages.length > 1) ? [
+                    { text: customContent ? 'OUTRAS EVIDÊNCIAS FOTOGRÁFICAS' : 'EVIDÊNCIAS FOTOGRÁFICAS', style: 'sectionTitle', tocItem: !customContent },
+                    ...buildArrestImageBlocksPdf(validImages.slice(1))
                 ] : [],
 
                 // --- CONCLUSÃO E ASSINATURAS (Se não customizado) ---

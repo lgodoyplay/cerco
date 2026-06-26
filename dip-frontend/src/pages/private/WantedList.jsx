@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
 import { usePermissions } from '../../hooks/usePermissions';
-import { generateWantedPDF } from '../../utils/pdfGenerator';
+import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
 import { buildWantedRecord } from '../../utils/arrestWantedMedia';
 
@@ -81,7 +81,14 @@ const WantedList = () => {
 
   const handleGenerateFile = async (person) => {
     try {
-      await generateWantedPDF(person, user, templates?.wanted);
+      await generateProfessionalPDF(
+        person,
+        user,
+        templates?.wanted,
+        'wanted',
+        templates?.__layoutConfig?.wanted,
+        templates?.__pageHeaderConfig
+      );
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
       setNotification({
