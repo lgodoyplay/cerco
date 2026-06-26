@@ -7,6 +7,12 @@ import { useAuth } from '../../../context/AuthContext';
 import WeaponLicenseRequestFlow from '../../../components/weapons/WeaponLicenseRequestFlow';
 import NotificationBanner from '../../../components/feedback/NotificationBanner';
 import {
+  createBaseWebhookEmbed,
+  formatWebhookAttachments,
+  postWebhookEmbed,
+  resolveWebhookActorName
+} from '../../../utils/discordWebhook';
+import {
   Shield,
   CheckCircle,
   XCircle,
@@ -99,6 +105,18 @@ const hasAllRequiredProcessDocuments = (license) =>
 
 const getProcessCompletion = (license) =>
   PROCESS_DOCUMENTS.filter((document) => getAttachmentsByCategory(license, document.key).length > 0).length;
+
+const getProcessSummary = (license) =>
+  PROCESS_DOCUMENTS.map((document) => {
+    const attachments = getAttachmentsByCategory(license, document.key);
+    return `${document.label}: ${attachments.length > 0 ? `${attachments.length} arquivo(s)` : 'pendente'}`;
+  }).join('\n');
+
+const mapAttachmentsForWebhook = (attachments = []) =>
+  attachments.map((attachment) => ({
+    title: attachment?.file_name || 'Documento',
+    url: attachment?.url || ''
+  }));
 
 const getRenewalState = (license) => {
   if (!license?.expires_at || license.status !== 'approved') return null;
@@ -373,6 +391,7 @@ const WeaponsManager = () => {
       setLicenses((previousLicenses) =>
         previousLicenses.map((license) => (license.id === refreshedLicense.id ? refreshedLicense : license))
       );
+      await sendWebhookNotification(refreshedLicense, 'document_uploaded', { category });
       setNotification({
         type: 'success',
         title: 'Documento anexado',
@@ -391,11 +410,13 @@ const WeaponsManager = () => {
     }
   };
 
-  const sendWebhookNotification = async (license, newStatus) => {
+  const sendWebhookNotification = async (license, newStatus, metadata = {}) => {
     if (!discordConfig?.weaponsWebhook) return;
 
     try {
       const colors = {
+        request_created: 0xf59e0b,
+        document_uploaded: 0x0ea5e9,
         processing: 0x3b82f6,
         approved: 0x22c55e,
         rejected: 0xef4444,
@@ -404,6 +425,8 @@ const WeaponsManager = () => {
       };
 
       const titles = {
+        request_created: 'Novo pedido de porte',
+        document_uploaded: 'Documento adicionado ao processo',
         processing: 'Etapa 2 iniciada',
         approved: 'Porte liberado',
         rejected: 'Solicitacao negada',
@@ -411,18 +434,35 @@ const WeaponsManager = () => {
         expired: 'Porte vencido'
       };
 
-      const embed = {
+      const requestAttachments = getAttachmentsByCategory(license, 'request_document');
+      const processAttachments = PROCESS_DOCUMENTS.flatMap((document) => getAttachmentsByCategory(license, document.key));
+
+      const embed = createBaseWebhookEmbed({
         title: titles[newStatus] || 'Atualizacao de porte',
+        description: `Fluxo do porte de armas atualizado para ${license.full_name}.`,
         color: colors[newStatus] || 0x000000,
+        actorName: resolveWebhookActorName(user),
+        footerText: 'Sistema de Armas - CIVIL EUFORIA',
         fields: [
           { name: 'Solicitante', value: license.full_name, inline: true },
           { name: 'Passaporte', value: license.passport_id, inline: true },
-          { name: 'Status', value: STATUS_LABELS[newStatus] || newStatus, inline: true },
-          { name: 'Motivo', value: license.reason || 'Nao informado' }
-        ],
-        footer: { text: 'Sistema de Armas - CIVIL EUFORIA' },
-        timestamp: new Date().toISOString()
-      };
+          { name: 'Telefone', value: license.phone || 'Nao informado', inline: true },
+          { name: 'Status', value: STATUS_LABELS[newStatus] || STATUS_LABELS[license.status] || newStatus, inline: true },
+          { name: 'Motivo', value: license.reason || 'Nao informado' },
+          { name: 'Etapa 1 - Pedido', value: formatWebhookAttachments(mapAttachmentsForWebhook(requestAttachments), 'Nenhum documento anexado no pedido.') },
+          { name: 'Etapa 2 - Processo', value: getProcessSummary(license) },
+          { name: 'Documentos do Processo', value: formatWebhookAttachments(mapAttachmentsForWebhook(processAttachments), 'Nenhum documento anexado no processo.') }
+        ]
+      });
+
+      if (newStatus === 'document_uploaded' && metadata.category) {
+        const uploadedCategory = PROCESS_DOCUMENTS.find((document) => document.key === metadata.category);
+        embed.fields.push({
+          name: 'Documento atualizado',
+          value: uploadedCategory?.label || metadata.category,
+          inline: true
+        });
+      }
 
       if (newStatus === 'approved') {
         embed.fields.push(
@@ -431,11 +471,15 @@ const WeaponsManager = () => {
         );
       }
 
-      await fetch(discordConfig.weaponsWebhook, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ embeds: [embed] })
-      });
+      if (newStatus === 'revoked' || newStatus === 'expired' || newStatus === 'rejected') {
+        embed.fields.push({
+          name: 'Situacao final',
+          value: STATUS_LABELS[newStatus] || newStatus,
+          inline: true
+        });
+      }
+
+      await postWebhookEmbed(discordConfig.weaponsWebhook, embed);
     } catch (error) {
       console.error('Erro ao enviar webhook do porte:', error);
     }

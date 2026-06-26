@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Filter, Eye, Download, Shield, User, Calendar, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Plus, Trash2, Lock } from 'lucide-react';
+import { Search, Filter, Eye, Download, Shield, User, Calendar, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Plus, Trash2, Lock, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import clsx from 'clsx';

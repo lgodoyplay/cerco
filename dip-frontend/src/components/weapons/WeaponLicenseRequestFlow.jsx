@@ -12,6 +12,13 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../hooks/useSettings';
+import {
+  createBaseWebhookEmbed,
+  formatWebhookAttachments,
+  postWebhookEmbed,
+  resolveWebhookActorName
+} from '../../utils/discordWebhook';
 
 const initialFormState = {
   fullName: '',
@@ -44,6 +51,7 @@ const WeaponLicenseRequestFlow = ({
   onSubmitted
 }) => {
   const { user } = useAuth();
+  const { discordConfig } = useSettings();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -151,6 +159,41 @@ const WeaponLicenseRequestFlow = ({
 
           if (attachmentError) throw attachmentError;
         }
+      }
+
+      const { data: createdLicense } = await supabase
+        .from('weapon_licenses')
+        .select('*, license_attachments(*)')
+        .eq('id', licenseId)
+        .single();
+
+      if (discordConfig?.weaponsWebhook && createdLicense) {
+        const embed = createBaseWebhookEmbed({
+          title: 'Novo pedido de porte',
+          description: 'Pedido inicial de porte de armas enviado para analise.',
+          color: 0xf59e0b,
+          actorName: resolveWebhookActorName(user) === 'Sistema' ? formData.fullName : resolveWebhookActorName(user),
+          footerText: 'Sistema de Armas - CIVIL EUFORIA',
+          fields: [
+            { name: 'Solicitante', value: createdLicense.full_name, inline: true },
+            { name: 'Passaporte', value: createdLicense.passport_id, inline: true },
+            { name: 'Telefone', value: createdLicense.phone || 'Nao informado', inline: true },
+            { name: 'Status', value: 'Pedido Recebido', inline: true },
+            { name: 'Motivo', value: createdLicense.reason || 'Nao informado' },
+            {
+              name: 'Documentos do Pedido',
+              value: formatWebhookAttachments(
+                (createdLicense.license_attachments || []).map((attachment) => ({
+                  title: attachment.file_name,
+                  url: attachment.url
+                })),
+                'Nenhum documento anexado no pedido.'
+              )
+            }
+          ]
+        });
+
+        await postWebhookEmbed(discordConfig.weaponsWebhook, embed);
       }
 
       setCreatedLicenseId(licenseId);
@@ -273,7 +316,7 @@ const WeaponLicenseRequestFlow = ({
                     value={formData.passportId}
                     onChange={handleInputChange}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500"
-                    placeholder="Ex: DEN3635"
+                    placeholder="Ex: 3635"
                     required
                   />
                 </div>
