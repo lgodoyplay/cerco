@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Filter, Eye, FileText, Download, Shield, User, Calendar, MapPin, X, ChevronLeft, ChevronRight, Plus, Trash2, Lock } from 'lucide-react';
+import { Search, Filter, Eye, Download, Shield, User, Calendar, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Plus, Trash2, Lock } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import clsx from 'clsx';
@@ -10,6 +10,7 @@ import { useSettings } from '../../hooks/useSettings';
 import { usePermissions } from '../../hooks/usePermissions';
 import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
+import { buildArrestRecord } from '../../utils/arrestWantedMedia';
 
 const ArrestList = () => {
   const { user } = useAuth();
@@ -22,7 +23,7 @@ const ArrestList = () => {
   const [arrests, setArrests] = useState([]);
   const [boletins, setBoletins] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedArrest, setSelectedArrest] = useState(null);
+  const [expandedLegalId, setExpandedLegalId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [deleteModal, setDeleteModal] = useState({ show: false, arrest: null });
@@ -48,25 +49,10 @@ const ArrestList = () => {
         if (boletinsError) throw boletinsError;
         setBoletins(boletinsData || []);
 
-        const formattedArrests = arrestsData.map(item => {
-          const linkedBo = boletinsData?.find(b => b.id === item.bo_id);
-          return {
-            ...item,
-            name: item.nome,
-            passport: item.documento,
-            reason: item.observacoes, // Mapping observacoes to reason/description context
-            articles: item.artigo,
-            officer: item.conduzido_por || 'N/A',
-            description: item.observacoes,
-            broughtByOtherPolice: item.conduzido_por_outra_policia,
-            boId: item.bo_id,
-            linkedBo: linkedBo,
-            images: { 
-              face: item.foto_principal 
-            },
-            date: item.data_prisao // Assuming this field exists based on schema
-          };
-        });
+        const formattedArrests = arrestsData.map((item) => buildArrestRecord(
+          item,
+          boletinsData?.find((b) => b.id === item.bo_id)
+        ));
         setArrests(formattedArrests);
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
@@ -164,6 +150,10 @@ const ArrestList = () => {
     }
   };
 
+  const toggleLegalInfo = (arrestId) => {
+    setExpandedLegalId((current) => (current === arrestId ? null : arrestId));
+  };
+
   return (
     <div className="space-y-6">
       <NotificationBanner
@@ -230,69 +220,98 @@ const ArrestList = () => {
                 </tr>
               )}
               {!loading && paginatedArrests.map((arrest) => (
-                <tr key={arrest.id} className="hover:bg-slate-800/50 transition-colors group">
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700 flex-shrink-0">
-                        {arrest.images?.face ? (
-                          <img src={arrest.images.face} alt={arrest.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <User size={18} className="text-slate-500" />
+                <>
+                  <tr key={arrest.id} className="hover:bg-slate-800/50 transition-colors group">
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700 flex-shrink-0">
+                          {arrest.images?.face ? (
+                            <img src={arrest.images.face} alt={arrest.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <User size={18} className="text-slate-500" />
+                          )}
+                        </div>
+                        <span className="font-bold text-white">{arrest.name}</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-slate-300 font-mono text-sm">{arrest.passport}</td>
+                    <td className="p-4">
+                      <button
+                        type="button"
+                        onClick={() => toggleLegalInfo(arrest.id)}
+                        className="w-full bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-left transition-colors"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <div className="text-xs uppercase tracking-[0.18em] text-slate-500 font-bold">Motivo / Artigos</div>
+                            <div className="text-sm text-white font-medium mt-1">Clique para visualizar</div>
+                          </div>
+                          {expandedLegalId === arrest.id ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                        </div>
+                      </button>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2 text-sm text-slate-300">
+                        <Calendar size={14} className="text-slate-500" />
+                        {arrest.date && !isNaN(new Date(arrest.date).getTime()) 
+                          ? format(new Date(arrest.date), 'dd/MM/yyyy', { locale: ptBR })
+                          : 'Data desconhecida'}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
+                        <Shield size={12} />
+                        {arrest.officer}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <span className={clsx("px-2 py-1 rounded text-xs font-bold border", getStatusColor(arrest.status))}>
+                        {arrest.status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => navigate(`/dashboard/arrests/${arrest.id}`)}
+                          className="p-2 hover:bg-federal-500/20 text-slate-400 hover:text-federal-400 rounded-lg transition-colors"
+                          title="Ver Detalhes"
+                        >
+                          <Eye size={18} />
+                        </button>
+                        <button 
+                          onClick={() => handleDownloadReport(arrest)}
+                          className="p-2 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 rounded-lg transition-colors"
+                          title="Baixar Relatório"
+                        >
+                          <Download size={18} />
+                        </button>
+                        {canManage && (
+                          <button 
+                            onClick={() => setDeleteModal({ show: true, arrest })}
+                            className="p-2 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
+                            title="Remover"
+                          >
+                            <Trash2 size={18} />
+                          </button>
                         )}
                       </div>
-                      <span className="font-bold text-white">{arrest.name}</span>
-                    </div>
-                  </td>
-                  <td className="p-4 text-slate-300 font-mono text-sm">{arrest.passport}</td>
-                  <td className="p-4">
-                    <div className="text-sm text-white font-medium">{arrest.reason}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">{arrest.articles}</div>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2 text-sm text-slate-300">
-                      <Calendar size={14} className="text-slate-500" />
-                      {arrest.date && !isNaN(new Date(arrest.date).getTime()) 
-                        ? format(new Date(arrest.date), 'dd/MM/yyyy', { locale: ptBR })
-                        : 'Data desconhecida'}
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
-                      <Shield size={12} />
-                      {arrest.officer}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <span className={clsx("px-2 py-1 rounded text-xs font-bold border", getStatusColor(arrest.status))}>
-                      {arrest.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        onClick={() => setSelectedArrest(arrest)}
-                        className="p-2 hover:bg-federal-500/20 text-slate-400 hover:text-federal-400 rounded-lg transition-colors"
-                        title="Ver Detalhes"
-                      >
-                        <Eye size={18} />
-                      </button>
-                      <button 
-                        onClick={() => handleDownloadReport(arrest)}
-                        className="p-2 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 rounded-lg transition-colors"
-                        title="Baixar Relatório"
-                      >
-                        <Download size={18} />
-                      </button>
-                      {canManage && (
-                        <button 
-                          onClick={() => setDeleteModal({ show: true, arrest })}
-                          className="p-2 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
-                          title="Remover"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
+                  {expandedLegalId === arrest.id && (
+                    <tr key={`${arrest.id}-details`} className="bg-slate-950/70">
+                      <td colSpan="6" className="px-4 pb-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                            <span className="text-xs text-slate-500 uppercase font-bold block mb-2">Motivo da Prisão</span>
+                            <p className="text-slate-200 text-sm whitespace-pre-line">{arrest.reason || 'Não informado.'}</p>
+                          </div>
+                          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                            <span className="text-xs text-slate-500 uppercase font-bold block mb-2">Artigos Aplicados</span>
+                            <p className="text-federal-400 text-sm font-medium whitespace-pre-line">{arrest.articles || 'Não informado.'}</p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))}
               {!loading && paginatedArrests.length === 0 && (
                 <tr>
@@ -330,136 +349,6 @@ const ArrestList = () => {
           </div>
         )}
       </div>
-
-      {/* Details Modal */}
-      {selectedArrest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl shadow-2xl animate-fade-in-up max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <FileText className="text-federal-500" />
-                Detalhes da Prisão
-              </h3>
-              <button onClick={() => setSelectedArrest(null)} className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
-                <X className="text-slate-400 hover:text-white" />
-              </button>
-            </div>
-            
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Left Column: Photos */}
-                <div className="space-y-4">
-                  <div className="aspect-square bg-slate-950 rounded-xl border border-slate-800 overflow-hidden relative">
-                    {selectedArrest.images?.face ? (
-                      <img src={selectedArrest.images.face} alt="Rosto" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
-                        <User size={48} />
-                        <span className="text-xs uppercase mt-2">Sem Foto</span>
-                      </div>
-                    )}
-                    <div className="absolute bottom-0 inset-x-0 bg-slate-900/80 backdrop-blur-sm py-2 text-center text-xs font-bold text-white uppercase">
-                      Foto do Detento
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    {['bag', 'tablet', 'approach'].map(key => (
-                      selectedArrest.images?.[key] && (
-                        <div key={key} className="aspect-square bg-slate-950 rounded-lg border border-slate-800 overflow-hidden relative group cursor-pointer">
-                          <img src={selectedArrest.images[key]} alt={key} className="w-full h-full object-cover" />
-                        </div>
-                      )
-                    ))}
-                  </div>
-                </div>
-
-                {/* Right Column: Info */}
-                <div className="md:col-span-2 space-y-6">
-                  <div>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h2 className="text-2xl font-bold text-white">{selectedArrest.name}</h2>
-                        <p className="text-federal-400 font-mono text-sm mt-1">DOC: {selectedArrest.passport}</p>
-                      </div>
-                      <span className={clsx("px-3 py-1 rounded-lg text-sm font-bold border", getStatusColor(selectedArrest.status))}>
-                        {selectedArrest.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                      <span className="text-xs text-slate-500 uppercase font-bold block mb-1">Data da Ocorrência</span>
-                      <div className="flex items-center gap-2 text-slate-200">
-                        <Calendar size={16} className="text-federal-500" />
-                        {selectedArrest.date && !isNaN(new Date(selectedArrest.date).getTime())
-                          ? format(new Date(selectedArrest.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
-                          : 'Data não informada'}
-                      </div>
-                    </div>
-                    <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                      <span className="text-xs text-slate-500 uppercase font-bold block mb-1">Oficial Responsável</span>
-                      <div className="flex items-center gap-2 text-slate-200">
-                        <Shield size={16} className="text-federal-500" />
-                        {selectedArrest.officer}
-                      </div>
-                    </div>
-                  </div>
-
-                  {selectedArrest.broughtByOtherPolice && (
-                    <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20">
-                      <div className="flex items-center gap-2 text-amber-400 font-medium">
-                        <Shield size={16} />
-                        Conduzido por outra polícia
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedArrest.linkedBo && (
-                    <div className="bg-federal-500/10 p-4 rounded-xl border border-federal-500/20">
-                      <span className="text-xs text-slate-500 uppercase font-bold block mb-1">
-                        BO Responsável
-                      </span>
-                      <div className="text-white font-medium">
-                        {selectedArrest.linkedBo.comunicante}
-                      </div>
-                      <p className="text-slate-400 text-sm mt-1">
-                        {selectedArrest.linkedBo.descricao}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                    <span className="text-xs text-slate-500 uppercase font-bold block mb-2">Infrações e Artigos</span>
-                    <h4 className="text-white font-bold mb-1">{selectedArrest.reason}</h4>
-                    <p className="text-federal-400 text-sm">{selectedArrest.articles}</p>
-                  </div>
-
-                  {selectedArrest.description && (
-                    <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                      <span className="text-xs text-slate-500 uppercase font-bold block mb-2">Observações / Relatório</span>
-                      <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-line">
-                        {selectedArrest.description}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="pt-4 flex gap-3">
-                    <button 
-                      onClick={() => handleDownloadReport(selectedArrest)}
-                      className="flex-1 py-3 bg-federal-600 hover:bg-federal-500 text-white rounded-xl font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Download size={18} />
-                      Baixar Relatório Completo
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Delete Confirmation Modal */}
       {deleteModal.show && deleteModal.arrest && (

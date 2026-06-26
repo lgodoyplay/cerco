@@ -144,6 +144,33 @@ const RegisterWanted = () => {
     return new Blob([u8arr], {type:mime});
   }
 
+  const uploadWantedImage = async (imageKey, dataUrl, document) => {
+    if (!dataUrl) return null;
+
+    const fileBlob = dataURLtoBlob(dataUrl);
+    const sanitizedDoc = document.replace(/[^a-zA-Z0-9]/g, '_');
+    const fileName = `wanted/${Date.now()}_${sanitizedDoc}_${imageKey}.jpg`;
+      
+    const { error: uploadError } = await supabase.storage
+      .from('procurados')
+      .upload(fileName, fileBlob);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage.from('procurados').getPublicUrl(fileName);
+
+    return {
+      key: imageKey,
+      label: {
+        proof1: 'Foto Principal',
+        proof2: 'Prova Adicional 2',
+        proof3: 'Prova Adicional 3',
+        proof4: 'Prova Adicional 4'
+      }[imageKey] || 'Prova',
+      url: publicUrl
+    };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -161,23 +188,37 @@ const RegisterWanted = () => {
       // 0. Get User
       const { data: { user } } = await supabase.auth.getUser();
 
-      // 1. Upload Photo to Supabase Storage
-      const fileBlob = dataURLtoBlob(images.proof1);
-      const sanitizedDoc = formData.document.replace(/[^a-zA-Z0-9]/g, '_');
-      const fileName = `wanted/${Date.now()}_${sanitizedDoc}.jpg`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('procurados')
-        .upload(fileName, fileBlob);
+      const mediaEntries = [];
+      for (const imageKey of ['proof1', 'proof2', 'proof3', 'proof4']) {
+        if (!images[imageKey]) continue;
+        const uploadedImage = await uploadWantedImage(imageKey, images[imageKey], formData.document);
+        if (uploadedImage) mediaEntries.push(uploadedImage);
+      }
 
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage.from('procurados').getPublicUrl(fileName);
+      const publicUrl = mediaEntries.find((entry) => entry.key === 'proof1')?.url || null;
 
       // 2. Insert Data into Database
-      const { data, error: insertError } = await supabase
+      const basePayload = {
+        nome: formData.name,
+        documento: formData.document,
+        motivo: formData.reason,
+        periculosidade: formData.dangerLevel,
+        observacoes: formData.observations,
+        status: 'Procurado',
+        foto_principal: publicUrl,
+        created_by: user?.id,
+        recompensa: formData.reward,
+        bo_id: formData.boId,
+        midias_json: mediaEntries
+      };
+
+      let { data, error: insertError } = await supabase
         .from('procurados')
-        .insert([{
+        .insert([basePayload])
+        .select('*');
+
+      if (insertError && /midias_json/i.test(insertError.message || '')) {
+        const legacyPayload = {
           nome: formData.name,
           documento: formData.document,
           motivo: formData.reason,
@@ -188,8 +229,13 @@ const RegisterWanted = () => {
           created_by: user?.id,
           recompensa: formData.reward,
           bo_id: formData.boId
-        }])
-        .select('*');
+        };
+
+        ({ data, error: insertError } = await supabase
+          .from('procurados')
+          .insert([legacyPayload])
+          .select('*'));
+      }
 
       if (insertError) throw insertError;
       const newWanted = data[0];

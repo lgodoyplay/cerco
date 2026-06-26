@@ -29,7 +29,9 @@ const RegisterArrest = React.lazy(() => lazyImport(routeLoaders.RegisterArrest))
 const RegisterBO = React.lazy(() => lazyImport(routeLoaders.RegisterBO));
 const RegisterWanted = React.lazy(() => lazyImport(routeLoaders.RegisterWanted));
 const WantedList = React.lazy(() => lazyImport(routeLoaders.WantedList));
+const WantedDetail = React.lazy(() => lazyImport(routeLoaders.WantedDetail));
 const ArrestList = React.lazy(() => lazyImport(routeLoaders.ArrestList));
+const ArrestDetail = React.lazy(() => lazyImport(routeLoaders.ArrestDetail));
 const BOList = React.lazy(() => lazyImport(routeLoaders.BOList));
 const ReportList = React.lazy(() => lazyImport(routeLoaders.ReportList));
 const CorregedoriaList = React.lazy(() => lazyImport(routeLoaders.CorregedoriaList));
@@ -165,6 +167,11 @@ function App() {
                 <ArrestList />
               </PermissionGuard>
             } />
+            <Route path="arrests/:id" element={
+              <PermissionGuard permission="arrest_view">
+                <ArrestDetail />
+              </PermissionGuard>
+            } />
             
             <Route path="bo" element={
               <PermissionGuard permission="bo_manage">
@@ -227,6 +234,11 @@ function App() {
             <Route path="wanted" element={
               <PermissionGuard permission="wanted_view">
                 <WantedList />
+              </PermissionGuard>
+            } />
+            <Route path="wanted/:id" element={
+              <PermissionGuard permission="wanted_view">
+                <WantedDetail />
               </PermissionGuard>
             } />
             

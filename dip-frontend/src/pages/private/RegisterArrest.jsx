@@ -192,6 +192,33 @@ const RegisterArrest = () => {
     return new Blob([u8arr], {type:mime});
   }
 
+  const uploadArrestImage = async (imageKey, dataUrl, passport) => {
+    if (!dataUrl) return null;
+
+    const fileBlob = dataURLtoBlob(dataUrl);
+    const sanitizedDoc = passport.replace(/[^a-zA-Z0-9]/g, '_');
+    const fileName = `arrests/${Date.now()}_${sanitizedDoc}_${imageKey}.jpg`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('prisoes')
+      .upload(fileName, fileBlob);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage.from('prisoes').getPublicUrl(fileName);
+
+    return {
+      key: imageKey,
+      label: {
+        face: 'Foto do Detento',
+        bag: 'Foto da Bolsa',
+        tablet: 'Foto do Tablet',
+        approach: 'Bolsa na Abordagem'
+      }[imageKey] || 'Foto',
+      url: publicUrl
+    };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -206,28 +233,39 @@ const RegisterArrest = () => {
       // 0. Get User
       const { data: { user } } = await supabase.auth.getUser();
 
-      let publicUrl = null;
-
-      // 1. Upload Image to Supabase Storage (Face is mandatory unless brought by other police)
-      if (!formData.broughtByOtherPolice && images.face) {
-        const fileBlob = dataURLtoBlob(images.face);
-        const sanitizedDoc = formData.passport.replace(/[^a-zA-Z0-9]/g, '_');
-        const fileName = `arrests/${Date.now()}_${sanitizedDoc}_face.jpg`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('prisoes')
-          .upload(fileName, fileBlob);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl: url } } = supabase.storage.from('prisoes').getPublicUrl(fileName);
-        publicUrl = url;
+      const mediaEntries = [];
+      for (const imageKey of ['face', 'bag', 'tablet', 'approach']) {
+        if (!images[imageKey]) continue;
+        const uploadedImage = await uploadArrestImage(imageKey, images[imageKey], formData.passport);
+        if (uploadedImage) mediaEntries.push(uploadedImage);
       }
 
+      const publicUrl = mediaEntries.find((entry) => entry.key === 'face')?.url || null;
+
       // 2. Insert Data into Database
-      const { data, error: insertError } = await supabase
+      const basePayload = {
+        nome: formData.name,
+        documento: formData.passport,
+        artigo: formData.articles,
+        data_prisao: new Date().toISOString(),
+        status: 'Preso',
+        foto_principal: publicUrl,
+        conduzido_por: formData.officer,
+        observacoes: formData.description,
+        conduzido_por_outra_policia: formData.broughtByOtherPolice,
+        bo_id: formData.boId,
+        created_by: user?.id,
+        motivo_prisao: formData.reason,
+        midias_json: mediaEntries
+      };
+
+      let { data, error: insertError } = await supabase
         .from('prisoes')
-        .insert([{
+        .insert([basePayload])
+        .select('*');
+
+      if (insertError && /(midias_json|motivo_prisao)/i.test(insertError.message || '')) {
+        const legacyPayload = {
           nome: formData.name,
           documento: formData.passport,
           artigo: formData.articles,
@@ -239,8 +277,13 @@ const RegisterArrest = () => {
           conduzido_por_outra_policia: formData.broughtByOtherPolice,
           bo_id: formData.boId,
           created_by: user?.id
-        }])
-        .select('*');
+        };
+
+        ({ data, error: insertError } = await supabase
+          .from('prisoes')
+          .insert([legacyPayload])
+          .select('*'));
+      }
 
       if (insertError) throw insertError;
       const newArrest = data[0];

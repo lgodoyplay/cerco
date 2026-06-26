@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Filter, AlertTriangle, MoreVertical, ShieldAlert, Eye, FileText, Printer, X, Siren, Lock, Trash2 } from 'lucide-react';
+import { Search, Filter, ShieldAlert, Eye, Printer, Siren, Lock, Trash2, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../hooks/useSettings';
 import { usePermissions } from '../../hooks/usePermissions';
 import { generateWantedPDF } from '../../utils/pdfGenerator';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
+import { buildWantedRecord } from '../../utils/arrestWantedMedia';
 
 const WantedList = () => {
   const navigate = useNavigate();
@@ -15,9 +16,8 @@ const WantedList = () => {
   const { can } = usePermissions();
   const { templates } = useSettings();
   const [wantedList, setWantedList] = useState([]);
-  const [boletins, setBoletins] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPerson, setSelectedPerson] = useState(null);
+  const [expandedReasonId, setExpandedReasonId] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ show: false, person: null });
   const [deletePassword, setDeletePassword] = useState('');
   const [loading, setLoading] = useState(true);
@@ -29,35 +29,22 @@ const WantedList = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch wanted
         const { data: wantedData, error: wantedError } = await supabase
           .from('procurados')
           .select('*')
           .order('created_at', { ascending: false });
         if (wantedError) throw wantedError;
 
-        // Fetch boletins
         const { data: boletinsData, error: boletinsError } = await supabase
           .from('boletins')
           .select('id, comunicante, descricao');
         if (boletinsError) throw boletinsError;
-        setBoletins(boletinsData || []);
 
-        const formattedWanted = wantedData.map(item => {
-          const linkedBo = boletinsData?.find(b => b.id === item.bo_id);
-          return {
-            ...item,
-            name: item.nome,
-            crime: item.motivo,
-            dangerLevel: item.periculosidade,
-            reward: item.recompensa,
-            date: item.created_at,
-            image: item.foto_principal,
-            document: item.documento,
-            boId: item.bo_id,
-            linkedBo: linkedBo
-          };
-        });
+        const formattedWanted = wantedData.map((item) => buildWantedRecord(
+          item,
+          boletinsData?.find((bo) => bo.id === item.bo_id)
+        ));
+
         setWantedList(formattedWanted);
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
@@ -87,7 +74,7 @@ const WantedList = () => {
     return () => window.clearTimeout(timer);
   }, [notification]);
 
-  const filteredList = wantedList.filter(person => 
+  const filteredList = wantedList.filter((person) =>
     (person.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (person.crime || person.reason || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -96,28 +83,12 @@ const WantedList = () => {
     try {
       await generateWantedPDF(person, user, templates?.wanted);
     } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
+      console.error('Erro ao gerar PDF:', error);
       setNotification({
         type: 'error',
         message: error?.message || 'Nao foi possivel gerar o PDF do procurado.'
       });
     }
-  };
-
-  const handleArrest = () => {
-    if (!selectedPerson) return;
-    
-    navigate('/dashboard/arrest', { 
-      state: { 
-        wantedPerson: {
-          id: selectedPerson.id,
-          name: selectedPerson.name,
-          document: selectedPerson.document,
-          reason: selectedPerson.crime || selectedPerson.reason,
-          image: selectedPerson.image || selectedPerson.images?.proof1
-        }
-      } 
-    });
   };
 
   const handleDeleteWanted = async () => {
@@ -134,7 +105,7 @@ const WantedList = () => {
 
       if (error) throw error;
 
-      setWantedList(prev => prev.filter(p => p.id !== deleteModal.person.id));
+      setWantedList((prev) => prev.filter((person) => person.id !== deleteModal.person.id));
       setDeleteModal({ show: false, person: null });
       setDeletePassword('');
       setNotification({ type: 'success', message: 'Procurado removido com sucesso.' });
@@ -145,6 +116,10 @@ const WantedList = () => {
         message: error?.message || 'Nao foi possivel remover o procurado.'
       });
     }
+  };
+
+  const toggleReason = (personId) => {
+    setExpandedReasonId((current) => (current === personId ? null : personId));
   };
 
   return (
@@ -163,7 +138,7 @@ const WantedList = () => {
           <p className="text-slate-400 mt-1">Gerenciamento e consulta de mandados de prisão ativos.</p>
         </div>
         {canManage && (
-          <button 
+          <button
             onClick={() => navigate('/dashboard/register-wanted')}
             className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-red-900/20 flex items-center gap-2"
           >
@@ -173,13 +148,12 @@ const WantedList = () => {
         )}
       </div>
 
-      {/* Filters */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-          <input 
-            type="text" 
-            placeholder="Buscar por nome ou crime..." 
+          <input
+            type="text"
+            placeholder="Buscar por nome ou crime..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-slate-200 focus:outline-none focus:border-federal-500 transition-colors"
@@ -191,7 +165,6 @@ const WantedList = () => {
         </button>
       </div>
 
-      {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading && (
           <div className="col-span-full py-12 text-center text-slate-500">
@@ -200,9 +173,9 @@ const WantedList = () => {
         )}
         {!loading && filteredList.map((person) => (
           <div key={person.id} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-federal-600/50 transition-all group flex flex-col">
-            <div className="h-56 bg-slate-800 relative flex items-center justify-center overflow-hidden bg-slate-950">
-              {person.images?.proof1 || person.image ? (
-                <img src={person.images?.proof1 || person.image} alt={person.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+            <div className="h-56 relative flex items-center justify-center overflow-hidden bg-slate-950">
+              {person.image ? (
+                <img src={person.image} alt={person.name} className="w-full h-full object-contain opacity-80 group-hover:opacity-100 transition-opacity" />
               ) : (
                 <UserPlaceholder />
               )}
@@ -211,26 +184,43 @@ const WantedList = () => {
                 Procurado
               </div>
             </div>
-            
+
             <div className="p-5 flex-1 flex flex-col">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-xl font-bold text-white group-hover:text-red-400 transition-colors line-clamp-1">{person.name}</h3>
-                <button onClick={() => setSelectedPerson(person)} className="text-slate-500 hover:text-white p-1">
+                <button onClick={() => navigate(`/dashboard/wanted/${person.id}`)} className="text-slate-500 hover:text-white p-1">
                   <Eye size={20} />
                 </button>
               </div>
-              
+
               <div className="space-y-4 mb-6 flex-1">
                 <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Crimes / Motivo</p>
-                  <p className="text-sm text-slate-300 line-clamp-2">{person.crime || person.reason}</p>
+                  <button
+                    type="button"
+                    onClick={() => toggleReason(person.id)}
+                    className="w-full bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-xl px-3 py-3 text-left transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Crimes / Motivo</p>
+                        <p className="text-sm text-white mt-1">Clique para visualizar</p>
+                      </div>
+                      {expandedReasonId === person.id ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                    </div>
+                  </button>
+                  {expandedReasonId === person.id && (
+                    <div className="mt-3 bg-slate-950 border border-slate-800 rounded-xl p-3">
+                      <p className="text-sm text-slate-300 whitespace-pre-line">{person.crime || person.reason || 'Nao informado.'}</p>
+                    </div>
+                  )}
                 </div>
+
                 <div className="flex justify-between items-end">
                   <div>
                     <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Periculosidade</p>
                     <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-bold ${
-                      (person.dangerLevel || person.status) === 'Alta' || (person.dangerLevel || person.status) === 'Extrema' 
-                        ? 'bg-red-500/20 text-red-400' 
+                      (person.dangerLevel || person.status) === 'Alta' || (person.dangerLevel || person.status) === 'Extrema'
+                        ? 'bg-red-500/20 text-red-400'
                         : 'bg-amber-500/20 text-amber-400'
                     }`}>
                       {person.dangerLevel || person.status}
@@ -239,20 +229,20 @@ const WantedList = () => {
                   <div className="text-right">
                     <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Recompensa</p>
                     <p className="text-lg text-emerald-400 font-bold">
-                      {person.reward === 'A definir' ? 'A definir' : `R$ ${person.reward}`}
+                      {person.reward === 'A definir' || !person.reward ? 'A definir' : `R$ ${person.reward}`}
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-slate-800 flex gap-2">
-                <button 
-                  onClick={() => setSelectedPerson(person)}
+                <button
+                  onClick={() => navigate(`/dashboard/wanted/${person.id}`)}
                   className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors"
                 >
                   Ver Detalhes
                 </button>
-                <button 
+                <button
                   onClick={() => handleGenerateFile(person)}
                   className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
                   title="Imprimir Ficha"
@@ -260,7 +250,7 @@ const WantedList = () => {
                   <Printer size={18} />
                 </button>
                 {canManage && (
-                  <button 
+                  <button
                     onClick={() => setDeleteModal({ show: true, person })}
                     className="px-3 py-2 bg-slate-800 hover:bg-red-500/20 text-slate-300 hover:text-red-400 rounded-lg transition-colors"
                     title="Remover"
@@ -279,132 +269,6 @@ const WantedList = () => {
         )}
       </div>
 
-      {/* Details Modal */}
-      {selectedPerson && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl shadow-2xl animate-fade-in-up max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <ShieldAlert className="text-red-500" />
-                Ficha do Procurado
-              </h3>
-              <button onClick={() => setSelectedPerson(null)} className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
-                <X className="text-slate-400 hover:text-white" />
-              </button>
-            </div>
-            
-            <div className="p-6">
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="w-full md:w-1/3">
-                  <div className="aspect-[3/4] rounded-xl overflow-hidden border-2 border-slate-800 bg-slate-950 shadow-lg relative">
-                    {selectedPerson.images?.proof1 || selectedPerson.image ? (
-                      <img src={selectedPerson.images?.proof1 || selectedPerson.image} alt={selectedPerson.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <UserPlaceholder />
-                    )}
-                    <div className="absolute bottom-0 inset-x-0 bg-red-600 text-white text-center py-1 font-bold uppercase text-sm">
-                      PROCURADO
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex-1 space-y-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">{selectedPerson.name}</h2>
-                    <p className="text-red-400 font-mono text-sm mt-1">DOC: {selectedPerson.document || 'N/A'}</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                      <span className="text-xs text-slate-500 uppercase">Periculosidade</span>
-                      <p className="text-white font-bold">{selectedPerson.dangerLevel || selectedPerson.status}</p>
-                    </div>
-                    <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                      <span className="text-xs text-slate-500 uppercase">Recompensa</span>
-                      <p className="text-emerald-400 font-bold">{selectedPerson.reward === 'A definir' ? 'A definir' : `R$ ${selectedPerson.reward}`}</p>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-slate-800 mt-auto">
-                    {canManage && (
-                      <button 
-                        onClick={handleArrest}
-                        className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-red-900/20 flex items-center justify-center gap-2"
-                      >
-                        <Lock size={20} />
-                        CONFIRMAR PRISÃO
-                      </button>
-                    )}
-                    {canManage && (
-                      <p className="text-center text-xs text-slate-500 mt-2">
-                        Esta ação moverá o registro para a lista de prisões e removerá dos procurados.
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                    <h4 className="text-xs text-slate-500 uppercase font-bold mb-2">Crimes / Motivo</h4>
-                    <p className="text-slate-300 text-sm leading-relaxed">
-                      {selectedPerson.crime || selectedPerson.reason}
-                    </p>
-                  </div>
-
-                  {selectedPerson.linkedBo && (
-                    <div className="bg-federal-500/10 p-4 rounded-xl border border-federal-500/20">
-                      <span className="text-xs text-slate-500 uppercase font-bold block mb-1">
-                        BO Responsável
-                      </span>
-                      <div className="text-white font-medium">
-                        {selectedPerson.linkedBo.comunicante}
-                      </div>
-                      <p className="text-slate-400 text-sm mt-1">
-                        {selectedPerson.linkedBo.descricao}
-                      </p>
-                    </div>
-                  )}
-
-                  {selectedPerson.observations && (
-                    <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                      <h4 className="text-xs text-slate-500 uppercase font-bold mb-2">Observações</h4>
-                      <p className="text-slate-300 text-sm leading-relaxed">
-                        {selectedPerson.observations}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2 pt-2">
-                    <button 
-                      onClick={() => handleGenerateFile(selectedPerson)}
-                      className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Printer size={18} />
-                      Imprimir Ficha Completa
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Additional Photos */}
-              {selectedPerson.images && (
-                <div className="mt-8">
-                  <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 border-b border-slate-800 pb-2">Outras Evidências</h4>
-                  <div className="grid grid-cols-4 gap-4">
-                    {['proof2', 'proof3', 'proof4'].map((key) => (
-                      selectedPerson.images[key] && (
-                        <div key={key} className="aspect-square rounded-lg overflow-hidden border border-slate-800 bg-slate-950">
-                          <img src={selectedPerson.images[key]} alt={key} className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform" />
-                        </div>
-                      )
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
       {deleteModal.show && deleteModal.person && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl animate-fade-in-up">
@@ -413,16 +277,16 @@ const WantedList = () => {
                 <Trash2 className="text-red-500" />
                 Remover Procurado
               </h3>
-              <button onClick={() => {setDeleteModal({ show: false, person: null }); setDeletePassword('');}} className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
+              <button onClick={() => { setDeleteModal({ show: false, person: null }); setDeletePassword(''); }} className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
                 <X className="text-slate-400 hover:text-white" />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <p className="text-slate-300">
                 Tem certeza que deseja remover o registro de procurado de <span className="font-bold text-white">{deleteModal.person.name}</span>?
               </p>
-              
+
               <div className="space-y-2">
                 <label className="text-xs text-slate-500 uppercase font-bold flex items-center gap-2">
                   <Lock size={14} />
@@ -439,13 +303,13 @@ const WantedList = () => {
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button 
-                  onClick={() => {setDeleteModal({ show: false, person: null }); setDeletePassword('');}}
+                <button
+                  onClick={() => { setDeleteModal({ show: false, person: null }); setDeletePassword(''); }}
                   className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold transition-colors"
                 >
                   Cancelar
                 </button>
-                <button 
+                <button
                   onClick={handleDeleteWanted}
                   className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold shadow-lg transition-colors"
                 >
