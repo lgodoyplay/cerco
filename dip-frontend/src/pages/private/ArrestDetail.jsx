@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, ChevronDown, ChevronUp, Download, FileText, Shield, User } from 'lucide-react';
+import { ArrowLeft, Calendar, ChevronDown, ChevronUp, Download, FileText, Shield, User, X } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -30,6 +30,7 @@ const ArrestDetail = () => {
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
   const [showLegalInfo, setShowLegalInfo] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     const fetchArrest = async () => {
@@ -146,7 +147,11 @@ const ArrestDetail = () => {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="space-y-4">
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-              <div className="aspect-square bg-slate-950 rounded-xl border border-slate-800 overflow-hidden relative flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => arrest.images?.face && setSelectedImage({ url: arrest.images.face, label: 'Foto Principal' })}
+                className="w-full aspect-square bg-slate-950 rounded-xl border border-slate-800 overflow-hidden relative flex items-center justify-center"
+              >
                 {arrest.images?.face ? (
                   <img src={arrest.images.face} alt={arrest.name} className="w-full h-full object-contain" />
                 ) : (
@@ -158,7 +163,10 @@ const ArrestDetail = () => {
                 <div className="absolute bottom-0 inset-x-0 bg-slate-900/85 py-2 text-center text-xs font-bold text-white uppercase">
                   Foto Principal
                 </div>
-              </div>
+              </button>
+              {arrest.images?.face && (
+                <p className="text-xs text-slate-500 mt-3 text-center">Clique na imagem para ampliar</p>
+              )}
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
@@ -169,12 +177,17 @@ const ArrestDetail = () => {
               {additionalMedia.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3">
                   {additionalMedia.map((entry) => (
-                    <div key={entry.key} className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+                    <button
+                      key={entry.key}
+                      type="button"
+                      onClick={() => setSelectedImage({ url: entry.url, label: entry.label })}
+                      className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden text-left"
+                    >
                       <div className="aspect-square flex items-center justify-center bg-slate-950">
                         <img src={entry.url} alt={entry.label} className="w-full h-full object-contain" />
                       </div>
                       <div className="px-3 py-2 text-xs text-slate-300 border-t border-slate-800">{entry.label}</div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               ) : (
@@ -264,6 +277,29 @@ const ArrestDetail = () => {
                 <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-line">{arrest.description}</p>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {selectedImage && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm p-4 flex items-center justify-center">
+          <div className="relative w-full max-w-6xl bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+              <div>
+                <p className="text-sm font-bold text-white">{selectedImage.label}</p>
+                <p className="text-xs text-slate-500">Visualização ampliada da foto da prisão</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedImage(null)}
+                className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <X className="text-slate-400 hover:text-white" size={18} />
+              </button>
+            </div>
+            <div className="max-h-[82vh] overflow-auto bg-slate-950 flex items-center justify-center p-4">
+              <img src={selectedImage.url} alt={selectedImage.label} className="max-w-full max-h-[76vh] object-contain rounded-xl" />
+            </div>
           </div>
         </div>
       )}

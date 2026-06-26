@@ -353,6 +353,18 @@ const normalizeInvestigadosList = (investigados = []) => {
         .filter((item) => item.nome || item.cpf);
 };
 
+const buildArrestImageBlocksPdf = (images = []) => {
+    if (!images.length) {
+        return [{ text: 'Nenhuma imagem anexada ao registro da prisão.', style: 'normalText', italics: true }];
+    }
+
+    return images.flatMap((image, index) => ([
+        { text: image.title || `FOTO ${index + 1}`, bold: true, fontSize: 11, margin: [0, index === 0 ? 0 : 14, 0, 6] },
+        image.description ? { text: image.description, style: 'normalText', margin: [0, 0, 0, 6] } : null,
+        { image: image.imgData, fit: [420, 300], alignment: 'center', margin: [0, 0, 0, 8] }
+    ].filter(Boolean)));
+};
+
 const formatInvestigadosNames = (investigados = [], fallback = 'Nao informado') => {
     const normalized = normalizeInvestigadosList(investigados);
     if (!normalized.length) return fallback;
@@ -778,16 +790,28 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 return { ...proof, imgData };
             }));
             validImages = processedProofs.filter(p => p.imgData);
-        } else if (type === 'arrest' && data.images && data.images.face) {
-            // Processar imagem do preso
-             try {
-                const imgData = await getBase64ImageFromURL(data.images.face);
-                if (imgData && typeof imgData === 'string' && imgData.startsWith('data:image')) {
-                    validImages = [{ title: 'FOTO DO DETIDO', imgData, description: 'Registro fotográfico principal.' }];
+        } else if (type === 'arrest') {
+            const arrestImageEntries = Array.isArray(data.mediaEntries) && data.mediaEntries.length > 0
+                ? data.mediaEntries
+                : (data.images?.face ? [{ key: 'face', label: 'Foto do Detido', url: data.images.face }] : []);
+
+            const processedArrestImages = await Promise.all(arrestImageEntries.map(async (entry, index) => {
+                try {
+                    const imgData = await getBase64ImageFromURL(entry.url);
+                    if (imgData && typeof imgData === 'string' && imgData.startsWith('data:image')) {
+                        return {
+                            title: (entry.label || `Foto ${index + 1}`).toUpperCase(),
+                            imgData,
+                            description: index === 0 ? 'Registro fotográfico do conduzido.' : 'Registro fotográfico complementar da prisão.'
+                        };
+                    }
+                } catch (_error) {
+                    return null;
                 }
-            } catch (_error) {
-                console.warn("Erro ao carregar foto do preso");
-            }
+                return null;
+            }));
+
+            validImages = processedArrestImages.filter(Boolean);
         } else if (type === 'wanted' && (data.image || (data.images && data.images.proof1))) {
             try {
                 const imgUrl = data.image || (data.images && data.images.proof1);
@@ -1072,6 +1096,11 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 (type === 'investigation' && !templateHasProofPlaceholder) ? [
                     { text: customContent ? 'REGISTRO DE PROVAS' : '5. PROVAS COLETADAS', style: 'sectionTitle', tocItem: !customContent },
                     ...buildInvestigationProofBlocksPdf(processedProofs)
+                ] : [],
+
+                (type === 'arrest' && validImages.length > 0) ? [
+                    { text: customContent ? 'REGISTRO FOTOGRÁFICO' : '4. REGISTRO FOTOGRÁFICO', style: 'sectionTitle', tocItem: !customContent },
+                    ...buildArrestImageBlocksPdf(validImages)
                 ] : [],
 
                 // --- CONCLUSÃO E ASSINATURAS (Se não customizado) ---
