@@ -108,14 +108,20 @@ const EditProofModal = ({ isOpen, onClose, onSave, proof }) => {
             <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Conteúdo da Prova</label>
             
             {type === 'image' && (
-              <ImageUploadArea 
-                id="proof_content"
-                label="Upload de Imagem"
-                image={formData.content}
-                onUpload={handleImageUpload}
-                onRemove={handleImageRemove}
-                required
-              />
+              <div className="space-y-2">
+                <ImageUploadArea 
+                  id="proof_content"
+                  label="Upload de Imagem"
+                  image={formData.content}
+                  onUpload={handleImageUpload}
+                  onRemove={handleImageRemove}
+                  required
+                  aspect={9/16}
+                />
+                <p className="text-xs text-slate-500">
+                  Aceita imagem vertical `1080x1920` estilo status e horizontal `1920x1080`. No recorte voce pode trocar entre `9:16` e `16:9`.
+                </p>
+              </div>
             )}
 
             {type === 'video' && (

@@ -24,13 +24,13 @@ const ProofCard = ({ proof, onClick, onDelete, onEdit, canEdit }) => {
       {/* Image Preview */}
       {proof.type === 'image' && proof.content && (
         <div 
-          className={clsx("h-48 w-full bg-slate-950 relative overflow-hidden", isViewable && "cursor-pointer")}
+          className={clsx("h-48 w-full bg-slate-950 relative overflow-hidden flex items-center justify-center", isViewable && "cursor-pointer")}
           onClick={() => isViewable && onClick && onClick(proof)}
         >
           <img 
             src={proof.content} 
             alt={proof.title} 
-            className="w-full h-full object-cover transition-transform group-hover:scale-105" 
+            className="w-full h-full object-contain transition-transform group-hover:scale-105" 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60" />
           {isViewable && (

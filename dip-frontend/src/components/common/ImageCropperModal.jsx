@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
-import { X, Check, ZoomIn, ZoomOut, RotateCw, Square, RectangleHorizontal, LayoutTemplate } from 'lucide-react';
+import { X, Check, ZoomIn, ZoomOut, RotateCw, Square, RectangleHorizontal, LayoutTemplate, RectangleVertical } from 'lucide-react';
 import getCroppedImg from '../../utils/cropUtils';
 import clsx from 'clsx';
 
@@ -11,6 +11,8 @@ const ImageCropperModal = ({ imageSrc, isOpen, onClose, onCropComplete, aspect: 
   const [aspect, setAspect] = useState(initialAspect);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const isAspectSelected = (targetAspect) => Math.abs(aspect - targetAspect) < 0.01;
 
   // Reset aspect when modal opens or initialAspect changes
   useEffect(() => {
@@ -107,16 +109,25 @@ const ImageCropperModal = ({ imageSrc, isOpen, onClose, onCropComplete, aspect: 
                         onClick={() => setAspect(4/3)}
                         className={clsx(
                             "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors",
-                            aspect === 4/3 ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
+                            isAspectSelected(4/3) ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
                         )}
                     >
                         <LayoutTemplate size={14} /> 4:3 (Padrão)
                     </button>
                     <button 
+                        onClick={() => setAspect(9/16)}
+                        className={clsx(
+                            "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors",
+                            isAspectSelected(9/16) ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
+                        )}
+                    >
+                        <RectangleVertical size={14} /> 9:16 (Status)
+                    </button>
+                    <button 
                         onClick={() => setAspect(16/9)}
                         className={clsx(
                             "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors",
-                            aspect === 16/9 ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
+                            isAspectSelected(16/9) ? "bg-federal-600 border-federal-500 text-white" : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
                         )}
                     >
                         <RectangleHorizontal size={14} /> 16:9 (Largo)
