@@ -22,6 +22,7 @@ export const routeLoaders = {
   ArrestList: () => import('../pages/private/ArrestList'),
   ArrestDetail: () => import('../pages/private/ArrestDetail'),
   BOList: () => import('../pages/private/BOList'),
+  BODetail: () => import('../pages/private/BODetail'),
   ReportList: () => import('../pages/private/ReportList'),
   CorregedoriaList: () => import('../pages/private/CorregedoriaList'),
   CorregedoriaDetail: () => import('../pages/private/CorregedoriaDetail'),

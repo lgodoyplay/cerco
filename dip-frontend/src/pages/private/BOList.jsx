@@ -9,26 +9,7 @@ import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
-
-const getPeopleList = (value, fallback = '') => {
-  if (Array.isArray(value) && value.length) return value;
-  return fallback ? [{ name: fallback, passport: '' }] : [];
-};
-
-const formatPeopleSummary = (people = [], fallback = 'Nao informado') => {
-  const validPeople = (Array.isArray(people) ? people : [])
-    .map((person) => ({
-      name: (person?.name || '').trim(),
-      passport: (person?.passport || '').trim()
-    }))
-    .filter((person) => person.name || person.passport);
-
-  if (!validPeople.length) return fallback;
-
-  return validPeople
-    .map((person) => person.passport ? `${person.name || 'Nao identificado'} (${person.passport})` : person.name)
-    .join(', ');
-};
+import { getPeopleList, formatPeopleSummary } from '../../utils/boHelpers';
 
 const BOList = () => {
   const navigate = useNavigate();
@@ -41,7 +22,6 @@ const BOList = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDateStart, setFilterDateStart] = useState('');
   const [filterDateEnd, setFilterDateEnd] = useState('');
-  const [selectedBO, setSelectedBO] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [boToDelete, setBoToDelete] = useState(null);
@@ -356,7 +336,7 @@ const BOList = () => {
                   <td className="p-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
-                        onClick={() => setSelectedBO(bo)}
+                        onClick={() => navigate(`/dashboard/bo-list/${bo.id}`)}
                         className="p-2 hover:bg-federal-500/20 text-slate-400 hover:text-federal-400 rounded-lg transition-colors"
                         title="Ver Detalhes"
                       >
@@ -427,120 +407,6 @@ const BOList = () => {
           </div>
         )}
       </div>
-
-      {/* Details Modal */}
-      {selectedBO && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl shadow-2xl animate-fade-in-up max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <FileText className="text-federal-500" />
-                Detalhes do BO
-              </h3>
-              <div className="flex items-center gap-2">
-                {canManage && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigate(`/dashboard/bo/${selectedBO.id}/edit`);
-                      setSelectedBO(null);
-                    }}
-                    className="inline-flex items-center gap-2 px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg transition-colors"
-                  >
-                    <Edit3 size={16} />
-                    Editar
-                  </button>
-                )}
-                <button onClick={() => setSelectedBO(null)} className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
-                  <ChevronLeft className="text-slate-400 hover:text-white" />
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                  <span className="text-xs text-slate-500 uppercase">ID do Registro</span>
-                  <p className="text-white font-mono text-sm">{selectedBO.id}</p>
-                </div>
-                <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                  <span className="text-xs text-slate-500 uppercase">Data e Hora do Fato</span>
-                  <p className="text-white font-medium">
-                    {selectedBO.data_fato && !isNaN(new Date(selectedBO.data_fato).getTime()) 
-                      ? format(new Date(selectedBO.data_fato), 'dd/MM/yyyy HH:mm', { locale: ptBR })
-                      : 'Data inválida'}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs text-slate-500 uppercase font-bold">Comunicantes</span>
-                <div className="mt-2 space-y-2 border-b border-slate-800 pb-3">
-                  {getPeopleList(selectedBO.comunicantes_json, selectedBO.comunicante).map((person, index) => (
-                    <div key={`complainant-${index}`} className="bg-slate-950/70 border border-slate-800 rounded-xl px-4 py-3">
-                      <p className="text-white font-medium">{person.name || 'Nao informado'}</p>
-                      {person.passport && (
-                        <p className="text-xs text-slate-400 mt-1">Passaporte: {person.passport}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs text-slate-500 uppercase font-bold">Pessoas Denunciadas</span>
-                <div className="mt-2 space-y-2">
-                  {getPeopleList(selectedBO.denunciados_json).length > 0 ? getPeopleList(selectedBO.denunciados_json).map((person, index) => (
-                    <div key={`reported-${index}`} className="bg-red-500/5 border border-red-500/10 rounded-xl px-4 py-3">
-                      <p className="text-white font-medium">{person.name || 'Nao informado'}</p>
-                      {person.passport && (
-                        <p className="text-xs text-red-200/80 mt-1">Passaporte: {person.passport}</p>
-                      )}
-                    </div>
-                  )) : (
-                    <p className="text-sm text-slate-500">Nenhuma pessoa denunciada informada.</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs text-slate-500 uppercase font-bold">Local da Ocorrência</span>
-                <p className="text-slate-300 flex items-center gap-2 mt-1">
-                  <MapPin size={16} className="text-federal-500" />
-                  {selectedBO.localizacao}
-                </p>
-              </div>
-
-              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                <h4 className="text-xs text-slate-500 uppercase font-bold mb-2">Descrição dos Fatos</h4>
-                <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                  {selectedBO.descricao}
-                </p>
-              </div>
-
-              {selectedBO.nome_policial_prisao && (
-                <div className="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20">
-                  <span className="text-xs text-amber-400 uppercase font-bold block mb-1">Policial Responsável pela Prisão em Flagrante</span>
-                  <div className="text-white font-medium">{selectedBO.nome_policial_prisao}</div>
-                  {selectedBO.id_policial_prisao && (
-                    <div className="text-amber-300 text-sm mt-1">ID/Distintivo: {selectedBO.id_policial_prisao}</div>
-                  )}
-                </div>
-              )}
-
-              <div className="flex items-center gap-3 pt-4 border-t border-slate-800">
-                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">
-                  <Shield size={20} className="text-federal-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-white">Policial Responsável pelo BO</p>
-                  <p className="text-xs text-slate-400">{selectedBO.policial_responsavel}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Delete Modal */}
       {deleteModalOpen && boToDelete && (
