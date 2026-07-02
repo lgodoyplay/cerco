@@ -120,11 +120,7 @@ const mapInvestigation = (inv) => {
   };
 };
 
-const INVESTIGATION_SELECT = `
-  *,
-  investigator:profiles!created_by(full_name, badge, role),
-  provas(*, uploader:profiles!uploaded_by(full_name, badge, role))
-`;
+const INVESTIGATION_SELECT = `*, provas(*)`;
 
 export const useInvestigations = () => {
   const [investigations, setInvestigations] = useState([]);
@@ -136,6 +132,28 @@ export const useInvestigations = () => {
     return () => { isMounted.current = false; };
   }, []);
 
+  const enrichWithProfiles = useCallback(async (rows) => {
+    const userIds = [...new Set([
+      ...rows.map(r => r.created_by),
+      ...rows.flatMap(r => (r.provas || []).map(p => p.uploaded_by))
+    ].filter(Boolean))];
+
+    let profilesMap = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, badge, role')
+        .in('id', userIds);
+      if (profiles) profilesMap = Object.fromEntries(profiles.map(p => [p.id, p]));
+    }
+
+    return rows.map(row => ({
+      ...row,
+      investigator: profilesMap[row.created_by] || null,
+      provas: (row.provas || []).map(p => ({ ...p, uploader: profilesMap[p.uploaded_by] || null }))
+    }));
+  }, []);
+
   const fetchInvestigations = useCallback(async () => {
     setLoading(true);
     try {
@@ -145,13 +163,14 @@ export const useInvestigations = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      if (isMounted.current) setInvestigations(data.map(mapInvestigation));
+      const enriched = await enrichWithProfiles(data);
+      if (isMounted.current) setInvestigations(enriched.map(mapInvestigation));
     } catch (error) {
       console.error('Erro ao buscar investigações:', error);
     } finally {
       if (isMounted.current) setLoading(false);
     }
-  }, []);
+  }, [enrichWithProfiles]);
 
   useEffect(() => {
     fetchInvestigations();
@@ -167,14 +186,15 @@ export const useInvestigations = () => {
 
       if (error) throw error;
 
-      const mapped = mapInvestigation(newInv);
+      const [enriched] = await enrichWithProfiles([newInv]);
+      const mapped = mapInvestigation(enriched);
       setInvestigations(prev => [mapped, ...prev]);
       return mapped.id;
     } catch (error) {
       console.error('Erro ao criar investigação:', error);
       throw error;
     }
-  }, []);
+  }, [enrichWithProfiles]);
 
   const getInvestigation = useCallback(async (id) => {
     try {
@@ -185,12 +205,13 @@ export const useInvestigations = () => {
         .single();
 
       if (error) throw error;
-      return mapInvestigation(data);
+      const [enriched] = await enrichWithProfiles([data]);
+      return mapInvestigation(enriched);
     } catch (error) {
       console.error('Erro ao buscar detalhe da investigação:', error);
       return null;
     }
-  }, []);
+  }, [enrichWithProfiles]);
 
   const editInvestigation = useCallback(async (id, data) => {
     try {
