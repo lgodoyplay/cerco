@@ -35,20 +35,36 @@ export const addEvidence = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { tipo, descricao } = req.body;
     const file = req.file;
+    const userId = (req as any).user.id;
 
-    if (!file) return res.status(400).json({ error: 'Arquivo obrigatório' });
+    if (!file) return res.status(400).json({ error: '❌ Arquivo obrigatório' });
+    if (!tipo) return res.status(400).json({ error: '❌ Tipo de prova obrigatório' });
+
+    // Importar função de processamento
+    const { processImage } = await import('../middlewares/uploadV2.middleware');
+    const { getImageUrl } = await import('../utils/urlHelper');
+
+    // Processar arquivo
+    const filename = await processImage(file, userId);
 
     const evidence = await prisma.evidence.create({
       data: {
         investigacaoId: id,
         tipo,
-        descricao,
-        conteudo: `/uploads/${file.filename}`
+        descricao: descricao || '',
+        conteudo: getImageUrl(filename)
       }
     });
-    res.status(201).json(evidence);
+
+    await createLog(userId, 'Prova Adicionada', `Prova ${tipo} adicionada à investigação ${id}`, req.ip);
+
+    res.status(201).json({
+      message: '✅ Prova adicionada com sucesso',
+      evidence
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao adicionar prova' });
+    console.error('❌ Erro ao adicionar prova:', error);
+    res.status(500).json({ error: `Erro ao adicionar prova: ${(error as Error).message}` });
   }
 };
 

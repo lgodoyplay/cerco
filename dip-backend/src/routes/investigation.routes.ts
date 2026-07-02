@@ -1,7 +1,7 @@
 import express = require('express');
 import investigationController = require('../controllers/investigation.controller');
 import authMiddleware = require('../middlewares/auth.middleware');
-import uploadMiddleware = require('../middlewares/upload.middleware');
+import uploadMiddleware = require('../middlewares/uploadV2.middleware');
 
 const router = express.Router();
 router.use(authMiddleware.authenticateToken);

@@ -1,33 +1,77 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import { createLog } from '../utils/logger';
+import { processImage, deleteUploadFile } from '../middlewares/uploadV2.middleware';
+import { getImageUrl } from '../utils/urlHelper';
 
 export const createWanted = async (req: Request, res: Response) => {
   try {
     const { nome, documento, motivo, periculosidade, recompensa, status, observacoes } = req.body;
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-    const fotoPrincipal = files?.['fotoPrincipal']?.[0]?.filename;
-
-    const wanted = await prisma.wanted.create({
-      data: {
-        nome,
-        documento,
-        motivo,
-        periculosidade,
-        recompensa,
-        status: status || 'Procurado',
-        observacoes,
-        fotoPrincipal: fotoPrincipal ? `/uploads/${fotoPrincipal}` : null
-      }
-    });
-
     const userId = (req as any).user.id;
-    await createLog(userId, 'Novo Procurado', `Procurado cadastrado: ${nome} (Periculosidade: ${periculosidade})`, req.ip);
 
-    res.status(201).json(wanted);
+    // Validar campos obrigatórios
+    if (!nome || !motivo || !periculosidade) {
+      return res.status(400).json({ 
+        error: 'Campos obrigatórios faltando: nome, motivo, periculosidade' 
+      });
+    }
+
+    // Processar foto principal
+    let fotoPrincipalFilename: string | null = null;
+    const processedFiles: string[] = [];
+
+    try {
+      if (files?.['fotoPrincipal']?.[0]) {
+        fotoPrincipalFilename = await processImage(files['fotoPrincipal'][0], userId);
+        processedFiles.push(fotoPrincipalFilename);
+      }
+
+      // Processar fotos adicionais
+      const outrasFotosFilenames: string[] = [];
+      if (files?.['outrasFotos']) {
+        for (const file of files['outrasFotos']) {
+          const filename = await processImage(file, userId);
+          outrasFotosFilenames.push(filename);
+          processedFiles.push(filename);
+        }
+      }
+
+      // Criar registro de procurado
+      const wanted = await prisma.wanted.create({
+        data: {
+          nome,
+          documento: documento || null,
+          motivo,
+          periculosidade,
+          recompensa: recompensa || null,
+          status: status || 'Procurado',
+          observacoes: observacoes || null,
+          fotoPrincipal: fotoPrincipalFilename ? getImageUrl(fotoPrincipalFilename) : null,
+          outrasFotos: outrasFotosFilenames.length > 0 ? JSON.stringify(outrasFotosFilenames.map(f => getImageUrl(f))) : null
+        }
+      });
+
+      await createLog(userId, 'Novo Procurado', `Procurado cadastrado: ${nome} (Periculosidade: ${periculosidade}) - ${processedFiles.length} fotos`, req.ip);
+
+      res.status(201).json({
+        message: '✅ Procurado registrado com sucesso',
+        wanted,
+        imagesCount: processedFiles.length
+      });
+    } catch (imageError) {
+      // Limpar arquivos já processados em caso de erro
+      for (const filename of processedFiles) {
+        await deleteUploadFile(filename);
+      }
+      
+      return res.status(400).json({ 
+        error: `Erro ao processar imagens: ${(imageError as Error).message}` 
+      });
+    }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erro ao registrar procurado' });
+    console.error('❌ Erro ao registrar procurado:', error);
+    res.status(500).json({ error: `Erro ao registrar procurado: ${(error as Error).message}` });
   }
 };
 
