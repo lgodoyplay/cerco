@@ -1,11 +1,12 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm', 'application/pdf'];
 
 const createEmptyInvestigated = () => ({ nome: '', cpf: '' });
 
 const normalizeInvestigatedList = (value) => {
   if (!Array.isArray(value)) return [];
-
   return value
     .map((item) => ({
       nome: String(item?.nome || item?.name || '').trim(),
@@ -23,7 +24,6 @@ const buildLegacyInvestigatedList = (inv) => {
 const getInvestigationPayload = (data) => {
   const investigados = normalizeInvestigatedList(data.investigados);
   const principalInvestigado = investigados[0] || {};
-
   return {
     titulo: data.title,
     categoria: data.category || 'criminal',
@@ -40,7 +40,6 @@ const getInvestigationPayload = (data) => {
     tipo_alvo_investigacao: data.tipoAlvoInvestigacao || 'pessoa',
     nome_organizacao_investigada: data.nomeOrganizacaoInvestigada || '',
     investigados_json: investigados,
-    // Dados específicos para busca e apreensão
     tipo_entidade: data.tipoEntidade,
     nome_entidade: data.nomeEntidade,
     documento_pessoa: data.documentoPessoa,
@@ -54,50 +53,35 @@ const getInvestigationPayload = (data) => {
   };
 };
 
-export const useInvestigations = () => {
-  const [investigations, setInvestigations] = useState([]);
-  const [loading, setLoading] = useState(false);
+const normalizeProofType = (type, content = '') => {
+  const t = String(type || '').trim().toLowerCase();
+  const c = String(content || '').toLowerCase();
+  if (t === 'image' || t === 'imagem' || t === 'foto' || t === 'fotografia' || /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/.test(c)) return 'image';
+  if (t === 'vídeo' || t === 'video') return 'video';
+  if (t === 'arquivo' || t === 'documento') return 'file';
+  if (t === 'texto') return 'text';
+  if (t === 'link') return 'link';
+  return t || 'file';
+};
 
-  const normalizeProofType = (type, content = '') => {
-    const normalizedType = String(type || '').trim().toLowerCase();
-    const normalizedContent = String(content || '').toLowerCase();
+const mapInvestigation = (inv) => {
+  const investigados = normalizeInvestigatedList(inv.investigados_json);
+  const investigadosFallback = investigados.length ? investigados : buildLegacyInvestigatedList(inv);
+  const principalInvestigado = investigadosFallback[0] || createEmptyInvestigated();
+  const proofs = [...(inv.provas || [])]
+    .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0))
+    .map(ev => ({
+      id: ev.id,
+      type: normalizeProofType(ev.tipo, ev.url),
+      title: ev.descricao ? ev.descricao.split(' - ')[0] : 'Evidência',
+      description: ev.descricao ? (ev.descricao.includes(' - ') ? ev.descricao.split(' - ').slice(1).join(' - ') : ev.descricao) : '',
+      content: ev.url,
+      author: ev.uploader?.full_name || 'Agente',
+      authorBadge: ev.uploader?.badge || '',
+      createdAt: ev.created_at
+    }));
 
-    if (
-      normalizedType === 'image' ||
-      normalizedType === 'imagem' ||
-      normalizedType === 'foto' ||
-      normalizedType === 'fotografia' ||
-      /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/.test(normalizedContent)
-    ) {
-      return 'image';
-    }
-
-    if (normalizedType === 'vídeo' || normalizedType === 'video') return 'video';
-    if (normalizedType === 'arquivo' || normalizedType === 'documento') return 'file';
-    if (normalizedType === 'texto') return 'text';
-    if (normalizedType === 'link') return 'link';
-
-    return normalizedType || 'file';
-  };
-
-  const mapInvestigation = (inv) => {
-    const investigados = normalizeInvestigatedList(inv.investigados_json);
-    const investigadosFallback = investigados.length ? investigados : buildLegacyInvestigatedList(inv);
-    const principalInvestigado = investigadosFallback[0] || createEmptyInvestigated();
-    const proofs = [...(inv.provas || [])]
-      .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0))
-      .map(ev => ({
-        id: ev.id,
-        type: normalizeProofType(ev.tipo, ev.url),
-        title: ev.descricao ? ev.descricao.split(' - ')[0] : 'Evidência',
-        description: ev.descricao ? (ev.descricao.includes(' - ') ? ev.descricao.split(' - ').slice(1).join(' - ') : ev.descricao) : '',
-        content: ev.url,
-        author: ev.uploader?.full_name || 'Agente',
-        authorBadge: ev.uploader?.badge || '',
-        createdAt: ev.created_at
-      }));
-
-    return {
+  return {
     id: inv.id,
     title: inv.titulo,
     category: inv.categoria || 'criminal',
@@ -123,7 +107,6 @@ export const useInvestigations = () => {
     nomeOrganizacaoInvestigada: inv.nome_organizacao_investigada || '',
     investigados: investigadosFallback,
     proofs,
-    // Dados específicos para busca e apreensão
     tipoEntidade: inv.tipo_entidade,
     nomeEntidade: inv.nome_entidade,
     documentoPessoa: inv.documento_pessoa,
@@ -134,64 +117,39 @@ export const useInvestigations = () => {
     nomesCarros: inv.nomes_carros,
     casas: inv.casas || [],
     carros: inv.carros || []
-    };
   };
+};
+
+const INVESTIGATION_SELECT = `
+  *,
+  investigator:profiles!created_by(full_name, badge, role),
+  provas(*, uploader:profiles!uploaded_by(full_name, badge, role))
+`;
+
+export const useInvestigations = () => {
+  const [investigations, setInvestigations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   const fetchInvestigations = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('investigacoes')
-        .select(`
-          *,
-          provas(*)
-        `)
+        .select(INVESTIGATION_SELECT)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-
-      // Buscar perfis separadamente para evitar erro 400 se FK não existir
-      const userIds = [...new Set([
-        ...data.map(inv => inv.created_by).filter(Boolean),
-        ...data.flatMap(inv => (inv.provas || []).map(prova => prova.uploaded_by).filter(Boolean))
-      ])];
-      let profilesMap = {};
-      
-      if (userIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, full_name, badge, role')
-          .in('id', userIds);
-          
-        if (profiles) {
-          profilesMap = profiles.reduce((acc, profile) => {
-            acc[profile.id] = profile;
-            return acc;
-          }, {});
-        }
-      }
-
-      const investigationsWithProfiles = data.map(inv => {
-        const profile = profilesMap[inv.created_by];
-        return {
-          ...inv,
-          investigator: profile ? {
-            full_name: profile.full_name,
-            badge: profile.badge,
-            role: profile.role
-          } : null,
-          provas: (inv.provas || []).map(prova => ({
-            ...prova,
-            uploader: profilesMap[prova.uploaded_by] || null
-          }))
-        };
-      });
-
-      setInvestigations(investigationsWithProfiles.map(mapInvestigation));
+      if (isMounted.current) setInvestigations(data.map(mapInvestigation));
     } catch (error) {
       console.error('Erro ao buscar investigações:', error);
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   }, []);
 
@@ -201,29 +159,11 @@ export const useInvestigations = () => {
 
   const addInvestigation = useCallback(async (data) => {
     try {
-      const payload = {
-        ...getInvestigationPayload(data),
-        status: 'Em Andamento'
-      };
-
-      let { data: newInv, error } = await supabase
+      const { data: newInv, error } = await supabase
         .from('investigacoes')
-        .insert([payload])
-        .select(`*`)
+        .insert([{ ...getInvestigationPayload(data), status: 'Em Andamento' }])
+        .select(INVESTIGATION_SELECT)
         .single();
-
-      if (error && /tipo_alvo_investigacao|nome_organizacao_investigada|investigados_json|column/i.test(error.message || '')) {
-        const fallbackPayload = { ...payload };
-        delete fallbackPayload.tipo_alvo_investigacao;
-        delete fallbackPayload.nome_organizacao_investigada;
-        delete fallbackPayload.investigados_json;
-
-        ({ data: newInv, error } = await supabase
-          .from('investigacoes')
-          .insert([fallbackPayload])
-          .select(`*`)
-          .single());
-      }
 
       if (error) throw error;
 
@@ -240,252 +180,26 @@ export const useInvestigations = () => {
     try {
       const { data, error } = await supabase
         .from('investigacoes')
-        .select(`
-          *,
-          provas(*)
-        `)
+        .select(INVESTIGATION_SELECT)
         .eq('id', id)
         .single();
 
       if (error) throw error;
-
-      // Buscar perfil do criador manualmente
-      let investigatorProfile = null;
-      if (data.created_by) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name, badge, role')
-          .eq('id', data.created_by)
-          .single();
-        
-        if (profile) investigatorProfile = profile;
-      }
-
-      const uploaderIds = [...new Set((data.provas || []).map(prova => prova.uploaded_by).filter(Boolean))];
-      let uploadersMap = {};
-
-      if (uploaderIds.length > 0) {
-        const { data: uploaders } = await supabase
-          .from('profiles')
-          .select('id, full_name, badge, role')
-          .in('id', uploaderIds);
-
-        if (uploaders) {
-          uploadersMap = uploaders.reduce((acc, profile) => {
-            acc[profile.id] = profile;
-            return acc;
-          }, {});
-        }
-      }
-
-      const dataWithProfile = {
-        ...data,
-        investigator: investigatorProfile,
-        provas: (data.provas || []).map(prova => ({
-          ...prova,
-          uploader: uploadersMap[prova.uploaded_by] || null
-        }))
-      };
-
-      return mapInvestigation(dataWithProfile);
+      return mapInvestigation(data);
     } catch (error) {
       console.error('Erro ao buscar detalhe da investigação:', error);
       return null;
     }
   }, []);
 
-  const updateSearchSeizureData = useCallback(async (id, data) => {
-    try {
-      const payload = {};
-      
-      // Mapear os dados para as colunas do banco
-      if (data.tipoEntidade !== undefined) payload.tipo_entidade = data.tipoEntidade;
-      if (data.nomeEntidade !== undefined) payload.nome_entidade = data.nomeEntidade;
-      if (data.documentoPessoa !== undefined) payload.documento_pessoa = data.documentoPessoa;
-      if (data.fotoRosto !== undefined) payload.foto_rosto = data.fotoRosto;
-      if (data.documentoOrdem !== undefined) payload.documento_ordem = data.documentoOrdem;
-      if (data.quantidadeCasas !== undefined) payload.quantidade_casas = data.quantidadeCasas;
-      if (data.quantidadeCarros !== undefined) payload.quantidade_carros = data.quantidadeCarros;
-      if (data.nomesCarros !== undefined) payload.nomes_carros = data.nomesCarros;
-      if (data.casas !== undefined) payload.casas = data.casas;
-      if (data.carros !== undefined) payload.carros = data.carros;
-
-      const { error } = await supabase
-        .from('investigacoes')
-        .update(payload)
-        .eq('id', id);
-
-      if (error) throw error;
-
-      // Refresh da lista
-      fetchInvestigations();
-    } catch (error) {
-      console.error('Erro ao atualizar dados de busca e apreensão:', error);
-      throw error;
-    }
-  }, [fetchInvestigations]);
-
-  const addProof = useCallback(async (investigationId, proofData) => {
-    try {
-      let finalContent = proofData.content;
-
-      if (proofData.file) {
-        const fileExt = proofData.file.name.split('.').pop();
-        const fileName = `proofs/${investigationId}/${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('provas')
-          .upload(fileName, proofData.file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage.from('provas').getPublicUrl(fileName);
-        finalContent = urlData.publicUrl;
-      }
-
-      const { error } = await supabase
-        .from('provas')
-        .insert([{
-          investigacao_id: investigationId,
-          tipo: proofData.type,
-          descricao: proofData.title ? `${proofData.title} - ${proofData.description}` : proofData.description,
-          url: finalContent,
-          uploaded_by: proofData.authorId
-        }]);
-
-      if (error) throw error;
-
-      // Refresh list
-      await fetchInvestigations();
-
-    } catch (error) {
-      console.error('Erro ao adicionar prova:', error);
-      console.error('Detalhes do erro:', JSON.stringify(error, null, 2));
-      throw error;
-    }
-  }, [fetchInvestigations]);
-
-  const closeInvestigation = useCallback(async (id) => {
-    try {
-      const closedAt = new Date().toISOString();
-
-      const { error } = await supabase
-        .from('investigacoes')
-        .update({ status: 'Finalizada', data_fim: closedAt })
-        .eq('id', id);
-
-      if (error) throw error;
-
-      const refreshedInvestigation = await getInvestigation(id);
-
-      if (refreshedInvestigation) {
-        setInvestigations(prev => prev.map(inv =>
-          inv.id === id ? refreshedInvestigation : inv
-        ));
-      } else {
-        await fetchInvestigations();
-      }
-    } catch (error) {
-      console.error('Erro ao finalizar investigação:', error);
-      throw error;
-    }
-  }, [fetchInvestigations, getInvestigation]);
-
-  const deleteProof = useCallback(async (proofId, investigationId) => {
-    try {
-      const { data: proof, error: fetchError } = await supabase
-        .from('provas')
-        .select('url')
-        .eq('id', proofId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      if (proof.url && proof.url.includes('supabase.co/storage')) {
-        try {
-          const urlParts = proof.url.split('/provas/');
-          if (urlParts.length > 1) {
-            const filePath = decodeURIComponent(urlParts[1]);
-            await supabase.storage.from('provas').remove([filePath]);
-          }
-        } catch (storageError) {
-          console.warn('Não foi possível deletar o arquivo do storage:', storageError);
-        }
-      }
-
-      const { error: deleteError } = await supabase
-        .from('provas')
-        .delete()
-        .eq('id', proofId);
-
-      if (deleteError) throw deleteError;
-
-      await fetchInvestigations();
-    } catch (error) {
-      console.error('Erro ao deletar prova:', error);
-      throw error;
-    }
-  }, [fetchInvestigations]);
-
-  const editProof = useCallback(async (proofId, proofData) => {
-    try {
-      let finalContent = proofData.content;
-
-      if (proofData.file) {
-        const fileExt = proofData.file.name.split('.').pop();
-        const fileName = `proofs/${proofData.investigationId}/${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('provas')
-          .upload(fileName, proofData.file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage.from('provas').getPublicUrl(fileName);
-        finalContent = urlData.publicUrl;
-      }
-
-      const { error } = await supabase
-        .from('provas')
-        .update({
-          tipo: proofData.type,
-          descricao: proofData.title ? `${proofData.title} - ${proofData.description}` : proofData.description,
-          url: finalContent
-        })
-        .eq('id', proofId);
-
-      if (error) throw error;
-
-      await fetchInvestigations();
-    } catch (error) {
-      console.error('Erro ao editar prova:', error);
-      throw error;
-    }
-  }, [fetchInvestigations]);
-
   const editInvestigation = useCallback(async (id, data) => {
     try {
-      const payload = getInvestigationPayload(data);
-
-      let { error } = await supabase
+      const { error } = await supabase
         .from('investigacoes')
-        .update(payload)
+        .update(getInvestigationPayload(data))
         .eq('id', id);
 
-      if (error && /tipo_alvo_investigacao|nome_organizacao_investigada|investigados_json|column/i.test(error.message || '')) {
-        const fallbackPayload = { ...payload };
-        delete fallbackPayload.tipo_alvo_investigacao;
-        delete fallbackPayload.nome_organizacao_investigada;
-        delete fallbackPayload.investigados_json;
-
-        ({ error } = await supabase
-          .from('investigacoes')
-          .update(fallbackPayload)
-          .eq('id', id));
-      }
-
       if (error) throw error;
-
       fetchInvestigations();
     } catch (error) {
       console.error('Erro ao editar investigação:', error);
@@ -497,26 +211,22 @@ export const useInvestigations = () => {
     try {
       const { data: investigation, error: fetchError } = await supabase
         .from('investigacoes')
-        .select('id, provas(*)')
+        .select('id, provas(url)')
         .eq('id', id)
         .single();
 
       if (fetchError) throw fetchError;
 
-      if (investigation.provas && investigation.provas.length > 0) {
-        for (const proof of investigation.provas) {
-          if (proof.url && proof.url.includes('supabase.co/storage')) {
-            try {
-              const urlParts = proof.url.split('/provas/');
-              if (urlParts.length > 1) {
-                const filePath = decodeURIComponent(urlParts[1]);
-                await supabase.storage.from('provas').remove([filePath]);
-              }
-            } catch (storageError) {
-              console.warn('Não foi possível deletar o arquivo do storage:', storageError);
-            }
-          }
-        }
+      const storageFiles = (investigation.provas || [])
+        .filter(p => p.url?.includes('supabase.co/storage'))
+        .map(p => {
+          const parts = p.url.split('/provas/');
+          return parts.length > 1 ? decodeURIComponent(parts[1]) : null;
+        })
+        .filter(Boolean);
+
+      if (storageFiles.length > 0) {
+        await supabase.storage.from('provas').remove(storageFiles);
       }
 
       const { data: deletedRows, error: deleteError } = await supabase
@@ -526,15 +236,131 @@ export const useInvestigations = () => {
         .select('id');
 
       if (deleteError) throw deleteError;
-
       if (!deletedRows || deletedRows.length === 0) {
-        throw new Error('A investigacao nao foi excluida pelo banco. Execute as politicas de DELETE no Supabase e tente novamente.');
+        throw new Error('A investigacao nao foi excluida. Verifique as politicas de DELETE no Supabase.');
       }
 
       setInvestigations(prev => prev.filter(inv => inv.id !== id));
-      await fetchInvestigations();
     } catch (error) {
       console.error('Erro ao deletar investigação:', error);
+      throw error;
+    }
+  }, []);
+
+  const addProof = useCallback(async (investigationId, proofData) => {
+    try {
+      if (proofData.file) {
+        if (!ALLOWED_FILE_TYPES.includes(proofData.file.type)) {
+          throw new Error('Tipo de arquivo não permitido.');
+        }
+        const fileExt = proofData.file.name.split('.').pop();
+        const fileName = `proofs/${investigationId}/${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage.from('provas').upload(fileName, proofData.file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage.from('provas').getPublicUrl(fileName);
+        proofData = { ...proofData, content: urlData.publicUrl };
+      }
+
+      const { error } = await supabase.from('provas').insert([{
+        investigacao_id: investigationId,
+        tipo: proofData.type,
+        descricao: proofData.title ? `${proofData.title} - ${proofData.description}` : proofData.description,
+        url: proofData.content,
+        uploaded_by: proofData.authorId
+      }]);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Erro ao adicionar prova:', error);
+      throw error;
+    }
+  }, []);
+
+  const editProof = useCallback(async (proofId, proofData) => {
+    try {
+      let finalContent = proofData.content;
+
+      if (proofData.file) {
+        if (!ALLOWED_FILE_TYPES.includes(proofData.file.type)) {
+          throw new Error('Tipo de arquivo não permitido.');
+        }
+        const fileExt = proofData.file.name.split('.').pop();
+        const fileName = `proofs/${proofData.investigationId}/${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage.from('provas').upload(fileName, proofData.file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage.from('provas').getPublicUrl(fileName);
+        finalContent = urlData.publicUrl;
+      }
+
+      const { error } = await supabase.from('provas').update({
+        tipo: proofData.type,
+        descricao: proofData.title ? `${proofData.title} - ${proofData.description}` : proofData.description,
+        url: finalContent
+      }).eq('id', proofId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Erro ao editar prova:', error);
+      throw error;
+    }
+  }, []);
+
+  const deleteProof = useCallback(async (proofId) => {
+    try {
+      const { data: proof, error: fetchError } = await supabase
+        .from('provas').select('url').eq('id', proofId).single();
+
+      if (fetchError) throw fetchError;
+
+      if (proof.url?.includes('supabase.co/storage')) {
+        const parts = proof.url.split('/provas/');
+        if (parts.length > 1) {
+          await supabase.storage.from('provas').remove([decodeURIComponent(parts[1])]);
+        }
+      }
+
+      const { error: deleteError } = await supabase.from('provas').delete().eq('id', proofId);
+      if (deleteError) throw deleteError;
+    } catch (error) {
+      console.error('Erro ao deletar prova:', error);
+      throw error;
+    }
+  }, []);
+
+  const closeInvestigation = useCallback(async (id) => {
+    try {
+      const { error } = await supabase
+        .from('investigacoes')
+        .update({ status: 'Finalizada', data_fim: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw error;
+      return await getInvestigation(id);
+    } catch (error) {
+      console.error('Erro ao finalizar investigação:', error);
+      throw error;
+    }
+  }, [getInvestigation]);
+
+  const updateSearchSeizureData = useCallback(async (id, data) => {
+    try {
+      const payload = {};
+      if (data.tipoEntidade !== undefined) payload.tipo_entidade = data.tipoEntidade;
+      if (data.nomeEntidade !== undefined) payload.nome_entidade = data.nomeEntidade;
+      if (data.documentoPessoa !== undefined) payload.documento_pessoa = data.documentoPessoa;
+      if (data.fotoRosto !== undefined) payload.foto_rosto = data.fotoRosto;
+      if (data.documentoOrdem !== undefined) payload.documento_ordem = data.documentoOrdem;
+      if (data.quantidadeCasas !== undefined) payload.quantidade_casas = data.quantidadeCasas;
+      if (data.quantidadeCarros !== undefined) payload.quantidade_carros = data.quantidadeCarros;
+      if (data.nomesCarros !== undefined) payload.nomes_carros = data.nomesCarros;
+      if (data.casas !== undefined) payload.casas = data.casas;
+      if (data.carros !== undefined) payload.carros = data.carros;
+
+      const { error } = await supabase.from('investigacoes').update(payload).eq('id', id);
+      if (error) throw error;
+      fetchInvestigations();
+    } catch (error) {
+      console.error('Erro ao atualizar dados de busca e apreensão:', error);
       throw error;
     }
   }, [fetchInvestigations]);

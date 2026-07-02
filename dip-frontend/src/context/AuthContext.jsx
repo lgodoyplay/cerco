@@ -116,56 +116,29 @@ export const AuthProvider = ({ children }) => {
   const login = async (identifier, password) => {
     try {
       isLoggingIn.current = true;
-      
-      // Remove espaços extras do identificador (mas não da senha)
+
       let email = identifier.trim();
 
-      // Se não parece um email, tenta resolver pelo ID Funcional ou Email salvo no profile
       if (!email.includes('@')) {
-          console.log('Tentando resolver email para ID:', email);
-          const { data, error } = await supabase.rpc('get_email_by_identifier', { identifier: email });
-          
-          if (error) {
-            console.error('CRITICAL: RPC get_email_by_identifier falhou:', error);
-            // Se falhar a RPC, tentamos construir o email padrão do sistema como fallback
-            const fallbackEmail = `${email.toLowerCase()}@dip.system`;
-            console.log(`RPC falhou. Tentando fallback para email padrão: ${fallbackEmail}`);
-            email = fallbackEmail;
-          } else if (data) {
-              console.log('Email resolvido via RPC:', data);
-              email = data;
-          } else {
-              console.log('Nenhum email encontrado via RPC. Tentando fallback padrão.');
-              const fallbackEmail = `${email.toLowerCase()}@dip.system`;
-              email = fallbackEmail;
-          }
+        const { data, error } = await supabase.rpc('get_email_by_identifier', { identifier: email });
+        if (error || !data) {
+          email = `${email.toLowerCase()}@dip.system`;
+        } else {
+          email = data;
+        }
       }
 
-      console.log(`Tentando login com email: ${email}`);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-      if (error) {
-        console.error('CRITICAL: signInWithPassword falhou:', error);
-        throw error;
-      }
-      
-      console.log('Login bem sucedido! Sessão:', data.session?.user?.id);
-      
-      // Carrega a sessão manualmente pois o listener ignora durante isLoggingIn=true
+      if (error) throw error;
+
       await loadUserSession(data.session);
-
       return true;
     } catch (error) {
       console.error('Login error:', error.message);
       return false;
     } finally {
-      // Pequeno delay para garantir que estados se estabilizem antes de liberar a flag
-      setTimeout(() => {
-          isLoggingIn.current = false;
-      }, 500);
+      setTimeout(() => { isLoggingIn.current = false; }, 500);
     }
   };
 
@@ -175,14 +148,17 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-        isLoggingIn.current = false; // Garante que flags sejam resetadas
-        await supabase.auth.signOut();
+      isLoggingIn.current = false;
+      await supabase.auth.signOut();
     } catch (e) {
-        console.warn("Erro ao fazer logout:", e);
+      console.warn('Erro ao fazer logout:', e);
     } finally {
-        setUser(null);
-        localStorage.clear();
-        window.location.href = '/login';
+      setUser(null);
+      // Remove apenas as chaves do Supabase, preservando outros dados do localStorage
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('sb-'))
+        .forEach(k => localStorage.removeItem(k));
+      window.location.href = '/login';
     }
   };
 
