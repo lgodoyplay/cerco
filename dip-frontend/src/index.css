@@ -45,3 +45,82 @@ body.compact-mode table th {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
 }
+
+/* PDF Preview Styles */
+.pdf-preview-page {
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  color: black;
+  min-height: 29.7cm;
+  position: relative;
+}
+
+.pdf-preview-cover-page {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pdf-preview-cover-content {
+  text-align: center;
+  padding: 2rem;
+}
+
+.pdf-preview-cover-content p {
+  margin: 1rem 0;
+}
+
+.pdf-preview-page-header {
+  text-align: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #334155;
+}
+
+.pdf-preview-page-header-text {
+  font-size: 10px;
+  font-weight: bold;
+  margin: 2px 0;
+  color: #0f172a;
+}
+
+.pdf-preview-page-content {
+  color: #0f172a;
+  line-height: 1.6;
+}
+
+.pdf-preview-page-content p {
+  margin: 0.5rem 0;
+}
+
+.pdf-preview-page-content strong {
+  font-weight: bold;
+}
+
+.pdf-preview-page-content ul,
+.pdf-preview-page-content ol {
+  margin-left: 1.5rem;
+}
+
+.pdf-preview-page-content a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.pdf-preview-page-footer {
+  position: absolute;
+  bottom: 2rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+.pdf-preview-page-footer-text {
+  font-size: 10px;
+  color: #64748b;
+}
