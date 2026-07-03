@@ -152,6 +152,92 @@ const cropped = await getCroppedImg(imageSrc, pixels, rotation, {
 | Metadata PDF | ❌ | ✅ |
 | Estilo signatureLine | Faltando | Adicionado |
 | Código duplicado | Muitas repetições | Refatorado |
+
+## 3. Aba de Investigações
+
+### Arquivos Criados
+
+#### `InvestigationDashboard.jsx` (NOVO)
+Dashboard com estatísticas da investigação:
+- **Cards de resumo** - Total de provas, Status, Prioridade, Dias em aberto
+- **Contagem por tipo** - Imagens, vídeos, links, textos
+- **Design responsivo** - Grid adaptativo
+
+#### `ProofFilters.jsx` (NOVO)
+Filtros avançados para provas:
+- **Busca em tempo real** - Por título, descrição, autor
+- **Filtro por tipo** - Com contadores
+- **Filtro por data** - Hoje, semana, mês
+- **Ordenação** - Por data, tipo, autor
+
+#### `ProofsView.jsx` (NOVO)
+Visualização de provas:
+- **Modo grade e lista** - Toggle entre visualizações
+- **Paginação** - 12 itens por página
+- **Navegação** - Anterior/próximo
+- **Estado vazio** - Mensagem quando não há provas
+
+#### `ProofPreviewModal.jsx` (NOVO)
+Preview de provas em tela cheia:
+- **Zoom e rotação** - Para imagens
+- **Navegação** - Entre provas
+- **Download** - Para imagens
+- **Compartilhar** - Web Share API
+- **Player de vídeo** - Integração com ProofVideoPlayer
+
+#### `useInvestigation.js` (NOVO)
+Hook customizado para gerenciar investigações:
+- **Estatísticas calculadas** - Total, por tipo, por autor
+- **CRUD de provas** - add, update, delete, getById
+- **Validação** - Verifica campos obrigatórios
+- **Formatação** - Número do inquérito
+
+### Como Usar
+
+```javascript
+// Dashboard
+import InvestigationDashboard from '../components/Investigation/InvestigationDashboard';
+<InvestigationDashboard investigation={data} proofs={proofs} />
+
+// Filtros
+import ProofFilters from '../components/Investigation/ProofFilters';
+<ProofFilters proofs={proofs} onFilterChange={setFilteredProofs} />
+
+// Visualização
+import ProofsView from '../components/Investigation/ProofsView';
+<ProofsView proofs={filteredProofs} onProofClick={setSelectedProof} />
+
+// Preview
+import ProofPreviewModal from '../components/Investigation/ProofPreviewModal';
+<ProofPreviewModal 
+    proof={selectedProof}
+    isOpen={!!selectedProof}
+    onClose={() => setSelectedProof(null)}
+    onPrevious={() => {}}
+    onNext={() => {}}
+    hasPrevious={false}
+    hasNext={false}
+/>
+
+// Hook
+import useInvestigation from '../hooks/useInvestigation';
+const { stats, addProof, updateProof, deleteProof } = useInvestigation(investigation, proofs);
+```
+
+### Principais Melhorias na Aba de Investigações
+
+| Recurso | Antes | Depois |
+|---------|-------|--------|
+| Dashboard | ❌ | ✅ |
+| Filtros avançados | ❌ | ✅ |
+| Busca em tempo real | ❌ | ✅ |
+| Visualização lista | ❌ | ✅ |
+| Paginação | ❌ | ✅ |
+| Preview em tela cheia | ❌ | ✅ |
+| Zoom na preview | ❌ | ✅ |
+| Hook de investigação | ❌ | ✅ |
+| Estatísticas | ❌ | ✅ |
+| Navegação entre provas | ❌ | ✅ |
 | Preview cropper | ❌ | ✅ |
 | Undo/Redo | ❌ | ✅ |
 | Teclas de atalho | ❌ | ✅ |
