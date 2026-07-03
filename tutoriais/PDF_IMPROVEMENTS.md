@@ -244,6 +244,78 @@ const { stats, addProof, updateProof, deleteProof } = useInvestigation(investiga
 | Acessibilidade | Básica | Completa |
 | Presets tamanhos | ❌ | ✅ |
 
+### 4. Funcionalidades Avançadas
+
+#### `InvestigationTimeline.jsx` (NOVO)
+Timeline visual da investigação:
+- **Linha do tempo** - Eventos cronológicos
+- **Marcadores visuais** - Ícones por tipo de evento
+- **Contagem de provas** - Por tipo
+- **Design responsivo** - Grid adaptativo
+
+#### `ProofTags.jsx` (NOVO)
+Sistema de tags para provas:
+- **Tags coloridas** - 8 cores diferentes
+- **Adição/remoção** - Interativa
+- **Filtro por tags** - (implementar)
+- **Auto-color** - Baseado no nome da tag
+
+#### `ProofComments.jsx` (NOVO)
+Sistema de comentários:
+- **Comentários em tempo real** - Adicionar/remover
+- **Avatar do autor** - Ícone de usuário
+- **Data/hora** - Formatação automática
+- **Limite de altura** - Scroll automático
+
+#### `PresentationMode.jsx` (NOVO)
+Modo apresentação em tela cheia:
+- **Slideshow automático** - 5 segundos
+- **Teclas de atalho** - Setas, espaço, +/-, R
+- **Zoom e rotação** - Para imagens
+- **Progress bar** - Visualização do progresso
+- **Player de vídeo** - Integração
+
+### Como Usar - Funcionalidades Avançadas
+
+```javascript
+// Timeline
+import InvestigationTimeline from '../components/Investigation/InvestigationTimeline';
+<InvestigationTimeline investigation={data} proofs={proofs} />
+
+// Tags
+import ProofTags from '../components/Investigation/ProofTags';
+<ProofTags tags={proof.tags} onTagsChange={setTags} editable />
+
+// Comentários
+import ProofComments from '../components/Investigation/ProofComments';
+<ProofComments 
+    proofId={proof.id}
+    comments={proof.comments}
+    onAddComment={handleAddComment}
+    canComment={true}
+/>
+
+// Apresentação
+import PresentationMode from '../components/Investigation/PresentationMode';
+<PresentationMode
+    proofs={proofs}
+    isOpen={presentationMode}
+    onClose={() => setPresentationMode(false)}
+    startIndex={0}
+/>
+```
+
+### Principais Melhorias - Funcionalidades Avançadas
+
+| Recurso | Antes | Depois |
+|---------|-------|--------|
+| Timeline visual | ❌ | ✅ |
+| Tags coloridas | ❌ | ✅ |
+| Comentários | ❌ | ✅ |
+| Modo apresentação | ❌ | ✅ |
+| Slideshow automático | ❌ | ✅ |
+| Teclas de atalho apresentação | ❌ | ✅ |
+
 ### 1. `pdfBase.js` (NOVO)
 Módulo base com funcionalidades compartilhadas:
 - **Cache de imagens** - Evita recarregar imagens já processadas
