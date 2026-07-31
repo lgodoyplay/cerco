@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Users, AlertTriangle, FileText, TrendingUp, Search, BadgeCheck, Sun, Moon, RefreshCw, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
@@ -15,12 +15,12 @@ const useCurrentDateTime = () => {
   return dateTime;
 };
 
-const getGreeting = useCallback(() => {
+const getGreeting = () => {
   const hour = new Date().getHours();
   if (hour < 12) return 'Bom dia';
   if (hour < 18) return 'Boa tarde';
   return 'Boa noite';
-}, []);
+};
 
 const SkeletonStat = () => (
   <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-6 relative overflow-hidden">
@@ -232,7 +232,7 @@ const DashboardHome = () => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  const greeting = useMemo(() => getGreeting(), [getGreeting]);
+  const greeting = getGreeting();
 
   const hasData = stats.totalPresos > 0 || stats.totalProcurados > 0 || stats.totalInvestigacoes > 0 || stats.totalBos > 0;
 
