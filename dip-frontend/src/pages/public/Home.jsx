@@ -29,19 +29,47 @@ import { useSettings } from '../../hooks/useSettings';
 import { createBaseWebhookEmbed, postWebhookEmbed } from '../../utils/discordWebhook';
 
 const getEmbedUrl = (url) => {
-  // YouTube
   let match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
   if (match) {
     return `https://www.youtube.com/embed/${match[1]}`;
   }
-  
-  // Twitch
+
   match = url.match(/twitch\.tv\/([a-zA-Z0-9_]+)/i);
   if (match) {
     return `https://player.twitch.tv/?channel=${match[1]}&parent=${window.location.hostname}`;
   }
-  
+
   return null;
+};
+
+const LiveStreamEmbed = ({ url, title }) => {
+  const [errored, setErrored] = useState(false);
+
+  if (errored) {
+    return (
+      <div className="aspect-video bg-slate-950 flex items-center justify-center">
+        <div className="text-center p-8">
+          <Play size={64} className="text-slate-700 mx-auto mb-4" />
+          <p className="text-slate-500">Stream indisponível</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <iframe
+      src={url}
+      className="w-full h-full"
+      frameBorder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowFullScreen
+      referrerPolicy="no-referrer"
+      loading="lazy"
+      title={title}
+      onError={() => setErrored(true)}
+      sandbox="allow-scripts allow-same-origin allow-popups"
+    ></iframe>
+  );
 };
 
 const Home = () => {
@@ -637,14 +665,10 @@ const Home = () => {
                     {/* Embed */}
                     {embedUrl ? (
                       <div className="aspect-video">
-                        <iframe
-                          src={embedUrl}
-                          className="w-full h-full"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
+                        <LiveStreamEmbed
+                          url={embedUrl}
                           title={`Live de ${stream.user?.full_name || 'Usuário'}`}
-                        ></iframe>
+                        />
                       </div>
                     ) : (
                       <div className="aspect-video bg-slate-950 flex items-center justify-center">
