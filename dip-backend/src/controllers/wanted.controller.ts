@@ -77,10 +77,29 @@ export const createWanted = async (req: Request, res: Response) => {
 
 export const listWanted = async (req: Request, res: Response) => {
   try {
-    const wanted = await prisma.wanted.findMany({
-      orderBy: { createdAt: 'desc' }
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    const orderBy: any = { createdAt: 'desc' };
+
+    if (req.query.status) {
+      where.status = req.query.status as string;
+    }
+    if (req.query.orderBy) {
+      orderBy[req.query.orderBy as string] = (req.query.orderDir as string) || 'desc';
+    }
+
+    const [wanted, total] = await Promise.all([
+      prisma.wanted.findMany({ where, orderBy, skip, take: limit }),
+      prisma.wanted.count({ where })
+    ]);
+
+    res.json({
+      data: wanted,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
     });
-    res.json(wanted);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao buscar procurados' });
   }

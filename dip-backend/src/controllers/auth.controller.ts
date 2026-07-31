@@ -3,6 +3,11 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../utils/prisma';
 
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
+
 export const login = async (req: Request, res: Response) => {
   const { login, password } = req.body;
 
@@ -23,7 +28,7 @@ export const login = async (req: Request, res: Response) => {
 
     const token = jwt.sign(
       { id: user.id, cargo: user.cargo },
-      process.env.JWT_SECRET || 'secret',
+      JWT_SECRET,
       { expiresIn: '8h' }
     );
 

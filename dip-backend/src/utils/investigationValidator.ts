@@ -260,43 +260,21 @@ const isValidUrl = (url) => {
   }
 };
 
-const createAuditLog = async (supabase, investigacaoId, usuarioId, acao, mudancasAntes = null, mudancasDepois = null) => {
-  try {
-    await supabase.from('investigacao_auditoria').insert({
-      investigacao_id: investigacaoId,
-      usuario_id: usuarioId,
-      acao,
-      mudancas_antes: mudancasAntes,
-      mudancas_depois: mudancasDepois,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Erro ao criar log de auditoria:', error);
-    // Não falhar a operação se auditoria falhar
-  }
-};
-
 // ============================================
 // EXPORTS
 // ============================================
 
-module.exports = {
-  // Status e níveis
+export {
   INVESTIGATION_STATUS,
   PRIORITY_LEVELS,
   INVESTIGATION_CATEGORIES,
   PROOF_TYPES,
-
-  // Validações
   validateInvestigationCreate,
   validateInvestigationUpdate,
   validateProofCreate,
   validateProofUpdate,
   validateNoteCreate,
-
-  // Utilitários
   sanitizeString,
   sanitizeDescription,
-  isValidUrl,
-  createAuditLog
+  isValidUrl
 };

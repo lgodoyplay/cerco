@@ -65,15 +65,35 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 export const listUsers = async (req: Request, res: Response) => {
   try {
-    const users = await prisma.user.findMany({
-      select: { id: true, nome: true, login: true, cargo: true, patente: true, permissoes: true, ativo: true }
-    });
-    // Parse permissions
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (req.query.ativo !== undefined) {
+      where.ativo = req.query.ativo === 'true';
+    }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        select: { id: true, nome: true, login: true, cargo: true, patente: true, permissoes: true, ativo: true },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.user.count({ where })
+    ]);
+
     const formattedUsers = users.map(u => ({
       ...u,
       permissoes: u.permissoes ? JSON.parse(u.permissoes) : []
     }));
-    res.json(formattedUsers);
+
+    res.json({
+      data: formattedUsers,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao listar usuários' });
   }

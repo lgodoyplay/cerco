@@ -81,11 +81,35 @@ export const createArrest = async (req: Request, res: Response) => {
 
 export const listArrests = async (req: Request, res: Response) => {
   try {
-    const arrests = await prisma.arrest.findMany({
-      include: { policial: { select: { nome: true, patente: true } } },
-      orderBy: { data: 'desc' }
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    const orderBy: any = { data: 'desc' };
+
+    if (req.query.status) {
+      where.status = req.query.status as string;
+    }
+    if (req.query.orderBy) {
+      orderBy[req.query.orderBy as string] = (req.query.orderDir as string) || 'desc';
+    }
+
+    const [arrests, total] = await Promise.all([
+      prisma.arrest.findMany({
+        include: { policial: { select: { nome: true, patente: true } } },
+        where,
+        orderBy,
+        skip,
+        take: limit
+      }),
+      prisma.arrest.count({ where })
+    ]);
+
+    res.json({
+      data: arrests,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
     });
-    res.json(arrests);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao buscar prisões' });
   }

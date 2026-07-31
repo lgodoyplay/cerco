@@ -11,10 +11,10 @@ import {
   validateProofCreate,
   sanitizeString,
   sanitizeDescription,
-  createAuditLog,
   INVESTIGATION_STATUS,
   PRIORITY_LEVELS
 } from '../utils/investigationValidator';
+import { createAuditLog } from '../utils/auditTrail';
 
 export const createInvestigation = async (req: Request, res: Response) => {
   try {
@@ -124,11 +124,38 @@ export const addEvidence = async (req: Request, res: Response) => {
 
 export const listInvestigations = async (req: Request, res: Response) => {
   try {
-    const investigations = await prisma.investigation.findMany({
-      include: { investigador: { select: { nome: true } } },
-      orderBy: { createdAt: 'desc' }
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    const orderBy: any = { createdAt: 'desc' };
+
+    if (req.query.status) {
+      where.status = req.query.status as string;
+    }
+    if (req.query.prioridade) {
+      where.prioridade = req.query.prioridade as string;
+    }
+    if (req.query.orderBy) {
+      orderBy[req.query.orderBy as string] = (req.query.orderDir as string) || 'desc';
+    }
+
+    const [investigations, total] = await Promise.all([
+      prisma.investigation.findMany({
+        where,
+        include: { investigador: { select: { nome: true } } },
+        orderBy,
+        skip,
+        take: limit
+      }),
+      prisma.investigation.count({ where })
+    ]);
+
+    res.json({
+      data: investigations,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
     });
-    res.json(investigations);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao listar investigações' });
   }
