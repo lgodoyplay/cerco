@@ -5,14 +5,14 @@ import { usePermissions } from '../hooks/usePermissions';
 import { supabase } from '../lib/supabase';
 import { prefetchRoute } from '../routes/routeLoaders';
 import ChangePasswordModal from './ChangePasswordModal';
-import { 
-  LayoutDashboard, 
-  FileText, 
-  UserX, 
-  Siren, 
-  Settings, 
-  LogOut, 
-  Shield, 
+import {
+  LayoutDashboard,
+  FileText,
+  UserX,
+  Siren,
+  Settings,
+  LogOut,
+  Shield,
   ShieldAlert,
   AlertTriangle,
   Menu,
@@ -38,7 +38,9 @@ import {
   User,
   LogOut as LogOutIcon,
   Settings as SettingsIcon,
-  ShieldCheck
+  ShieldCheck,
+  UserPlus,
+  FolderOpen,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
@@ -139,10 +141,11 @@ const PrivateLayout = () => {
         { to: '/dashboard/reports', icon: AlertTriangle, label: 'Denúncias', prefetchKey: 'ReportList', permission: 'reports_view' },
       ]
     },
-    { 
+    {
       label: 'Investigativo',
       items: [
         { to: '/dashboard/investigations', icon: Search, label: 'Investigações', prefetchKey: 'InvestigationList', permission: 'investigations_view' },
+        { to: '/dashboard/investigations/informantes', icon: UserPlus, label: 'Informantes', prefetchKey: 'InformantesList', permission: 'investigations_view' },
         { to: '/dashboard/search-seizure', icon: FileCheck, label: 'Busca e Apreensão', prefetchKey: 'SearchSeizureList', permission: 'investigations_view' },
         { to: '/dashboard/forensics', icon: FileSearch, label: 'Perícias', prefetchKey: 'ForensicsList', permission: 'forensics_view' },
         { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList', permission: 'revenue_view' },

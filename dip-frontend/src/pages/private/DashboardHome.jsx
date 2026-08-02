@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Users, AlertTriangle, FileText, TrendingUp, Search, BadgeCheck, Sun, Moon, RefreshCw, AlertCircle } from 'lucide-react';
+import { Users, AlertTriangle, FileText, TrendingUp, Search, BadgeCheck, Sun, Moon, RefreshCw, AlertCircle, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
@@ -105,7 +105,7 @@ const AnimatedCounter = ({ value, duration = 800 }) => {
 const DashboardHome = () => {
   const navigate = useNavigate();
   const dateTime = useCurrentDateTime();
-  const [stats, setStats] = useState({ totalPresos: 0, totalProcurados: 0, totalInvestigacoes: 0, totalBos: 0 });
+  const [stats, setStats] = useState({ totalPresos: 0, totalProcurados: 0, totalInvestigacoes: 0, totalBos: 0, totalInformantes: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [functionalCode, setFunctionalCode] = useState(null);
@@ -166,13 +166,22 @@ const DashboardHome = () => {
         supabase.from('prisoes').select('artigo, created_at')
       ]);
 
+      let informantesCount = 0;
+      try {
+        const informantesData = JSON.parse(localStorage.getItem('dip_informantes') || '[]');
+        informantesCount = informantesData.length;
+      } catch {
+        informantesCount = 0;
+      }
+
       if (isRefresh) setLastUpdated(new Date());
 
       setStats({
         totalPresos: presosCount || 0,
         totalProcurados: procuradosCount || 0,
         totalInvestigacoes: investigacoesCount || 0,
-        totalBos: bosCount || 0
+        totalBos: bosCount || 0,
+        totalInformantes: informantesCount
       });
 
       const boByWeek = (boData || []).reduce((acc, bo) => {
@@ -234,7 +243,7 @@ const DashboardHome = () => {
 
   const greeting = getGreeting();
 
-  const hasData = stats.totalPresos > 0 || stats.totalProcurados > 0 || stats.totalInvestigacoes > 0 || stats.totalBos > 0;
+  const hasData = stats.totalPresos > 0 || stats.totalProcurados > 0 || stats.totalInvestigacoes > 0 || stats.totalBos > 0 || stats.totalInformantes > 0;
 
   return (
     <div className="space-y-6 pb-20 md:pb-6" role="main" aria-label="Painel Principal">
@@ -288,7 +297,7 @@ const DashboardHome = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-6">
         {loading ? (
           <>
             <SkeletonStat />
@@ -302,6 +311,7 @@ const DashboardHome = () => {
             <DashboardStat title="Procurados" value={<AnimatedCounter value={stats.totalProcurados} />} subtext="Em busca ativa" icon={AlertTriangle} color="red" />
             <DashboardStat title="Investigações" value={<AnimatedCounter value={stats.totalInvestigacoes} />} subtext="Em andamento" icon={Search} color="amber" />
             <DashboardStat title="B.O.s" value={<AnimatedCounter value={stats.totalBos} />} subtext="Ocorrências" icon={FileText} color="emerald" />
+            <DashboardStat title="Informantes" value={<AnimatedCounter value={stats.totalInformantes} />} subtext="Cadastrados" icon={UserPlus} color="blue" />
           </>
         )}
       </div>
@@ -397,17 +407,29 @@ const DashboardHome = () => {
             </h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Users size={18} className="text-blue-400" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <UserPlus size={18} className="text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-semibold">{stats.totalInformantes}</p>
+                      <p className="text-slate-500 text-xs">Total de Informantes</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-white font-semibold">{stats.totalPresos}</p>
-                    <p className="text-slate-500 text-xs">Total de Presos</p>
-                  </div>
+                  <span className="text-blue-400 text-xs font-mono">#{stats.totalInformantes}</span>
                 </div>
-                <span className="text-blue-400 text-xs font-mono">#{stats.totalPresos}</span>
-              </div>
+                <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <Users size={18} className="text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-semibold">{stats.totalPresos}</p>
+                      <p className="text-slate-500 text-xs">Total de Presos</p>
+                    </div>
+                  </div>
+                  <span className="text-blue-400 text-xs font-mono">#{stats.totalPresos}</span>
+                </div>
               <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
@@ -485,6 +507,16 @@ const DashboardHome = () => {
               <p className="text-federal-200 text-sm mb-6">Atalhos para as funções mais utilizadas.</p>
 
               <div className="grid grid-cols-1 gap-3">
+                <button
+                  onClick={() => navigate('/dashboard/investigations/informantes')}
+                  aria-label="Gerenciar informantes"
+                  className="group flex items-center gap-3 w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+                >
+                  <div className="p-2 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
+                    <UserPlus size={18} className="text-blue-300" />
+                  </div>
+                  <span>Informantes</span>
+                </button>
                 <button
                   onClick={() => navigate('/dashboard/arrest')}
                   aria-label="Registrar nova prisão"

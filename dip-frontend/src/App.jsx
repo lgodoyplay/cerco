@@ -46,6 +46,11 @@ const SearchSeizureList = React.lazy(() => lazyImport(routeLoaders.SearchSeizure
 const SearchSeizureCreate = React.lazy(() => lazyImport(routeLoaders.SearchSeizureCreate));
 const SearchSeizureDetail = React.lazy(() => lazyImport(routeLoaders.SearchSeizureDetail));
 
+// Informantes Pages
+const InformantesList = React.lazy(() => lazyImport(routeLoaders.InformantesList));
+const InformanteDetail = React.lazy(() => lazyImport(routeLoaders.InformanteDetail));
+const InformanteCreate = React.lazy(() => lazyImport(routeLoaders.InformanteCreate));
+
 // Alvarás Pages
 const AlvaraList = React.lazy(() => lazyImport(routeLoaders.AlvaraList));
 const AlvaraCreate = React.lazy(() => lazyImport(routeLoaders.AlvaraCreate));
@@ -272,6 +277,28 @@ function App() {
             <Route path="investigations/:id/proofs/:proofId" element={
               <PermissionGuard permission="investigations_view">
                 <InvestigationProofDetail />
+              </PermissionGuard>
+            } />
+
+            {/* Informantes Routes */}
+            <Route path="investigations/informantes" element={
+              <PermissionGuard permission="investigations_view">
+                <InformantesList />
+              </PermissionGuard>
+            } />
+            <Route path="investigations/informantes/new" element={
+              <PermissionGuard permission="investigations_manage">
+                <InformanteCreate />
+              </PermissionGuard>
+            } />
+            <Route path="investigations/informantes/:id/edit" element={
+              <PermissionGuard permission="investigations_manage">
+                <InformanteCreate />
+              </PermissionGuard>
+            } />
+            <Route path="investigations/informantes/:id" element={
+              <PermissionGuard permission="investigations_view">
+                <InformanteDetail />
               </PermissionGuard>
             } />
 
