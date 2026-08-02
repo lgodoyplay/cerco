@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useInformantes } from '../../../hooks/useInformantes';
 import { useAuth } from '../../../context/AuthContext';
-import { ArrowLeft, Plus, FolderOpen, Upload, FileText, Trash2, Edit3, CheckCircle, AlertCircle, X, Clock, Tag, Filter, Search, Calendar, Flag, Shield, AlertTriangle, Info, Star, RefreshCw, Clipboard, Eye } from 'lucide-react';
+import { ArrowLeft, Plus, FolderOpen, Upload, FileText, Trash2, Edit3, CheckCircle, AlertCircle, X, Clock, Tag, Filter, Search, Calendar, Flag, Shield, AlertTriangle, Info, Star, RefreshCw, Clipboard, Eye, User } from 'lucide-react';
 import clsx from 'clsx';
 import ConfirmModal from '../../../components/common/ConfirmModal';
 
