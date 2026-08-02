@@ -94,13 +94,13 @@ const InformantesList = () => {
           </h2>
           <p className="text-slate-400 mt-2">Gerencie informantes e seus documentos.</p>
         </div>
-        <Link
-          to="/dashboard/investigations/informantes/new"
-          className="bg-federal-600 hover:bg-federal-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-federal-900/50 transition-all hover:-translate-y-0.5"
-        >
-          <Plus size={20} />
-          Novo Informante
-        </Link>
+          <Link
+            to="/dashboard/investigations/informantes/new"
+            className="bg-federal-600 hover:bg-federal-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-federal-900/50 transition-all hover:-translate-y-0.5"
+          >
+            <Plus size={20} />
+            Novas Informações
+          </Link>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 mb-8">
@@ -138,7 +138,7 @@ const InformantesList = () => {
           <div className="col-span-full py-20 text-center text-slate-500">
             <UserPlus size={48} className="mx-auto mb-4 opacity-20" />
             <p className="text-lg font-medium">Nenhum informante encontrado.</p>
-            <p className="text-sm mt-1">Clique em "Novo Informante" para começar.</p>
+            <p className="text-sm mt-1">Clique em "Novas Informações" para começar.</p>
           </div>
         ) : (
           filteredInformantes.map(inf => (

@@ -201,7 +201,19 @@ const PrivateLayout = () => {
     if (path === '/dashboard') {
       return location.pathname === '/dashboard';
     }
-    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+    const currentPath = location.pathname;
+    if (currentPath === path) return true;
+    if (!currentPath.startsWith(`${path}/`)) return false;
+    const nextSegment = currentPath.slice(path.length + 1).split('/')[0];
+    const siblingPaths = navCategories
+      .flatMap(cat => cat.items)
+      .map(item => item.to)
+      .filter(itemTo => itemTo !== path && itemTo.startsWith(`${path}/`));
+    const hasMoreSpecificMatch = siblingPaths.some(sibling => {
+      const siblingNext = sibling.slice(path.length + 1).split('/')[0];
+      return nextSegment === siblingNext || currentPath === sibling || currentPath.startsWith(`${sibling}/`);
+    });
+    return !hasMoreSpecificMatch;
   };
 
   const getBreadcrumbLabel = () => {
