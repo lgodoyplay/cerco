@@ -282,22 +282,22 @@ function App() {
 
             {/* Informantes Routes */}
             <Route path="investigations/informantes" element={
-              <PermissionGuard permission="investigations_view">
+              <PermissionGuard permission="informantes_view">
                 <InformantesList />
               </PermissionGuard>
             } />
             <Route path="investigations/informantes/new" element={
-              <PermissionGuard permission="investigations_manage">
+              <PermissionGuard permission="informantes_manage">
                 <InformanteCreate />
               </PermissionGuard>
             } />
             <Route path="investigations/informantes/:id/edit" element={
-              <PermissionGuard permission="investigations_manage">
+              <PermissionGuard permission="informantes_manage">
                 <InformanteCreate />
               </PermissionGuard>
             } />
             <Route path="investigations/informantes/:id" element={
-              <PermissionGuard permission="investigations_view">
+              <PermissionGuard permission="informantes_view">
                 <InformanteDetail />
               </PermissionGuard>
             } />
