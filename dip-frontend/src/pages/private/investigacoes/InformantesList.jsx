@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useInformantes } from '../../../hooks/useInformantes';
-import { Search, Plus, FolderOpen, Clock, CheckCircle, AlertTriangle, X, Filter, UserPlus, FileText } from 'lucide-react';
+import { Search, Plus, FolderOpen, Clock, CheckCircle, AlertTriangle, X, Filter, UserPlus, FileText, Flag, Shield, AlertCircle, Star } from 'lucide-react';
 import clsx from 'clsx';
 import ConfirmModal from '../../../components/common/ConfirmModal';
 
@@ -38,6 +38,9 @@ const InformantesList = () => {
 
   const activeCount = informantes.filter(inf => inf.status === 'Ativo').length;
   const inactiveCount = informantes.filter(inf => inf.status !== 'Ativo').length;
+  const totalEntries = informantes.reduce((sum, inf) => sum + (inf.entries || []).length, 0);
+  const pendingEntries = informantes.reduce((sum, inf) => sum + (inf.entries || []).filter(e => e.status === 'Pendente').length, 0);
+  const verifiedEntries = informantes.reduce((sum, inf) => sum + (inf.entries || []).filter(e => e.status === 'Verificado').length, 0);
 
   const filteredInformantes = informantes.filter(inf => {
     const matchesStatus = filter === 'active' ? inf.status === 'Ativo' : inf.status !== 'Ativo';
@@ -92,15 +95,35 @@ const InformantesList = () => {
             <UserPlus className="text-federal-500" size={32} />
             Informantes
           </h2>
-          <p className="text-slate-400 mt-2">Gerencie informantes e seus documentos.</p>
+          <p className="text-slate-400 mt-2">Gerencie informantes e suas informações coletadas.</p>
         </div>
-          <Link
-            to="/dashboard/investigations/informantes/new"
-            className="bg-federal-600 hover:bg-federal-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-federal-900/50 transition-all hover:-translate-y-0.5"
-          >
-            <Plus size={20} />
-            Novas Informações
-          </Link>
+        <Link
+          to="/dashboard/investigations/informantes/new"
+          className="bg-federal-600 hover:bg-federal-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-federal-900/50 transition-all hover:-translate-y-0.5"
+        >
+          <Plus size={20} />
+          Novas Informações
+        </Link>
+      </div>
+
+      {/* Stats Bar */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+          <p className="text-2xl font-bold text-white">{informantes.length}</p>
+          <p className="text-xs text-slate-500 uppercase font-bold mt-1">Total de Informantes</p>
+        </div>
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+          <p className="text-2xl font-bold text-amber-400">{pendingEntries}</p>
+          <p className="text-xs text-slate-500 uppercase font-bold mt-1">Pendentes</p>
+        </div>
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+          <p className="text-2xl font-bold text-blue-400">{totalEntries}</p>
+          <p className="text-xs text-slate-500 uppercase font-bold mt-1">Total Informações</p>
+        </div>
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+          <p className="text-2xl font-bold text-emerald-400">{verifiedEntries}</p>
+          <p className="text-xs text-slate-500 uppercase font-bold mt-1">Verificadas</p>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 mb-8">
@@ -141,60 +164,79 @@ const InformantesList = () => {
             <p className="text-sm mt-1">Clique em "Novas Informações" para começar.</p>
           </div>
         ) : (
-          filteredInformantes.map(inf => (
-            <div key={inf.id} className="bg-slate-900 border border-slate-800 hover:border-federal-500/50 rounded-2xl p-6 transition-all hover:shadow-xl hover:shadow-federal-900/10 flex flex-col">
-              <div className="flex justify-between items-start mb-4">
-                <span className={clsx("px-2.5 py-1 rounded text-xs font-bold border", getStatusColor(inf.status))}>
-                  {inf.status}
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/investigations/informantes/${inf.id}`); }}
-                    className="p-1.5 text-slate-400 hover:text-federal-400 hover:bg-slate-800 rounded-lg transition-colors"
-                    aria-label="Ver detalhes"
-                  >
-                    <FolderOpen size={16} />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setConfirmDelete(inf.id); }}
-                    className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
-                    aria-label="Remover informante"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <Link to={`/dashboard/investigations/informantes/${inf.id}`} className="flex-1">
-                <h3 className="text-xl font-bold text-white mb-2 hover:text-federal-400 transition-colors line-clamp-1">{inf.nome}</h3>
-                {inf.apelido && (
-                  <p className="text-slate-400 text-sm mb-2">Alias: {inf.apelido}</p>
-                )}
-                {inf.relacao && (
-                  <p className="text-slate-500 text-xs mb-2">Relação: {inf.relacao}</p>
-                )}
-                <div className="flex items-center gap-2 text-xs text-slate-500 mt-2">
-                  <FileText size={12} />
-                  <span>{(inf.documents || []).length} documento(s)</span>
-                </div>
-              </Link>
-
-              <div className="mt-auto space-y-2 pt-4 border-t border-slate-800">
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <div className="flex items-center gap-1.5">
-                    <Clock size={13} />
-                    <span>{new Date(inf.createdAt).toLocaleDateString('pt-BR')}</span>
+          filteredInformantes.map(inf => {
+            const entryCount = (inf.entries || []).length;
+            const pendingCount = (inf.entries || []).filter(e => e.status === 'Pendente').length;
+            const verifiedCount = (inf.entries || []).filter(e => e.status === 'Verificado').length;
+            return (
+              <div key={inf.id} className="bg-slate-900 border border-slate-800 hover:border-federal-500/50 rounded-2xl p-6 transition-all hover:shadow-xl hover:shadow-federal-900/10 flex flex-col">
+                <div className="flex justify-between items-start mb-4">
+                  <span className={clsx("px-2.5 py-1 rounded text-xs font-bold border", getStatusColor(inf.status))}>
+                    {inf.status}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/investigations/informantes/${inf.id}`); }}
+                      className="p-1.5 text-slate-400 hover:text-federal-400 hover:bg-slate-800 rounded-lg transition-colors"
+                      aria-label="Ver detalhes"
+                    >
+                      <FolderOpen size={16} />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setConfirmDelete(inf.id); }}
+                      className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
+                      aria-label="Remover informante"
+                    >
+                      <X size={16} />
+                    </button>
                   </div>
                 </div>
-                <Link
-                  to={`/dashboard/investigations/informantes/${inf.id}`}
-                  className="flex items-center justify-end gap-1 text-federal-400 text-xs font-bold uppercase tracking-wider hover:underline"
-                >
-                  Abrir <span>→</span>
+
+                <Link to={`/dashboard/investigations/informantes/${inf.id}`} className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-2 hover:text-federal-400 transition-colors line-clamp-1">{inf.nome}</h3>
+                  {inf.apelido && (
+                    <p className="text-slate-400 text-sm mb-2">Alias: {inf.apelido}</p>
+                  )}
+                  {inf.relacao && (
+                    <p className="text-slate-500 text-xs mb-2">Relação: {inf.relacao}</p>
+                  )}
+                  <div className="flex items-center gap-3 mt-3 flex-wrap">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                      <FileText size={12} />
+                      <span>{entryCount} informação(ões)</span>
+                    </div>
+                    {pendingCount > 0 && (
+                      <div className="flex items-center gap-1.5 text-xs text-amber-500">
+                        <AlertCircle size={12} />
+                        <span>{pendingCount} pendente(s)</span>
+                      </div>
+                    )}
+                    {verifiedCount > 0 && (
+                      <div className="flex items-center gap-1.5 text-xs text-emerald-500">
+                        <Star size={12} />
+                        <span>{verifiedCount} verificada(s)</span>
+                      </div>
+                    )}
+                  </div>
                 </Link>
+
+                <div className="mt-auto space-y-2 pt-4 border-t border-slate-800">
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <div className="flex items-center gap-1.5">
+                      <Clock size={13} />
+                      <span>{new Date(inf.createdAt).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                  </div>
+                  <Link
+                    to={`/dashboard/investigations/informantes/${inf.id}`}
+                    className="flex items-center justify-end gap-1 text-federal-400 text-xs font-bold uppercase tracking-wider hover:underline"
+                  >
+                    Abrir <span>→</span>
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

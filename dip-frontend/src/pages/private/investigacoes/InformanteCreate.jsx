@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useInformantes } from '../../../hooks/useInformantes';
-import { Save, ArrowLeft, Plus, X, UserPlus, FileText, Clock, Phone, Mail, MapPin, Tag } from 'lucide-react';
+import { Save, ArrowLeft, Plus, X, UserPlus, FileText, Clock, Phone, Mail, MapPin, Tag, Flag, Shield, AlertTriangle, Star, Building2, User } from 'lucide-react';
 import clsx from 'clsx';
 
 const InformanteCreate = () => {
@@ -19,9 +19,17 @@ const InformanteCreate = () => {
     telefone: '',
     email: '',
     endereco: '',
+    bairro: '',
+    cidade: '',
+    estado: '',
+    cep: '',
     relacao: '',
+    tipoInformante: '',
+    ocupacao: '',
+    empresa: '',
     observacoes: '',
     status: 'Ativo',
+    prioridade: 'Média',
   });
 
   const [loading, setLoading] = useState(isEditing);
@@ -41,9 +49,17 @@ const InformanteCreate = () => {
               telefone: inf.telefone || '',
               email: inf.email || '',
               endereco: inf.endereco || '',
+              bairro: inf.bairro || '',
+              cidade: inf.cidade || '',
+              estado: inf.estado || '',
+              cep: inf.cep || '',
               relacao: inf.relacao || '',
+              tipoInformante: inf.tipoInformante || '',
+              ocupacao: inf.ocupacao || '',
+              empresa: inf.empresa || '',
               observacoes: inf.observacoes || '',
               status: inf.status || 'Ativo',
+              prioridade: inf.prioridade || 'Média',
             });
           } else {
             navigate('/dashboard/investigations/informantes');
@@ -136,103 +152,219 @@ const InformanteCreate = () => {
           {isEditing ? 'Editar Informante' : 'Novo Informante'}
         </h1>
         <p className="text-slate-400 text-sm mb-8">
-          {isEditing ? 'Atualize as informações do informante.' : 'Preencha os dados do novo informante.'}
+          {isEditing ? 'Atualize os dados do informante.' : 'Preencha os dados do novo informante.'}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nome Completo *</label>
-              <input
-                type="text"
-                value={formData.nome}
-                onChange={(e) => handleChange('nome', e.target.value)}
-                required
-                placeholder="Nome completo do informante"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
-              />
-            </div>
+          {/* Personal Info */}
+          <div>
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <User size={20} className="text-federal-500" />
+              Dados Pessoais
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nome Completo *</label>
+                <input
+                  type="text"
+                  value={formData.nome}
+                  onChange={(e) => handleChange('nome', e.target.value)}
+                  required
+                  placeholder="Nome completo do informante"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Apelido</label>
-              <input
-                type="text"
-                value={formData.apelido}
-                onChange={(e) => handleChange('apelido', e.target.value)}
-                placeholder="Apelido ou nome popular"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
-              />
-            </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Apelido</label>
+                <input
+                  type="text"
+                  value={formData.apelido}
+                  onChange={(e) => handleChange('apelido', e.target.value)}
+                  placeholder="Apelido ou nome popular"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Documento</label>
-              <input
-                type="text"
-                value={formData.documento}
-                onChange={(e) => handleChange('documento', e.target.value)}
-                placeholder="CPF, RG ou outro documento"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
-              />
-            </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Documento</label>
+                <input
+                  type="text"
+                  value={formData.documento}
+                  onChange={(e) => handleChange('documento', e.target.value)}
+                  placeholder="CPF, RG ou outro documento"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Telefone</label>
-              <input
-                type="text"
-                value={formData.telefone}
-                onChange={(e) => handleChange('telefone', e.target.value)}
-                placeholder="Telefone de contato"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
-              />
-            </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Telefone</label>
+                <input
+                  type="text"
+                  value={formData.telefone}
+                  onChange={(e) => handleChange('telefone', e.target.value)}
+                  placeholder="Telefone de contato"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">E-mail</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                placeholder="E-mail do informante"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
-              />
-            </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">E-mail</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  placeholder="E-mail do informante"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Endereço</label>
-              <input
-                type="text"
-                value={formData.endereco}
-                onChange={(e) => handleChange('endereco', e.target.value)}
-                placeholder="Endereço completo"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
-              />
-            </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tipo de Informante</label>
+                <select
+                  value={formData.tipoInformante}
+                  onChange={(e) => handleChange('tipoInformante', e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-federal-500"
+                >
+                  <option value="">Selecione</option>
+                  <option value="testemunha">Testemunha</option>
+                  <option value="vítima">Vítima</option>
+                  <option value="suspeito">Suspeito</option>
+                  <option value="denunciante">Denunciante</option>
+                  <option value="colaborador">Colaborador</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Relação com o Caso</label>
-              <input
-                type="text"
-                value={formData.relacao}
-                onChange={(e) => handleChange('relacao', e.target.value)}
-                placeholder="Ex: Testemunha, Suspeito, Vítima"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
-              />
-            </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Ocupação</label>
+                <input
+                  type="text"
+                  value={formData.ocupacao}
+                  onChange={(e) => handleChange('ocupacao', e.target.value)}
+                  placeholder="Profissão ou ocupação"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Status</label>
-              <select
-                value={formData.status}
-                onChange={(e) => handleChange('status', e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-federal-500"
-              >
-                <option value="Ativo">Ativo</option>
-                <option value="Inativo">Inativo</option>
-                <option value="Suspenso">Suspenso</option>
-              </select>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Empresa/Local de Trabalho</label>
+                <input
+                  type="text"
+                  value={formData.empresa}
+                  onChange={(e) => handleChange('empresa', e.target.value)}
+                  placeholder="Empresa ou instituição"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
             </div>
           </div>
 
+          {/* Address */}
+          <div>
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <MapPin size={20} className="text-federal-500" />
+              Endereço
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Endereço</label>
+                <input
+                  type="text"
+                  value={formData.endereco}
+                  onChange={(e) => handleChange('endereco', e.target.value)}
+                  placeholder="Rua, número, complemento"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Bairro</label>
+                <input
+                  type="text"
+                  value={formData.bairro}
+                  onChange={(e) => handleChange('bairro', e.target.value)}
+                  placeholder="Bairro"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cidade</label>
+                <input
+                  type="text"
+                  value={formData.cidade}
+                  onChange={(e) => handleChange('cidade', e.target.value)}
+                  placeholder="Cidade"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Estado</label>
+                <input
+                  type="text"
+                  value={formData.estado}
+                  onChange={(e) => handleChange('estado', e.target.value)}
+                  placeholder="UF"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">CEP</label>
+                <input
+                  type="text"
+                  value={formData.cep}
+                  onChange={(e) => handleChange('cep', e.target.value)}
+                  placeholder="CEP"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Case Info */}
+          <div>
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <Flag size={20} className="text-federal-500" />
+              Informações do Caso
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Relação com o Caso</label>
+                <input
+                  type="text"
+                  value={formData.relacao}
+                  onChange={(e) => handleChange('relacao', e.target.value)}
+                  placeholder="Ex: Testemunha, Suspeito, Vítima, Denunciante"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Prioridade</label>
+                <select
+                  value={formData.prioridade}
+                  onChange={(e) => handleChange('prioridade', e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-federal-500"
+                >
+                  <option value="Alta">Alta</option>
+                  <option value="Média">Média</option>
+                  <option value="Baixa">Baixa</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Status</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => handleChange('status', e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-federal-500"
+                >
+                  <option value="Ativo">Ativo</option>
+                  <option value="Inativo">Inativo</option>
+                  <option value="Suspenso">Suspenso</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Observations */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Observações</label>
             <textarea
