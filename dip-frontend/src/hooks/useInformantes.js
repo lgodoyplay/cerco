@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { supabase } from '../../../lib/supabase';
 
 const STORAGE_KEY = 'dip_informantes_entries';
 
@@ -25,7 +26,9 @@ const ENTRY_STATUSES = ['Pendente', 'Revisado', 'Verificado'];
 
 export const useInformantes = () => {
   const [entries, setEntries] = useState([]);
+  const [investigations, setInvestigations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [investigationsLoading, setInvestigationsLoading] = useState(true);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -41,12 +44,68 @@ export const useInformantes = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const fetchInvestigations = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('investigacoes')
+          .select('id, titulo, status')
+          .neq('status', 'Finalizada')
+          .neq('status', 'Arquivada')
+          .order('created_at', { ascending: false });
+
+        if (!error && data) {
+          setInvestigations(data);
+        }
+      } catch (err) {
+        console.error('Erro ao buscar investigações:', err);
+      } finally {
+        if (isMounted.current) {
+          setInvestigationsLoading(false);
+        }
+      }
+    };
+    fetchInvestigations();
+  }, []);
+
   const persist = useCallback((updated) => {
     if (!isMounted.current) return;
     saveToStorage(updated);
   }, []);
 
-  const addEntry = useCallback((entryData) => {
+  const uploadFilesToInvestigation = useCallback(async (investigationId, files) => {
+    const uploaded = [];
+    for (const file of files) {
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `informantes/${investigationId}/${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('provas').upload(fileName, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage.from('provas').getPublicUrl(fileName);
+        uploaded.push({
+          id: `file_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          url: urlData.publicUrl,
+          uploadedBy: 'Agente',
+          createdAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error('Erro ao fazer upload do arquivo:', err);
+      }
+    }
+    return uploaded;
+  }, []);
+
+  const addEntry = useCallback(async (entryData) => {
+    let filesWithUrls = entryData.files || [];
+
+    if (entryData.relatedInvestigationId && filesWithUrls.length > 0) {
+      const uploaded = await uploadFilesToInvestigation(entryData.relatedInvestigationId, filesWithUrls);
+      filesWithUrls = uploaded;
+    }
+
     const newEntry = {
       id: `entry_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       title: entryData.title || '',
@@ -57,7 +116,7 @@ export const useInformantes = () => {
       relatedInvestigationId: entryData.relatedInvestigationId || '',
       relatedInvestigationTitle: entryData.relatedInvestigationTitle || '',
       tags: entryData.tags || [],
-      files: entryData.files || [],
+      files: filesWithUrls,
       author: entryData.author || 'Agente',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -66,7 +125,7 @@ export const useInformantes = () => {
     setEntries(updated);
     persist(updated);
     return newEntry;
-  }, [entries, persist]);
+  }, [entries, persist, uploadFilesToInvestigation]);
 
   const updateEntry = useCallback((entryId, entryData) => {
     const updated = entries.map(entry =>
@@ -131,7 +190,9 @@ export const useInformantes = () => {
 
   return {
     entries,
+    investigations,
     loading,
+    investigationsLoading,
     addEntry,
     updateEntry,
     deleteEntry,

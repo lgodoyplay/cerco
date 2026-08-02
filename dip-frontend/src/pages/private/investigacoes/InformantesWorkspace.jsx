@@ -52,7 +52,7 @@ const InformantesWorkspace = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { entries, addEntry, updateEntry, deleteEntry, addEntryFile, removeEntryFile, getStats, CATEGORIES, PRIORITIES, ENTRY_STATUSES } = useInformantes();
+  const { entries, investigations, investigationsLoading, addEntry, updateEntry, deleteEntry, addEntryFile, removeEntryFile, getStats, CATEGORIES, PRIORITIES, ENTRY_STATUSES } = useInformantes();
 
   const [notification, setNotification] = useState(location.state?.notification || null);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -355,13 +355,27 @@ const InformantesWorkspace = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Investigação Relacionada</label>
-              <input
-                type="text"
-                value={newEntry.relatedInvestigationTitle}
-                onChange={(e) => setNewEntry(prev => ({ ...prev, relatedInvestigationTitle: e.target.value }))}
-                placeholder="Título da investigação relacionada"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 outline-none transition-all"
-              />
+              {investigationsLoading ? (
+                <div className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-500 text-sm">Carregando investigações...</div>
+              ) : (
+                <select
+                  value={newEntry.relatedInvestigationId}
+                  onChange={(e) => {
+                    const selected = investigations.find(inv => inv.id === e.target.value);
+                    setNewEntry(prev => ({
+                      ...prev,
+                      relatedInvestigationId: e.target.value,
+                      relatedInvestigationTitle: selected ? selected.titulo : '',
+                    }));
+                  }}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white outline-none focus:border-federal-500"
+                >
+                  <option value="">Selecione uma investigação</option>
+                  {investigations.map(inv => (
+                    <option key={inv.id} value={inv.id}>{inv.titulo}</option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div>
