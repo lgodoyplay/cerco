@@ -37,9 +37,7 @@ export const routeLoaders = {
   SearchSeizureDetail: () => import('../pages/private/investigations/SearchSeizureDetail'),
 
   // Informantes
-  InformantesList: () => import('../pages/private/investigacoes/InformantesList'),
-  InformanteDetail: () => import('../pages/private/investigacoes/InformanteDetail'),
-  InformanteCreate: () => import('../pages/private/investigacoes/InformanteCreate'),
+  InformantesWorkspace: () => import('../pages/private/investigacoes/InformantesWorkspace'),
   
   // Forensics
   ForensicsList: () => import('../pages/private/forensics/ForensicsList'),

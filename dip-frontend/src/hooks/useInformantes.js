@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 
-const STORAGE_KEY = 'dip_informantes';
+const STORAGE_KEY = 'dip_informantes_entries';
 
 const loadFromStorage = () => {
   try {
@@ -11,36 +11,20 @@ const loadFromStorage = () => {
   }
 };
 
-const saveToStorage = (informantes) => {
+const saveToStorage = (entries) => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(informantes));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
   } catch {
-    console.error('Failed to save informantes to storage');
+    console.error('Failed to save entries to storage');
   }
 };
-
-const mapInformante = (inv) => ({
-  id: inv.id,
-  nome: inv.nome || '',
-  apelido: inv.apelido || '',
-  documento: inv.documento || '',
-  telefone: inv.telefone || '',
-  email: inv.email || '',
-  endereco: inv.endereco || '',
-  relacao: inv.relacao || '',
-  observacoes: inv.observacoes || '',
-  status: inv.status || 'Ativo',
-  entries: inv.entries || [],
-  createdAt: inv.createdAt || new Date().toISOString(),
-  updatedAt: inv.updatedAt || new Date().toISOString(),
-});
 
 const CATEGORIES = ['testemunho', 'evidencia', 'dica', 'documento', 'observacao', 'linha', 'outro'];
 const PRIORITIES = ['Alta', 'Média', 'Baixa'];
 const ENTRY_STATUSES = ['Pendente', 'Revisado', 'Verificado'];
 
 export const useInformantes = () => {
-  const [informantes, setInformantes] = useState([]);
+  const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const isMounted = useRef(true);
 
@@ -52,7 +36,7 @@ export const useInformantes = () => {
   useEffect(() => {
     const data = loadFromStorage();
     if (isMounted.current) {
-      setInformantes(data.map(mapInformante));
+      setEntries(data);
       setLoading(false);
     }
   }, []);
@@ -62,45 +46,7 @@ export const useInformantes = () => {
     saveToStorage(updated);
   }, []);
 
-  const addInformante = useCallback((data) => {
-    const newInformante = {
-      id: `inf_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      nome: data.nome || '',
-      apelido: data.apelido || '',
-      documento: data.documento || '',
-      telefone: data.telefone || '',
-      email: data.email || '',
-      endereco: data.endereco || '',
-      relacao: data.relacao || '',
-      observacoes: data.observacoes || '',
-      status: data.status || 'Ativo',
-      entries: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    const updated = [newInformante, ...informantes];
-    setInformantes(updated);
-    persist(updated);
-    return newInformante;
-  }, [informantes, persist]);
-
-  const updateInformante = useCallback((id, data) => {
-    const updated = informantes.map(inf =>
-      inf.id === id
-        ? { ...inf, ...data, updatedAt: new Date().toISOString() }
-        : inf
-    );
-    setInformantes(updated);
-    persist(updated);
-  }, [informantes, persist]);
-
-  const deleteInformante = useCallback((id) => {
-    const updated = informantes.filter(inf => inf.id !== id);
-    setInformantes(updated);
-    persist(updated);
-  }, [informantes, persist]);
-
-  const addEntry = useCallback((informanteId, entryData) => {
+  const addEntry = useCallback((entryData) => {
     const newEntry = {
       id: `entry_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       title: entryData.title || '',
@@ -116,124 +62,82 @@ export const useInformantes = () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    const updated = informantes.map(inf => {
-      if (inf.id === informanteId) {
-        return {
-          ...inf,
-          entries: [newEntry, ...(inf.entries || [])],
-          updatedAt: new Date().toISOString(),
-        };
-      }
-      return inf;
-    });
-    setInformantes(updated);
+    const updated = [newEntry, ...entries];
+    setEntries(updated);
     persist(updated);
     return newEntry;
-  }, [informantes, persist]);
+  }, [entries, persist]);
 
-  const updateEntry = useCallback((informanteId, entryId, entryData) => {
-    const updated = informantes.map(inf => {
-      if (inf.id === informanteId) {
-        return {
-          ...inf,
-          entries: (inf.entries || []).map(entry =>
-            entry.id === entryId
-              ? { ...entry, ...entryData, updatedAt: new Date().toISOString() }
-              : entry
-          ),
-          updatedAt: new Date().toISOString(),
-        };
-      }
-      return inf;
-    });
-    setInformantes(updated);
+  const updateEntry = useCallback((entryId, entryData) => {
+    const updated = entries.map(entry =>
+      entry.id === entryId
+        ? { ...entry, ...entryData, updatedAt: new Date().toISOString() }
+        : entry
+    );
+    setEntries(updated);
     persist(updated);
-  }, [informantes, persist]);
+  }, [entries, persist]);
 
-  const deleteEntry = useCallback((informanteId, entryId) => {
-    const updated = informantes.map(inf => {
-      if (inf.id === informanteId) {
-        return {
-          ...inf,
-          entries: (inf.entries || []).filter(e => e.id !== entryId),
-          updatedAt: new Date().toISOString(),
-        };
-      }
-      return inf;
-    });
-    setInformantes(updated);
+  const deleteEntry = useCallback((entryId) => {
+    const updated = entries.filter(entry => entry.id !== entryId);
+    setEntries(updated);
     persist(updated);
-  }, [informantes, persist]);
+  }, [entries, persist]);
 
-  const addEntryFile = useCallback((informanteId, entryId, file) => {
-    const updated = informantes.map(inf => {
-      if (inf.id === informanteId) {
-        return {
-          ...inf,
-          entries: (inf.entries || []).map(entry =>
-            entry.id === entryId
-              ? {
-                  ...entry,
-                  files: [...(entry.files || []), file],
-                  updatedAt: new Date().toISOString(),
-                }
-              : entry
-          ),
-          updatedAt: new Date().toISOString(),
-        };
-      }
-      return inf;
-    });
-    setInformantes(updated);
+  const addEntryFile = useCallback((entryId, file) => {
+    const updated = entries.map(entry =>
+      entry.id === entryId
+        ? {
+            ...entry,
+            files: [...(entry.files || []), file],
+            updatedAt: new Date().toISOString(),
+          }
+        : entry
+    );
+    setEntries(updated);
     persist(updated);
-  }, [informantes, persist]);
+  }, [entries, persist]);
 
-  const removeEntryFile = useCallback((informanteId, entryId, fileId) => {
-    const updated = informantes.map(inf => {
-      if (inf.id === informanteId) {
-        return {
-          ...inf,
-          entries: (inf.entries || []).map(entry =>
-            entry.id === entryId
-              ? {
-                  ...entry,
-                  files: (entry.files || []).filter(f => f.id !== fileId),
-                  updatedAt: new Date().toISOString(),
-                }
-              : entry
-          ),
-          updatedAt: new Date().toISOString(),
-        };
-      }
-      return inf;
-    });
-    setInformantes(updated);
+  const removeEntryFile = useCallback((entryId, fileId) => {
+    const updated = entries.map(entry =>
+      entry.id === entryId
+        ? {
+            ...entry,
+            files: (entry.files || []).filter(f => f.id !== fileId),
+            updatedAt: new Date().toISOString(),
+          }
+        : entry
+    );
+    setEntries(updated);
     persist(updated);
-  }, [informantes, persist]);
+  }, [entries, persist]);
 
-  const getInformante = useCallback((id) => {
-    return informantes.find(inf => inf.id === id) || null;
-  }, [informantes]);
-
-  const getEntry = useCallback((informanteId, entryId) => {
-    const inf = informantes.find(i => i.id === informanteId);
-    if (!inf) return null;
-    return (inf.entries || []).find(e => e.id === entryId) || null;
-  }, [informantes]);
+  const getStats = useCallback(() => {
+    return {
+      total: entries.length,
+      pending: entries.filter(e => e.status === 'Pendente').length,
+      reviewed: entries.filter(e => e.status === 'Revisado').length,
+      verified: entries.filter(e => e.status === 'Verificado').length,
+      byCategory: entries.reduce((acc, e) => {
+        acc[e.category] = (acc[e.category] || 0) + 1;
+        return acc;
+      }, {}),
+      byPriority: entries.reduce((acc, e) => {
+        acc[e.priority] = (acc[e.priority] || 0) + 1;
+        return acc;
+      }, {}),
+    };
+  }, [entries]);
 
   return {
-    informantes,
+    entries,
     loading,
-    addInformante,
-    updateInformante,
-    deleteInformante,
     addEntry,
     updateEntry,
     deleteEntry,
     addEntryFile,
     removeEntryFile,
-    getInformante,
-    getEntry,
+    getStats,
     CATEGORIES,
     PRIORITIES,
     ENTRY_STATUSES,

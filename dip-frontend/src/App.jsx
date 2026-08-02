@@ -47,9 +47,7 @@ const SearchSeizureCreate = React.lazy(() => lazyImport(routeLoaders.SearchSeizu
 const SearchSeizureDetail = React.lazy(() => lazyImport(routeLoaders.SearchSeizureDetail));
 
 // Informantes Pages
-const InformantesList = React.lazy(() => lazyImport(routeLoaders.InformantesList));
-const InformanteDetail = React.lazy(() => lazyImport(routeLoaders.InformanteDetail));
-const InformanteCreate = React.lazy(() => lazyImport(routeLoaders.InformanteCreate));
+const InformantesWorkspace = React.lazy(() => lazyImport(routeLoaders.InformantesWorkspace));
 
 // Alvarás Pages
 const AlvaraList = React.lazy(() => lazyImport(routeLoaders.AlvaraList));
@@ -283,22 +281,7 @@ function App() {
             {/* Informantes Routes */}
             <Route path="investigations/informantes" element={
               <PermissionGuard permission="informantes_view">
-                <InformantesList />
-              </PermissionGuard>
-            } />
-            <Route path="investigations/informantes/new" element={
-              <PermissionGuard permission="informantes_manage">
-                <InformanteCreate />
-              </PermissionGuard>
-            } />
-            <Route path="investigations/informantes/:id/edit" element={
-              <PermissionGuard permission="informantes_manage">
-                <InformanteCreate />
-              </PermissionGuard>
-            } />
-            <Route path="investigations/informantes/:id" element={
-              <PermissionGuard permission="informantes_view">
-                <InformanteDetail />
+                <InformantesWorkspace />
               </PermissionGuard>
             } />
 
