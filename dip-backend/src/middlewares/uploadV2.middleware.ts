@@ -5,8 +5,8 @@ import { v4 as uuid } from 'uuid';
 import sharp from 'sharp';
 
 // ======================== CONFIGURAÇÃO ========================
-const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg', 'application/pdf', 'text/plain', 'video/mp4', 'video/quicktime', 'video/webm', 'audio/mpeg', 'audio/wav', 'audio/ogg'];
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const UPLOAD_DIR = path.join(__dirname, '../../uploads');
 
 // Garantir que a pasta uploads existe
@@ -18,16 +18,12 @@ if (!fs.existsSync(UPLOAD_DIR)) {
 const storage = multer.memoryStorage(); // Armazenar em memória para processar com Sharp
 
 const fileFilter = (req: Express.Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  // Validar tipo MIME
-  if (!ALLOWED_MIMES.includes(file.mimetype)) {
-    return cb(new Error(`❌ Tipo de arquivo não permitido. Aceitos: ${ALLOWED_MIMES.join(', ')}`));
-  }
+  const normalizedMime = file.mimetype?.toLowerCase() || '';
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.pdf', '.txt', '.mp4', '.mov', '.webm', '.mp3', '.wav', '.ogg'];
 
-  // Validar extensão (segurança extra)
-  const ext = path.extname(file.originalname).toLowerCase();
-  const allowedExts = ['.jpg', '.jpeg', '.png', '.webp'];
-  if (!allowedExts.includes(ext)) {
-    return cb(new Error(`❌ Extensão inválida: ${ext}`));
+  if (!ALLOWED_MIMES.includes(normalizedMime) && !allowedExts.includes(ext)) {
+    return cb(new Error(`❌ Tipo de arquivo não permitido. Aceitos: ${ALLOWED_MIMES.join(', ')}`));
   }
 
   cb(null, true);
@@ -57,16 +53,11 @@ export const processImage = async (file: Express.Multer.File, userId: string): P
       throw new Error('Buffer do arquivo não encontrado');
     }
 
-    // Gerar nome único com UUID
     const uniqueName = `${userId}-${uuid()}.webp`;
     const filePath = path.join(UPLOAD_DIR, uniqueName);
 
-    // Processar com Sharp:
-    // 1. Remover EXIF/metadata
-    // 2. Converter para WebP
-    // 3. Comprimir com quality 80
     await sharp(file.buffer)
-      .rotate() // Remove EXIF automaticamente
+      .rotate()
       .webp({ quality: 80 })
       .toFile(filePath);
 
@@ -74,7 +65,26 @@ export const processImage = async (file: Express.Multer.File, userId: string): P
     return uniqueName;
   } catch (error) {
     console.error('❌ Erro ao processar imagem:', error);
-    throw error;
+    throw new Error(`Falha ao processar imagem: ${(error as Error).message}`);
+  }
+};
+
+export const storeUploadedFile = async (file: Express.Multer.File, userId: string): Promise<string> => {
+  try {
+    if (!file.buffer) {
+      throw new Error('Buffer do arquivo não encontrado');
+    }
+
+    const ext = path.extname(file.originalname || '').toLowerCase() || '.bin';
+    const uniqueName = `${userId}-${uuid()}${ext}`;
+    const filePath = path.join(UPLOAD_DIR, uniqueName);
+
+    await fs.promises.writeFile(filePath, file.buffer);
+    console.log(`✅ Arquivo salvo: ${uniqueName}`);
+    return uniqueName;
+  } catch (error) {
+    console.error('❌ Erro ao salvar arquivo:', error);
+    throw new Error(`Falha ao salvar arquivo: ${(error as Error).message}`);
   }
 };
 

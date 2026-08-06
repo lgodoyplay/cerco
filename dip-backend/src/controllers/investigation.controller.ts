@@ -15,6 +15,7 @@ import {
   PRIORITY_LEVELS
 } from '../utils/investigationValidator';
 import { createAuditLog } from '../utils/auditTrail';
+import { buildEvidencePayload, normalizeProofType } from '../utils/evidencePayload';
 
 export const createInvestigation = async (req: Request, res: Response) => {
   try {
@@ -69,15 +70,15 @@ export const createInvestigation = async (req: Request, res: Response) => {
 export const addEvidence = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { tipo, descricao } = req.body;
+    const { tipo, descricao, conteudo } = req.body;
     const file = req.file;
     const userId = (req as any).user.id;
 
-    // ✅ VALIDAÇÃO
+    const normalizedType = normalizeProofType(tipo);
     const validation = validateProofCreate({
-      investigacao_id: parseInt(id),
-      tipo,
-      conteudo: file?.originalname || '',
+      investigacao_id: Number(id),
+      tipo: normalizedType,
+      conteudo: typeof conteudo === 'string' ? conteudo : file?.originalname || '',
       descricao
     });
 
@@ -88,26 +89,25 @@ export const addEvidence = async (req: Request, res: Response) => {
       });
     }
 
-    if (!file) return res.status(400).json({ error: '❌ Arquivo obrigatório' });
+    const evidencePayload = await buildEvidencePayload({
+      investigationId: id,
+      tipo: normalizedType,
+      descricao,
+      conteudo,
+      file,
+      userId
+    });
 
-    // Importar função de processamento
-    const { processImage } = await import('../middlewares/uploadV2.middleware');
-    const { getImageUrl } = await import('../utils/urlHelper');
-
-    // Processar arquivo
-    const filename = await processImage(file, userId);
-
-    // ✅ SANITIZAÇÃO
     const evidence = await prisma.evidence.create({
       data: {
         investigacaoId: id,
-        tipo: sanitizeString(tipo),
-        descricao: sanitizeDescription(descricao || ''),
-        conteudo: getImageUrl(filename)
+        tipo: evidencePayload.tipo,
+        descricao: evidencePayload.descricao,
+        conteudo: evidencePayload.conteudo || ''
       }
     });
 
-    await createLog(userId, 'Prova Adicionada', `Prova ${tipo} em investigação ${id}`, req.ip);
+    await createLog(userId, 'Prova Adicionada', `Prova ${evidencePayload.tipo} em investigação ${id}`, req.ip);
 
     res.status(201).json({
       message: '✅ Prova adicionada com sucesso',
@@ -115,7 +115,7 @@ export const addEvidence = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('❌ Erro ao adicionar prova:', error);
-    res.status(500).json({ 
+    res.status(400).json({ 
       error: 'Erro ao adicionar prova',
       message: (error as Error).message 
     });
@@ -218,8 +218,11 @@ export const updateInvestigation = async (req: Request, res: Response) => {
     });
 
     // 📋 Log de auditoria
-    await createAuditLog(null, parseInt(id), userId, 'editado', 
-      investigationBefore, investigation);
+    try {
+      await createAuditLog(id, userId, 'editado', investigation, investigationBefore);
+    } catch (auditError) {
+      console.warn('⚠️ Falha ao registrar auditoria:', auditError);
+    }
     await createLog(userId, 'Investigação Atualizada', `Investigação ${id} atualizada`, req.ip);
 
     res.json({
