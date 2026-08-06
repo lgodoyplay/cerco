@@ -44,6 +44,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
+import { dedupeNotifications, getVisibleNotifications } from '../utils/notifications';
 
 const SidebarItem = ({ to, icon: Icon, label, active, onClick, prefetchKey }) => (
   <Link
@@ -74,11 +75,8 @@ const PrivateLayout = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Nova prisão registrada', time: '5 min atrás', read: false, icon: UserX, color: 'red' },
-    { id: 2, title: 'Investigação atualizada', time: '1 hora atrás', read: false, icon: Search, color: 'amber' },
-    { id: 3, title: 'Relatório gerado', time: '3 horas atrás', read: true, icon: FileText, color: 'emerald' },
-  ]);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
   const userMenuRef = useRef(null);
   const notifRef = useRef(null);
 
@@ -110,14 +108,89 @@ const PrivateLayout = () => {
     }
   };
 
+  useEffect(() => {
+    if (!user?.id) {
+      setNotifications([]);
+      return;
+    }
+
+    let cancelled = false;
+    const readStorageKey = `cerco:notifications-read:${user.id}`;
+
+    const loadNotifications = async () => {
+      setNotificationsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const savedReadIds = JSON.parse(localStorage.getItem(readStorageKey) || '[]');
+        const visibleNotifications = dedupeNotifications(getVisibleNotifications(data || [], user.id))
+          .map((item) => ({
+            ...item,
+            id: item.id || `${item.title}-${item.created_at}`,
+            read: Boolean(item.read) || savedReadIds.includes(item.id || `${item.title}-${item.created_at}`),
+            time: item.created_at
+              ? new Date(item.created_at).toLocaleString('pt-BR', {
+                  day: '2-digit',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              : 'Agora',
+            icon: item.user_id === null ? Bell : item.title?.toLowerCase().includes('investig') ? Search : FileText,
+            color: item.user_id === null ? 'emerald' : 'amber',
+          }));
+
+        if (!cancelled) {
+          setNotifications(visibleNotifications);
+        }
+      } catch (err) {
+        console.warn('Erro ao carregar notificações:', err);
+        if (!cancelled) {
+          setNotifications([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setNotificationsLoading(false);
+        }
+      }
+    };
+
+    loadNotifications();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
   const unreadNotifications = notifications.filter(n => !n.read).length;
 
+  const persistReadState = (ids = []) => {
+    if (!user?.id) return;
+    const readStorageKey = `cerco:notifications-read:${user.id}`;
+    const nextValue = Array.from(new Set(ids));
+    localStorage.setItem(readStorageKey, JSON.stringify(nextValue));
+  };
+
   const markNotificationAsRead = (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    setNotifications(prev => {
+      const next = prev.map(n => n.id === id ? { ...n, read: true } : n);
+      const readIds = next.filter(n => n.read).map(n => n.id);
+      persistReadState(readIds);
+      return next;
+    });
   };
 
   const markAllNotificationsAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications(prev => {
+      const next = prev.map(n => ({ ...n, read: true }));
+      persistReadState(next.map(n => n.id));
+      return next;
+    });
   };
 
   const navCategories = [
@@ -381,7 +454,9 @@ const PrivateLayout = () => {
                     )}
                   </div>
                   <div className="max-h-64 overflow-y-auto">
-                    {notifications.length === 0 ? (
+                    {notificationsLoading ? (
+                      <div className="p-4 text-center text-slate-500 text-sm">Carregando notificações…</div>
+                    ) : notifications.length === 0 ? (
                       <div className="p-4 text-center text-slate-500 text-sm">Nenhuma notificação</div>
                     ) : (
                       notifications.map(notif => (

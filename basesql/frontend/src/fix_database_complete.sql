@@ -55,7 +55,11 @@ CREATE TABLE IF NOT EXISTS public.notifications (
 );
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view their own notifications" ON public.notifications;
-CREATE POLICY "Users can view their own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view personal and global notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id OR user_id IS NULL);
+DROP POLICY IF EXISTS "Users can insert notifications for themselves or global" ON public.notifications;
+CREATE POLICY "Users can insert notifications for themselves or global" ON public.notifications FOR INSERT WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+DROP POLICY IF EXISTS "Users can update their own notifications" ON public.notifications;
+CREATE POLICY "Users can update their own notifications" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
 
 -- Tabela System Settings
 CREATE TABLE IF NOT EXISTS public.system_settings (
