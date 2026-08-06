@@ -5,6 +5,23 @@ const normalizeUrl = (value = '') => {
   return `https://${trimmed.replace(/^\/+/, '')}`;
 };
 
+const parseYouTubeStartTime = (searchParams) => {
+  const raw = searchParams.get('t') || searchParams.get('start') || searchParams.get('time_continue') || '';
+  if (!raw) return '';
+
+  const directNumber = Number(raw);
+  if (!Number.isNaN(directNumber) && directNumber > 0) return `?start=${Math.floor(directNumber)}`;
+
+  const match = String(raw).match(/(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?/i);
+  if (!match) return '';
+
+  const hours = Number(match[1] || 0);
+  const minutes = Number(match[2] || 0);
+  const seconds = Number(match[3] || 0);
+  const total = hours * 3600 + minutes * 60 + seconds;
+  return total > 0 ? `?start=${total}` : '';
+};
+
 const getYouTubeEmbedUrl = (url) => {
   try {
     const parsed = new URL(url);
@@ -12,22 +29,31 @@ const getYouTubeEmbedUrl = (url) => {
 
     if (host === 'youtu.be') {
       const id = parsed.pathname.split('/').filter(Boolean)[0];
-      return id ? `https://www.youtube.com/embed/${id}` : '';
+      const start = parseYouTubeStartTime(parsed.searchParams);
+      return id ? `https://www.youtube-nocookie.com/embed/${id}${start}` : '';
     }
 
-    if (host === 'youtube.com' || host === 'm.youtube.com') {
+    if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtube-nocookie.com') {
       if (parsed.pathname.startsWith('/watch')) {
         const id = parsed.searchParams.get('v');
-        return id ? `https://www.youtube.com/embed/${id}` : '';
+        const start = parseYouTubeStartTime(parsed.searchParams);
+        return id ? `https://www.youtube-nocookie.com/embed/${id}${start}` : '';
       }
 
       if (parsed.pathname.startsWith('/shorts/')) {
         const id = parsed.pathname.split('/').filter(Boolean)[1];
-        return id ? `https://www.youtube.com/embed/${id}` : '';
+        return id ? `https://www.youtube-nocookie.com/embed/${id}` : '';
       }
 
       if (parsed.pathname.startsWith('/embed/')) {
-        return url;
+        const id = parsed.pathname.split('/').filter(Boolean)[1];
+        const start = parseYouTubeStartTime(parsed.searchParams);
+        return id ? `https://www.youtube-nocookie.com/embed/${id}${start}` : '';
+      }
+
+      if (parsed.pathname.startsWith('/live/')) {
+        const id = parsed.pathname.split('/').filter(Boolean)[1];
+        return id ? `https://www.youtube-nocookie.com/embed/${id}` : '';
       }
     }
   } catch {

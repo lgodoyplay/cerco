@@ -1,0 +1,230 @@
+﻿Diagnose log at 2026-07-31T21:27:22Z
+
+AppPath: C:\Program Files\Git\mingw64\bin\git-credential-manager.exe
+InstallDir: C:\Program Files\Git\mingw64\bin\
+Version: 2.7.3+5fa7116896c82164996a609accd1c5ad90fe730a
+
+------------
+Diagnostic: Environment
+Skipped: False
+Success: True
+Exception: None
+Log:
+OSType: Windows
+OSVersion: 10.0 (build 26200)
+Reading environment variables... OK
+ Variables:
+VSCODE_PID=14632
+VSCODE_CWD=C:\Users\paulo\AppData\Local\Programs\Microsoft VS Code
+OS=Windows_NT
+TMP=C:\Users\paulo\AppData\Local\Temp
+PSModulePath=C:\Users\paulo\Documents\WindowsPowerShell\Modules;C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
+APPLICATION_INSIGHTS_NO_STATSBEAT=true
+VSCODE_CRASH_REPORTER_PROCESS_TYPE=extensionHost
+ProgramData=C:\ProgramData
+EFC_8740_4126798990=1
+FPS_BROWSER_USER_PROFILE_STRING=Default
+ComSpec=C:\WINDOWS\system32\cmd.exe
+KILOCODE_EDITOR_NAME=Visual Studio Code 1.127.0
+KILO=1
+PROCESSOR_REVISION=5000
+KILOCODE_VERSION=7.4.17
+KILO_VSCODE_VERSION=1.127.0
+KILOCODE_FEATURE=vscode-extension
+LC_CTYPE=C.UTF-8
+FPS_BROWSER_APP_PROFILE_STRING=Internet Explorer
+COLORTERM=truecolor
+OPENCODE=1
+KILO_APP_VERSION=7.4.17
+PROCESSOR_LEVEL=25
+SystemDrive=C:
+KILO_APP_NAME=kilo-code
+SESSIONNAME=Console
+EFC_8740_2775293581=1
+AGENT=1
+KILO_PROCESS_ROLE=main
+USERPROFILE=C:\Users\paulo
+KILO_EDITOR_NAME=Visual Studio Code
+VSCODE_HANDLES_UNCAUGHT_ERRORS=true
+NUMBER_OF_PROCESSORS=16
+CommonProgramFiles(x86)=C:\Program Files (x86)\Common Files
+VSCODE_NLS_CONFIG={"userLocale":"en-us","osLocale":"pt-br","resolvedLanguage":"en","defaultMessagesFile":"C:\\Users\\paulo\\AppData\\Local\\Programs\\Microsoft VS Code\\4fe60c8b1c\\resources\\app\\out\\nls.messages.json","locale":"en-us","availableLanguages":{}}
+VSCODE_IPC_HOOK=\\.\pipe\313981fb-1.127.0-main-sock
+ANDROID_HOME=C:\Users\paulo\AppData\Local\Android\Sdk
+EFC_8740_1262719628=1
+KILO_PID=13648
+COMPUTERNAME=ALAN
+ANDROID_SDK_ROOT=C:\Users\paulo\AppData\Local\Android\Sdk
+KILO_DISABLE_CLAUDE_CODE=true
+NODE_USE_SYSTEM_CA=1
+LOGONSERVER=\\ALAN
+HOMEDRIVE=C:
+EFC_8740_2283032206=1
+CHROME_CRASHPAD_PIPE_NAME=\\.\pipe\crashpad_14632_FHEDEMYRWUSXHFOL
+PUBLIC=C:\Users\Public
+KILO_PLATFORM=vscode
+ProgramW6432=C:\Program Files
+KILO_ENABLE_QUESTION_TOOL=true
+windir=C:\WINDOWS
+KILO_MACHINE_ID=d94ebcbcc892f33faf2f5a7f810f479aa91a46cc6b9509e8ebd238a6dc08f1f9
+PROCESSOR_IDENTIFIER=AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD
+VBOX_HWVIRTEX_IGNORE_SVM_IN_USE=1
+APPDATA=C:\Users\paulo\AppData\Roaming
+HOMEPATH=\Users\paulo
+EFC_8740_3789132940=1
+Path=C:/Program Files/Git/mingw64/libexec/git-core;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\paulo\bin;C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\Users\paulo\AppData\Local\Microsoft\WindowsApps;C:\Users\paulo\AppData\Roaming\npm;C:\Users\paulo\AppData\Local\Microsoft\WinGet\Packages\Google.PlatformTools_Microsoft.Winget.Source_8wekyb3d8bbwe\platform-tools;C:\Users\paulo\AppData\Local\GitHubDesktop\bin;C:\Program Files\Acustica\Framework;C:\Users\paulo\AppData\Local\Programs\Python\Python312\Scripts\;C:\Users\paulo\AppData\Local\Programs\Python\Python312\;C:\Users\paulo\AppData\Local\Programs\Python\Launcher\;C:\Users\paulo\.local\bin;C:\Users\paulo\AppData\Local\Microsoft\WindowsApps;C:\Users\paulo\AppData\Roaming\npm;C:\Users\paulo\AppData\Local\Microsoft\WinGet\Packages\Google.PlatformTools_Microsoft.Winget.Source_8wekyb3d8bbwe\platform-tools;C:\Users\paulo\AppData\Local\GitHubDesktop\bin;C:\Users\paulo\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\paulo\AppData\Local\Programs\Ollama;C:\Users\paulo\AppData\Local\Microsoft\WinGet\Packages\BurntSushi.ripgrep.MSVC_Microsoft.Winget.Source_8wekyb3d8bbwe\ripgrep-15.1.0-x86_64-pc-windows-msvc;
+MIMALLOC_PURGE_DELAY=0
+PLINK_PROTOCOL=ssh
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL
+LOCALAPPDATA=C:\Users\paulo\AppData\Local
+EFC_8740_2946480783=1
+KILO_DISABLE_CHANNEL_DB=true
+KILO_TELEMETRY_LEVEL=all
+JAVA_HOME=C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot
+KILO_SERVER_PASSWORD=47f9c208ad3297764b2d8231d13f754e36fb1c00f63fd8717cd88ef07feada72
+EFC_8740_1592913036=1
+OneDrive=C:\Users\paulo\OneDrive
+VSCODE_ESM_ENTRYPOINT=vs/workbench/api/node/extensionHostProcess
+USERNAME=paulo
+ELECTRON_RUN_AS_NODE=1
+KILO_TREE_SITTER_WASM_DIR=c:\Users\paulo\.vscode\extensions\kilocode.kilo-code-7.4.17-win32-x64\bin\tree-sitter
+EFC_8740_344590478=1
+ProgramFiles=C:\Program Files
+DriverData=C:\Windows\System32\Drivers\DriverData
+ProgramFiles(x86)=C:\Program Files (x86)
+TMPDIR=C:\Users\paulo\AppData\Local\Temp
+VSCODE_CODE_CACHE_PATH=C:\Users\paulo\AppData\Roaming\Code\CachedData\4fe60c8b1cdac1c4c174f2fb180d0d758272d713
+USERDOMAIN=ALAN
+CommonProgramW6432=C:\Program Files\Common Files
+TEMP=C:\Users\paulo\AppData\Local\Temp
+GIT_EXEC_PATH=C:/Program Files/Git/mingw64/libexec/git-core
+KILO_CLIENT=vscode
+ALLUSERSPROFILE=C:\ProgramData
+KILO_PARENT_PID=12420
+GIT_TRACE2_PARENT_SID=516ad395-34c8-4ac6-88a2-1d1e09613fbc
+CommonProgramFiles=C:\Program Files\Common Files
+KILO_RUN_ID=1ffed49c-f408-4970-93ab-eb353400e29a
+PROCESSOR_ARCHITECTURE=AMD64
+MSYSTEM=MINGW64
+USERDOMAIN_ROAMINGPROFILE=ALAN
+SystemRoot=C:\WINDOWS
+TERM=xterm-256color
+HOME=C:\Users\paulo
+
+
+------------
+Diagnostic: File system
+Skipped: False
+Success: True
+Exception: None
+Log:
+Temporary directory is 'C:\Users\paulo\AppData\Local\Temp\'...
+Checking basic file I/O...
+Writing to temporary file 'C:\Users\paulo\AppData\Local\Temp\74f543bd8a84eed787eb6851'... OK
+Reading from temporary file 'C:\Users\paulo\AppData\Local\Temp\74f543bd8a84eed787eb6851'... OK
+Deleting temporary file 'C:\Users\paulo\AppData\Local\Temp\74f543bd8a84eed787eb6851'... OK
+Testing IFileSystem instance...
+UserHomePath: C:\Users\paulo
+UserDataDirectoryPath: C:\Users\paulo\.gcm
+GetCurrentDirectory(): C:\Users\paulo\Desktop\policia civil\cerco
+
+------------
+Diagnostic: Networking
+Skipped: False
+Success: True
+Exception: None
+Log:
+Checking networking and HTTP stack...
+Creating HTTP client... OK
+IsNetworkAvailable: True
+Sending HEAD request to http://example.com...Sending HEAD request to https://example.com... OK
+ OK
+Acquiring free TCP port... OK
+Testing local HTTP loopback connections...
+Creating new HTTP listener for http://localhost:55272/... OK
+Waiting for loopback connection... OK
+Writing response... OK
+Waiting for response data... OK
+Loopback connection data OK
+
+------------
+Diagnostic: Git
+Skipped: False
+Success: True
+Exception: None
+Log:
+Getting Git version... OK
+Git version is '2.53.0.windows.2'
+Locating current repository...Git repository at 'C:/Users/paulo/Desktop/policia civil/cerco/.git'
+ OK
+Listing all Git configuration... OK
+Git configuration:
+file:C:/Program Files/Git/etc/gitconfig	diff.astextplain.textconv=astextplain
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.clean=git-lfs clean -- %f
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.smudge=git-lfs smudge -- %f
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.process=git-lfs filter-process
+file:C:/Program Files/Git/etc/gitconfig	filter.lfs.required=true
+file:C:/Program Files/Git/etc/gitconfig	http.sslbackend=schannel
+file:C:/Program Files/Git/etc/gitconfig	core.autocrlf=true
+file:C:/Program Files/Git/etc/gitconfig	core.fscache=true
+file:C:/Program Files/Git/etc/gitconfig	core.symlinks=false
+file:C:/Program Files/Git/etc/gitconfig	pull.rebase=false
+file:C:/Program Files/Git/etc/gitconfig	credential.helper=manager
+file:C:/Program Files/Git/etc/gitconfig	credential.https://dev.azure.com.usehttppath=true
+file:C:/Program Files/Git/etc/gitconfig	init.defaultbranch=master
+file:C:/Users/paulo/.gitconfig	safe.directory=*
+file:C:/Users/paulo/.gitconfig	user.email=openhands@all-hands.dev
+file:C:/Users/paulo/.gitconfig	user.name=openhands
+file:C:/Users/paulo/.gitconfig	filter.lfs.clean=git-lfs clean -- %f
+file:C:/Users/paulo/.gitconfig	filter.lfs.smudge=git-lfs smudge -- %f
+file:C:/Users/paulo/.gitconfig	filter.lfs.process=git-lfs filter-process
+file:C:/Users/paulo/.gitconfig	filter.lfs.required=true
+file:C:/Users/paulo/.gitconfig	credential.helper=store
+file:.git/config	core.repositoryformatversion=0
+file:.git/config	core.filemode=false
+file:.git/config	core.bare=false
+file:.git/config	core.logallrefupdates=true
+file:.git/config	core.symlinks=false
+file:.git/config	core.ignorecase=true
+file:.git/config	remote.origin.url=https://github.com/lgodoyplay/cerco.git
+file:.git/config	remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+file:.git/config	branch.master.remote=origin
+file:.git/config	branch.master.merge=refs/heads/master
+file:.git/config	branch.master.vscode-merge-base=origin/master
+
+
+------------
+Diagnostic: Credential storage
+Skipped: False
+Success: True
+Exception: None
+Log:
+ICredentialStore instance is of type: CredentialStore
+Writing test credential... OK
+Reading test credential... OK
+Deleting test credential... OK
+
+------------
+Diagnostic: Microsoft authentication (AAD/MSA)
+Skipped: False
+Success: True
+Exception: None
+Log:
+Broker is not enabled.
+Flow type is: Auto
+Gathering MSAL token cache data... OK
+CacheDirectory: C:\Users\paulo\AppData\Local\.IdentityService
+CacheFileName: msal.cache
+CacheFilePath: C:\Users\paulo\AppData\Local\.IdentityService\msal.cache
+Creating cache helper... OK
+Verifying MSAL token cache persistence... OK
+
+------------
+Diagnostic: GitHub API
+Skipped: False
+Success: True
+Exception: None
+Log:
+Using 'https://github.com/' as API target.
+Querying '/meta' endpoint... OK
+
