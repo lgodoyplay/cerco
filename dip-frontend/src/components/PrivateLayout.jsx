@@ -77,6 +77,7 @@ const PrivateLayout = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [notifications, setNotifications] = useState([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState({});
   const userMenuRef = useRef(null);
   const notifRef = useRef(null);
 
@@ -270,6 +271,10 @@ const PrivateLayout = () => {
     items: filterItems(category.items)
   })).filter(category => category.items.length > 0);
 
+  const toggleCategory = (index) => {
+    setExpandedCategories(prev => ({ ...prev, [index]: !prev[index] }));
+  };
+
   const isActive = (path) => {
     if (path === '/dashboard') {
       return location.pathname === '/dashboard';
@@ -362,23 +367,41 @@ const PrivateLayout = () => {
           </Link>
         </div>
 
-        <nav className="flex-1 px-3 py-2 space-y-4 overflow-y-auto custom-scrollbar">
-          {filteredNavCategories.map((category, categoryIndex) => (
-            <div key={categoryIndex}>
-              <div className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">{category.label}</div>
-              {category.items.map((item) => (
-                <SidebarItem 
-                  key={item.to}
-                  to={item.to}
-                  icon={item.icon}
-                  label={item.label}
-                  active={isActive(item.to)}
-                  prefetchKey={item.prefetchKey}
-                  onClick={() => setIsSidebarOpen(false)}
-                />
-              ))}
-            </div>
-          ))}
+        <nav className="flex-1 px-3 py-2 space-y-2 overflow-y-auto custom-scrollbar">
+          {filteredNavCategories.map((category, categoryIndex) => {
+            const hasActiveItem = category.items.some((item) => isActive(item.to));
+            const isExpanded = expandedCategories[categoryIndex] ?? (hasActiveItem || categoryIndex < 2);
+
+            return (
+              <div key={`${category.label}-${categoryIndex}`} className="rounded-lg border border-slate-800/60 bg-slate-900/40">
+                <button
+                  type="button"
+                  onClick={() => toggleCategory(categoryIndex)}
+                  className="w-full flex items-center justify-between px-3 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider hover:text-slate-300 transition-colors"
+                  aria-expanded={isExpanded}
+                >
+                  <span>{category.label}</span>
+                  <ChevronDown size={14} className={clsx("transition-transform duration-200", isExpanded ? 'rotate-180' : '')} />
+                </button>
+
+                <div className={clsx("overflow-hidden transition-all duration-300 ease-out", isExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0')}>
+                  <div className="px-2 pb-2 space-y-1">
+                    {category.items.map((item) => (
+                      <SidebarItem 
+                        key={item.to}
+                        to={item.to}
+                        icon={item.icon}
+                        label={item.label}
+                        active={isActive(item.to)}
+                        prefetchKey={item.prefetchKey}
+                        onClick={() => setIsSidebarOpen(false)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </nav>
 
         <div className="p-4 border-t border-slate-800 bg-slate-900/50">
