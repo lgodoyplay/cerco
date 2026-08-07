@@ -15,6 +15,7 @@ export const routeLoaders = {
   CursoPM: () => import('../pages/private/CursoPM'),
   ProfilePage: () => import('../pages/private/ProfilePage'),
   RegisterArrest: () => import('../pages/private/RegisterArrest'),
+  ArrestWorkspace: () => import('../pages/private/ArrestWorkspace'),
   RegisterBO: () => import('../pages/private/RegisterBO'),
   RegisterWanted: () => import('../pages/private/RegisterWanted'),
   WantedList: () => import('../pages/private/WantedList'),

@@ -26,6 +26,7 @@ const CursoDPF = React.lazy(() => lazyImport(routeLoaders.CursoDPF));
 const CursoPM = React.lazy(() => lazyImport(routeLoaders.CursoPM));
 const ProfilePage = React.lazy(() => lazyImport(routeLoaders.ProfilePage));
 const RegisterArrest = React.lazy(() => lazyImport(routeLoaders.RegisterArrest));
+const ArrestWorkspace = React.lazy(() => lazyImport(routeLoaders.ArrestWorkspace));
 const RegisterBO = React.lazy(() => lazyImport(routeLoaders.RegisterBO));
 const RegisterWanted = React.lazy(() => lazyImport(routeLoaders.RegisterWanted));
 const WantedList = React.lazy(() => lazyImport(routeLoaders.WantedList));
@@ -159,7 +160,7 @@ function App() {
             
             <Route path="arrest" element={
               <PermissionGuard permission="arrest_manage">
-                <RegisterArrest />
+                <ArrestWorkspace />
               </PermissionGuard>
             } />
             
@@ -168,7 +169,7 @@ function App() {
 
             <Route path="arrests" element={
               <PermissionGuard permission="arrest_view">
-                <ArrestList />
+                <ArrestWorkspace />
               </PermissionGuard>
             } />
             <Route path="arrests/:id" element={

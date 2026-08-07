@@ -8,7 +8,7 @@ import { supabase } from '../../lib/supabase';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
 
-const RegisterArrest = () => {
+const RegisterArrest = ({ embedded = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { discordConfig, crimes = [], logAction } = useSettingsContext(); // Ensure crimes is always an array
@@ -357,18 +357,18 @@ const RegisterArrest = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto pb-10">
-      
-      {/* Header */}
-      <div className="mb-8 flex items-end justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-            <Shield className="text-federal-500" size={32} />
-            Registrar Prisão
-          </h2>
-          <p className="text-slate-400 mt-2">Preencha o formulário e anexe as provas necessárias para o fichamento.</p>
+    <div className={embedded ? "w-full" : "max-w-6xl mx-auto pb-10"}>
+      {!embedded && (
+        <div className="mb-8 flex items-end justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+              <Shield className="text-federal-500" size={32} />
+              Registrar Prisão
+            </h2>
+            <p className="text-slate-400 mt-2">Preencha o formulário e anexe as provas necessárias para o fichamento.</p>
+          </div>
         </div>
-      </div>
+      )}
 
       <NotificationBanner
         notification={notification}

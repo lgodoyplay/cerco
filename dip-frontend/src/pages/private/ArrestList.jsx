@@ -12,7 +12,7 @@ import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
 import { buildArrestRecord } from '../../utils/arrestWantedMedia';
 
-const ArrestList = () => {
+const ArrestList = ({ embedded = false }) => {
   const { user } = useAuth();
   const { templates } = useSettings();
   const { can } = usePermissions();
@@ -155,29 +155,31 @@ const ArrestList = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className={embedded ? "space-y-4" : "space-y-6"}>
       <NotificationBanner
         notification={notification}
         onClose={() => setNotification(null)}
       />
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Shield className="text-federal-500" size={28} />
-            Registro de Prisões
-          </h2>
-          <p className="text-slate-400 mt-1">Consulta geral de todas as prisões e detenções registradas.</p>
+      {!embedded && (
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Shield className="text-federal-500" size={28} />
+              Registro de Prisões
+            </h2>
+            <p className="text-slate-400 mt-1">Consulta geral de todas as prisões e detenções registradas.</p>
+          </div>
+          {canManage && (
+            <button 
+              onClick={() => navigate('/dashboard/arrest')}
+              className="px-4 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg shadow-lg shadow-federal-900/20 transition-all flex items-center gap-2"
+            >
+              <Plus size={18} /> Nova Prisão
+            </button>
+          )}
         </div>
-        {canManage && (
-          <button 
-            onClick={() => navigate('/dashboard/arrest')}
-            className="px-4 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg shadow-lg shadow-federal-900/20 transition-all flex items-center gap-2"
-          >
-            <Plus size={18} /> Nova Prisão
-          </button>
-        )}
-      </div>
+      )}
 
       {/* Filters */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row gap-4">

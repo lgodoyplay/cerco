@@ -77,7 +77,7 @@ const PrivateLayout = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [notifications, setNotifications] = useState([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
-  const [expandedCategories, setExpandedCategories] = useState({});
+  const [expandedCategoryIndex, setExpandedCategoryIndex] = useState(null);
   const userMenuRef = useRef(null);
   const notifRef = useRef(null);
 
@@ -205,8 +205,7 @@ const PrivateLayout = () => {
     { 
       label: 'Trabalho',
       items: [
-        { to: '/dashboard/arrest', icon: UserX, label: 'Registrar Prisão', prefetchKey: 'RegisterArrest', permission: 'arrest_manage' },
-        { to: '/dashboard/arrests', icon: Shield, label: 'Registro de Prisões', prefetchKey: 'ArrestList', permission: 'arrest_view' },
+        { to: '/dashboard/arrests', icon: Shield, label: 'Prisão', prefetchKey: 'ArrestWorkspace', permission: 'arrest_view' },
         { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados', prefetchKey: 'RegisterWanted', permission: 'wanted_manage' },
         { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados', prefetchKey: 'WantedList', permission: 'wanted_view' },
         { to: '/dashboard/bo', icon: FileText, label: 'Registrar B.O.', prefetchKey: 'RegisterBO', permission: 'bo_manage' },
@@ -272,7 +271,7 @@ const PrivateLayout = () => {
   })).filter(category => category.items.length > 0);
 
   const toggleCategory = (index) => {
-    setExpandedCategories(prev => ({ ...prev, [index]: !prev[index] }));
+    setExpandedCategoryIndex(prev => (prev === index ? null : index));
   };
 
   const isActive = (path) => {
@@ -369,8 +368,7 @@ const PrivateLayout = () => {
 
         <nav className="flex-1 px-3 py-2 space-y-2 overflow-y-auto custom-scrollbar">
           {filteredNavCategories.map((category, categoryIndex) => {
-            const hasActiveItem = category.items.some((item) => isActive(item.to));
-            const isExpanded = expandedCategories[categoryIndex] ?? (hasActiveItem || categoryIndex < 2);
+            const isExpanded = expandedCategoryIndex === categoryIndex;
 
             return (
               <div key={`${category.label}-${categoryIndex}`} className="rounded-lg border border-slate-800/60 bg-slate-900/40">
