@@ -4,5 +4,8 @@ dist
 .env.*
 uploads
 *.js
-!src/**/*.js
+!dip-frontend/src/**/*.js
+!dip-frontend/src/**/*.jsx
+!dip-frontend/src/**/*.ts
+!dip-frontend/src/**/*.tsx
 prisma/migrations
