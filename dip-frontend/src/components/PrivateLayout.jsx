@@ -44,7 +44,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
-import { dedupeNotifications, getVisibleNotifications } from '../utils/notifications';
+import { dedupeNotifications, getVisibleNotifications } from '../utils/notifications.js';
 
 const SidebarItem = ({ to, icon: Icon, label, active, onClick, prefetchKey }) => (
   <Link
