@@ -44,7 +44,8 @@ export const chatService = {
         return [];
       }
 
-      return (data || []).map((message) => normalizeMessage(message, currentUser));
+      const safeData = Array.isArray(data) ? data : [];
+      return safeData.map((message) => normalizeMessage(message, currentUser));
     } catch (error) {
       console.warn('Chat: exceção ao buscar mensagens', error);
       return [];

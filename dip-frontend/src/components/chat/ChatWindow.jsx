@@ -98,7 +98,7 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
     }
   };
 
-  const messageList = useMemo(() => messages, [messages]);
+  const messageList = useMemo(() => (Array.isArray(messages) ? messages : []), [messages]);
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/95 shadow-2xl shadow-black/30">
