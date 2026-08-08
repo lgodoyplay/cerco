@@ -28,6 +28,8 @@ CREATE TABLE logistics_custody (
   case_reference TEXT,
   location TEXT,
   status TEXT DEFAULT 'in_custody',
+  related_investigation_id UUID,
+  related_investigation_title TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
+import { useInvestigations } from '../../../hooks/useInvestigations';
 import { 
   Box, 
   Archive, 
@@ -25,6 +26,7 @@ const CATEGORIES = [
 
 const CustodyPanel = () => {
   const { user } = useAuth();
+  const { investigations, addProof } = useInvestigations();
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([]);
   const [formData, setFormData] = useState({
@@ -35,7 +37,18 @@ const CustodyPanel = () => {
     location: ''
   });
   const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedInvestigationId, setSelectedInvestigationId] = useState('');
+  const [selectedProofFile, setSelectedProofFile] = useState(null);
+
+  const openInvestigations = (investigations || []).filter((inv) => {
+    const status = String(inv?.status || '').trim().toLowerCase();
+    return status !== 'finalizada' && status !== 'arquivada' && status !== 'encerrada';
+  });
+
+  const selectedInvestigation = openInvestigations.find((inv) => inv.id === selectedInvestigationId);
+  const selectedInvestigationLabel = selectedInvestigation?.title || selectedInvestigation?.titulo || '';
 
   useEffect(() => {
     fetchItems();
@@ -69,6 +82,19 @@ const CustodyPanel = () => {
     e.preventDefault();
     setLoading(true);
     setSuccessMsg('');
+    setErrorMsg('');
+
+    if (formData.category === 'evidence' && !selectedInvestigationId) {
+      setErrorMsg('Selecione uma investigação aberta para vincular a prova.');
+      setLoading(false);
+      return;
+    }
+
+    if (formData.category === 'evidence' && selectedInvestigationId && !selectedProofFile) {
+      setErrorMsg('Selecione um arquivo para enviar a prova para a investigação aberta.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -80,10 +106,28 @@ const CustodyPanel = () => {
           category: formData.category,
           case_reference: formData.case_reference,
           location: formData.location,
-          status: 'in_custody'
+          status: 'in_custody',
+          related_investigation_id: formData.category === 'evidence' ? selectedInvestigationId || null : null,
+          related_investigation_title: formData.category === 'evidence' ? selectedInvestigationLabel || null : null
         }]);
 
       if (error) throw error;
+
+      if (formData.category === 'evidence' && selectedInvestigationId && selectedProofFile) {
+        const proofType = selectedProofFile.type?.startsWith('image/')
+          ? 'image'
+          : selectedProofFile.type?.startsWith('video/')
+            ? 'video'
+            : 'file';
+
+        await addProof(selectedInvestigationId, {
+          file: selectedProofFile,
+          type: proofType,
+          title: formData.item_description,
+          description: `Custódia • ${formData.case_reference || 'Sem referência'} • ${formData.location || 'Sem local'}`,
+          authorId: user.id
+        });
+      }
 
       setSuccessMsg('Item depositado em custódia com sucesso!');
       setFormData({
@@ -93,9 +137,12 @@ const CustodyPanel = () => {
         case_reference: '',
         location: ''
       });
+      setSelectedInvestigationId('');
+      setSelectedProofFile(null);
       fetchItems();
     } catch (error) {
       console.error('Erro ao depositar item:', error);
+      setErrorMsg('Não foi possível concluir o depósito. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -130,7 +177,14 @@ const CustodyPanel = () => {
               <label className="block text-sm font-medium text-slate-400 mb-1">Categoria</label>
               <select
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                onChange={(e) => {
+                  const nextCategory = e.target.value;
+                  setFormData({ ...formData, category: nextCategory });
+                  if (nextCategory !== 'evidence') {
+                    setSelectedInvestigationId('');
+                    setSelectedProofFile(null);
+                  }
+                }}
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500"
               >
                 {CATEGORIES.map(cat => (
@@ -150,6 +204,39 @@ const CustodyPanel = () => {
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500"
               />
             </div>
+
+            {formData.category === 'evidence' && (
+              <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950/70 p-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-1">Investigações abertas</label>
+                  <select
+                    value={selectedInvestigationId}
+                    onChange={(e) => setSelectedInvestigationId(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500"
+                  >
+                    <option value="">Selecione uma investigação</option>
+                    {openInvestigations.map((investigation) => (
+                      <option key={investigation.id} value={investigation.id}>
+                        {investigation.title || investigation.titulo || investigation.id}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Ao selecionar uma investigação, a prova anexada será encaminhada para a pasta correspondente.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-1">Arquivo da prova</label>
+                  <input
+                    type="file"
+                    onChange={(e) => setSelectedProofFile(e.target.files?.[0] || null)}
+                    required={formData.category === 'evidence'}
+                    className="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-300 file:mr-3 file:rounded file:border-0 file:bg-yellow-600 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-black"
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -193,6 +280,13 @@ const CustodyPanel = () => {
               <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-2 text-emerald-400 text-sm">
                 <CheckCircle size={16} />
                 {successMsg}
+              </div>
+            )}
+
+            {errorMsg && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-400 text-sm">
+                <AlertTriangle size={16} />
+                {errorMsg}
               </div>
             )}
 
@@ -256,6 +350,12 @@ const CustodyPanel = () => {
                           <span className="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
                           {CATEGORIES.find(c => c.id === item.category)?.label} • Qtd: {item.quantity}
                         </div>
+                        {(item.related_investigation_title || item.related_investigation_id) && (
+                          <div className="mt-1 inline-flex items-center gap-1 rounded-full border border-yellow-500/20 bg-yellow-500/10 px-2 py-0.5 text-[11px] text-yellow-300">
+                            <FileText size={12} />
+                            {item.related_investigation_title || 'Investigação vinculada'}
+                          </div>
+                        )}
                       </td>
                       <td className="py-3 text-slate-400 font-mono text-xs">
                         {item.case_reference || '-'}

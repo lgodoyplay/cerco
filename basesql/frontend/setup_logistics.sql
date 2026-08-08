@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS logistics_custody (
   case_reference TEXT, -- Número do BO ou Inquérito
   location TEXT, -- Onde está guardado (ex: Prateleira A1)
   status TEXT DEFAULT 'in_custody', -- 'in_custody', 'released', 'destroyed'
+  related_investigation_id UUID,
+  related_investigation_title TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
