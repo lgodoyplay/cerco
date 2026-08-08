@@ -95,6 +95,8 @@ const PrivateLayout = () => {
   const [notifications, setNotifications] = useState([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [expandedCategoryIndex, setExpandedCategoryIndex] = useState(null);
+  const [isDiscordPanelOpen, setIsDiscordPanelOpen] = useState(false);
+  const [discordPanelError, setDiscordPanelError] = useState(false);
   const userMenuRef = useRef(null);
   const notifRef = useRef(null);
 
@@ -192,37 +194,9 @@ const PrivateLayout = () => {
       event.preventDefault();
     }
 
-    if (typeof window === 'undefined') return;
-
-    const discordAppUrl = 'discord://';
-    const discordWebUrl = 'https://discord.com/channels/@me';
-
     setIsSidebarOpen(false);
-
-    const popup = window.open(discordWebUrl, '_blank', 'noopener,noreferrer');
-
-    if (!popup) {
-      window.location.assign(discordWebUrl);
-      return;
-    }
-
-    try {
-      const protocolLink = document.createElement('a');
-      protocolLink.href = discordAppUrl;
-      protocolLink.rel = 'noopener noreferrer';
-      protocolLink.style.display = 'none';
-      document.body.appendChild(protocolLink);
-      protocolLink.click();
-      document.body.removeChild(protocolLink);
-    } catch (error) {
-      console.warn('Não foi possível disparar o protocolo discord://', error);
-    }
-
-    window.setTimeout(() => {
-      if (popup && !popup.closed) {
-        popup.location.href = discordWebUrl;
-      }
-    }, 700);
+    setDiscordPanelError(false);
+    setIsDiscordPanelOpen(true);
   };
 
   const persistReadState = (ids = []) => {
@@ -471,6 +445,53 @@ const PrivateLayout = () => {
           </button>
         </div>
       </aside>
+
+      {isDiscordPanelOpen && (
+        <div
+          className="fixed inset-0 z-[70] bg-slate-950/70 backdrop-blur-sm"
+          onClick={() => setIsDiscordPanelOpen(false)}
+        >
+          <div
+            className="absolute inset-y-0 left-0 md:left-64 w-full md:w-[min(92vw,760px)] max-w-[760px] bg-slate-950 border-r border-slate-800 shadow-2xl shadow-black/70 flex flex-col"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/80">
+              <div>
+                <h3 className="text-sm font-semibold text-white">Discord</h3>
+                <p className="text-xs text-slate-400">Abrindo dentro da dashboard</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDiscordPanelOpen(false)}
+                className="flex items-center gap-2 rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white"
+              >
+                <X size={16} />
+                Fechar
+              </button>
+            </div>
+
+            <div className="flex-1 min-h-0 bg-slate-900">
+              {discordPanelError ? (
+                <div className="flex h-full items-center justify-center p-8 text-center text-slate-300">
+                  <div className="max-w-md rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
+                    <p className="text-lg font-semibold text-white">Não foi possível carregar o Discord no painel.</p>
+                    <p className="mt-2 text-sm text-slate-400">
+                      O navegador pode estar bloqueando o conteúdo incorporado. Você ainda pode usar o Discord normalmente dentro da sua sessão.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <iframe
+                  src="https://discord.com/channels/@me"
+                  title="Discord"
+                  className="h-full w-full min-h-[70vh] border-0"
+                  onError={() => setDiscordPanelError(true)}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="flex-1 flex flex-col min-w-0 bg-slate-950 relative">
         <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none" />
