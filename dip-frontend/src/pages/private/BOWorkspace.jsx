@@ -13,9 +13,9 @@ const BOWorkspace = () => {
   const canView = can('bo_view');
 
   const initialTab = useMemo(() => {
-    if (location.search.includes('tab=list')) return 'list';
+    if (location.search.includes('tab=list') || location.pathname.includes('/bo-list')) return 'list';
     return 'register';
-  }, [location.search]);
+  }, [location.pathname, location.search]);
 
   const [activeTab, setActiveTab] = useState(initialTab);
 
