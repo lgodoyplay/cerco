@@ -206,10 +206,10 @@ const PrivateLayout = () => {
       label: 'Trabalho',
       items: [
         { to: '/dashboard/arrests', icon: Shield, label: 'Prisão', prefetchKey: 'ArrestWorkspace', permission: 'arrest_view' },
-        { to: '/dashboard/register-wanted', icon: Siren, label: 'Registrar Procurados', prefetchKey: 'RegisterWanted', permission: 'wanted_manage' },
-        { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Registro de Procurados', prefetchKey: 'WantedList', permission: 'wanted_view' },
-        { to: '/dashboard/bo', icon: FileText, label: 'Registrar B.O.', prefetchKey: 'RegisterBO', permission: 'bo_manage' },
-        { to: '/dashboard/bo-list', icon: FileText, label: 'Consultar B.O.s', prefetchKey: 'BOList', permission: 'bo_view' },
+        { to: '/dashboard/register-wanted', icon: Siren, label: 'Procurados', prefetchKey: 'WantedWorkspace', permission: 'wanted_manage' },
+        { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Procurados', prefetchKey: 'WantedWorkspace', permission: 'wanted_view' },
+        { to: '/dashboard/bo', icon: FileText, label: 'Boletins', prefetchKey: 'BOWorkspace', permission: 'bo_manage' },
+        { to: '/dashboard/bo-list', icon: FileText, label: 'Boletins', prefetchKey: 'BOWorkspace', permission: 'bo_view' },
         { to: '/dashboard/protective-measures', icon: ShieldAlert, label: 'Medida Protetiva', prefetchKey: 'ProtectiveMeasuresManager', permission: 'protective_measures_view' },
         { to: '/dashboard/reports', icon: AlertTriangle, label: 'Denúncias', prefetchKey: 'ReportList', permission: 'reports_view' },
       ]

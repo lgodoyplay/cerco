@@ -28,7 +28,9 @@ const ProfilePage = React.lazy(() => lazyImport(routeLoaders.ProfilePage));
 const RegisterArrest = React.lazy(() => lazyImport(routeLoaders.RegisterArrest));
 const ArrestWorkspace = React.lazy(() => lazyImport(routeLoaders.ArrestWorkspace));
 const RegisterBO = React.lazy(() => lazyImport(routeLoaders.RegisterBO));
+const BOWorkspace = React.lazy(() => lazyImport(routeLoaders.BOWorkspace));
 const RegisterWanted = React.lazy(() => lazyImport(routeLoaders.RegisterWanted));
+const WantedWorkspace = React.lazy(() => lazyImport(routeLoaders.WantedWorkspace));
 const WantedList = React.lazy(() => lazyImport(routeLoaders.WantedList));
 const WantedDetail = React.lazy(() => lazyImport(routeLoaders.WantedDetail));
 const ArrestList = React.lazy(() => lazyImport(routeLoaders.ArrestList));
@@ -180,7 +182,7 @@ function App() {
             
             <Route path="bo" element={
               <PermissionGuard permission="bo_manage">
-                <RegisterBO />
+                <BOWorkspace />
               </PermissionGuard>
             } />
             <Route path="bo/:id/edit" element={
@@ -191,7 +193,7 @@ function App() {
             
             <Route path="bo-list" element={
               <PermissionGuard permission="bo_view">
-                <BOList />
+                <BOWorkspace />
               </PermissionGuard>
             } />
             <Route path="bo-list/:id" element={
@@ -237,13 +239,13 @@ function App() {
             
             <Route path="register-wanted" element={
                <PermissionGuard permission="wanted_manage">
-                 <RegisterWanted />
+                 <WantedWorkspace />
                </PermissionGuard>
             } />
 
             <Route path="wanted" element={
               <PermissionGuard permission="wanted_view">
-                <WantedList />
+                <WantedWorkspace />
               </PermissionGuard>
             } />
             <Route path="wanted/:id" element={
