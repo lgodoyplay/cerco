@@ -48,11 +48,26 @@ import { dedupeNotifications, getVisibleNotifications } from '../utils/notificat
 import FloatingChat from './chat/FloatingChat';
 
 const SidebarItem = ({ to, icon: Icon, label, active, onClick, prefetchKey }) => (
-  <Link
-    to={to}
-    onClick={onClick}
-    onMouseEnter={() => prefetchKey && prefetchRoute(prefetchKey)}
-    className={clsx(
+  to === '#' ? (
+    <button
+      type="button"
+      onClick={onClick}
+      className={clsx(
+        "flex w-full items-center gap-3 px-4 py-3 text-sm font-medium transition-all rounded-lg group relative overflow-hidden text-left",
+        active
+          ? "bg-federal-600 text-white shadow-lg shadow-federal-900/50"
+          : "text-slate-400 hover:bg-slate-800 hover:text-white"
+      )}
+    >
+      <Icon size={20} className={clsx("transition-colors", active ? "text-white" : "text-slate-500 group-hover:text-white")} />
+      <span className="relative z-10">{label}</span>
+    </button>
+  ) : (
+    <Link
+      to={to}
+      onClick={onClick}
+      onMouseEnter={() => prefetchKey && prefetchRoute(prefetchKey)}
+      className={clsx(
       "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all rounded-lg group relative overflow-hidden",
       active
         ? "bg-federal-600 text-white shadow-lg shadow-federal-900/50"
@@ -64,7 +79,8 @@ const SidebarItem = ({ to, icon: Icon, label, active, onClick, prefetchKey }) =>
     )}
     <Icon size={20} className={clsx("transition-colors", active ? "text-white" : "text-slate-500 group-hover:text-white")} />
     <span className="relative z-10">{label}</span>
-  </Link>
+    </Link>
+  )
 );
 
 const PrivateLayout = () => {
@@ -171,6 +187,25 @@ const PrivateLayout = () => {
 
   const unreadNotifications = notifications.filter(n => !n.read).length;
 
+  const openDiscordWorkspace = (event) => {
+    if (event) {
+      event.preventDefault();
+    }
+
+    if (typeof window === 'undefined') return;
+
+    const discordAppUrl = 'discord://';
+    const discordWebUrl = 'https://discord.com/channels/@me';
+
+    window.location.href = discordAppUrl;
+
+    window.setTimeout(() => {
+      window.open(discordWebUrl, '_blank', 'noopener,noreferrer');
+    }, 1200);
+
+    setIsSidebarOpen(false);
+  };
+
   const persistReadState = (ids = []) => {
     if (!user?.id) return;
     const readStorageKey = `cerco:notifications-read:${user.id}`;
@@ -247,7 +282,7 @@ const PrivateLayout = () => {
         { to: '/dashboard/integration', icon: UserCog, label: 'Integração', prefetchKey: 'IntegrationManager', permission: 'integration_view' },
         { to: '/dashboard/pm', icon: Car, label: 'Integração PM', prefetchKey: 'PMIntegration', permission: 'pm_view' },
         { to: '/dashboard/news', icon: Newspaper, label: 'Notícias', permission: 'news_manage' },
-        { to: '/dashboard/communication', icon: Radio, label: 'Comunicação', prefetchKey: 'CommunicationHub', permission: 'communication_view' },
+        { to: '#', icon: Radio, label: 'Discord App', onClick: openDiscordWorkspace, prefetchKey: 'CommunicationHub', permission: 'communication_view' },
         { to: '/dashboard/logistics', icon: Package, label: 'Logística', prefetchKey: 'LogisticsDashboard', permission: 'logistics_view' },
       ]
     },
