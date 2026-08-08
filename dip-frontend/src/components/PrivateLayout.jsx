@@ -446,7 +446,12 @@ const PrivateLayout = () => {
                         label={item.label}
                         active={isActive(item.to)}
                         prefetchKey={item.prefetchKey}
-                        onClick={() => setIsSidebarOpen(false)}
+                        onClick={(event) => {
+                          setIsSidebarOpen(false);
+                          if (item.onClick) {
+                            item.onClick(event);
+                          }
+                        }}
                       />
                     ))}
                   </div>
