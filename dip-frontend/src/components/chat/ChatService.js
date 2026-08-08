@@ -108,7 +108,7 @@ export const chatService = {
     };
   },
 
-  async subscribeToPresence(currentUser, onPresenceChange) {
+  subscribeToPresence(currentUser, onPresenceChange) {
     if (!currentUser?.id) return () => {};
 
     const channel = supabase.channel(`global-chat-presence-${currentUser.id}`, {

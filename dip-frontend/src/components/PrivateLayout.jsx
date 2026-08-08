@@ -207,8 +207,7 @@ const PrivateLayout = () => {
       label: 'Trabalho',
       items: [
         { to: '/dashboard/arrests', icon: Shield, label: 'Prisão', prefetchKey: 'ArrestWorkspace', permission: 'arrest_view' },
-        { to: '/dashboard/register-wanted', icon: Siren, label: 'Procurados', prefetchKey: 'WantedWorkspace', permission: 'wanted_manage' },
-        { to: '/dashboard/wanted', icon: ShieldAlert, label: 'Procurados', prefetchKey: 'WantedWorkspace', permission: 'wanted_view' },
+        { to: '/dashboard/wanted', icon: Siren, label: 'Procurados', prefetchKey: 'WantedWorkspace', permission: 'wanted_view' },
         { to: '/dashboard/bo', icon: FileText, label: 'Boletins', prefetchKey: 'BOWorkspace', permission: 'bo_view' },
         { to: '/dashboard/protective-measures', icon: ShieldAlert, label: 'Medida Protetiva', prefetchKey: 'ProtectiveMeasuresManager', permission: 'protective_measures_view' },
         { to: '/dashboard/reports', icon: AlertTriangle, label: 'Denúncias', prefetchKey: 'ReportList', permission: 'reports_view' },

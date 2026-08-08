@@ -62,8 +62,12 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
     });
 
     return () => {
-      unsubscribeMessages();
-      unsubscribePresence();
+      if (typeof unsubscribeMessages === 'function') {
+        unsubscribeMessages();
+      }
+      if (typeof unsubscribePresence === 'function') {
+        unsubscribePresence();
+      }
     };
   }, [user?.id]);
 
