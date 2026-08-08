@@ -8,7 +8,9 @@ const ChatInput = ({ onSend, disabled = false }) => {
     e.preventDefault();
     const trimmed = value.trim();
     if (!trimmed || disabled) return;
-    onSend(trimmed);
+    if (typeof onSend === 'function') {
+      onSend(trimmed);
+    }
     setValue('');
   };
 

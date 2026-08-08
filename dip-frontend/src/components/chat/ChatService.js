@@ -95,6 +95,7 @@ export const chatService = {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: CHAT_TABLE },
         (payload) => {
+          if (typeof onMessage !== 'function') return;
           const message = normalizeMessage(payload.new, currentUser);
           onMessage(message);
         }
@@ -114,6 +115,7 @@ export const chatService = {
     });
 
     channel.on('presence', { event: 'sync' }, () => {
+      if (typeof onPresenceChange !== 'function') return;
       const state = channel.presenceState();
       const count = Object.keys(state).length;
       onPresenceChange(count);

@@ -13,6 +13,24 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
   const bottomRef = useRef(null);
   const autoScrollRef = useRef(true);
 
+  const notifyUnread = (value) => {
+    if (typeof onUnreadChange === 'function') {
+      onUnreadChange(value);
+    }
+  };
+
+  const handleClose = () => {
+    if (typeof onClose === 'function') {
+      onClose();
+    }
+  };
+
+  const handleToggleMinimized = () => {
+    if (typeof onToggleMinimized === 'function') {
+      onToggleMinimized();
+    }
+  };
+
   useEffect(() => {
     const loadMessages = async () => {
       setLoading(true);
@@ -35,7 +53,7 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
 
       if (!autoScrollRef.current) {
         setHasNewMessages(true);
-        onUnreadChange?.((prev) => prev + 1);
+        notifyUnread((prev) => prev + 1);
       }
     });
 
@@ -67,7 +85,7 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
       });
       autoScrollRef.current = true;
       setHasNewMessages(false);
-      onUnreadChange?.(0);
+      notifyUnread(0);
     }
   };
 
@@ -98,7 +116,7 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
         <div className="flex items-center gap-1">
           <button
             type="button"
-            onClick={onToggleMinimized}
+            onClick={handleToggleMinimized}
             className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
             aria-label="Minimizar chat"
           >
@@ -106,7 +124,7 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
           </button>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
             aria-label="Fechar chat"
           >
