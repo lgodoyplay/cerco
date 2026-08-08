@@ -5,12 +5,17 @@ import RegisterBO from './RegisterBO';
 import BOList from './BOList';
 import { usePermissions } from '../../hooks/usePermissions';
 
-const BOWorkspace = () => {
+const BOWorkspace = ({ variant = 'default' }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = usePermissions();
   const canManage = can('bo_manage');
   const canView = can('bo_view');
+  const isInternal = variant === 'internal';
+  const title = isInternal ? 'Boletim Interno' : 'Boletim de Ocorrência';
+  const description = isInternal
+    ? 'Registre e consulte boletins internos em um módulo independente.'
+    : 'Registre e consulte boletins em um único módulo.';
 
   const initialTab = useMemo(() => {
     if (location.search.includes('tab=list') || location.pathname.includes('/bo-list')) return 'list';
@@ -31,9 +36,9 @@ const BOWorkspace = () => {
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <FileText className="text-emerald-500" size={28} />
-            Boletim de Ocorrência
+            {title}
           </h2>
-          <p className="text-slate-400 mt-1">Registre e consulte boletins em um único módulo.</p>
+          <p className="text-slate-400 mt-1">{description}</p>
         </div>
       </div>
 
@@ -70,11 +75,11 @@ const BOWorkspace = () => {
       </div>
 
       {activeTab === 'register' && canManage ? (
-        <RegisterBO embedded />
+        <RegisterBO embedded variant={variant} />
       ) : null}
 
       {activeTab === 'list' && canView ? (
-        <BOList embedded />
+        <BOList embedded variant={variant} />
       ) : null}
     </div>
   );

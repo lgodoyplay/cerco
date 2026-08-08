@@ -67,12 +67,18 @@ const stripFallbackDescription = (value = '') => {
   return sections.length > 1 ? sections.slice(1).join('\n\n').trim() : text;
 };
 
-const RegisterBO = () => {
+const RegisterBO = ({ variant = 'default', embedded = false }) => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { logAction, discordConfig } = useSettingsContext();
   const { can } = usePermissions();
   const [reformulating, setReformulating] = useState(false);
+  const isInternal = variant === 'internal';
+  const storageTable = isInternal ? 'boletins_internos' : 'boletins';
+  const moduleLabel = isInternal ? 'Boletim Interno' : 'Boletim de Ocorrência';
+  const listPath = isInternal ? '/dashboard/bo-interno-list' : '/dashboard/bo-list';
+  const createPath = isInternal ? '/dashboard/bo-interno' : '/dashboard/bo';
+  const resourceName = isInternal ? 'boletins_internos' : 'boletins';
   const [formErrors, setFormErrors] = useState({});
   const [loadingData, setLoadingData] = useState(Boolean(id));
   const [existingStatus, setExistingStatus] = useState('Registrado');
@@ -166,7 +172,7 @@ const RegisterBO = () => {
       setLoadingData(true);
       try {
         const { data, error } = await supabase
-          .from('boletins')
+          .from(storageTable)
           .select('*')
           .eq('id', id)
           .single();
@@ -190,7 +196,7 @@ const RegisterBO = () => {
           type: 'error',
           message: 'Nao foi possivel carregar o boletim para edicao.'
         });
-        navigate('/dashboard/bo-list');
+        navigate(listPath);
       } finally {
         setLoadingData(false);
       }
@@ -317,7 +323,7 @@ const RegisterBO = () => {
 
       if (id) {
         ({ data, error } = await supabase
-          .from('boletins')
+          .from(storageTable)
           .update({
             ...basePayload,
             comunicantes_json: validComplainants,
@@ -328,7 +334,7 @@ const RegisterBO = () => {
 
         if (error && /comunicantes_json|denunciados_json|column/i.test(error.message || '')) {
           ({ data, error } = await supabase
-            .from('boletins')
+            .from(storageTable)
             .update({
               ...basePayload,
               descricao: buildFallbackDescription(validComplainants, validReportedPeople, formData.description)
@@ -338,7 +344,7 @@ const RegisterBO = () => {
         }
       } else {
         ({ data, error } = await supabase
-          .from('boletins')
+          .from(storageTable)
           .insert([{
             ...basePayload,
             created_by: user?.id,
@@ -349,7 +355,7 @@ const RegisterBO = () => {
 
         if (error && /comunicantes_json|denunciados_json|column/i.test(error.message || '')) {
           ({ data, error } = await supabase
-            .from('boletins')
+            .from(storageTable)
             .insert([{
               ...basePayload,
               created_by: user?.id,
@@ -363,13 +369,13 @@ const RegisterBO = () => {
       const newBO = data[0];
 
       // Log action
-      logAction(id ? 'UPDATE_BO' : 'CREATE_BO', 'boletins', newBO.id, null, newBO);
+      logAction(id ? 'UPDATE_BO' : 'CREATE_BO', resourceName, newBO.id, null, newBO);
 
       // Send Discord Notification
       if (discordConfig?.bulletinsWebhook) {
         try {
           const embed = {
-            title: id ? "📝 Boletim de Ocorrência Atualizado" : "📄 Novo Boletim de Ocorrência",
+            title: id ? `📝 ${moduleLabel} Atualizado` : `📄 Novo ${moduleLabel}`,
             description: formData.description,
             color: 0x9333ea, // Purple
             fields: [
@@ -400,7 +406,7 @@ const RegisterBO = () => {
           state: {
             notification: {
               type: 'success',
-              message: 'Boletim de ocorrência atualizado com sucesso.'
+              message: `${moduleLabel} atualizado com sucesso.`
             }
           }
         });
@@ -429,7 +435,7 @@ const RegisterBO = () => {
       console.error('Erro ao registrar BO:', error);
       setNotification({
         type: 'error',
-        message: 'Erro ao registrar boletim: ' + error.message
+        message: `Erro ao registrar ${moduleLabel.toLowerCase()}: ${error.message}`
       });
     } finally {
       setLoading(false);
@@ -459,10 +465,10 @@ const RegisterBO = () => {
         </button>
         <h2 className="text-3xl font-bold text-white flex items-center gap-3">
           <Shield className="text-federal-500" size={32} />
-          {id ? 'Editar Boletim de Ocorrência' : 'Registrar Boletim de Ocorrência'}
+          {id ? `Editar ${moduleLabel}` : `Registrar ${moduleLabel}`}
         </h2>
         <p className="text-slate-400 mt-2">
-          {id ? 'Atualize os dados do boletim de ocorrência já criado.' : 'Preencha os dados abaixo para registrar uma nova ocorrência no sistema.'}
+          {id ? `Atualize os dados do ${moduleLabel.toLowerCase()} já criado.` : 'Preencha os dados abaixo para registrar uma nova ocorrência no sistema.'}
         </p>
       </div>
 
@@ -479,7 +485,7 @@ const RegisterBO = () => {
           {/* Comunicante */}
           <div className="md:col-span-2">
             <div className="flex items-center justify-between gap-3 mb-3">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Pessoas Fazendo o Boletim</label>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Pessoas Fazendo o Registro</label>
               <button
                 type="button"
                 onClick={() => addPersonField('complainants')}

@@ -185,9 +185,19 @@ function App() {
                 <BOWorkspace />
               </PermissionGuard>
             } />
+            <Route path="bo-interno" element={
+              <PermissionGuard permission="bo_manage">
+                <BOWorkspace variant="internal" />
+              </PermissionGuard>
+            } />
             <Route path="bo/:id/edit" element={
               <PermissionGuard permission="bo_manage">
                 <RegisterBO />
+              </PermissionGuard>
+            } />
+            <Route path="bo-interno/:id/edit" element={
+              <PermissionGuard permission="bo_manage">
+                <RegisterBO variant="internal" />
               </PermissionGuard>
             } />
             
@@ -196,9 +206,19 @@ function App() {
                 <BOWorkspace />
               </PermissionGuard>
             } />
+            <Route path="bo-interno-list" element={
+              <PermissionGuard permission="bo_view">
+                <BOWorkspace variant="internal" />
+              </PermissionGuard>
+            } />
             <Route path="bo-list/:id" element={
               <PermissionGuard permission="bo_view">
                 <BODetail />
+              </PermissionGuard>
+            } />
+            <Route path="bo-interno-list/:id" element={
+              <PermissionGuard permission="bo_view">
+                <BODetail variant="internal" />
               </PermissionGuard>
             } />
 

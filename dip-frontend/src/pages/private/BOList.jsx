@@ -11,12 +11,19 @@ import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
 import { getPeopleList, formatPeopleSummary } from '../../utils/boHelpers';
 
-const BOList = () => {
+const BOList = ({ variant = 'default', embedded = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const { templates, logAction } = useSettingsContext();
   const { can } = usePermissions();
+  const isInternal = variant === 'internal';
+  const storageTable = isInternal ? 'boletins_internos' : 'boletins';
+  const moduleTitle = isInternal ? 'Boletins Internos' : 'Boletins de Ocorrência';
+  const moduleDescription = isInternal ? 'Consulta de boletins internos registrados no sistema.' : 'Consulta de ocorrências registradas no sistema.';
+  const createPath = isInternal ? '/dashboard/bo-interno' : '/dashboard/bo';
+  const detailPath = isInternal ? '/dashboard/bo-interno-list' : '/dashboard/bo-list';
+  const editPath = isInternal ? '/dashboard/bo-interno' : '/dashboard/bo';
   const [boletins, setBoletins] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -54,7 +61,7 @@ const BOList = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('boletins')
+        .from(storageTable)
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -158,7 +165,7 @@ const BOList = () => {
 
     try {
       const { error } = await supabase
-        .from('boletins')
+        .from(storageTable)
         .delete()
         .eq('id', boToDelete.id);
 
@@ -192,14 +199,14 @@ const BOList = () => {
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <FileText className="text-federal-500" size={28} />
-            Boletins de Ocorrência
+            {moduleTitle}
           </h2>
-          <p className="text-slate-400 mt-1">Consulta de ocorrências registradas no sistema.</p>
+          <p className="text-slate-400 mt-1">{moduleDescription}</p>
         </div>
         {canManage && (
           <div className="flex gap-2">
             <button 
-              onClick={() => navigate('/dashboard/bo')}
+              onClick={() => navigate(createPath)}
               className="px-4 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-federal-900/20 flex items-center gap-2"
             >
               <FileText size={18} />
@@ -336,7 +343,7 @@ const BOList = () => {
                   <td className="p-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
-                        onClick={() => navigate(`/dashboard/bo-list/${bo.id}`)}
+                        onClick={() => navigate(`${detailPath}/${bo.id}`)}
                         className="p-2 hover:bg-federal-500/20 text-slate-400 hover:text-federal-400 rounded-lg transition-colors"
                         title="Ver Detalhes"
                       >
@@ -351,7 +358,7 @@ const BOList = () => {
                       </button>
                       {canManage && (
                         <button 
-                          onClick={() => navigate(`/dashboard/bo/${bo.id}/edit`)}
+                          onClick={() => navigate(`${editPath}/${bo.id}/edit`)}
                           className="p-2 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 rounded-lg transition-colors"
                           title="Editar"
                         >

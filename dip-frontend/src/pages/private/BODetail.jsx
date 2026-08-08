@@ -11,12 +11,16 @@ import { generateProfessionalPDF } from '../../utils/pdfGeneratorPro';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
 import { getPeopleList } from '../../utils/boHelpers';
 
-const BODetail = () => {
+const BODetail = ({ variant = 'default' }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { templates } = useSettingsContext();
   const { can } = usePermissions();
+  const isInternal = variant === 'internal';
+  const storageTable = isInternal ? 'boletins_internos' : 'boletins';
+  const backPath = isInternal ? '/dashboard/bo-interno-list' : '/dashboard/bo-list';
+  const editPath = isInternal ? '/dashboard/bo-interno' : '/dashboard/bo';
 
   const [bo, setBo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +34,7 @@ const BODetail = () => {
       setLoading(true);
       try {
         const { data, error } = await supabase
-          .from('boletins')
+          .from(storageTable)
           .select('*')
           .eq('id', id)
           .single();
@@ -95,7 +99,7 @@ const BODetail = () => {
         <div>
           <button
             type="button"
-            onClick={() => navigate('/dashboard/bo-list')}
+            onClick={() => navigate(backPath)}
             className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
           >
             <ArrowLeft size={16} />
@@ -120,7 +124,7 @@ const BODetail = () => {
           {canManage && bo && (
             <button
               type="button"
-              onClick={() => navigate(`/dashboard/bo/${bo.id}/edit`)}
+              onClick={() => navigate(`${editPath}/${bo.id}/edit`)}
               className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-bold transition-colors"
             >
               <Edit3 size={18} />

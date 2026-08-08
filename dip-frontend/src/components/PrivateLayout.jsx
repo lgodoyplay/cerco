@@ -221,6 +221,7 @@ const PrivateLayout = () => {
         { to: '/dashboard/search-seizure', icon: FileCheck, label: 'Busca e Apreensão', prefetchKey: 'SearchSeizureList', permission: 'investigations_view' },
         { to: '/dashboard/forensics', icon: FileSearch, label: 'Perícias', prefetchKey: 'ForensicsList', permission: 'forensics_view' },
         { to: '/dashboard/revenue', icon: DollarSign, label: 'Receita', prefetchKey: 'RevenueList', permission: 'revenue_view' },
+        { to: '/dashboard/bo-interno', icon: FileText, label: 'Boletins Interno', prefetchKey: 'BOWorkspace', permission: 'bo_view' },
       ]
     },
     { 
