@@ -11,6 +11,12 @@ const FloatingChat = () => {
 
   const canUseChat = Boolean(user?.id);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setUnreadCount(0);
+    }
+  }, [isOpen]);
+
   const toggleChat = () => {
     setIsOpen((prev) => !prev);
     setIsMinimized(false);
@@ -28,12 +34,6 @@ const FloatingChat = () => {
   };
 
   if (!canUseChat) return null;
-
-  useEffect(() => {
-    if (!isOpen) {
-      setUnreadCount(0);
-    }
-  }, [isOpen]);
 
   return (
     <div className="fixed bottom-4 right-4 z-[60] flex flex-col items-end gap-2">

@@ -108,6 +108,29 @@ ALTER TABLE public.cursos_policiais ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Cursos policiais access" ON public.cursos_policiais;
 CREATE POLICY "Cursos policiais access" ON public.cursos_policiais FOR ALL TO authenticated USING (true);
 
+-- Tabela Global Chat Messages
+CREATE TABLE IF NOT EXISTS public.global_chat_messages (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    content TEXT NOT NULL,
+    user_name TEXT,
+    user_avatar_url TEXT,
+    user_role TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.global_chat_messages ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Global chat read for authenticated users" ON public.global_chat_messages;
+CREATE POLICY "Global chat read for authenticated users"
+  ON public.global_chat_messages
+  FOR SELECT
+  TO authenticated
+  USING (true);
+DROP POLICY IF EXISTS "Global chat insert for authenticated users" ON public.global_chat_messages;
+CREATE POLICY "Global chat insert for authenticated users"
+  ON public.global_chat_messages
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
 
 -- 3. CORREÇÃO DA FUNÇÃO DE RESET (RPC)
 -- Agora a função é capaz de lidar com erros e garantir a limpeza

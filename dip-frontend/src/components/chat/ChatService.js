@@ -2,6 +2,13 @@ import { supabase } from '../../lib/supabase';
 
 const CHAT_TABLE = 'global_chat_messages';
 
+const isMissingTableError = (error) => {
+  const code = error?.code || '';
+  const message = String(error?.message || '').toLowerCase();
+
+  return code === '42P01' || code === 'PGRST205' || message.includes('does not exist') || message.includes('relation') || message.includes('not found');
+};
+
 const normalizeMessage = (message, currentUser) => {
   const senderId = message?.user_id || message?.userId;
   const senderName = message?.user_name || message?.userName || message?.sender_name || 'Usuário';
@@ -29,6 +36,10 @@ export const chatService = {
         .limit(200);
 
       if (error) {
+        if (isMissingTableError(error)) {
+          console.info('Chat: tabela ainda não existe no banco; aguardando criação.');
+          return [];
+        }
         console.warn('Chat: erro ao buscar mensagens', error);
         return [];
       }
@@ -61,6 +72,10 @@ export const chatService = {
         .single();
 
       if (error) {
+        if (isMissingTableError(error)) {
+          console.info('Chat: tabela ainda não existe no banco; não foi possível enviar a mensagem.');
+          return null;
+        }
         console.warn('Chat: erro ao enviar mensagem', error);
         return null;
       }

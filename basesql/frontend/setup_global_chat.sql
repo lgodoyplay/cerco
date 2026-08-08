@@ -24,3 +24,10 @@ CREATE POLICY "Global chat insert for authenticated users"
   FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+
+DROP POLICY IF EXISTS "Global chat update for authenticated users" ON public.global_chat_messages;
+CREATE POLICY "Global chat update for authenticated users"
+  ON public.global_chat_messages
+  FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id);
