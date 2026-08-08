@@ -197,13 +197,32 @@ const PrivateLayout = () => {
     const discordAppUrl = 'discord://';
     const discordWebUrl = 'https://discord.com/channels/@me';
 
-    window.location.href = discordAppUrl;
+    setIsSidebarOpen(false);
+
+    const popup = window.open(discordWebUrl, '_blank', 'noopener,noreferrer');
+
+    if (!popup) {
+      window.location.assign(discordWebUrl);
+      return;
+    }
+
+    try {
+      const protocolLink = document.createElement('a');
+      protocolLink.href = discordAppUrl;
+      protocolLink.rel = 'noopener noreferrer';
+      protocolLink.style.display = 'none';
+      document.body.appendChild(protocolLink);
+      protocolLink.click();
+      document.body.removeChild(protocolLink);
+    } catch (error) {
+      console.warn('Não foi possível disparar o protocolo discord://', error);
+    }
 
     window.setTimeout(() => {
-      window.open(discordWebUrl, '_blank', 'noopener,noreferrer');
-    }, 1200);
-
-    setIsSidebarOpen(false);
+      if (popup && !popup.closed) {
+        popup.location.href = discordWebUrl;
+      }
+    }, 700);
   };
 
   const persistReadState = (ids = []) => {
