@@ -14,6 +14,9 @@ import investigationRoutes from './routes/investigation.routes';
 import publicRoutes from './routes/public.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import bcrypt from 'bcryptjs';
+import http from 'http';
+import discordRoutes from './routes/discord.routes';
+import { initializeSocketServer } from './websocket/socketServer';
 
 dotenv.config();
 
@@ -25,6 +28,8 @@ if (!JWT_SECRET) {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const httpServer = http.createServer(app);
+initializeSocketServer(httpServer);
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',') || undefined }));
@@ -59,6 +64,7 @@ app.use('/bo', boRoutes);
 app.use('/investigations', investigationRoutes);
 app.use('/public', publicRoutes);
 app.use('/dashboard', dashboardRoutes);
+app.use('/api/discord', discordRoutes);
 
 app.get('/', (req, res) => {
   res.send('API Polícia Federal Backend is running');
@@ -100,7 +106,7 @@ let server: ReturnType<typeof app.listen>;
 
 async function startServer() {
   await seedAdmin();
-  server = app.listen(PORT, () => {
+  server = httpServer.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 }

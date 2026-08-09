@@ -11,7 +11,7 @@ const DiscordVoiceMiniPlayer = ({ channel, isInVoiceChannel, isMuted, isDeafened
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
         <div>
           <p className="font-semibold">🔊 {channel.name}</p>
-          <p className="text-xs text-emerald-100/70">Conectado • estado visual mockado</p>
+          <p className="text-xs text-emerald-100/70">Conectado • estado visual ativo</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={onToggleMute} className="rounded-full border border-emerald-400/40 p-2 transition hover:bg-emerald-400/20">
