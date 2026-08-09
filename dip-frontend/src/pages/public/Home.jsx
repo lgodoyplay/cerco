@@ -28,6 +28,7 @@ import {
 import clsx from 'clsx';
 import { useSettings } from '../../hooks/useSettings';
 import { createBaseWebhookEmbed, postWebhookEmbed } from '../../utils/discordWebhook';
+import { getPwaInstallState, promptPwaInstall } from '../../utils/pwaInstall';
 
 const getEmbedUrl = (url) => {
   let match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
@@ -108,9 +109,9 @@ const Home = () => {
     discordName: '',
     details: ''
   });
-  const [installPromptEvent, setInstallPromptEvent] = useState(null);
-  const [canInstallApp, setCanInstallApp] = useState(false);
-  const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+  const initialPwaState = getPwaInstallState();
+  const [canInstallApp, setCanInstallApp] = useState(initialPwaState.canInstall);
+  const [isPwaInstalled, setIsPwaInstalled] = useState(initialPwaState.isInstalled);
   const [installStatus, setInstallStatus] = useState('idle');
 
   const images = [
@@ -145,31 +146,21 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    if (isStandalone) {
-      setIsPwaInstalled(true);
-      setCanInstallApp(false);
-    }
+    const syncPwaState = () => {
+      const state = getPwaInstallState();
+      setCanInstallApp(state.canInstall);
+      setIsPwaInstalled(state.isInstalled);
 
-    const handleBeforeInstallPrompt = (event) => {
-      event.preventDefault();
-      setInstallPromptEvent(event);
-      setCanInstallApp(true);
+      if (state.isInstalled) {
+        setInstallStatus('installed');
+      }
     };
 
-    const handleAppInstalled = () => {
-      setIsPwaInstalled(true);
-      setCanInstallApp(false);
-      setInstallPromptEvent(null);
-      setInstallStatus('installed');
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
+    syncPwaState();
+    window.addEventListener('pwa-install-state-change', syncPwaState);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener('pwa-install-state-change', syncPwaState);
     };
   }, []);
 
@@ -354,19 +345,17 @@ const Home = () => {
   };
 
   const handleInstallAppClick = async () => {
-    if (!installPromptEvent) return;
+    if (!canInstallApp) return;
 
     try {
       setInstallStatus('prompting');
-      await installPromptEvent.prompt();
-      const choice = await installPromptEvent.userChoice;
+      const choice = await promptPwaInstall();
 
       if (choice?.outcome !== 'accepted') {
         setInstallStatus('idle');
+      } else {
+        setInstallStatus('installed');
       }
-
-      setCanInstallApp(false);
-      setInstallPromptEvent(null);
     } catch (error) {
       console.error('Erro ao abrir prompt de instalacao do app:', error);
       setInstallStatus('idle');

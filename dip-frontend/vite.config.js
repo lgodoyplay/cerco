@@ -91,6 +91,9 @@ export default defineConfig({
           },
         ],
       },
+      devOptions: {
+        enabled: true,
+      },
     }),
   ],
   build: {
