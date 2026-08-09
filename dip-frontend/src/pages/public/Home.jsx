@@ -22,7 +22,8 @@ import {
   Database,
   Cpu,
   Play,
-  Link2
+  Link2,
+  Download
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useSettings } from '../../hooks/useSettings';
@@ -107,6 +108,10 @@ const Home = () => {
     discordName: '',
     details: ''
   });
+  const [installPromptEvent, setInstallPromptEvent] = useState(null);
+  const [canInstallApp, setCanInstallApp] = useState(false);
+  const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+  const [installStatus, setInstallStatus] = useState('idle');
 
   const images = [
     '/imagem1.jpg',
@@ -136,6 +141,35 @@ const Home = () => {
     return () => {
       clearInterval(interval);
       subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isStandalone) {
+      setIsPwaInstalled(true);
+      setCanInstallApp(false);
+    }
+
+    const handleBeforeInstallPrompt = (event) => {
+      event.preventDefault();
+      setInstallPromptEvent(event);
+      setCanInstallApp(true);
+    };
+
+    const handleAppInstalled = () => {
+      setIsPwaInstalled(true);
+      setCanInstallApp(false);
+      setInstallPromptEvent(null);
+      setInstallStatus('installed');
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
@@ -319,6 +353,26 @@ const Home = () => {
     }
   };
 
+  const handleInstallAppClick = async () => {
+    if (!installPromptEvent) return;
+
+    try {
+      setInstallStatus('prompting');
+      await installPromptEvent.prompt();
+      const choice = await installPromptEvent.userChoice;
+
+      if (choice?.outcome !== 'accepted') {
+        setInstallStatus('idle');
+      }
+
+      setCanInstallApp(false);
+      setInstallPromptEvent(null);
+    } catch (error) {
+      console.error('Erro ao abrir prompt de instalacao do app:', error);
+      setInstallStatus('idle');
+    }
+  };
+
   return (
     <div className="space-y-20 pb-20">
       <section className="relative overflow-hidden bg-slate-950">
@@ -443,6 +497,33 @@ const Home = () => {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {!isPwaInstalled && canInstallApp && (
+                  <button
+                    type="button"
+                    onClick={handleInstallAppClick}
+                    className="group relative overflow-hidden rounded-[24px] border border-federal-400/20 bg-slate-900/95 p-5 text-left shadow-[0_16px_40px_rgba(2,6,23,0.32)] transition-all hover:-translate-y-1 hover:border-federal-300/45 hover:shadow-[0_20px_50px_rgba(30,64,175,0.2)]"
+                  >
+                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-federal-400/0 via-federal-400/80 to-federal-400/0 opacity-70" />
+                    <div className="flex h-full flex-col justify-between gap-6">
+                      <div className="space-y-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-federal-400/20 bg-federal-400/10 text-federal-300">
+                          <Download size={21} />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-base font-bold text-white">Instalar aplicativo</p>
+                          <p className="text-sm leading-relaxed text-slate-400">
+                            Tenha nossa plataforma sempre a mao. Instale o aplicativo e acesse de forma rapida e pratica.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-slate-800 pt-4 text-sm font-semibold text-federal-300">
+                        <span>{installStatus === 'prompting' ? 'Abrindo prompt...' : 'Instalar aplicativo'}</span>
+                        <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
+                      </div>
+                    </div>
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => {
