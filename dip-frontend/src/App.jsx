@@ -79,6 +79,7 @@ const LawyerDashboard = React.lazy(() => lazyImport(routeLoaders.LawyerDashboard
 const LogisticsDashboard = React.lazy(() => lazyImport(routeLoaders.LogisticsDashboard));
 const ANPStudentDashboard = React.lazy(() => lazyImport(routeLoaders.ANPStudentDashboard));
 const CommunicationHub = React.lazy(() => lazyImport(routeLoaders.CommunicationHub));
+const DiscordPage = React.lazy(() => import('./pages/private/communication/DiscordPage'));
 const NewsManager = React.lazy(() => lazyImport(routeLoaders.NewsManager));
 
 // Settings Pages - Eagerly loaded for better UX
@@ -440,6 +441,11 @@ function App() {
             <Route path="communication" element={
               <PermissionGuard permission="communication_view">
                 <CommunicationHub />
+              </PermissionGuard>
+            } />
+            <Route path="discord" element={
+              <PermissionGuard permission="communication_view">
+                <DiscordPage />
               </PermissionGuard>
             } />
             

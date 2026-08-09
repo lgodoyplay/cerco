@@ -193,11 +193,7 @@ const PrivateLayout = () => {
     }
 
     setIsSidebarOpen(false);
-
-    if (typeof window === 'undefined') return;
-
-    const discordUrl = 'https://discord.com/channels/@me';
-    window.open(discordUrl, '_blank', 'noopener,noreferrer');
+    navigate('/dashboard/discord');
   };
 
   const persistReadState = (ids = []) => {
@@ -276,7 +272,7 @@ const PrivateLayout = () => {
         { to: '/dashboard/integration', icon: UserCog, label: 'Integração', prefetchKey: 'IntegrationManager', permission: 'integration_view' },
         { to: '/dashboard/pm', icon: Car, label: 'Integração PM', prefetchKey: 'PMIntegration', permission: 'pm_view' },
         { to: '/dashboard/news', icon: Newspaper, label: 'Notícias', permission: 'news_manage' },
-        { to: '#', icon: Radio, label: 'Discord App', onClick: openDiscordWorkspace, prefetchKey: 'CommunicationHub', permission: 'communication_view' },
+        { to: '#', icon: Radio, label: 'Discord', onClick: openDiscordWorkspace, prefetchKey: 'CommunicationHub', permission: 'communication_view' },
         { to: '/dashboard/logistics', icon: Package, label: 'Logística', prefetchKey: 'LogisticsDashboard', permission: 'logistics_view' },
       ]
     },
