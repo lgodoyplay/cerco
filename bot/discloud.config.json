@@ -1,0 +1,8 @@
+{
+  "name": "cerco-discord-bot",
+  "type": "bot",
+  "main": "dist/index.js",
+  "ram": "256MB",
+  "version": "1.0.0",
+  "description": "Bot Discord para integração com a dashboard"
+}

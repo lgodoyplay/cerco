@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_DISCORD_API_URL || 'http://localhost:3000/api/discord';
+const API_BASE = (import.meta.env.VITE_DISCORD_API_URL || 'https://kelrfiwnrmtinflqcbzc.supabase.co/api/discord').replace(/\/$/, '');
 
 const buildHeaders = () => ({
   'Content-Type': 'application/json',

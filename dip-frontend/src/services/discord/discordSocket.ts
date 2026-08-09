@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_DISCORD_SOCKET_URL || 'http://localhost:3000';
+const SOCKET_URL = (import.meta.env.VITE_DISCORD_SOCKET_URL || 'https://kelrfiwnrmtinflqcbzc.supabase.co').replace(/\/$/, '');
 
 export class DiscordSocket {
   private socket: Socket | null = null;

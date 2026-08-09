@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "ts-node src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "postinstall": "node -e \"const fs=require('fs'); if (fs.existsSync('tsconfig.json') && fs.existsSync('src/index.ts')) { require('child_process').execSync('npm run build', { stdio: 'inherit' }) }\""
   },
   "dependencies": {
     "axios": "^1.13.2",

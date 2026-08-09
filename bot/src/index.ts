@@ -8,19 +8,17 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildPresences,
-    GatewayIntentBits.MessageContent,
   ],
   partials: [Partials.Channel],
 });
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+const BACKEND_URL = (process.env.BACKEND_URL || 'http://localhost:3000').replace(/\/$/, '');
 const BOT_API_SECRET = process.env.BOT_API_SECRET || '';
 
 const sendToBackend = async (type: string, payload: Record<string, unknown> = {}) => {
   try {
-    await axios.post(`${BACKEND_URL}/api/discord/bot/events`, { type, payload }, {
+    const endpoint = `${BACKEND_URL}/api/discord/bot/events`;
+    await axios.post(endpoint, { type, payload }, {
       headers: {
         'x-bot-secret': BOT_API_SECRET,
         'Content-Type': 'application/json',
@@ -33,6 +31,7 @@ const sendToBackend = async (type: string, payload: Record<string, unknown> = {}
 
 client.once('ready', async () => {
   console.log(`Bot online como ${client.user?.tag}`);
+  console.log('Conectado com intents básicos. Para mensagens com conteúdo completo e eventos de membros/presença, habilite os intents no painel do Discord Developer Portal.');
   await sendToBackend('bot:ready', { guilds: client.guilds.cache.size });
 });
 
@@ -87,11 +86,13 @@ client.on('channelCreate', async (channel) => {
 });
 
 client.on('channelUpdate', async (_oldChannel, newChannel) => {
-  await sendToBackend('discord:channel:update', { channelId: newChannel.id, guildId: newChannel.guild?.id });
+  const guildId = 'guild' in newChannel ? newChannel.guild?.id : undefined;
+  await sendToBackend('discord:channel:update', { channelId: newChannel.id, guildId });
 });
 
 client.on('channelDelete', async (channel) => {
-  await sendToBackend('discord:channel:delete', { channelId: channel.id, guildId: channel.guild?.id });
+  const guildId = 'guild' in channel ? channel.guild?.id : undefined;
+  await sendToBackend('discord:channel:delete', { channelId: channel.id, guildId });
 });
 
 client.on('guildCreate', async (guild) => {
