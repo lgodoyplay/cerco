@@ -1,9 +1,23 @@
 import { io, Socket } from 'socket.io-client';
 
-const configuredSocketUrl = (import.meta.env.VITE_WS_URL || import.meta.env.VITE_DISCORD_SOCKET_URL || '').trim();
-const SOCKET_URL = configuredSocketUrl && !configuredSocketUrl.includes('supabase.co')
-  ? configuredSocketUrl.replace(/\/$/, '')
-  : window.location.origin;
+/// <reference types="vite/client" />
+
+const importMetaEnv = ((import.meta as any).env ?? {}) as Record<string, string | undefined>;
+const configuredSocketUrl = (importMetaEnv.VITE_WS_URL || importMetaEnv.VITE_DISCORD_SOCKET_URL || '').trim();
+
+const resolveSocketUrl = () => {
+  if (configuredSocketUrl) {
+    return configuredSocketUrl.replace(/\/$/, '');
+  }
+
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
+  }
+
+  return '';
+};
+
+const SOCKET_URL = resolveSocketUrl();
 
 export class DiscordSocket {
   private socket: Socket | null = null;
@@ -18,11 +32,12 @@ export class DiscordSocket {
     }
 
     this.socket = io(SOCKET_URL, {
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
       reconnection: true,
       reconnectionAttempts: 8,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
+      withCredentials: true,
     });
 
     this.socket.on('connect', () => {

@@ -1,7 +1,34 @@
-const configuredApiUrl = (import.meta.env.VITE_API_URL || import.meta.env.VITE_DISCORD_API_URL || '').trim();
-const API_BASE = configuredApiUrl && !configuredApiUrl.includes('supabase.co')
-  ? configuredApiUrl.replace(/\/$/, '')
-  : '/api/discord';
+/// <reference types="vite/client" />
+
+const importMetaEnv = ((import.meta as any).env ?? {}) as Record<string, string | undefined>;
+const configuredApiUrl = (importMetaEnv.VITE_API_URL || importMetaEnv.VITE_DISCORD_API_URL || '').trim();
+
+const normalizeApiBase = (value: string) => {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return '/api/discord';
+  }
+
+  if (trimmed.startsWith('/')) {
+    return trimmed.endsWith('/api/discord') ? trimmed.replace(/\/$/, '') : `${trimmed.replace(/\/$/, '')}/api/discord`;
+  }
+
+  try {
+    const { origin, pathname } = new URL(trimmed);
+    const normalizedPath = pathname.replace(/\/$/, '');
+
+    if (normalizedPath.endsWith('/api/discord')) {
+      return `${origin}${normalizedPath}`;
+    }
+
+    return `${origin}${normalizedPath}/api/discord`;
+  } catch {
+    return trimmed.endsWith('/api/discord') ? trimmed.replace(/\/$/, '') : `${trimmed.replace(/\/$/, '')}/api/discord`;
+  }
+};
+
+const API_BASE = normalizeApiBase(configuredApiUrl);
 
 const buildHeaders = () => ({
   'Content-Type': 'application/json',

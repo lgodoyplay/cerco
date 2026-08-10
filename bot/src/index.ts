@@ -6,14 +6,20 @@ import axios from 'axios';
 dotenv.config();
 
 const env = process.env;
+const enableMessageContentIntent = env.DISCORD_ENABLE_MESSAGE_CONTENT_INTENT === 'true';
+const enableGuildMembersIntent = env.DISCORD_ENABLE_GUILD_MEMBERS_INTENT === 'true';
+const enableGuildPresencesIntent = env.DISCORD_ENABLE_GUILD_PRESENCES_INTENT === 'true';
+
+const intents = [
+  GatewayIntentBits.Guilds,
+  GatewayIntentBits.GuildMessages,
+  ...(enableGuildMembersIntent ? [GatewayIntentBits.GuildMembers] : []),
+  ...(enableMessageContentIntent ? [GatewayIntentBits.MessageContent] : []),
+  ...(enableGuildPresencesIntent ? [GatewayIntentBits.GuildPresences] : []),
+] as GatewayIntentBits[];
+
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildPresences,
-  ],
+  intents,
   partials: [Partials.Channel],
 });
 
