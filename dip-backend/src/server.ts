@@ -31,8 +31,21 @@ const PORT = process.env.PORT || 3000;
 const httpServer = http.createServer(app);
 initializeSocketServer(httpServer);
 
+const allowedOrigins = [
+  'https://cerco-ccv.pages.dev',
+  'https://www.cerco-ccv.pages.dev',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  ...(process.env.CORS_ORIGIN?.split(',') || []).filter(Boolean),
+];
+
 app.use(helmet());
-app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',') || undefined }));
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-bot-secret'],
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
@@ -98,7 +111,7 @@ async function seedAdmin() {
       console.log('Admin user created: admin');
     }
   } catch (error) {
-    console.error('Error seeding admin:', error);
+    console.warn('Skipping admin seed due to database availability:', error);
   }
 }
 

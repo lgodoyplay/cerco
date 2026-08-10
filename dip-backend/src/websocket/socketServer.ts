@@ -6,8 +6,14 @@ let io: Server | null = null;
 export const initializeSocketServer = (httpServer: HttpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin: '*',
+      origin: [
+        'https://cerco-ccv.pages.dev',
+        'https://www.cerco-ccv.pages.dev',
+        'http://localhost:5173',
+        'http://localhost:3000',
+      ],
       methods: ['GET', 'POST'],
+      credentials: true,
     },
   });
 
