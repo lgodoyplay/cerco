@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 const configuredSocketUrl = (import.meta.env.VITE_DISCORD_SOCKET_URL || '').trim();
 const SOCKET_URL = configuredSocketUrl && !configuredSocketUrl.includes('supabase.co')
   ? configuredSocketUrl.replace(/\/$/, '')
-  : (typeof window !== 'undefined' ? window.location.origin : '').replace(/\/$/, '');
+  : '';
 
 export class DiscordSocket {
   private socket: Socket | null = null;
@@ -11,6 +11,11 @@ export class DiscordSocket {
 
   connect() {
     if (this.socket?.connected) return this.socket;
+
+    if (!SOCKET_URL) {
+      this.emit({ type: 'disconnected' });
+      return null;
+    }
 
     this.socket = io(SOCKET_URL, {
       transports: ['websocket'],

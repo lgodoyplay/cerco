@@ -32,27 +32,33 @@ const DiscordPage = () => {
   const [activeVoiceChannelId, setActiveVoiceChannelId] = useState('');
   const [isConnected, setIsConnected] = useState(false);
 
-  const selectedServer = useMemo(() => servers.find((server) => server.id === selectedServerId) || servers[0], [servers, selectedServerId]);
-  const selectedChannel = useMemo(() => channels.find((channel) => channel.id === selectedChannelId) || channels[0], [channels, selectedChannelId]);
-  const selectedMember = useMemo(() => members.find((member) => member.id === selectedMemberId) || null, [members, selectedMemberId]);
-  const currentVoiceChannel = useMemo(() => channels.find((channel) => channel.id === activeVoiceChannelId) || null, [channels, activeVoiceChannelId]);
+  const safeServers = Array.isArray(servers) ? servers : [];
+  const safeChannels = Array.isArray(channels) ? channels : [];
+  const safeMembers = Array.isArray(members) ? members : [];
+
+  const selectedServer = useMemo(() => safeServers.find((server) => server.id === selectedServerId) || safeServers[0] || null, [safeServers, selectedServerId]);
+  const selectedChannel = useMemo(() => safeChannels.find((channel) => channel.id === selectedChannelId) || safeChannels[0] || null, [safeChannels, selectedChannelId]);
+  const selectedMember = useMemo(() => safeMembers.find((member) => member.id === selectedMemberId) || null, [safeMembers, selectedMemberId]);
+  const currentVoiceChannel = useMemo(() => safeChannels.find((channel) => channel.id === activeVoiceChannelId) || null, [safeChannels, activeVoiceChannelId]);
 
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         const guilds = await getGuilds();
-        setServers(guilds || []);
-        if (guilds?.length) {
-          const firstGuild = guilds[0];
+        const normalizedGuilds = Array.isArray(guilds) ? guilds : [];
+        setServers(normalizedGuilds);
+        if (normalizedGuilds.length) {
+          const firstGuild = normalizedGuilds[0];
           setSelectedServerId(firstGuild.id);
           const channelData = await getChannels(firstGuild.id);
-          setChannels(channelData || []);
-          const textChannel = (channelData || []).find((channel) => channel.type === 'text');
+          const normalizedChannels = Array.isArray(channelData) ? channelData : [];
+          setChannels(normalizedChannels);
+          const textChannel = normalizedChannels.find((channel) => channel.type === 'text');
           if (textChannel) {
             setSelectedChannelId(textChannel.id);
           }
           const membersData = await getMembers(firstGuild.id);
-          setMembers(membersData || []);
+          setMembers(Array.isArray(membersData) ? membersData : []);
         }
       } catch (error) {
         console.error('Erro ao carregar dados do Discord:', error);
@@ -73,7 +79,7 @@ const DiscordPage = () => {
       setMessagesLoading(true);
       try {
         const messageData = await getMessages(selectedChannelId);
-        setMessages(messageData || []);
+        setMessages(Array.isArray(messageData) ? messageData : []);
       } catch (error) {
         console.error('Erro ao carregar mensagens:', error);
       } finally {
@@ -119,7 +125,7 @@ const DiscordPage = () => {
         const refreshMembers = async () => {
           if (selectedServerId) {
             const memberData = await getMembers(selectedServerId);
-            setMembers(memberData || []);
+            setMembers(Array.isArray(memberData) ? memberData : []);
           }
         };
         refreshMembers();
@@ -186,11 +192,12 @@ const DiscordPage = () => {
             setChannelsLoading(true);
             try {
               const channelData = await getChannels(serverId);
-              setChannels(channelData || []);
-              const textChannel = (channelData || []).find((channel) => channel.type === 'text');
+              const normalizedChannels = Array.isArray(channelData) ? channelData : [];
+              setChannels(normalizedChannels);
+              const textChannel = normalizedChannels.find((channel) => channel.type === 'text');
               setSelectedChannelId(textChannel?.id || '');
               const memberData = await getMembers(serverId);
-              setMembers(memberData || []);
+              setMembers(Array.isArray(memberData) ? memberData : []);
             } catch (error) {
               console.error('Erro ao trocar de servidor:', error);
             } finally {
