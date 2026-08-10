@@ -17,12 +17,23 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
     },
   });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Erro inesperado.' }));
-    throw new Error(error.error || 'Erro ao comunicar com o backend Discord.');
+  const text = await response.text();
+  let payload: any = null;
+
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      payload = { error: text.slice(0, 200) };
+    }
   }
 
-  return response.json() as Promise<T>;
+  if (!response.ok) {
+    const errorMessage = payload?.error || payload?.message || 'Erro ao comunicar com o backend Discord.';
+    throw new Error(errorMessage);
+  }
+
+  return payload as T;
 };
 
 export const getGuilds = () => request<any[]>('/guilds');
