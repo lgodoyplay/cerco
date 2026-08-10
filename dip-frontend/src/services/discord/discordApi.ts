@@ -1,4 +1,7 @@
-const API_BASE = (import.meta.env.VITE_DISCORD_API_URL || '/api/discord').replace(/\/$/, '');
+const configuredApiUrl = (import.meta.env.VITE_DISCORD_API_URL || '').trim();
+const API_BASE = configuredApiUrl && !configuredApiUrl.includes('supabase.co')
+  ? configuredApiUrl.replace(/\/$/, '')
+  : '/api/discord';
 
 const buildHeaders = () => ({
   'Content-Type': 'application/json',

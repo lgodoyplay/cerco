@@ -4,6 +4,7 @@ import axios from 'axios';
 
 dotenv.config();
 
+const env = process.env;
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -12,8 +13,14 @@ const client = new Client({
   partials: [Partials.Channel],
 });
 
-const BACKEND_URL = (process.env.BACKEND_URL || 'http://localhost:3000').replace(/\/$/, '');
-const BOT_API_SECRET = process.env.BOT_API_SECRET || '';
+const BACKEND_URL = (env.BACKEND_URL || env.DISCORD_BACKEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+const BOT_API_SECRET = (env.BOT_API_SECRET || env.DISCORD_BOT_SECRET || '').trim();
+const DISCORD_BOT_TOKEN = (env.DISCORD_BOT_TOKEN || env.DISCORD_TOKEN || '').trim();
+const DISCORD_CLIENT_ID = (env.DISCORD_CLIENT_ID || env.CLIENT_ID || '').trim();
+const DISCORD_GUILD_ID = (env.DISCORD_GUILD_ID || env.GUILD_ID || '').trim();
+
+const normalizeToken = (value: string) => value.replace(/^['"]|['"]$/g, '').trim();
+const TOKEN = normalizeToken(DISCORD_BOT_TOKEN);
 
 const sendToBackend = async (type: string, payload: Record<string, unknown> = {}) => {
   try {
@@ -109,13 +116,13 @@ const slashCommands = [
 ];
 
 async function registerCommands() {
-  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN || '');
-  const guildId = process.env.DISCORD_GUILD_ID;
+  const rest = new REST({ version: '10' }).setToken(TOKEN);
+  const guildId = DISCORD_GUILD_ID;
   try {
     if (guildId) {
-      await rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID || '', guildId), { body: slashCommands });
+      await rest.put(Routes.applicationGuildCommands(DISCORD_CLIENT_ID, guildId), { body: slashCommands });
     } else {
-      await rest.put(Routes.applicationCommands(process.env.DISCORD_CLIENT_ID || ''), { body: slashCommands });
+      await rest.put(Routes.applicationCommands(DISCORD_CLIENT_ID), { body: slashCommands });
     }
     console.log('Comandos slash registrados');
   } catch (error) {
@@ -136,12 +143,18 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 async function start() {
-  const token = process.env.DISCORD_BOT_TOKEN;
+  const token = TOKEN;
   if (!token) {
-    console.error('DISCORD_BOT_TOKEN não configurado.');
+    console.error('DISCORD_BOT_TOKEN não configurado. Adicione a variável no painel do Discloud ou no arquivo .env.');
     return;
   }
 
+  if (!token.startsWith('Bot ') && !token.startsWith('bot ')) {
+    console.warn('Token do Discord sem prefixo Bot. O Discord.js geralmente espera o token puro.');
+  }
+
+  console.log(`Backend configurado para: ${BACKEND_URL}`);
+  console.log(`Token carregado: ${token.slice(0, 10)}...`);
   await registerCommands();
   await client.login(token);
 }
