@@ -1,9 +1,9 @@
 import { io, Socket } from 'socket.io-client';
 
-const configuredSocketUrl = (import.meta.env.VITE_DISCORD_SOCKET_URL || '').trim();
+const configuredSocketUrl = (import.meta.env.VITE_WS_URL || import.meta.env.VITE_DISCORD_SOCKET_URL || '').trim();
 const SOCKET_URL = configuredSocketUrl && !configuredSocketUrl.includes('supabase.co')
   ? configuredSocketUrl.replace(/\/$/, '')
-  : '';
+  : window.location.origin;
 
 export class DiscordSocket {
   private socket: Socket | null = null;
@@ -18,18 +18,27 @@ export class DiscordSocket {
     }
 
     this.socket = io(SOCKET_URL, {
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
       reconnection: true,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: 8,
       reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
     });
 
     this.socket.on('connect', () => {
       this.emit({ type: 'connected' });
     });
 
+    this.socket.on('reconnecting', () => {
+      this.emit({ type: 'reconnecting' });
+    });
+
     this.socket.on('disconnect', () => {
       this.emit({ type: 'disconnected' });
+    });
+
+    this.socket.on('connect_error', () => {
+      this.emit({ type: 'reconnecting' });
     });
 
     this.socket.on('discord:event', (event) => {

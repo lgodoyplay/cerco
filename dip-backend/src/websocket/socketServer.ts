@@ -4,14 +4,22 @@ import type { Server as HttpServer } from 'http';
 let io: Server | null = null;
 
 export const initializeSocketServer = (httpServer: HttpServer) => {
+  const configuredOrigins = (process.env.CORS_ORIGIN || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const allowedOrigins = [
+    'https://cerco-ccv.pages.dev',
+    'https://www.cerco-ccv.pages.dev',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    ...configuredOrigins,
+  ];
+
   io = new Server(httpServer, {
     cors: {
-      origin: [
-        'https://cerco-ccv.pages.dev',
-        'https://www.cerco-ccv.pages.dev',
-        'http://localhost:5173',
-        'http://localhost:3000',
-      ],
+      origin: allowedOrigins,
       methods: ['GET', 'POST'],
       credentials: true,
     },

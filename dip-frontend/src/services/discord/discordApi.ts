@@ -1,11 +1,11 @@
-const configuredApiUrl = (import.meta.env.VITE_DISCORD_API_URL || '').trim();
+const configuredApiUrl = (import.meta.env.VITE_API_URL || import.meta.env.VITE_DISCORD_API_URL || '').trim();
 const API_BASE = configuredApiUrl && !configuredApiUrl.includes('supabase.co')
   ? configuredApiUrl.replace(/\/$/, '')
   : '/api/discord';
 
 const buildHeaders = () => ({
   'Content-Type': 'application/json',
-  Authorization: `Bearer ${import.meta.env.VITE_DISCORD_TOKEN || ''}`,
+  'x-dashboard-user-id': 'dashboard',
 });
 
 const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
