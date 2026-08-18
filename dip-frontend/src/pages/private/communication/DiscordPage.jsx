@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Menu,
   X,
+  Plus,
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import {
