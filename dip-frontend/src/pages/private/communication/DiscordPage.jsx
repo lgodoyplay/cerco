@@ -1,13 +1,43 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Compass, MessageCircleMore, Mic, PhoneOff, Users, Radio, MoreHorizontal, RefreshCw, WifiOff, Wifi, ServerOff, AlertCircle } from 'lucide-react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import {
+  Compass,
+  MessageCircleMore,
+  Mic,
+  PhoneOff,
+  Users,
+  Radio,
+  MoreHorizontal,
+  RefreshCw,
+  WifiOff,
+  Wifi,
+  ServerOff,
+  AlertCircle,
+  Menu,
+  X,
+} from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
-import { getGuilds, getChannels, getMembers, getMessages, sendMessage, getMember, getBotStatus, createGuild, createChannel, joinVoice, leaveVoice } from '../../../services/internalComms/internalApi';
-import DiscordServerList from '../../../components/discord/DiscordServerList';
-import DiscordChannelSidebar from '../../../components/discord/DiscordChannelSidebar';
-import DiscordMessageList from '../../../components/discord/DiscordMessageList';
-import DiscordMessageInput from '../../../components/discord/DiscordMessageInput';
-import DiscordMemberList from '../../../components/discord/DiscordMemberList';
-import DiscordUserProfile from '../../../components/discord/DiscordUserProfile';
+import {
+  getGuilds,
+  getChannels,
+  getMembers,
+  getMessages,
+  sendMessage,
+  getMember,
+  getBotStatus,
+  createGuild,
+  createChannel,
+  joinVoice,
+  leaveVoice,
+} from '../../../services/internalComms/internalApi';
+import ServerSidebar from '../../../components/discord/ServerSidebar';
+import ChannelSidebar from '../../../components/discord/ChannelSidebar';
+import ChannelHeader from '../../../components/discord/ChannelHeader';
+import MessageList from '../../../components/discord/MessageList';
+import MessageComposer from '../../../components/discord/MessageComposer';
+import MemberSidebar from '../../../components/discord/MemberSidebar';
+import UserProfilePopover from '../../../components/discord/UserProfilePopover';
+import { ServerModal, ChannelModal } from '../../../components/discord/ServerModal';
+import ConnectionStatus from '../../../components/discord/ConnectionStatus';
 import DiscordVoicePanel from '../../../components/discord/DiscordVoicePanel';
 import DiscordVoiceMiniPlayer from '../../../components/discord/DiscordVoiceMiniPlayer';
 
@@ -30,23 +60,58 @@ const DiscordPage = () => {
   const [newChannelType, setNewChannelType] = useState('text');
   const [isCreatingServer, setIsCreatingServer] = useState(false);
   const [isCreatingChannel, setIsCreatingChannel] = useState(false);
+  const [showServerModal, setShowServerModal] = useState(false);
+  const [showChannelModal, setShowChannelModal] = useState(false);
   const [voiceError, setVoiceError] = useState(null);
-  const [voiceUiState, setVoiceUiState] = useState({ isMuted: false, isDeafened: false, isSpeaking: true });
+  const [voiceUiState, setVoiceUiState] = useState({
+    isMuted: false,
+    isDeafened: false,
+    isSpeaking: true,
+  });
   const [connectionState, setConnectionState] = useState('connecting');
-  const [botStatus, setBotStatus] = useState({ status: 'offline', uptime: 0, latency: 0, guilds: 0 });
+  const [botStatus, setBotStatus] = useState({
+    status: 'offline',
+    uptime: 0,
+    latency: 0,
+    guilds: 0,
+  });
   const [activeVoiceChannelId, setActiveVoiceChannelId] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [globalError, setGlobalError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isMobileMembersOpen, setIsMobileMembersOpen] = useState(false);
 
   const safeServers = Array.isArray(servers) ? servers : [];
   const safeChannels = Array.isArray(channels) ? channels : [];
   const safeMembers = Array.isArray(members) ? members : [];
 
-  const selectedServer = useMemo(() => safeServers.find((server) => server.id === selectedServerId) || safeServers[0] || null, [safeServers, selectedServerId]);
-  const selectedChannel = useMemo(() => safeChannels.find((channel) => channel.id === selectedChannelId) || safeChannels[0] || null, [safeChannels, selectedChannelId]);
-  const selectedMember = useMemo(() => safeMembers.find((member) => member.id === selectedMemberId) || null, [safeMembers, selectedMemberId]);
-  const currentVoiceChannel = useMemo(() => safeChannels.find((channel) => channel.id === activeVoiceChannelId) || null, [safeChannels, activeVoiceChannelId]);
+  const selectedServer = useMemo(
+    () =>
+      safeServers.find((server) => server.id === selectedServerId) ||
+      safeServers[0] ||
+      null,
+    [safeServers, selectedServerId]
+  );
+
+  const selectedChannel = useMemo(
+    () =>
+      safeChannels.find((channel) => channel.id === selectedChannelId) ||
+      safeChannels[0] ||
+      null,
+    [safeChannels, selectedChannelId]
+  );
+
+  const selectedMember = useMemo(
+    () => safeMembers.find((member) => member.id === selectedMemberId) || null,
+    [safeMembers, selectedMemberId]
+  );
+
+  const currentVoiceChannel = useMemo(
+    () => safeChannels.find((channel) => channel.id === activeVoiceChannelId) || null,
+    [safeChannels, activeVoiceChannelId]
+  );
 
   const loadInitialData = async (showError = true) => {
     try {
@@ -165,6 +230,7 @@ const DiscordPage = () => {
     if (channel.type === 'voice') {
       await handleJoinVoice(channel.id);
     }
+    setIsMobileSidebarOpen(false);
   };
 
   const toggleMute = () => {
@@ -185,13 +251,16 @@ const DiscordPage = () => {
     }
     setActiveVoiceChannelId('');
     setIsConnected(false);
-    setVoiceUiState((prev) => ({ ...prev, isMuted: false, isDeafened: false, isSpeaking: false }));
+    setVoiceUiState((prev) => ({
+      ...prev,
+      isMuted: false,
+      isDeafened: false,
+      isSpeaking: false,
+    }));
     setVoiceError(null);
   };
 
-  const handleCreateServer = async () => {
-    const name = newServerName.trim();
-    if (!name) return;
+  const handleCreateServer = async (name) => {
     setIsCreatingServer(true);
     try {
       const server = await createGuild(name);
@@ -209,12 +278,10 @@ const DiscordPage = () => {
     }
   };
 
-  const handleCreateChannel = async () => {
-    const name = newChannelName.trim().toLowerCase().replace(/\s+/g, '-');
-    if (!name || !selectedServerId) return;
+  const handleCreateChannel = async (serverId, name, type) => {
     setIsCreatingChannel(true);
     try {
-      const channel = await createChannel(selectedServerId, name, newChannelType);
+      const channel = await createChannel(serverId, name, type);
       setChannels((prev) => [...prev, channel]);
       setNewChannelName('');
       setSelectedChannelId(channel.id);
@@ -232,15 +299,33 @@ const DiscordPage = () => {
       await joinVoice(channelId);
       setActiveVoiceChannelId(channelId);
       setIsConnected(true);
-      setVoiceUiState((prev) => ({ ...prev, isMuted: false, isDeafened: false, isSpeaking: true }));
+      setVoiceUiState((prev) => ({
+        ...prev,
+        isMuted: false,
+        isDeafened: false,
+        isSpeaking: true,
+      }));
     } catch (error) {
       console.error('Erro ao entrar no canal de voz:', error);
       setVoiceError('Não foi possível entrar no canal de voz.');
     }
   };
 
+  const handleSelectMember = useCallback((memberId) => {
+    setSelectedMemberId(memberId);
+    setIsMobileMembersOpen(false);
+  }, []);
+
   const isEmpty = !serversLoading && safeServers.length === 0;
-  const isBackendOffline = connectionState === 'disconnected' && !serversLoading && safeServers.length === 0;
+  const isBackendOffline =
+    connectionState === 'disconnected' && !serversLoading && safeServers.length === 0;
+
+  const handleSearchMessages = useCallback(
+    (query) => {
+      setSearchQuery(query);
+    },
+    [setSearchQuery]
+  );
 
   return (
     <div className="flex h-[calc(100dvh-8rem)] min-h-[680px] flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/80 shadow-2xl shadow-black/30 transition-all">
@@ -250,7 +335,10 @@ const DiscordPage = () => {
             <AlertCircle size={16} />
             {globalError}
           </span>
-          <button onClick={handleRefresh} className="rounded-full border border-red-500/30 px-3 py-1 text-xs text-red-200 hover:bg-red-500/20">
+          <button
+            onClick={handleRefresh}
+            className="rounded-full border border-red-500/30 px-3 py-1 text-xs text-red-200 hover:bg-red-500/20 transition"
+          >
             Tentar novamente
           </button>
         </div>
@@ -262,7 +350,10 @@ const DiscordPage = () => {
             <AlertCircle size={16} />
             {voiceError}
           </span>
-          <button onClick={() => setVoiceError(null)} className="rounded-full border border-amber-500/30 px-3 py-1 text-xs text-amber-100 hover:bg-amber-500/20">
+          <button
+            onClick={() => setVoiceError(null)}
+            className="rounded-full border border-amber-500/30 px-3 py-1 text-xs text-amber-100 hover:bg-amber-500/20 transition"
+          >
             Fechar
           </button>
         </div>
@@ -276,12 +367,14 @@ const DiscordPage = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-white">Serviço indisponível</h3>
-              <p className="mt-1 text-sm text-slate-400">Não foi possível conectar ao Discord no momento. Tente novamente em instantes.</p>
+              <p className="mt-1 text-sm text-slate-400">
+                Não foi possível conectar ao Discord no momento. Tente novamente em instantes.
+              </p>
             </div>
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="inline-flex items-center gap-2 rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 disabled:opacity-60 transition"
             >
               <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
               {isRefreshing ? 'Atualizando...' : 'Tentar novamente'}
@@ -291,124 +384,144 @@ const DiscordPage = () => {
 
         {!isBackendOffline && (
           <>
-            <DiscordServerList
-              servers={serversLoading ? [] : safeServers}
-              selectedServerId={selectedServerId}
-              onSelectServer={async (serverId) => {
-                setSelectedServerId(serverId);
-                setChannelsLoading(true);
-                try {
-                  const channelData = await getChannels(serverId);
-                  const normalizedChannels = Array.isArray(channelData) ? channelData : [];
-                  setChannels(normalizedChannels);
-                  const textChannel = normalizedChannels.find((channel) => channel.type === 'text');
-                  setSelectedChannelId(textChannel?.id || '');
-                  const memberData = await getMembers(serverId);
-                  setMembers(Array.isArray(memberData) ? memberData : []);
-                } catch (error) {
-                  console.error('Erro ao trocar de servidor:', error);
-                } finally {
-                  setChannelsLoading(false);
-                }
-                setActiveView('chat');
-              }}
-              onCreateServer={handleCreateServer}
-              isCreatingServer={isCreatingServer}
-              newServerName={newServerName}
-              onNewServerNameChange={setNewServerName}
+            <div
+              className={cn(
+                'fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-300',
+                isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              )}
+              onClick={() => setIsMobileSidebarOpen(false)}
             />
 
-            <DiscordChannelSidebar
-              server={selectedServer}
-              channels={channelsLoading ? [] : safeChannels}
-              selectedChannelId={selectedChannelId}
-              selectedChannelType={selectedChannel?.type || 'text'}
-              onSelectChannel={handleChannelSelect}
-              onCreateChannel={handleCreateChannel}
-              isCreatingChannel={isCreatingChannel}
-              newChannelName={newChannelName}
-              onNewChannelNameChange={setNewChannelName}
-              newChannelType={newChannelType}
-              onNewChannelTypeChange={setNewChannelType}
-              onJoinVoice={handleJoinVoice}
-            />
+            <div
+              className={cn(
+                'fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 lg:relative lg:z-auto lg:translate-x-0',
+                isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+              )}
+            >
+              <div className="flex h-full items-center justify-between lg:hidden">
+                <button
+                  onClick={() => setIsMobileSidebarOpen(false)}
+                  className="p-4 text-slate-400 hover:text-white"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <ChannelSidebar
+                server={selectedServer}
+                channels={channelsLoading ? [] : safeChannels}
+                selectedChannelId={selectedChannelId}
+                selectedChannel={selectedChannel}
+                onSelectChannel={handleChannelSelect}
+                onCreateChannel={handleCreateChannel}
+                isCreatingChannel={isCreatingChannel}
+                newChannelName={newChannelName}
+                onNewChannelNameChange={setNewChannelName}
+                newChannelType={newChannelType}
+                onNewChannelTypeChange={setNewChannelType}
+                onJoinVoice={handleJoinVoice}
+                onToggleMembers={() => setIsMobileMembersOpen(true)}
+                isMobileMenuOpen={isMobileMembersOpen}
+              />
+            </div>
 
             <main className="flex min-w-0 flex-1 flex-col">
-              <header className="flex items-center justify-between border-b border-slate-800 bg-slate-900/70 px-4 py-3 md:px-6">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-sm text-slate-400">
-                    <Compass size={16} />
-                    <span className="truncate">{selectedChannel?.name ? `# ${selectedChannel.name}` : 'Selecionar canal'}</span>
-                  </div>
-                  <p className="truncate text-sm text-slate-500">{selectedChannel?.topic || 'Canal preparado para integração com backend.'}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    className="rounded-full border border-slate-700 p-2 text-slate-400 hover:text-white lg:hidden"
-                    onClick={() => setActiveView('members')}
-                    title="Membros"
-                  >
-                    <Users size={16} />
-                  </button>
-                  <button
-                    className="rounded-full border border-slate-700 p-2 text-slate-400 hover:text-white disabled:opacity-60"
-                    onClick={handleRefresh}
-                    disabled={isRefreshing}
-                    title="Atualizar"
-                  >
-                    <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
-                  </button>
-                </div>
-              </header>
+              <ChannelHeader
+                channel={selectedChannel}
+                onToggleMembers={() => setActiveView('members')}
+                onRefresh={handleRefresh}
+                isRefreshing={isRefreshing}
+                onToggleMobileSidebar={() => setIsMobileSidebarOpen(true)}
+                onSearch={handleSearchMessages}
+              />
 
               <div className="flex flex-1 overflow-hidden">
                 <section className="flex flex-1 flex-col">
                   <div className="flex-1 overflow-y-auto px-4 py-4 md:px-6">
                     {messagesLoading ? (
-                      <div className="space-y-3">
-                        {[...Array(3)].map((_, index) => (
-                          <div key={index} className="h-16 animate-pulse rounded-xl bg-slate-800/70" />
+                      <div className="space-y-4">
+                        {[...Array(5)].map((_, index) => (
+                          <div key={index} className="flex gap-4">
+                            <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-slate-800" />
+                            <div className="flex-1 space-y-2">
+                              <div className="h-4 w-48 animate-pulse rounded bg-slate-800" />
+                              <div className="h-3 w-full animate-pulse rounded bg-slate-800" />
+                              <div className="h-3 w-2/3 animate-pulse rounded bg-slate-800" />
+                            </div>
+                          </div>
                         ))}
                       </div>
                     ) : isEmpty ? (
-                      <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-                        <div className="rounded-full border border-slate-700 p-4 text-slate-500">
-                          <Radio size={32} />
+                      <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
+                        <div className="rounded-full border border-dashed border-slate-700 bg-slate-950/70 p-5 text-slate-500">
+                          <Radio size={40} />
                         </div>
                         <div>
-                          <h3 className="text-base font-semibold text-white">Nenhum servidor ainda</h3>
-                          <p className="mt-1 text-sm text-slate-400">Crie um servidor para começar a conversar.</p>
+                          <h3 className="text-lg font-semibold text-white">Nenhum servidor ainda</h3>
+                          <p className="mt-1 max-w-xs text-sm text-slate-400">
+                            Crie um servidor para começar a conversar com sua equipe.
+                          </p>
                         </div>
+                        <button
+                          onClick={() => setShowServerModal(true)}
+                          className="inline-flex items-center gap-2 rounded-full border border-federal-700 bg-federal-900/40 px-4 py-2 text-sm font-semibold text-federal-200 transition hover:bg-federal-800/60"
+                        >
+                          <Plus size={16} />
+                          Criar primeiro servidor
+                        </button>
                       </div>
                     ) : messages.length === 0 ? (
-                      <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-                        <div className="rounded-full border border-slate-700 p-4 text-slate-500">
-                          <MessageCircleMore size={32} />
+                      <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
+                        <div className="rounded-full border border-dashed border-slate-700 bg-slate-950/70 p-5 text-slate-500">
+                          <MessageCircleMore size={40} />
                         </div>
                         <div>
-                          <h3 className="text-base font-semibold text-white">Sem mensagens</h3>
-                          <p className="mt-1 text-sm text-slate-400">Envie a primeira mensagem para iniciar a conversa.</p>
+                          <h3 className="text-lg font-semibold text-white">Sem mensagens</h3>
+                          <p className="mt-1 max-w-xs text-sm text-slate-400">
+                            Envie a primeira mensagem para iniciar a conversa neste canal.
+                          </p>
                         </div>
                       </div>
                     ) : (
-                      <DiscordMessageList messages={messages} />
+                      <MessageList
+                        messages={messages}
+                        onSelectMember={(author) => {
+                          setSelectedMemberId(author.id);
+                        }}
+                      />
                     )}
                   </div>
 
                   <div className="border-t border-slate-800 bg-slate-900/70 p-4 md:px-6">
-                    <DiscordMessageInput
+                    <MessageComposer
                       draft={draft}
                       onDraftChange={setDraft}
                       onSend={handleSendMessage}
                       onAttachFile={() => {}}
+                      channelType={selectedChannel?.type || 'text'}
+                      channelName={selectedChannel?.name || ''}
                     />
                   </div>
                 </section>
 
-                <div className={`flex w-full max-w-sm flex-col border-l border-slate-800 bg-slate-900/70 p-4 transition-all lg:flex ${activeView === 'members' ? 'flex' : 'hidden'}`}>
-                  <DiscordMemberList members={safeMembers} selectedMemberId={selectedMemberId} onSelectMember={setSelectedMemberId} />
-                  <DiscordUserProfile member={selectedMember} />
-                  {selectedChannel?.type === 'voice' ? (
+                <div
+                  className={cn(
+                    'flex w-full max-w-sm flex-col border-l border-slate-800 bg-slate-900/70 transition-all duration-300',
+                    'hidden lg:flex',
+                    activeView === 'members' ? 'flex' : 'hidden lg:flex'
+                  )}
+                >
+                  <MemberSidebar
+                    members={safeMembers}
+                    selectedMemberId={selectedMemberId}
+                    onSelectMember={handleSelectMember}
+                  />
+                  {selectedMember && (
+                    <UserProfilePopover
+                      member={selectedMember}
+                      onClose={() => setSelectedMemberId(null)}
+                    />
+                  )}
+                  {selectedChannel?.type === 'voice' && (
                     <DiscordVoicePanel
                       channel={selectedChannel}
                       isInVoiceChannel={isConnected}
@@ -419,7 +532,7 @@ const DiscordPage = () => {
                       onToggleAudio={toggleAudio}
                       onLeaveVoice={leaveVoice}
                     />
-                  ) : null}
+                  )}
                 </div>
               </div>
             </main>
@@ -439,18 +552,22 @@ const DiscordPage = () => {
 
       <footer className="flex items-center justify-between border-t border-slate-800 bg-slate-900/70 px-4 py-3 md:px-6">
         <div className="flex items-center gap-3 text-sm text-slate-400">
-          <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-emerald-300">
-            {connectionState === 'connected' ? <Wifi size={14} /> : <WifiOff size={14} />}
-            {connectionState === 'connected' ? 'Conectado' : connectionState === 'reconnecting' ? 'Reconectando...' : connectionState === 'disconnected' ? 'Desconectado' : 'Conectando...'}
-          </div>
-          <span className="hidden sm:inline">Bot: {botStatus?.status || 'offline'} • {botStatus?.guilds || 0} servidor(es)</span>
+          <ConnectionStatus status={connectionState} />
+          <span className="hidden text-slate-600 sm:inline">|</span>
+          <span className="hidden sm:inline">
+            Bot: {botStatus?.status || 'offline'} • {botStatus?.guilds || 0} servidor(es)
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <button className="rounded-full border border-slate-700 p-2 text-slate-400 hover:text-white" onClick={leaveVoice} title="Sair do voz">
+          <button
+            className="rounded-full border border-slate-700 p-2 text-slate-400 hover:text-white transition"
+            onClick={leaveVoice}
+            title="Sair do voz"
+          >
             <PhoneOff size={16} />
           </button>
           <button
-            className="rounded-full border border-slate-700 p-2 text-slate-400 hover:text-white disabled:opacity-60"
+            className="rounded-full border border-slate-700 p-2 text-slate-400 hover:text-white transition disabled:opacity-60"
             onClick={() => {
               const targetId = selectedChannel?.id || activeVoiceChannelId || '';
               if (!targetId) return;
@@ -464,10 +581,22 @@ const DiscordPage = () => {
           </button>
           <div className="flex items-center gap-2 rounded-full border border-slate-700 px-3 py-2 text-sm text-slate-300">
             <MessageCircleMore size={16} />
-            {user?.full_name || user?.username || 'Usuário'}
+            <span className="hidden sm:inline">{user?.full_name || user?.username || 'Usuário'}</span>
           </div>
         </div>
       </footer>
+
+      <ServerModal
+        isOpen={showServerModal}
+        onClose={() => setShowServerModal(false)}
+        onCreate={handleCreateServer}
+      />
+      <ChannelModal
+        isOpen={showChannelModal}
+        onClose={() => setShowChannelModal(false)}
+        onCreate={handleCreateChannel}
+        serverId={selectedServerId}
+      />
     </div>
   );
 };
