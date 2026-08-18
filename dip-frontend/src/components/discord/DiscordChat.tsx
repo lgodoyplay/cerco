@@ -9,6 +9,7 @@ const DiscordChat = ({ channel, onSelectMember }) => {
   const [messagesLoading, setMessagesLoading] = React.useState(true);
   const [sending, setSending] = React.useState(false);
   const [error, setError] = React.useState(null);
+  const [draft, setDraft] = React.useState('');
   const channelIdRef = useRef(channel?.id);
   const mountedRef = useRef(true);
 
@@ -64,6 +65,7 @@ const DiscordChat = ({ channel, onSelectMember }) => {
         const created = await fluxerSendMessage(cid, content.trim());
         if (mountedRef.current) {
           setMessages((prev) => [...prev, created]);
+          setDraft('');
         }
       } catch (err: any) {
         if (mountedRef.current) {
@@ -90,6 +92,8 @@ const DiscordChat = ({ channel, onSelectMember }) => {
         <MessageList messages={messages} loading={messagesLoading} onSelectMember={onSelectMember} />
       </div>
       <MessageComposer
+        draft={draft}
+        onDraftChange={setDraft}
         channelType={channel?.type || 'text'}
         channelName={channel?.name || ''}
         onSend={handleSend}
