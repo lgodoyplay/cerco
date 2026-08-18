@@ -43,6 +43,7 @@ import MemberSidebar from '../../../components/discord/MemberSidebar';
 import UserProfilePopover from '../../../components/discord/UserProfilePopover';
 import { ServerModal, ChannelModal } from '../../../components/discord/ServerModal';
 import ConnectionStatus from '../../../components/discord/ConnectionStatus';
+import FluxerFrame from '../../../components/discord/FluxerFrame';
 import DiscordVoicePanel from '../../../components/discord/DiscordVoicePanel';
 import DiscordVoiceMiniPlayer from '../../../components/discord/DiscordVoiceMiniPlayer';
 
@@ -447,116 +448,7 @@ const DiscordPage = () => {
             </div>
 
             <main className="flex min-w-0 flex-1 flex-col">
-              <ChannelHeader
-                channel={selectedChannel}
-                onToggleMembers={() => setActiveView('members')}
-                onRefresh={handleRefresh}
-                isRefreshing={isRefreshing}
-                onToggleMobileSidebar={() => setIsMobileSidebarOpen(true)}
-                onSearch={handleSearchMessages}
-              />
-
-              <div className="flex flex-1 overflow-hidden">
-                <section className="flex flex-1 flex-col">
-                  <div className="flex-1 overflow-y-auto px-4 py-4 md:px-6">
-                    {messagesLoading ? (
-                      <div className="space-y-4">
-                        {[...Array(5)].map((_, index) => (
-                          <div key={index} className="flex gap-4">
-                            <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-slate-800" />
-                            <div className="flex-1 space-y-2">
-                              <div className="h-4 w-48 animate-pulse rounded bg-slate-800" />
-                              <div className="h-3 w-full animate-pulse rounded bg-slate-800" />
-                              <div className="h-3 w-2/3 animate-pulse rounded bg-slate-800" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : isEmpty ? (
-                      <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-                        <div className="rounded-full border border-dashed border-slate-700 bg-slate-950/70 p-5 text-slate-500">
-                          <Radio size={40} />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-white">Nenhum servidor ainda</h3>
-                          <p className="mt-1 max-w-xs text-sm text-slate-400">
-                            Crie um servidor para começar a conversar com sua equipe.
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => setShowServerModal(true)}
-                          className="inline-flex items-center gap-2 rounded-full border border-federal-700 bg-federal-900/40 px-4 py-2 text-sm font-semibold text-federal-200 transition hover:bg-federal-800/60"
-                        >
-                          <Plus size={16} />
-                          Criar primeiro servidor
-                        </button>
-                      </div>
-                    ) : messages.length === 0 ? (
-                      <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-                        <div className="rounded-full border border-dashed border-slate-700 bg-slate-950/70 p-5 text-slate-500">
-                          <MessageCircleMore size={40} />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-white">Sem mensagens</h3>
-                          <p className="mt-1 max-w-xs text-sm text-slate-400">
-                            Envie a primeira mensagem para iniciar a conversa neste canal.
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <MessageList
-                        messages={messages}
-                        onSelectMember={(author) => {
-                          setSelectedMemberId(author.id);
-                        }}
-                      />
-                    )}
-                  </div>
-
-                  <div className="border-t border-slate-800 bg-slate-900/70 p-4 md:px-6">
-                    <MessageComposer
-                      draft={draft}
-                      onDraftChange={setDraft}
-                      onSend={handleSendMessage}
-                      onAttachFile={() => {}}
-                      channelType={selectedChannel?.type || 'text'}
-                      channelName={selectedChannel?.name || ''}
-                    />
-                  </div>
-                </section>
-
-                <div
-                  className={cn(
-                    'flex w-full max-w-sm flex-col border-l border-slate-800 bg-slate-900/70 transition-all duration-300',
-                    'hidden lg:flex',
-                    activeView === 'members' ? 'flex' : 'hidden lg:flex'
-                  )}
-                >
-                  <MemberSidebar
-                    members={safeMembers}
-                    selectedMemberId={selectedMemberId}
-                    onSelectMember={handleSelectMember}
-                  />
-                  {selectedMember && (
-                    <UserProfilePopover
-                      member={selectedMember}
-                      onClose={() => setSelectedMemberId(null)}
-                    />
-                  )}
-                  {selectedChannel?.type === 'voice' && (
-                    <DiscordVoicePanel
-                      channel={selectedChannel}
-                      isInVoiceChannel={isConnected}
-                      isMuted={voiceUiState.isMuted}
-                      isDeafened={voiceUiState.isDeafened}
-                      isSpeaking={voiceUiState.isSpeaking}
-                      onToggleMute={toggleMute}
-                      onToggleAudio={toggleAudio}
-                      onLeaveVoice={leaveVoice}
-                    />
-                  )}
-                </div>
-              </div>
+              <FluxerFrame />
             </main>
           </>
         )}
