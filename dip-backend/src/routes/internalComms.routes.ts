@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { internalCommsController } from '../controllers/internalCommsController';
+import { requireDashboardUser } from '../middleware/discordAuth';
 
 const router = Router();
+
+router.use(requireDashboardUser);
 
 router.get('/servers', internalCommsController.listServers);
 router.post('/servers', internalCommsController.createServer);

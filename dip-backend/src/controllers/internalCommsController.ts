@@ -2,6 +2,8 @@ import type { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import { broadcastInternalEvent } from '../websocket/socketServer';
 
+const asString = (value: unknown): string => (typeof value === 'string' ? value : Array.isArray(value) && value.length ? value[0] : '');
+
 export const internalCommsController = {
   async listServers(req: Request, res: Response) {
     try {
@@ -33,6 +35,8 @@ export const internalCommsController = {
   async createServer(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.id;
+      console.log('createServer', { userId, body: req.body });
+
       if (!userId) return res.status(401).json({ error: 'Não autorizado.' });
 
       const { name, icon_url } = req.body;
@@ -44,25 +48,32 @@ export const internalCommsController = {
         }
       });
 
-      await prisma.member.create({
-        data: {
-          serverId: server.id,
-          userId
-        }
-      });
+      console.log('server created', server.id);
 
-      broadcastInternalEvent('server:created', server);
+      try {
+        await prisma.member.create({
+          data: {
+            serverId: server.id,
+            userId
+          }
+        });
+        console.log('member created');
+      } catch (memberError) {
+        console.error('member error', memberError);
+      }
+
       return res.status(201).json(server);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Erro ao criar servidor:', error);
       return res.status(500).json({ error: 'Erro ao criar servidor.' });
     }
   },
 
   async listChannels(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const serverId = asString(req.params.id);
       const channels = await prisma.channel.findMany({
-        where: { serverId: id },
+        where: { serverId },
         orderBy: { position: 'asc' }
       });
       return res.json(channels);
@@ -73,12 +84,12 @@ export const internalCommsController = {
 
   async createChannel(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const serverId = asString(req.params.id);
       const { name, type } = req.body;
 
       const channel = await prisma.channel.create({
         data: {
-          serverId: id,
+          serverId,
           name,
           type: type === 'voice' ? 'voice' : 'text'
         }
@@ -93,20 +104,20 @@ export const internalCommsController = {
 
   async listMessages(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const channelId = asString(req.params.id);
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
       const limit = Math.min(100, parseInt(req.query.limit as string) || 50);
       const skip = (page - 1) * limit;
 
       const [messages, total] = await Promise.all([
         prisma.message.findMany({
-          where: { channelId: id },
+          where: { channelId },
           include: { author: { select: { id: true, nome: true } } },
           orderBy: { createdAt: 'desc' },
           skip,
           take: limit
         }),
-        prisma.message.count({ where: { channelId: id } })
+        prisma.message.count({ where: { channelId } })
       ]);
 
       return res.json({
@@ -120,13 +131,13 @@ export const internalCommsController = {
 
   async createMessage(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const channelId = asString(req.params.id);
       const userId = (req as any).user?.id;
       const { content, attachments } = req.body;
 
       const message = await prisma.message.create({
         data: {
-          channelId: id,
+          channelId,
           userId,
           content,
           attachments
@@ -143,9 +154,9 @@ export const internalCommsController = {
 
   async listMembers(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const serverId = asString(req.params.id);
       const members = await prisma.member.findMany({
-        where: { serverId: id },
+        where: { serverId },
         include: { user: { select: { id: true, nome: true, cargo: true, patente: true } } }
       });
       return res.json(members);

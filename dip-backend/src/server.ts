@@ -157,6 +157,14 @@ async function seedInternalComms() {
 let server: ReturnType<typeof app.listen>;
 
 async function startServer() {
+  console.log('DATABASE_URL:', process.env.DATABASE_URL);
+  
+  try {
+    await prisma.$connect();
+    console.log('Database connected');
+  } catch (error) {
+    console.error('Database connection error:', error);
+  }
   await seedAdmin();
   await seedInternalComms();
   server = httpServer.listen(PORT, () => {

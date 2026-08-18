@@ -2,6 +2,8 @@ import type { Request, Response } from 'express';
 import { discordBridgeService } from '../services/discordBridgeService';
 import { broadcastDiscordEvent } from '../websocket/socketServer';
 
+const asString = (value: unknown): string => (typeof value === 'string' ? value : Array.isArray(value) && value.length ? value[0] : '');
+
 export const discordController = {
   async getGuilds(req: Request, res: Response) {
     try {
@@ -14,7 +16,7 @@ export const discordController = {
 
   async getChannels(req: Request, res: Response) {
     try {
-      const channels = await discordBridgeService.getChannels(req.params.guildId);
+      const channels = await discordBridgeService.getChannels(asString(req.params.guildId));
       return res.json(channels);
     } catch (error) {
       return res.status(500).json({ error: 'Erro ao buscar canais do Discord.' });
@@ -23,7 +25,7 @@ export const discordController = {
 
   async getMembers(req: Request, res: Response) {
     try {
-      const members = await discordBridgeService.getMembers(req.params.guildId);
+      const members = await discordBridgeService.getMembers(asString(req.params.guildId));
       return res.json(members);
     } catch (error) {
       return res.status(500).json({ error: 'Erro ao buscar membros do Discord.' });
@@ -32,7 +34,7 @@ export const discordController = {
 
   async getMessages(req: Request, res: Response) {
     try {
-      const messages = await discordBridgeService.getMessages(req.params.channelId, {
+      const messages = await discordBridgeService.getMessages(asString(req.params.channelId), {
         limit: Number(req.query.limit || 50),
         before: typeof req.query.before === 'string' ? req.query.before : undefined,
       });
@@ -44,7 +46,7 @@ export const discordController = {
 
   async sendMessage(req: Request, res: Response) {
     try {
-      const result = await discordBridgeService.sendMessage(req.params.channelId, req.body?.content || '', req.body?.attachments);
+      const result = await discordBridgeService.sendMessage(asString(req.params.channelId), req.body?.content || '', req.body?.attachments);
       if (!result) {
         return res.status(502).json({ error: 'Bot indisponível para enviar mensagem.' });
       }
@@ -56,7 +58,7 @@ export const discordController = {
 
   async getMember(req: Request, res: Response) {
     try {
-      const member = await discordBridgeService.getMember(req.params.memberId);
+      const member = await discordBridgeService.getMember(asString(req.params.memberId));
       return res.json(member);
     } catch (error) {
       return res.status(500).json({ error: 'Erro ao buscar perfil do membro.' });
@@ -88,7 +90,7 @@ export const discordController = {
 
   async addReaction(req: Request, res: Response) {
     try {
-      const result = await discordBridgeService.addReaction(req.params.messageId, req.body?.emoji);
+      const result = await discordBridgeService.addReaction(asString(req.params.messageId), req.body?.emoji);
       return res.json(result);
     } catch (error) {
       return res.status(500).json({ error: 'Erro ao adicionar reação.' });
@@ -97,7 +99,7 @@ export const discordController = {
 
   async removeReaction(req: Request, res: Response) {
     try {
-      const result = await discordBridgeService.removeReaction(req.params.messageId, req.params.emoji);
+      const result = await discordBridgeService.removeReaction(asString(req.params.messageId), asString(req.params.emoji));
       return res.json(result);
     } catch (error) {
       return res.status(500).json({ error: 'Erro ao remover reação.' });

@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,65 +8,58 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  nome      String
-  login     String   @unique
-  senhaHash String
-  cargo     String
-  patente   String
-  permissoes String  // Stored as JSON string or comma-separated
-  ativo     Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id             String          @id @default(uuid())
+  nome           String
+  login          String          @unique
+  senhaHash      String
+  cargo          String
+  patente        String
+  permissoes     String
+  ativo          Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   arrests        Arrest[]
   bos            BO[]
   investigations Investigation[]
   logs           Log[]
-  ownedServers   Server[]     @relation("ServerOwner")
-  messages       Message[]
   memberships    Member[]
+  messages       Message[]
+  ownedServers   Server[]        @relation("ServerOwner")
   voiceSessions  VoiceSession[]
 }
 
 model Arrest {
-  id          String   @id @default(uuid())
-  nomePreso   String
-  documento   String
-  motivo      String
-  artigos     String
-  policialId  String
-  data        DateTime
-  status      String   @default("Preso") // Preso, Aguardando, Liberado
-  descricao   String?
-  
-  // Photos stored as paths
-  fotoRosto   String?
-  fotoBolsa   String?
-  fotoTablet  String?
+  id            String   @id @default(uuid())
+  nomePreso     String
+  documento     String
+  motivo        String
+  artigos       String
+  policialId    String
+  data          DateTime
+  status        String   @default("Preso")
+  descricao     String?
+  fotoRosto     String?
+  fotoBolsa     String?
+  fotoTablet    String?
   fotoAbordagem String?
-
-  policial    User     @relation(fields: [policialId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  policial      User     @relation(fields: [policialId], references: [id])
 }
 
 model Wanted {
-  id            String   @id @default(uuid())
-  nome          String
-  documento     String?
-  motivo        String
-  periculosidade String // Baixa, Media, Alta, Extrema
-  recompensa    String?
-  status        String   @default("Procurado") // Procurado, Capturado, Morto
-  
-  // Proofs/Images
-  fotoPrincipal String?
-  outrasFotos   String? // JSON string of paths
-
-  observacoes   String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String   @id @default(uuid())
+  nome           String
+  documento      String?
+  motivo         String
+  periculosidade String
+  recompensa     String?
+  status         String   @default("Procurado")
+  fotoPrincipal  String?
+  outrasFotos    String?
+  observacoes    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model BO {
@@ -80,38 +70,35 @@ model BO {
   data        DateTime
   policialId  String
   status      String   @default("Aberto")
-
-  policial    User     @relation(fields: [policialId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  policial    User     @relation(fields: [policialId], references: [id])
 }
 
 model Investigation {
-  id             String   @id @default(uuid())
+  id             String     @id @default(uuid())
   titulo         String
   descricao      String
   envolvidos     String?
-  prioridade     String?  @default("Média")
-  status         String   @default("Em Andamento") // Em Andamento, Finalizada, Arquivada
+  prioridade     String?    @default("Média")
+  status         String     @default("Em Andamento")
   investigadorId String
-  dataInicio     DateTime @default(now())
+  dataInicio     DateTime   @default(now())
   dataFim        DateTime?
-
-  investigador   User     @relation(fields: [investigadorId], references: [id])
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
   evidences      Evidence[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  investigador   User       @relation(fields: [investigadorId], references: [id])
 }
 
 model Evidence {
-  id              String   @id @default(uuid())
-  investigacaoId  String
-  tipo            String   // Imagem, Video, Documento, Audio
-  conteudo        String   // Path to file
-  descricao       String?
-  data            DateTime @default(now())
-
-  investigation   Investigation @relation(fields: [investigacaoId], references: [id], onDelete: Cascade)
+  id             String        @id @default(uuid())
+  investigacaoId String
+  tipo           String
+  conteudo       String
+  descricao      String?
+  data           DateTime      @default(now())
+  investigation  Investigation @relation(fields: [investigacaoId], references: [id], onDelete: Cascade)
 }
 
 model Log {
@@ -121,32 +108,29 @@ model Log {
   details   String?
   ip        String?
   createdAt DateTime @default(now())
-
   user      User?    @relation(fields: [userId], references: [id])
 }
 
 model Server {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
   iconUrl   String?
   ownerId   String
-  createdAt DateTime @default(now())
-
-  owner     User     @relation("ServerOwner", fields: [ownerId], references: [id])
+  createdAt DateTime  @default(now())
   channels  Channel[]
   members   Member[]
+  owner     User      @relation("ServerOwner", fields: [ownerId], references: [id])
 }
 
 model Channel {
-  id        String   @id @default(uuid())
-  serverId  String
-  name      String
-  type      String   @default("text") // text | voice
-  position  Int      @default(0)
-  createdAt DateTime @default(now())
-
-  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  messages  Message[]
+  id            String         @id @default(uuid())
+  serverId      String
+  name          String
+  type          String         @default("text")
+  position      Int            @default(0)
+  createdAt     DateTime       @default(now())
+  server        Server         @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  messages      Message[]
   voiceSessions VoiceSession[]
 }
 
@@ -157,30 +141,27 @@ model Message {
   content     String
   attachments String?
   createdAt   DateTime @default(now())
-
-  channel     Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
   author      User     @relation(fields: [userId], references: [id])
+  channel     Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
 }
 
 model Member {
-  id        String   @id @default(uuid())
-  serverId  String
-  userId    String
-  joinedAt  DateTime @default(now())
-
-  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
+  id       String   @id @default(uuid())
+  serverId String
+  userId   String
+  joinedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id])
+  server   Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
   @@unique([serverId, userId])
 }
 
 model VoiceSession {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   channelId String
   userId    String
-  joinedAt  DateTime @default(now())
+  joinedAt  DateTime  @default(now())
   leftAt    DateTime?
-
-  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  channel   Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
 }
