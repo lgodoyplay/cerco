@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal, Reply, Trash2, Pin, Copy, Flag, User, Paperclip } from 'lucide-react';
+import { MoreHorizontal, Reply, Trash2, Pin, Copy, Flag, User, Paperclip, MessageCircleMore } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { clsx } from 'clsx';
