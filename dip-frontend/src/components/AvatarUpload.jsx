@@ -48,27 +48,30 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
 
   const handleCropComplete = async (croppedImageBase64) => {
     try {
-        setCropModalOpen(false);
-        setUploading(true);
+      setCropModalOpen(false);
+      setUploading(true);
 
-        const res = await fetch(croppedImageBase64);
-        const blob = await res.blob();
-        const file = new File([blob], `avatar.${fileExt}`, { type: 'image/jpeg' });
-        
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${fileName}`;
-  
-        let { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
-  
-        if (uploadError) {
-          throw uploadError;
-        }
-  
-        onUpload(filePath);
+      const res = await fetch(croppedImageBase64);
+      const blob = await res.blob();
+      const localPreviewUrl = URL.createObjectURL(blob);
+      setAvatarUrl(localPreviewUrl);
+
+      const file = new File([blob], `avatar.${fileExt}`, { type: 'image/jpeg' });
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      let { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      onUpload(filePath);
     } catch (error) {
-        alert(error.message);
+      console.error('Erro ao salvar avatar:', error);
+      alert(error.message || 'Não foi possível salvar a foto.');
     } finally {
-        setUploading(false);
+      setUploading(false);
     }
   };
 
