@@ -391,7 +391,7 @@ create policy "Apenas admins podem atualizar integration_requests"
 create table public.live_streams (
   id uuid default uuid_generate_v4() primary key,
   user_id uuid references public.profiles(id) not null,
-  links text[] not null default '{}',
+  links jsonb not null default '[]'::jsonb,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
