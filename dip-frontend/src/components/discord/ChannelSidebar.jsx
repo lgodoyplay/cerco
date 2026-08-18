@@ -148,13 +148,13 @@ const ServerSidebar = ({
                   <option value="text">Texto</option>
                   <option value="voice">Voz</option>
                 </select>
-                <button
-                  onClick={onCreateChannel}
-                  disabled={isCreatingChannel || !newChannelName.trim()}
-                  className="rounded-lg border border-federal-700 bg-federal-900/40 px-3 py-2 text-xs font-semibold text-federal-200 transition hover:bg-federal-800/60 disabled:opacity-50"
-                >
-                  Criar
-                </button>
+                 <button
+                   onClick={() => onCreateChannel(selectedServerId, newChannelName, newChannelType)}
+                   disabled={isCreatingChannel || !newChannelName.trim()}
+                   className="rounded-lg border border-federal-700 bg-federal-900/40 px-3 py-2 text-xs font-semibold text-federal-200 transition hover:bg-federal-800/60 disabled:opacity-50"
+                 >
+                   Criar
+                 </button>
               </div>
             </div>
           ) : (

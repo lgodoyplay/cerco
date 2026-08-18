@@ -284,15 +284,30 @@ const DiscordPage = () => {
   };
 
   const handleCreateChannel = async (serverId, name, type) => {
+    const targetServerId =
+      typeof serverId === 'object' && serverId !== null
+        ? serverId.id
+        : serverId;
+
+    if (!targetServerId) {
+      console.error('Erro ao criar canal: serverId inválido', { serverId });
+      return;
+    }
+
     setIsCreatingChannel(true);
     try {
-      const channel = await createChannel(serverId, name, type);
+      const channel = await createChannel(targetServerId, name, type);
       setChannels((prev) => [...prev, channel]);
       setNewChannelName('');
       setSelectedChannelId(channel.id);
       setActiveView('chat');
     } catch (error) {
-      console.error('Erro ao criar canal:', error);
+      console.error('Erro ao criar canal:', {
+        error,
+        serverId: targetServerId,
+        name,
+        type,
+      });
     } finally {
       setIsCreatingChannel(false);
     }
@@ -413,6 +428,8 @@ const DiscordPage = () => {
               </div>
               <ChannelSidebar
                 server={selectedServer}
+                servers={safeServers}
+                selectedServerId={selectedServerId}
                 channels={channelsLoading ? [] : safeChannels}
                 selectedChannelId={selectedChannelId}
                 selectedChannel={selectedChannel}
