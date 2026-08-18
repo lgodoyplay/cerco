@@ -10,11 +10,9 @@ import {
   ChevronDown,
   X,
   Menu,
+  Phone,
+  Video,
 } from 'lucide-react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-const cn = (...inputs) => twMerge(clsx(inputs));
 
 const ChannelHeader = ({
   channel,
@@ -23,6 +21,8 @@ const ChannelHeader = ({
   isRefreshing,
   onToggleMobileSidebar,
   onSearch,
+  onStartVoiceCall,
+  onStartVideoCall,
 }) => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -42,6 +42,8 @@ const ChannelHeader = ({
     setSearchValue(value);
     onSearch?.(value);
   };
+
+  const isCallable = channel?.type === 'text' || !channel?.type;
 
   return (
     <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/80 px-4 py-3 backdrop-blur-sm transition-all">
@@ -94,6 +96,25 @@ const ChannelHeader = ({
             </div>
           )}
         </div>
+
+        {isCallable && (
+          <>
+            <button
+              onClick={() => onStartVoiceCall?.(channel?.id)}
+              className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+              title="Chamada de voz"
+            >
+              <Phone size={16} />
+            </button>
+            <button
+              onClick={() => onStartVideoCall?.(channel?.id)}
+              className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+              title="Chamada de vídeo"
+            >
+              <Video size={16} />
+            </button>
+          </>
+        )}
 
         <button
           onClick={onRefresh}

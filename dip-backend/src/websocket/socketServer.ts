@@ -49,6 +49,18 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
     socket.on('disconnect', () => {
       // conexão encerrada
     });
+
+    socket.on('call:join', (conversationId: string) => {
+      if (conversationId) {
+        socket.join(conversationId);
+      }
+    });
+
+    socket.on('call:leave', (conversationId: string) => {
+      if (conversationId) {
+        socket.leave(conversationId);
+      }
+    });
   });
 
   return io;
@@ -79,5 +91,21 @@ export const broadcastInternalEvent = (eventType: string, payload: Record<string
 
   if (payload.serverId) {
     io.to(String(payload.serverId)).emit(eventType, payload);
+  }
+
+  if (payload.conversationId) {
+    io.to(String(payload.conversationId)).emit(eventType, payload);
+  }
+};
+
+export const broadcastCallEvent = (eventType: string, payload: Record<string, unknown>) => {
+  if (!io) {
+    return;
+  }
+
+  io.emit(eventType, payload);
+
+  if (payload.conversationId) {
+    io.to(String(payload.conversationId)).emit(eventType, payload);
   }
 };

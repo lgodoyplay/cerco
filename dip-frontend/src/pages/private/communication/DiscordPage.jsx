@@ -17,6 +17,8 @@ import {
   Menu,
   X,
   Plus,
+  Phone,
+  Video,
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import {
@@ -45,6 +47,10 @@ import { ServerModal, ChannelModal } from '../../../components/discord/ServerMod
 import ConnectionStatus from '../../../components/discord/ConnectionStatus';
 import VoicePanel from '../../../components/discord/VoicePanel';
 import DiscordVoiceMiniPlayer from '../../../components/discord/DiscordVoiceMiniPlayer';
+import JitsiCall from '../../../components/chat/JitsiCall';
+import {
+  fluxerCreateJitsiRoom,
+} from '../../../services/fluxer/api';
 
 const DiscordPage = () => {
   const { user } = useAuth();
@@ -73,6 +79,9 @@ const DiscordPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isMobileMembersOpen, setIsMobileMembersOpen] = useState(false);
+  const [activeJitsiCall, setActiveJitsiCall] = useState(null);
+  const [isJitsiMinimized, setIsJitsiMinimized] = useState(false);
+  const [jitsiError, setJitsiError] = useState(null);
 
   const safeServers = Array.isArray(servers) ? servers : [];
   const safeChannels = Array.isArray(channels) ? channels : [];
@@ -185,6 +194,16 @@ const DiscordPage = () => {
           fluxerVoiceService.setParticipants(
             Array.isArray(data.payload?.participants) ? data.payload.participants : []
           );
+        } else if (data?.event === 'CALL_STARTED') {
+          setActiveJitsiCall({
+            conversationId: data.payload?.conversationId,
+            roomName: data.payload?.roomName,
+            domain: data.payload?.domain || 'meet.jit.si',
+            type: data.payload?.type || 'voice',
+          });
+        } else if (data?.event === 'CALL_ENDED') {
+          setActiveJitsiCall(null);
+          setIsJitsiMinimized(false);
         }
       }
     });
@@ -331,6 +350,33 @@ const DiscordPage = () => {
     setVoiceError(null);
   };
 
+  const handleStartJitsiCall = async (channelId, callType = 'voice') => {
+    if (!channelId) return;
+    setJitsiError(null);
+    try {
+      const room = await fluxerCreateJitsiRoom(channelId, callType);
+      setActiveJitsiCall({
+        conversationId: channelId,
+        roomName: room.roomName,
+        domain: room.domain,
+        type: callType,
+      });
+      setIsJitsiMinimized(false);
+    } catch (error) {
+      console.error('Erro ao iniciar chamada Jitsi:', error);
+      setJitsiError(error?.message || 'Não foi possível iniciar a chamada.');
+    }
+  };
+
+  const handleEndJitsiCall = () => {
+    setActiveJitsiCall(null);
+    setIsJitsiMinimized(false);
+  };
+
+  const handleToggleJitsiMinimize = () => {
+    setIsJitsiMinimized((prev) => !prev);
+  };
+
   const handleSendMessage = useCallback(
     async (content) => {
       if (!selectedChannelId || !content.trim()) return;
@@ -375,6 +421,21 @@ const DiscordPage = () => {
           </span>
           <button
             onClick={() => setVoiceError(null)}
+            className="rounded-full border border-amber-500/30 px-3 py-1 text-xs text-amber-100 hover:bg-amber-500/20 transition"
+          >
+            Fechar
+          </button>
+        </div>
+      )}
+
+      {jitsiError && (
+        <div className="flex items-center justify-between border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-200">
+          <span className="flex items-center gap-2">
+            <AlertCircle size={16} />
+            {jitsiError}
+          </span>
+          <button
+            onClick={() => setJitsiError(null)}
             className="rounded-full border border-amber-500/30 px-3 py-1 text-xs text-amber-100 hover:bg-amber-500/20 transition"
           >
             Fechar
@@ -449,8 +510,33 @@ const DiscordPage = () => {
               />
             </div>
 
-            <main className="flex min-w-0 flex-1 flex-col">
-              <DiscordChat channel={selectedChannel} onSelectMember={handleSelectMember} />
+            <main className="flex min-w-0 flex-1 flex-col relative">
+              <div className={'flex-1 flex flex-col min-w-0 ' + (activeJitsiCall && !isJitsiMinimized ? 'hidden' : '')}>
+                <DiscordChat
+                  channel={selectedChannel}
+                  onSelectMember={handleSelectMember}
+                  onStartVoiceCall={(channelId) => handleStartJitsiCall(channelId, 'voice')}
+                  onStartVideoCall={(channelId) => handleStartJitsiCall(channelId, 'video')}
+                />
+              </div>
+              {activeJitsiCall && (
+                <JitsiCall
+                  conversationId={activeJitsiCall.conversationId}
+                  user={user}
+                  type={activeJitsiCall.type}
+                  roomName={activeJitsiCall.roomName}
+                  domain={activeJitsiCall.domain}
+                  isMinimized={isJitsiMinimized}
+                  onToggleMinimize={handleToggleJitsiMinimize}
+                  onClose={handleEndJitsiCall}
+                  onEnded={handleEndJitsiCall}
+                  className={
+                    isJitsiMinimized
+                      ? 'absolute bottom-4 right-4 w-72 h-48 z-30'
+                      : 'absolute inset-0 z-30 bg-slate-950'
+                  }
+                />
+              )}
             </main>
           </>
         )}

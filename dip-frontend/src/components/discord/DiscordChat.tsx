@@ -4,7 +4,7 @@ import MessageComposer from './MessageComposer';
 import ChannelHeader from './ChannelHeader';
 import { fluxerGetMessages, fluxerSendMessage } from '../../services/fluxer/api';
 
-const DiscordChat = ({ channel, onSelectMember }) => {
+const DiscordChat = ({ channel, onSelectMember, onStartVoiceCall, onStartVideoCall }) => {
   const [messages, setMessages] = React.useState([]);
   const [messagesLoading, setMessagesLoading] = React.useState(true);
   const [sending, setSending] = React.useState(false);
@@ -82,7 +82,7 @@ const DiscordChat = ({ channel, onSelectMember }) => {
 
   return (
     <div className="flex h-full w-full flex-col">
-      <ChannelHeader channel={channel} />
+      <ChannelHeader channel={channel} onStartVoiceCall={onStartVoiceCall} onStartVideoCall={onStartVideoCall} />
       {error && (
         <div className="border-b border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-300">
           {error}

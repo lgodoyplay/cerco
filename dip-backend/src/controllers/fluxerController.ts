@@ -216,4 +216,20 @@ export const fluxerController = {
       return res.status(502).json({ error: 'Falha ao obter informações do Gateway.' });
     }
   },
+
+  async createJitsiRoom(req: Request, res: Response) {
+    try {
+      const conversationId = asString(req.body?.conversationId);
+      const type = req.body?.type === 'video' ? 'video' : 'voice';
+      if (!conversationId) {
+        return res.status(400).json({ error: 'conversationId é obrigatório.' });
+      }
+      const { createJitsiRoom } = await import('../services/jitsi/jitsiService.js');
+      const room = createJitsiRoom(conversationId, type);
+      return res.status(201).json(room);
+    } catch (error: any) {
+      console.error('[Jitsi] createJitsiRoom erro:', error?.message || error);
+      return res.status(500).json({ error: 'Erro ao criar sala Jitsi.' });
+    }
+  },
 };

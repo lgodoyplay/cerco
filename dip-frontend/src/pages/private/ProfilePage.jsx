@@ -78,8 +78,8 @@ const ProfilePage = () => {
         .from('live_streams')
         .select('*')
         .eq('user_id', user.id)
-        .single();
-      if (error && error.code !== 'PGRST116') throw error;
+        .maybeSingle();
+      if (error) throw error;
       setLiveStream(data || null);
     } catch (error) {
       console.error('Error loading live stream:', error.message);

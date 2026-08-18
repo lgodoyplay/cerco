@@ -105,4 +105,18 @@ export const discordController = {
       return res.status(500).json({ error: 'Erro ao remover reação.' });
     }
   },
+
+  async createJitsiRoom(req: Request, res: Response) {
+    try {
+      const conversationId = asString(req.body?.conversationId) || asString(req.params.conversationId);
+      const type = req.body?.type === 'video' ? 'video' : 'voice';
+      if (!conversationId) {
+        return res.status(400).json({ error: 'conversationId é obrigatório.' });
+      }
+      const room = await (await import('../services/jitsi/jitsiService.js')).createJitsiRoom(conversationId, type);
+      return res.json(room);
+    } catch (error) {
+      return res.status(500).json({ error: 'Erro ao criar sala Jitsi.' });
+    }
+  },
 };

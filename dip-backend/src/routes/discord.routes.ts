@@ -15,5 +15,6 @@ router.get('/bot/status', requireDashboardUser, discordController.getBotStatus);
 router.put('/messages/:messageId/reactions', requireDashboardUser, discordController.addReaction);
 router.delete('/messages/:messageId/reactions/:emoji', requireDashboardUser, discordController.removeReaction);
 router.post('/bot/events', requireBotSecret, discordController.handleBotEvent);
+router.post('/jitsi/room', requireDashboardUser, discordController.createJitsiRoom);
 
 export default router;

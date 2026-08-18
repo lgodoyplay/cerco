@@ -91,3 +91,8 @@ export const fluxerEndVoiceCall = (channelId: string) =>
   request<any>(`/channels/${encodeURIComponent(channelId)}/call/end`, { method: 'POST' });
 export const fluxerGetBotStatus = () => request<any>('/bot/status');
 export const fluxerGetGatewayInfo = () => request<any>('/gateway/bot');
+export const fluxerCreateJitsiRoom = (conversationId: string, type: 'voice' | 'video' = 'voice') =>
+  request<{ roomName: string; domain: string; type: 'voice' | 'video' }>('/jitsi/room', {
+    method: 'POST',
+    body: JSON.stringify({ conversationId, type }),
+  });

@@ -17,5 +17,6 @@ router.post('/channels/:channelId/call', fluxerController.startVoiceCall);
 router.post('/channels/:channelId/call/end', fluxerController.endVoiceCall);
 router.get('/bot/status', fluxerController.getBotStatus);
 router.get('/gateway/bot', fluxerController.gatewayInfo);
+router.post('/jitsi/room', fluxerController.createJitsiRoom);
 
 export default router;
