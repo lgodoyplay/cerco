@@ -89,6 +89,13 @@ export default defineConfig({
             urlPattern: /^https?:\/\/.*\/api\/.*$/,
             handler: 'NetworkOnly',
           },
+          {
+            urlPattern: ({ request }) =>
+              request.url.includes('/socket.io/') ||
+              request.headers.get('upgrade')?.toLowerCase() === 'websocket' ||
+              request.headers.get('sec-websocket-key') !== null,
+            handler: 'NetworkOnly',
+          },
         ],
       },
       devOptions: {

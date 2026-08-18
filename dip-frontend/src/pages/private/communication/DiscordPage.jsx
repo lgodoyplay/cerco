@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Compass, MessageCircleMore, Mic, PhoneOff, Users, Radio, MoreHorizontal } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { getGuilds, getChannels, getMembers, getMessages, sendMessage, getMember, getBotStatus, createGuild, createChannel, joinVoice, leaveVoice } from '../../../services/internalComms/internalApi';
-import { discordSocket } from '../../../services/internalComms/internalSocket';
 import DiscordServerList from '../../../components/discord/DiscordServerList';
 import DiscordChannelSidebar from '../../../components/discord/DiscordChannelSidebar';
 import DiscordMessageList from '../../../components/discord/DiscordMessageList';
@@ -97,60 +96,28 @@ const DiscordPage = () => {
   }, [selectedChannelId]);
 
   useEffect(() => {
-    const listener = (event) => {
-      if (event?.type === 'connected') {
-        setConnectionState('connected');
-      } else if (event?.type === 'disconnected') {
-        setConnectionState('disconnected');
-      } else if (event?.type === 'discord:message:create') {
-        setMessages((prev) => {
-          const exists = prev.some((item) => item.id === event.payload?.messageId);
-          if (exists) return prev;
-          return [
-            ...prev,
-            {
-              id: event.payload?.messageId,
-              channelId: event.payload?.channelId,
-              author: {
-                id: event.payload?.authorId,
-                name: event.payload?.authorName,
-                role: 'Discord',
-                avatar: event.payload?.authorName?.slice(0, 2).toUpperCase() || 'DC',
-                status: 'online',
-              },
-              content: event.payload?.content,
-              timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-            },
-          ];
-        });
-      } else if (event?.type === 'discord:message:update') {
-        setMessages((prev) => prev.map((item) => item.id === event.payload?.messageId ? { ...item, content: event.payload?.content } : item));
-      } else if (event?.type === 'discord:message:delete') {
-        setMessages((prev) => prev.filter((item) => item.id !== event.payload?.messageId));
-      } else if (event?.type === 'discord:member:join' || event?.type === 'discord:member:leave') {
-        const refreshMembers = async () => {
-          if (selectedServerId) {
-            const memberData = await getMembers(selectedServerId);
-            setMembers(Array.isArray(memberData) ? memberData : []);
-          }
-        };
-        refreshMembers();
+    let mounted = true;
+
+    const loadStatus = async () => {
+      try {
+        const status = await getBotStatus();
+        if (mounted) {
+          setBotStatus(status || { status: 'offline', uptime: 0, latency: 0, guilds: 0 });
+          setConnectionState('connected');
+        }
+      } catch (error) {
+        if (mounted) {
+          setConnectionState('disconnected');
+        }
       }
     };
 
-    discordSocket.on(listener);
-    discordSocket.connect();
-
-    const loadStatus = async () => {
-      const status = await getBotStatus();
-      setBotStatus(status || { status: 'offline', uptime: 0, latency: 0, guilds: 0 });
-    };
     loadStatus();
 
     return () => {
-      discordSocket.off(listener);
+      mounted = false;
     };
-  }, [selectedServerId]);
+  }, []);
 
   const handleSendMessage = async (event) => {
     if (event?.preventDefault) {
@@ -241,34 +208,34 @@ const DiscordPage = () => {
   };
 
   return (
-      <div className="flex h-[calc(100dvh-8rem)] min-h-[680px] flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/80 shadow-2xl shadow-black/30">
-        <div className="flex flex-1 overflow-hidden">
-          <DiscordServerList
-            servers={serversLoading ? [] : servers}
-            selectedServerId={selectedServerId}
-            onSelectServer={async (serverId) => {
-              setSelectedServerId(serverId);
-              setChannelsLoading(true);
-              try {
-                const channelData = await getChannels(serverId);
-                const normalizedChannels = Array.isArray(channelData) ? channelData : [];
-                setChannels(normalizedChannels);
-                const textChannel = normalizedChannels.find((channel) => channel.type === 'text');
-                setSelectedChannelId(textChannel?.id || '');
-                const memberData = await getMembers(serverId);
-                setMembers(Array.isArray(memberData) ? memberData : []);
-              } catch (error) {
-                console.error('Erro ao trocar de servidor:', error);
-              } finally {
-                setChannelsLoading(false);
-              }
-              setActiveView('chat');
-            }}
-            onCreateServer={handleCreateServer}
-            isCreatingServer={isCreatingServer}
-            newServerName={newServerName}
-            onNewServerNameChange={setNewServerName}
-          />
+    <div className="flex h-[calc(100dvh-8rem)] min-h-[680px] flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/80 shadow-2xl shadow-black/30">
+      <div className="flex flex-1 overflow-hidden">
+        <DiscordServerList
+          servers={serversLoading ? [] : servers}
+          selectedServerId={selectedServerId}
+          onSelectServer={async (serverId) => {
+            setSelectedServerId(serverId);
+            setChannelsLoading(true);
+            try {
+              const channelData = await getChannels(serverId);
+              const normalizedChannels = Array.isArray(channelData) ? channelData : [];
+              setChannels(normalizedChannels);
+              const textChannel = normalizedChannels.find((channel) => channel.type === 'text');
+              setSelectedChannelId(textChannel?.id || '');
+              const memberData = await getMembers(serverId);
+              setMembers(Array.isArray(memberData) ? memberData : []);
+            } catch (error) {
+              console.error('Erro ao trocar de servidor:', error);
+            } finally {
+              setChannelsLoading(false);
+            }
+            setActiveView('chat');
+          }}
+          onCreateServer={handleCreateServer}
+          isCreatingServer={isCreatingServer}
+          newServerName={newServerName}
+          onNewServerNameChange={setNewServerName}
+        />
 
         <DiscordChannelSidebar
           server={selectedServer}
