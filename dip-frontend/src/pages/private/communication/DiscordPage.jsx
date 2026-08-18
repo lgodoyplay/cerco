@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import {
   Compass,
   MessageCircleMore,
@@ -29,6 +31,8 @@ import {
   joinVoice,
   leaveVoice,
 } from '../../../services/internalComms/internalApi';
+
+const cn = (...inputs) => twMerge(clsx(inputs));
 import ServerSidebar from '../../../components/discord/ServerSidebar';
 import ChannelSidebar from '../../../components/discord/ChannelSidebar';
 import ChannelHeader from '../../../components/discord/ChannelHeader';
