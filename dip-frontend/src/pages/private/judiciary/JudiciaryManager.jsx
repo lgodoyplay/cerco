@@ -475,7 +475,7 @@ const JudiciaryManager = () => {
         title: titles[status] || "Atualização Jurídica",
         color: colors[status] || 0x000000,
         fields: fields,
-        footer: { text: "Sistema Judiciário - CIVIL EUFORIA" },
+        footer: { text: "Sistema Judiciário - FEDERAL EUFORIA" },
         timestamp: new Date().toISOString()
       };
 

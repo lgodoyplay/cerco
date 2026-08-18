@@ -34,6 +34,18 @@ export const initializeSocketServer = (httpServer: HttpServer) => {
       }
     });
 
+    socket.on('internal:join:server', (serverId: string) => {
+      if (serverId) {
+        socket.join(serverId);
+      }
+    });
+
+    socket.on('internal:join:voice', (channelId: string) => {
+      if (channelId) {
+        socket.join(channelId);
+      }
+    });
+
     socket.on('disconnect', () => {
       // conexão encerrada
     });
@@ -51,5 +63,21 @@ export const broadcastDiscordEvent = (event: { type: string; payload?: Record<st
 
   if (event.payload?.channelId) {
     io.to(String(event.payload.channelId)).emit('discord:event', event);
+  }
+};
+
+export const broadcastInternalEvent = (eventType: string, payload: Record<string, unknown>) => {
+  if (!io) {
+    return;
+  }
+
+  io.emit(eventType, payload);
+
+  if (payload.channelId) {
+    io.to(String(payload.channelId)).emit(eventType, payload);
+  }
+
+  if (payload.serverId) {
+    io.to(String(payload.serverId)).emit(eventType, payload);
   }
 };

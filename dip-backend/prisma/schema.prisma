@@ -26,6 +26,10 @@ model User {
   bos            BO[]
   investigations Investigation[]
   logs           Log[]
+  ownedServers   Server[]     @relation("ServerOwner")
+  messages       Message[]
+  memberships    Member[]
+  voiceSessions  VoiceSession[]
 }
 
 model Arrest {
@@ -119,4 +123,64 @@ model Log {
   createdAt DateTime @default(now())
 
   user      User?    @relation(fields: [userId], references: [id])
+}
+
+model Server {
+  id        String   @id @default(uuid())
+  name      String
+  iconUrl   String?
+  ownerId   String
+  createdAt DateTime @default(now())
+
+  owner     User     @relation("ServerOwner", fields: [ownerId], references: [id])
+  channels  Channel[]
+  members   Member[]
+}
+
+model Channel {
+  id        String   @id @default(uuid())
+  serverId  String
+  name      String
+  type      String   @default("text") // text | voice
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  voiceSessions VoiceSession[]
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  channelId   String
+  userId      String
+  content     String
+  attachments Json?
+  createdAt   DateTime @default(now())
+
+  channel     Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  author      User     @relation(fields: [userId], references: [id])
+}
+
+model Member {
+  id        String   @id @default(uuid())
+  serverId  String
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([serverId, userId])
+}
+
+model VoiceSession {
+  id        String   @id @default(uuid())
+  channelId String
+  userId    String
+  joinedAt  DateTime @default(now())
+  leftAt    DateTime?
+
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
 }

@@ -442,7 +442,7 @@ const WeaponsManager = () => {
         description: `Fluxo do porte de armas atualizado para ${license.full_name}.`,
         color: colors[newStatus] || 0x000000,
         actorName: resolveWebhookActorName(user),
-        footerText: 'Sistema de Armas - CIVIL EUFORIA',
+        footerText: 'Sistema de Armas - FEDERAL EUFORIA',
         fields: [
           { name: 'Solicitante', value: license.full_name, inline: true },
           { name: 'Passaporte', value: license.passport_id, inline: true },

@@ -16,6 +16,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 import bcrypt from 'bcryptjs';
 import http from 'http';
 import discordRoutes from './routes/discord.routes';
+import internalCommsRoutes from './routes/internalComms.routes';
 import { initializeSocketServer } from './websocket/socketServer';
 
 dotenv.config();
@@ -50,13 +51,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-bot-secret'],
 }));
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-bot-secret');
-  res.sendStatus(204);
-});
 app.use(express.json({ limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
@@ -89,6 +83,7 @@ app.use('/investigations', investigationRoutes);
 app.use('/public', publicRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/api/discord', discordRoutes);
+app.use('/api', internalCommsRoutes);
 
 app.get('/', (req, res) => {
   res.send('API Polícia Federal Backend is running');

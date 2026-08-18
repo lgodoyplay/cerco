@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Compass, MessageCircleMore, Mic, PhoneOff, Users, Radio, MoreHorizontal } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
-import { getGuilds, getChannels, getMembers, getMessages, sendMessage, getMember, getBotStatus } from '../../../services/discord/discordApi';
-import { discordSocket } from '../../../services/discord/discordSocket';
+import { getGuilds, getChannels, getMembers, getMessages, sendMessage, getMember, getBotStatus } from '../../../services/internalComms/internalApi';
+import { discordSocket } from '../../../services/internalComms/internalSocket';
 import DiscordServerList from '../../../components/discord/DiscordServerList';
 import DiscordChannelSidebar from '../../../components/discord/DiscordChannelSidebar';
 import DiscordMessageList from '../../../components/discord/DiscordMessageList';

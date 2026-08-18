@@ -29,7 +29,7 @@ const drawHeader = (doc, config = DEFAULT_PAGE_HEADER_CONFIG) => {
     doc.setTextColor(0, 0, 0);
     doc.text(config.line1 || 'ESTADO DA EUFORIA', doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
     doc.text(config.line2 || 'SECRETARIA DE SEGURANÇA PÚBLICA', doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
-    doc.text(config.line3 || 'CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
+    doc.text(config.line3 || 'FEDERAL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
     doc.setLineWidth(0.5);
     doc.line(left, 40, doc.internal.pageSize.getWidth() - right, 40);
 };
@@ -81,7 +81,7 @@ export const generateInvestigationPDF = (investigation, user) => {
         doc.text('RELATÓRIO FINAL DE INQUÉRITO POLICIAL', pageWidth / 2, yPos, { align: 'center' });
         yPos += 10;
         
-        const formattedId = `CIVIL EUFORIA - ${String(investigation.id).padStart(3, '0')}`;
+        const formattedId = `FEDERAL EUFORIA - ${String(investigation.id).padStart(3, '0')}`;
         doc.setFontSize(DEFAULT_SIZES.body);
         doc.text(`PROTOCOLO Nº: ${formattedId}/${new Date().getFullYear()}`, pageWidth / 2, yPos, { align: 'center' });
         yPos += 20;
@@ -417,7 +417,7 @@ export const generateBOReportPDF = (bo, user) => {
         yPos += 5;
         doc.setFont(DEFAULT_FONTS.normal, 'normal');
         doc.setFontSize(9);
-        doc.text('AGENTE DA CIVIL EUFORIA', pageWidth / 2, yPos, { align: 'center' });
+        doc.text('AGENTE DA FEDERAL EUFORIA', pageWidth / 2, yPos, { align: 'center' });
         doc.text(`Matrícula: ${officerBadge}`, pageWidth / 2, yPos + 4, { align: 'center' });
 
         addFooterToAllPages(doc, bo.id, 'BO');
@@ -500,7 +500,7 @@ export const generateArrestPDF = (arrest, user) => {
         yPos += 5;
         doc.setFont(DEFAULT_FONTS.normal, 'normal');
         doc.setFontSize(9);
-        doc.text('AGENTE DA CIVIL EUFORIA', pageWidth / 2, yPos, { align: 'center' });
+        doc.text('AGENTE DA FEDERAL EUFORIA', pageWidth / 2, yPos, { align: 'center' });
         doc.text(`Matrícula: ${officerBadge}`, pageWidth / 2, yPos + 4, { align: 'center' });
 
         addFooterToAllPages(doc, arrest.id, 'AUTO');
@@ -564,7 +564,7 @@ export const generateWantedPDF = (person, user) => {
         yPos += 8;
 
         doc.setFont(DEFAULT_FONTS.normal, 'normal');
-        const bodyText = 'Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades da CIVIL EUFORIA.';
+        const bodyText = 'Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades da FEDERAL EUFORIA.';
         lines = doc.splitTextToSize(bodyText, width);
         doc.text(lines, DEFAULT_MARGINS.left, yPos);
         yPos += lines.length * 6 + 20;
@@ -594,5 +594,5 @@ export const generateWantedPDF = (person, user) => {
 const DEFAULT_PAGE_HEADER_CONFIG = {
     line1: 'ESTADO DA EUFORIA',
     line2: 'SECRETARIA DE SEGURANÇA PÚBLICA',
-    line3: 'CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS'
+    line3: 'FEDERAL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS'
 };

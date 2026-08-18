@@ -92,7 +92,7 @@ const Corregedoria = () => {
         description: detalhes,
         color: 0xdc2626,
         actorName: nome,
-        footerText: 'Sistema CIVIL EUFORIA - Corregedoria',
+        footerText: 'Sistema FEDERAL EUFORIA - Corregedoria',
         fields: [
           { name: 'Origem', value: 'Formulario publico', inline: true },
           { name: 'Anexos / Provas', value: formatWebhookAttachments(anexos), inline: false }
@@ -165,7 +165,7 @@ const Corregedoria = () => {
             Corregedoria
           </h1>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-            Envie denúncias, provas e informações diretamente para a Corregedoria da CIVIL EUFORIA.
+            Envie denúncias, provas e informações diretamente para a Corregedoria da FEDERAL EUFORIA.
             Sua colaboração é fundamental para mantermos a integridade da instituição.
           </p>
         </div>

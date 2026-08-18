@@ -137,7 +137,7 @@ const DashboardHome = () => {
               await supabase.from('profiles').update({ passport_id: profile.codigo_funcional }).eq('id', user.id);
             }
           } else {
-            const newCode = 'CIVIL EUFORIA-' + Math.floor(100000 + Math.random() * 900000);
+            const newCode = 'FEDERAL EUFORIA-' + Math.floor(100000 + Math.random() * 900000);
             const { error: updateError } = await supabase
               .from('profiles')
               .update({ passport_id: newCode })

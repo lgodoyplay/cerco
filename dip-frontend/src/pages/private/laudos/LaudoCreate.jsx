@@ -64,7 +64,7 @@ const LaudoCreate = () => {
             description: formData.conteudo,
             color: 0x059669,
             actorName: resolveWebhookActorName(user),
-            footerText: 'Sistema CIVIL EUFORIA - Laudos Medicos',
+            footerText: 'Sistema FEDERAL EUFORIA - Laudos Medicos',
             fields: [
               { name: 'Paciente', value: formData.paciente_nome, inline: true },
               { name: 'Documento', value: formData.paciente_documento, inline: true },

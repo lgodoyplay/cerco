@@ -79,7 +79,7 @@ export const DEFAULT_TEMPLATE_LAYOUTS = {
 export const DEFAULT_PAGE_HEADER_CONFIG = {
     line1: 'ESTADO DA EUFORIA',
     line2: 'SECRETARIA DE SEGURANCA PUBLICA',
-    line3: 'CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGACAO DE NARCOTICOS'
+    line3: 'FEDERAL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGACAO DE NARCOTICOS'
 };
 
 export const DEFAULT_INVESTIGATION_COVER_CONFIG = {
@@ -340,7 +340,7 @@ const getDocumentVariables = (data, user, type = 'investigation', investigationN
             '{nome_comunicante}': user?.nome || 'Agente Responsavel',
             '{conclusao}': 'Conforme relatorio de provas em anexo.',
             '{assinatura_agente}': user?.nome || 'Agente',
-            '{cargo_agente}': 'Investigador CIVIL EUFORIA'
+            '{cargo_agente}': 'Investigador FEDERAL EUFORIA'
         };
     }
     if (type === 'bo') {
@@ -360,7 +360,7 @@ const getDocumentVariables = (data, user, type = 'investigation', investigationN
             '{relato_fatos}': data.descricao || 'Sem descricao.',
             '{conclusao}': 'Registro realizado para fins legais.',
             '{assinatura_agente}': user?.nome || 'Agente de Plantao',
-            '{cargo_agente}': 'Agente da CIVIL EUFORIA'
+            '{cargo_agente}': 'Agente da FEDERAL EUFORIA'
         };
     }
     if (type === 'arrest') {
@@ -380,7 +380,7 @@ const getDocumentVariables = (data, user, type = 'investigation', investigationN
             '{relato_fatos}': data.reason || data.description || 'Sem observacoes adicionais.',
             '{conclusao}': 'Individuo detido e a disposicao da justica.',
             '{assinatura_agente}': data.officer || user?.nome || 'Agente Responsavel',
-            '{cargo_agente}': 'Agente da CIVIL EUFORIA'
+            '{cargo_agente}': 'Agente da FEDERAL EUFORIA'
         };
     }
     return {};
@@ -673,7 +673,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                     table: {
                         widths: ['25%', '75%'],
                         body: [
-                            [{ text: 'UNIDADE:', style: 'tableHeader' }, { text: 'CIVIL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', style: 'tableCell' }],
+                            [{ text: 'UNIDADE:', style: 'tableHeader' }, { text: 'FEDERAL EUFORIA - DEPARTAMENTO ESTADUAL DE INVESTIGAÇÃO DE NARCÓTICOS', style: 'tableCell' }],
                             [{ text: 'NATUREZA:', style: 'tableHeader' }, { text: 'Investigação Criminal', style: 'tableCell' }],
                             [{ text: 'STATUS:', style: 'tableHeader' }, { text: (data.status || 'N/A').toUpperCase(), style: 'tableCell', bold: true }],
                             [{ text: 'PRIORIDADE:', style: 'tableHeader' }, { text: (data.priority || 'N/A').toUpperCase(), style: 'tableCell' }],
@@ -762,8 +762,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                 '{recompensa}': data.reward || 'Não informada',
                 '{periculosidade}': data.dangerLevel || data.status || 'Desconhecida',
                 '{data_registro}': formatDate(data.date || data.created_at),
-                '{assinatura_agente}': user?.nome || 'CIVIL EUFORIA',
-                '{cargo_agente}': 'Investigador CIVIL EUFORIA'
+                '{assinatura_agente}': user?.nome || 'FEDERAL EUFORIA',
+                '{cargo_agente}': 'Investigador FEDERAL EUFORIA'
             };
             standardContent = [
                 ...officialHeader,
@@ -798,7 +798,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                     layout: 'noBorders'
                 },
                 { text: '\n\n', fontSize: 1 },
-                { text: 'Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades da CIVIL EUFORIA.', style: 'normalText', alignment: 'center', italics: true }
+                { text: 'Qualquer informação sobre o paradeiro deste indivíduo deve ser comunicada imediatamente às autoridades da FEDERAL EUFORIA.', style: 'normalText', alignment: 'center', italics: true }
             ].filter(Boolean);
         }
 
@@ -873,8 +873,8 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
                     { text: "Sendo o que cumpria relatar, submeto à consideração superior.", style: 'normalText', margin: [0, 10, 0, 0] },
                     { text: '___________________________________________________', style: 'signatureLine' },
                     { text: (variables['{assinatura_agente}'] || 'Agente').toUpperCase(), alignment: 'center', bold: true, fontSize: 12 },
-                    { text: 'INVESTIGADOR CIVIL EUFORIA', alignment: 'center', fontSize: 10 },
-                    { text: `MATRÍCULA: ${user?.badge || 'CIVIL EUFORIA-000'}`, alignment: 'center', fontSize: 10 }
+                    { text: 'INVESTIGADOR FEDERAL EUFORIA', alignment: 'center', fontSize: 10 },
+                    { text: `MATRÍCULA: ${user?.badge || 'FEDERAL EUFORIA-000'}`, alignment: 'center', fontSize: 10 }
                 ])
             ],
             styles: styles,

@@ -204,7 +204,7 @@ const WebhookSettings = () => {
           { name: 'Status', value: 'Conectado', inline: true },
           { name: 'Origem', value: 'Painel Admin', inline: true }
         ],
-        footer: { text: 'Sistema CIVIL EUFORIA - Teste de Integracao' },
+        footer: { text: 'Sistema FEDERAL EUFORIA - Teste de Integracao' },
         timestamp: new Date().toISOString()
       };
 

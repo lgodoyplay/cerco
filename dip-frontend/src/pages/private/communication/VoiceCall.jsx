@@ -16,9 +16,9 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
 
             const domain = 'meet.jit.si';
             // Use room ID for unique, safe room names
-            // Prefixing with 'CIVIL EUFORIA_' to avoid collisions with common names on public Jitsi
-            // Using a simple format as requested: CIVIL EUFORIA-RoomID
-            const safeRoomName = `CIVIL EUFORIA-${room.id.substring(0, 8).toUpperCase()}`; 
+            // Prefixing with 'FEDERAL EUFORIA_' to avoid collisions with common names on public Jitsi
+            // Using a simple format as requested: FEDERAL EUFORIA-RoomID
+            const safeRoomName = `FEDERAL EUFORIA-${room.id.substring(0, 8).toUpperCase()}`; 
             
             const options = {
                 roomName: safeRoomName,
@@ -61,7 +61,7 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
                     DEFAULT_BACKGROUND: '#0f172a',
                     showBrandWatermark: false,
                     brandWatermarkLink: '',
-                    appname: 'CIVIL EUFORIA System',
+                    appname: 'FEDERAL EUFORIA System',
                     // UI Tweaks
                     DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
                     filmStripOnly: false,

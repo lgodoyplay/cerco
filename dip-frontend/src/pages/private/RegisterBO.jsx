@@ -386,7 +386,7 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
               { name: "Policial Responsável pelo BO", value: officerName, inline: true },
               ...(formData.arrestOfficerName ? [{ name: "Policial Responsável pela Prisão", value: `${formData.arrestOfficerName} (${formData.arrestOfficerId || 'ID não informado'})`, inline: true }] : [])
             ],
-            footer: { text: "Sistema de Ocorrências CIVIL EUFORIA" },
+            footer: { text: "Sistema de Ocorrências FEDERAL EUFORIA" },
             timestamp: new Date().toISOString()
           };
           
