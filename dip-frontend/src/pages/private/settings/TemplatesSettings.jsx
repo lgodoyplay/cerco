@@ -312,7 +312,7 @@ const TemplatesSettings = () => {
 <p>Telefone: {telefone}</p>
 <p><br></p>
 <p><strong>3. OBJETO DA INVESTIGAÇÃO</strong></p>
-<p>O presente Inquérito Policial foi instaurado pela Polícia Civil do Estado da Euforia com a finalidade de apurar os fatos noticiados, identificar autoria, materialidade e circunstâncias relacionadas à possível prática de infração penal, bem como reunir elementos suficientes para subsidiar as medidas legais cabíveis.</p>
+<p>O presente Inquérito Policial foi instaurado pela policia federal do Estado da Euforia com a finalidade de apurar os fatos noticiados, identificar autoria, materialidade e circunstâncias relacionadas à possível prática de infração penal, bem como reunir elementos suficientes para subsidiar as medidas legais cabíveis.</p>
 <p><br></p>
 <p><strong>4. RELATÓRIO DOS FATOS</strong></p>
 <p>{relato_fatos}</p>
@@ -346,10 +346,10 @@ const TemplatesSettings = () => {
 <p>Estado da Euforia, {data_conclusao}.</p>
 <p><br></p>
 <p style="text-align: center;">{nome_agente}</p>
-<p style="text-align: center;">Investigador de Polícia Civil</p>
+<p style="text-align: center;">Investigador de policia federal</p>
 <p><br></p>
 <p style="text-align: center;">{nome_delegado}</p>
-<p style="text-align: center;">Delegado de Polícia Civil</p>
+<p style="text-align: center;">Delegado de policia federal</p>
 <p><br></p>`,
     arrest: `<p><strong>AUTO DE PRISÃO</strong></p>
 <p><br></p>

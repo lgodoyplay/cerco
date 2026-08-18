@@ -151,7 +151,7 @@ export const generateInvestigationPDF = (investigation, user) => {
         yPos += 8;
         
         doc.setFont(DEFAULT_FONTS.normal, 'normal');
-        const objText = 'O presente Inquérito Policial foi instaurado pela Polícia Civil do Estado da Euforia com a finalidade de apurar os fatos noticiados, identificar a autoria, materialidade e circunstâncias relacionadas à possível prática de infração penal atribuída ao investigado.';
+        const objText = 'O presente Inquérito Policial foi instaurado pela policia federal do Estado da Euforia com a finalidade de apurar os fatos noticiados, identificar a autoria, materialidade e circunstâncias relacionadas à possível prática de infração penal atribuída ao investigado.';
         const objLines = doc.splitTextToSize(objText, pageWidth - (DEFAULT_MARGINS.left + DEFAULT_MARGINS.right));
         doc.text(objLines, DEFAULT_MARGINS.left, yPos);
         yPos += (objLines.length * 6) + 10;
@@ -316,7 +316,7 @@ export const generateInvestigationPDF = (investigation, user) => {
         yPos += 5;
         doc.setFont(DEFAULT_FONTS.normal, 'normal');
         doc.setFontSize(9);
-        doc.text('Investigador de Polícia Civil', pageWidth / 2, yPos, { align: 'center' });
+        doc.text('Investigador de policia federal', pageWidth / 2, yPos, { align: 'center' });
         yPos += 25;
 
         // Delegado
@@ -330,7 +330,7 @@ export const generateInvestigationPDF = (investigation, user) => {
         // Rodapé
         doc.setFont(DEFAULT_FONTS.bold, 'bold');
         doc.setFontSize(12);
-        doc.text('POLÍCIA CIVIL DO ESTADO DA EUFORIA', pageWidth / 2, yPos, { align: 'center' });
+        doc.text('policia federal DO ESTADO DA EUFORIA', pageWidth / 2, yPos, { align: 'center' });
         yPos += 7;
         doc.setFont(DEFAULT_FONTS.normal, 'normal');
         doc.setFontSize(11);

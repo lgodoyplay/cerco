@@ -371,14 +371,14 @@ const Home = () => {
           <div className="flex-1 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/60 border border-federal-700/70 text-federal-200 text-xs font-semibold uppercase tracking-[0.18em]">
               <Shield size={16} className="text-federal-400" />
-              <span>Polícia Civil Estadual</span>
+              <span>policia federal Estadual</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white">
               CIVIL EUFORIA
             </h1>
             <p className="text-lg text-slate-300 max-w-2xl">
               CIVIL EUFORIA - INVESTIGATIVA DO ESTADO DA EUFORIA.
-              Unidade especializada da Polícia Civil, atuando na preservação da ordem pública.
+              Unidade especializada da policia federal, atuando na preservação da ordem pública.
             </p>
             <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -632,14 +632,14 @@ const Home = () => {
                         Estado da Euforia
                       </p>
                       <p className="text-sm font-medium text-slate-100">
-                        CIVIL EUFORIA - Polícia Civil Estadual
+                        CIVIL EUFORIA - policia federal Estadual
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="mt-4 space-y-3 text-sm text-slate-300">
                   <p>
-                    A CIVIL EUFORIA é uma unidade especializada da Polícia Civil do Estado da Euforia.
+                    A CIVIL EUFORIA é uma unidade especializada da policia federal do Estado da Euforia.
                   </p>
                   <p>
                     Atua exclusivamente na investigação de tráfico de drogas, facções criminosas locais e crimes relacionados.
@@ -782,7 +782,7 @@ const Home = () => {
             </h2>
             <p className="text-slate-300 text-base leading-relaxed">
               O CIVIL EUFORIA é o Departamento Estadual de Investigação de Narcóticos,
-              uma unidade especializada da Polícia Civil do Estado da Euforia,
+              uma unidade especializada da policia federal do Estado da Euforia,
               responsável por apurar infrações penais relacionadas ao tráfico de drogas
               e crime organizado dentro do território estadual.
             </p>
@@ -869,7 +869,7 @@ const Home = () => {
               <h3 className="text-lg font-bold text-white">Apoio Operacional</h3>
             </div>
             <p className="text-sm text-slate-300">
-              Apoio a outras unidades da Polícia Civil, produção de relatórios investigativos
+              Apoio a outras unidades da policia federal, produção de relatórios investigativos
               e cumprimento de mandatos judiciais estaduais.
             </p>
           </div>
@@ -1296,8 +1296,8 @@ const Home = () => {
                 <p className="text-xs text-slate-300">A CIVIL EUFORIA atua exclusivamente dentro do Estado da Euforia, sob jurisdição estadual.</p>
               </div>
               <div className="border-l-2 border-federal-500 pl-3">
-                <p className="font-bold text-federal-200">Polícia Civil</p>
-                <p className="text-xs text-slate-300">Unidade especializada da Polícia Civil Estadual.</p>
+                <p className="font-bold text-federal-200">policia federal</p>
+                <p className="text-xs text-slate-300">Unidade especializada da policia federal Estadual.</p>
               </div>
               <div className="border-l-2 border-federal-500 pl-3">
                 <p className="font-bold text-federal-200">Contato de Emergência</p>

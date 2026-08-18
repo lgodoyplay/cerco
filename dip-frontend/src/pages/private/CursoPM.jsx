@@ -248,7 +248,7 @@ const examQuestions = [
     id: 13,
     question: 'Em caso de crime flagrante, a PM deve:',
     options: [
-      { id: 'a', text: 'Ignorar e chamar a Polícia Civil' },
+      { id: 'a', text: 'Ignorar e chamar a policia federal' },
       { id: 'b', text: 'Realizar a prisão e encaminhar à Polícia Judiciária competente' },
       { id: 'c', text: 'Julgar o criminoso no local' }
     ],

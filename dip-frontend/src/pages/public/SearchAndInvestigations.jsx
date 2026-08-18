@@ -221,7 +221,7 @@ const SearchAndInvestigations = () => {
               </div>
               <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/50">
                 <FileText className="mx-auto mb-2 opacity-50" size={20} />
-                Registro oficial CIVIL EUFORIA
+                 Registro oficial CIVIL EUFORIA
               </div>
             </div>
           </div>

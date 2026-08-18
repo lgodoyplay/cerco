@@ -83,7 +83,7 @@ export const DEFAULT_PAGE_HEADER_CONFIG = {
 };
 
 export const DEFAULT_INVESTIGATION_COVER_CONFIG = {
-    eyebrow1: 'POLICIA CIVIL DO ESTADO DA EUFORIA',
+    eyebrow1: 'policia federal DO ESTADO DA EUFORIA',
     eyebrow2: 'DEPARTAMENTO DE INVESTIGACOES CRIMINAIS',
     title: 'RELATORIO FINAL DE INQUERITO POLICIAL',
     footer: '"Servir e Proteger com Justica e Integridade"'
@@ -95,7 +95,7 @@ export const DEFAULT_INVESTIGATION_NUMBER_CONFIG = {
     unit: '0001'
 };
 
-export const DEFAULT_INVESTIGATION_COVER_TEMPLATE = `<p class="ql-align-center"><strong>POLÍCIA CIVIL DO ESTADO DA EUFORIA</strong></p>
+export const DEFAULT_INVESTIGATION_COVER_TEMPLATE = `<p class="ql-align-center"><strong>policia federal DO ESTADO DA EUFORIA</strong></p>
 <p class="ql-align-center"><strong>DEPARTAMENTO DE INVESTIGAÇÕES CRIMINAIS</strong></p>
 <p class="ql-align-center"><br></p>
 <p class="ql-align-center"><strong>RELATÓRIO FINAL DE INQUÉRITO POLICIAL</strong></p>
@@ -825,7 +825,7 @@ export const generateProfessionalPDF = async (data, user, templateStr = null, ty
             documentInfo: {
                 title: `${docTitle} - ${data.id}`,
                 author: user?.nome || 'Sistema CERCO',
-                subject: 'Documento Oficial - Polícia Civil',
+                subject: 'Documento Oficial - policia federal',
                 keywords: 'investigação, polícia, oficial, documento'
             },
             background: backgroundBase64 ? () => ({

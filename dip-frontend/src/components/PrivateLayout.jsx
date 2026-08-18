@@ -346,7 +346,7 @@ const PrivateLayout = () => {
         <div className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/LOGO.gif" alt="Logo CIVIL EUFORIA" className="w-8 h-8 rounded-lg shadow-lg shadow-federal-900/50 object-cover" />
-            <span className="font-bold text-lg tracking-tight">CIVIL EUFORIA - Polícia Civil</span>
+            <span className="font-bold text-lg tracking-tight">CIVIL EUFORIA - Polícia Federal</span>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-white">
             <X size={20} />
