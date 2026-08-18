@@ -59,7 +59,6 @@ const FluxerFrame = () => {
             src={FLUXER_URL}
             title="Fluxer"
             allow="microphone; camera; display-capture; autoplay; fullscreen"
-            allowFullScreen
             onLoad={handleLoad}
             onError={handleError}
             className="h-full w-full border-0"
