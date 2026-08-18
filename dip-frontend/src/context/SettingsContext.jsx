@@ -275,15 +275,22 @@ export const SettingsProvider = ({ children }) => {
     fetchCrimes();
 
     // Inscreve-se para mudanças em tempo real nos logs
-    const logsSubscription = supabase
-      .channel('audit_logs_changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, () => {
-        fetchLogs();
-      })
-      .subscribe();
+    let logsSubscription;
+    try {
+      logsSubscription = supabase
+        .channel('audit_logs_changes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, () => {
+          fetchLogs();
+        })
+        .subscribe();
+    } catch (realtimeError) {
+      console.warn('SettingsContext: inscrição Realtime indisponível no momento.', realtimeError);
+    }
 
     return () => {
-      logsSubscription.unsubscribe();
+      if (logsSubscription) {
+        logsSubscription.unsubscribe();
+      }
     };
   }, [fetchUsers, fetchLogs, fetchSettings, fetchCrimes]);
 

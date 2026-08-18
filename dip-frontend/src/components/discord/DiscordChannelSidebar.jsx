@@ -1,7 +1,7 @@
-import React from 'react';
-import { Search, Volume2, Circle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Volume2, Circle, Plus } from 'lucide-react';
 
-const DiscordChannelSidebar = ({ server, channels, selectedChannelId, onSelectChannel, selectedChannelType }) => {
+const DiscordChannelSidebar = ({ server, channels, selectedChannelId, onSelectChannel, selectedChannelType, onCreateChannel, isCreatingChannel, newChannelName, onNewChannelNameChange, newChannelType, onNewChannelTypeChange, onJoinVoice }) => {
   const textChannels = channels.filter((channel) => channel.type === 'text');
   const voiceChannels = channels.filter((channel) => channel.type === 'voice');
 
@@ -21,7 +21,9 @@ const DiscordChannelSidebar = ({ server, channels, selectedChannelId, onSelectCh
       </div>
 
       <div className="mb-4">
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500">Canais de texto</p>
+        <div className="flex items-center justify-between">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500">Canais de texto</p>
+        </div>
         <div className="space-y-1">
           {textChannels.map((channel) => (
             <button
@@ -37,22 +39,44 @@ const DiscordChannelSidebar = ({ server, channels, selectedChannelId, onSelectCh
             </button>
           ))}
         </div>
+        <div className="mt-2 flex items-center gap-2">
+          <input
+            value={newChannelName}
+            onChange={(e) => onNewChannelNameChange(e.target.value)}
+            placeholder="novo-canal"
+            className="flex-1 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-federal-500"
+          />
+          <select
+            value={newChannelType}
+            onChange={(e) => onNewChannelTypeChange(e.target.value)}
+            className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-2 text-xs text-slate-200 outline-none focus:border-federal-500"
+          >
+            <option value="text">Texto</option>
+            <option value="voice">Voz</option>
+          </select>
+          <button
+            onClick={onCreateChannel}
+            disabled={isCreatingChannel || !newChannelName.trim()}
+            className="rounded-lg border border-federal-700 bg-federal-900/40 px-2 py-2 text-xs text-federal-200 hover:bg-federal-800/60 disabled:opacity-50"
+          >
+            <Plus size={14} />
+          </button>
+        </div>
       </div>
 
-      <div>
+      <div className="mt-2">
         <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500">Canais de voz</p>
         <div className="space-y-1">
           {voiceChannels.map((channel) => (
             <button
               key={channel.id}
-              onClick={() => onSelectChannel(channel)}
-              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition ${selectedChannelType === 'voice' && selectedChannelId === channel.id ? 'bg-emerald-500/10 text-emerald-300' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+              onClick={() => onJoinVoice(channel.id)}
+              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition ${selectedChannelId === channel.id ? 'bg-federal-600/20 text-white shadow-inner' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
             >
               <span className="flex items-center gap-2">
                 <Volume2 size={14} />
                 {channel.name}
               </span>
-              {channel.connected ? <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-400">Conectado</span> : null}
             </button>
           ))}
         </div>

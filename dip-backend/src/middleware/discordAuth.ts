@@ -5,11 +5,7 @@ export const requireDashboardUser = (req: Request, res: Response, next: NextFunc
   const dashboardUserId = req.headers['x-dashboard-user-id'];
   const allowAnon = process.env.DISCORD_ALLOW_ANON === 'true';
 
-  if (allowAnon) {
-    return next();
-  }
-
-  if (authHeader?.startsWith('Bearer ') || dashboardUserId) {
+  if (allowAnon || dashboardUserId) {
     return next();
   }
 

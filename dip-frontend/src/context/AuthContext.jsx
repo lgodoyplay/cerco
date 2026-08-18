@@ -77,24 +77,30 @@ export const AuthProvider = ({ children }) => {
     });
 
     // 2. Listener para mudanças de estado (Login, Logout, Refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    let subscription;
+    try {
+      const authResult = supabase.auth.onAuthStateChange((event, session) => {
+        
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
-      if (event === 'SIGNED_OUT') {
-        if (isMounted.current && !isLoggingIn.current) {
-            setUser(null);
-            setLoading(false);
+        if (event === 'SIGNED_OUT') {
+          if (isMounted.current && !isLoggingIn.current) {
+              setUser(null);
+              setLoading(false);
+          }
+        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          // Se estivermos logando manualmente, deixamos o fluxo manual cuidar disso
+          if (!isLoggingIn.current) {
+              loadUserSession(session);
+          }
+        } else if (event === 'INITIAL_SESSION') {
+           if (session) loadUserSession(session); 
         }
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        // Se estivermos logando manualmente, deixamos o fluxo manual cuidar disso
-        if (!isLoggingIn.current) {
-            loadUserSession(session);
-        }
-      } else if (event === 'INITIAL_SESSION') {
-         if (session) loadUserSession(session); 
-      }
-    });
+      });
+      subscription = authResult?.data?.subscription;
+    } catch (realtimeError) {
+      console.warn('AuthContext: inscrição Realtime indisponível no momento.', realtimeError);
+    }
 
     // Timeout de segurança (Aumentado para 30s para evitar logouts em conexões lentas)
     timeoutRef.current = setTimeout(() => {

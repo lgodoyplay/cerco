@@ -145,6 +145,133 @@ create policy "Sistema pode criar logs"
   on system_logs for insert
   with check ( auth.role() = 'authenticated' );
 
+-- ==================== COMUNICAÇÃO INTERNA ====================
+
+-- Servidores
+create table public.servers (
+  id uuid default uuid_generate_v4() primary key,
+  name text not null,
+  icon_url text,
+  owner_id uuid references auth.users(id) not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.servers enable row level security;
+
+create policy "Membros podem ver servidores"
+  on servers for select
+  using ( exists (select 1 from members m where m.server_id = id and m.user_id = auth.uid()) or auth.uid() = owner_id );
+
+create policy "Usuarios autenticados podem criar servidores"
+  on servers for insert
+  with check ( auth.role() = 'authenticated' );
+
+create policy "Dono pode editar servidor"
+  on servers for update
+  using ( auth.uid() = owner_id );
+
+create policy "Dono pode excluir servidor"
+  on servers for delete
+  using ( auth.uid() = owner_id );
+
+-- Canais
+create table public.channels (
+  id uuid default uuid_generate_v4() primary key,
+  server_id uuid references public.servers(id) on delete cascade not null,
+  name text not null,
+  type text not null default 'text' check (type in ('text','voice')),
+  position int default 0,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.channels enable row level security;
+
+create policy "Membros podem ver canais"
+  on channels for select
+  using ( exists (select 1 from members m where m.server_id = server_id and m.user_id = auth.uid()) or exists (select 1 from servers s where s.id = server_id and s.owner_id = auth.uid()) );
+
+create policy "Dono pode criar canais"
+  on channels for insert
+  with check ( exists (select 1 from servers s where s.id = server_id and s.owner_id = auth.uid()) );
+
+create policy "Dono pode editar canais"
+  on channels for update
+  using ( exists (select 1 from servers s where s.id = server_id and s.owner_id = auth.uid()) );
+
+create policy "Dono pode excluir canais"
+  on channels for delete
+  using ( exists (select 1 from servers s where s.id = server_id and s.owner_id = auth.uid()) );
+
+-- Membros de servidor
+create table public.members (
+  id uuid default uuid_generate_v4() primary key,
+  server_id uuid references public.servers(id) on delete cascade not null,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  joined_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  unique(server_id, user_id)
+);
+
+alter table public.members enable row level security;
+
+create policy "Membros podem ver membros"
+  on members for select
+  using ( exists (select 1 from members m where m.server_id = server_id and m.user_id = auth.uid()) or exists (select 1 from servers s where s.id = server_id and s.owner_id = auth.uid()) );
+
+create policy "Dono pode adicionar membros"
+  on members for insert
+  with check ( exists (select 1 from servers s where s.id = server_id and s.owner_id = auth.uid()) );
+
+create policy "Dono pode remover membros"
+  on members for delete
+  using ( exists (select 1 from servers s where s.id = server_id and s.owner_id = auth.uid()) );
+
+-- Mensagens
+create table public.messages (
+  id uuid default uuid_generate_v4() primary key,
+  channel_id uuid references public.channels(id) on delete cascade not null,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  content text not null,
+  attachments jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.messages enable row level security;
+
+create policy "Membros podem ver mensagens"
+  on messages for select
+  using ( exists (select 1 from channels c join members m on c.server_id = m.server_id where c.id = channel_id and m.user_id = auth.uid()) or exists (select 1 from channels c join servers s on c.server_id = s.id where c.id = channel_id and s.owner_id = auth.uid()) );
+
+create policy "Membros podem enviar mensagens"
+  on messages for insert
+  with check ( exists (select 1 from channels c join members m on c.server_id = m.server_id where c.id = channel_id and m.user_id = auth.uid()) or exists (select 1 from channels c join servers s on c.server_id = s.id where c.id = channel_id and s.owner_id = auth.uid()) );
+
+create policy "Usuarios podem deletar suas proprias mensagens"
+  on messages for delete
+  using ( auth.uid() = user_id );
+
+-- Sessoes de voz
+create table public.voice_sessions (
+  id uuid default uuid_generate_v4() primary key,
+  channel_id uuid references public.channels(id) on delete cascade not null,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  joined_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  left_at timestamp with time zone
+);
+
+alter table public.voice_sessions enable row level security;
+
+create policy "Membros podem ver sessoes de voz"
+  on voice_sessions for select
+  using ( exists (select 1 from channels c join members m on c.server_id = m.server_id where c.id = channel_id and m.user_id = auth.uid()) or exists (select 1 from channels c join servers s on c.server_id = s.id where c.id = channel_id and s.owner_id = auth.uid()) );
+
+create policy "Usuarios podem criar sessao de voz"
+  on voice_sessions for insert
+  with check ( auth.uid() = user_id );
+
+create policy "Usuarios podem atualizar sua propria sessao"
+  on voice_sessions for update
+  using ( auth.uid() = user_id );
+
 
 -- STORAGE BUCKETS
 -- (Execute isso separadamente ou configure via Interface do Supabase se o SQL não suportar criação de buckets diretamente em algumas versões)

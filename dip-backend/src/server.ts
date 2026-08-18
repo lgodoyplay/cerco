@@ -121,10 +121,44 @@ async function seedAdmin() {
   }
 }
 
+async function seedInternalComms() {
+  try {
+    const admin = await prisma.user.findFirst({ where: { login: 'admin' } });
+    if (!admin) return;
+
+    const serverExists = await prisma.server.findFirst({ where: { ownerId: admin.id } });
+    if (!serverExists) {
+      const server = await prisma.server.create({
+        data: {
+          name: 'FEDERAL EUFORIA - Geral',
+          iconUrl: null,
+          ownerId: admin.id
+        }
+      });
+
+      await prisma.channel.create({ data: { serverId: server.id, name: 'chat-geral', type: 'text', position: 0 } });
+      await prisma.channel.create({ data: { serverId: server.id, name: 'comunicacoes', type: 'text', position: 1 } });
+      await prisma.channel.create({ data: { serverId: server.id, name: 'sala-de-reuniao', type: 'voice', position: 2 } });
+
+      await prisma.member.create({
+        data: {
+          serverId: server.id,
+          userId: admin.id
+        }
+      });
+
+      console.log('Internal comms seed created for admin');
+    }
+  } catch (error) {
+    console.warn('Skipping internal comms seed:', error);
+  }
+}
+
 let server: ReturnType<typeof app.listen>;
 
 async function startServer() {
   await seedAdmin();
+  await seedInternalComms();
   server = httpServer.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });

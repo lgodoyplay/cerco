@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus, BellRing } from 'lucide-react';
 
-const DiscordServerList = ({ servers, selectedServerId, onSelectServer }) => {
+const DiscordServerList = ({ servers, selectedServerId, onSelectServer, onCreateServer, isCreatingServer, newServerName, onNewServerNameChange }) => {
+  const [isAdding, setIsAdding] = useState(false);
+
   return (
     <aside className="hidden w-20 flex-col items-center justify-between border-r border-slate-800 bg-slate-900/90 px-3 py-4 md:flex">
       <div className="flex flex-col items-center gap-3">
@@ -25,9 +27,41 @@ const DiscordServerList = ({ servers, selectedServerId, onSelectServer }) => {
             </button>
           ))}
         </div>
-        <button className="flex h-12 w-12 items-center justify-center rounded-2xl border border-dashed border-slate-700 bg-slate-800/70 text-slate-400 transition hover:border-federal-500 hover:text-white" title="Adicionar servidor">
-          <Plus size={18} />
-        </button>
+        {isAdding ? (
+          <div className="flex flex-col gap-2">
+            <input
+              value={newServerName}
+              onChange={(e) => onNewServerNameChange(e.target.value)}
+              placeholder="Nome do servidor"
+              className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-slate-200 outline-none focus:border-federal-500"
+            />
+            <button
+              onClick={async () => {
+                if (!onCreateServer) return;
+                await onCreateServer();
+                setIsAdding(false);
+              }}
+              disabled={isCreatingServer || !newServerName.trim()}
+              className="rounded-lg border border-federal-700 bg-federal-900/40 px-2 py-1 text-xs text-federal-200 hover:bg-federal-800/60 disabled:opacity-50"
+            >
+              Criar
+            </button>
+            <button
+              onClick={() => setIsAdding(false)}
+              className="rounded-lg border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:text-white"
+            >
+              Cancelar
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsAdding(true)}
+            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-dashed border-slate-700 bg-slate-800/70 text-slate-400 transition hover:border-federal-500 hover:text-white"
+            title="Adicionar servidor"
+          >
+            <Plus size={18} />
+          </button>
+        )}
       </div>
       <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-2 text-slate-400">
         <BellRing size={18} />

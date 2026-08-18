@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Compass, MessageCircleMore, Mic, PhoneOff, Users, Radio, MoreHorizontal } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
-import { getGuilds, getChannels, getMembers, getMessages, sendMessage, getMember, getBotStatus } from '../../../services/internalComms/internalApi';
+import { getGuilds, getChannels, getMembers, getMessages, sendMessage, getMember, getBotStatus, createGuild, createChannel, joinVoice, leaveVoice } from '../../../services/internalComms/internalApi';
 import { discordSocket } from '../../../services/internalComms/internalSocket';
 import DiscordServerList from '../../../components/discord/DiscordServerList';
 import DiscordChannelSidebar from '../../../components/discord/DiscordChannelSidebar';
@@ -26,6 +26,12 @@ const DiscordPage = () => {
   const [selectedMemberId, setSelectedMemberId] = useState(null);
   const [activeView, setActiveView] = useState('chat');
   const [draft, setDraft] = useState('');
+  const [newServerName, setNewServerName] = useState('');
+  const [newChannelName, setNewChannelName] = useState('');
+  const [newChannelType, setNewChannelType] = useState('text');
+  const [isCreatingServer, setIsCreatingServer] = useState(false);
+  const [isCreatingChannel, setIsCreatingChannel] = useState(false);
+  const [voiceError, setVoiceError] = useState(null);
   const [voiceUiState, setVoiceUiState] = useState({ isMuted: false, isDeafened: false, isSpeaking: true });
   const [connectionState, setConnectionState] = useState('connecting');
   const [botStatus, setBotStatus] = useState({ status: 'offline', uptime: 0, latency: 0, guilds: 0 });
@@ -162,8 +168,7 @@ const DiscordPage = () => {
     setSelectedChannelId(channel.id);
     setActiveView('chat');
     if (channel.type === 'voice') {
-      setActiveVoiceChannelId(channel.id);
-      setIsConnected(true);
+      await handleJoinVoice(channel.id);
     }
   };
 
@@ -175,37 +180,95 @@ const DiscordPage = () => {
     setVoiceUiState((prev) => ({ ...prev, isDeafened: !prev.isDeafened }));
   };
 
-  const leaveVoice = () => {
+  const leaveVoice = async () => {
+    if (activeVoiceChannelId) {
+      await leaveVoice(activeVoiceChannelId);
+    }
     setActiveVoiceChannelId('');
     setIsConnected(false);
     setVoiceUiState((prev) => ({ ...prev, isMuted: false, isDeafened: false, isSpeaking: false }));
+    setVoiceError(null);
+  };
+
+  const handleCreateServer = async () => {
+    const name = newServerName.trim();
+    if (!name) return;
+    setIsCreatingServer(true);
+    try {
+      const server = await createGuild(name);
+      setServers((prev) => [server, ...prev]);
+      setNewServerName('');
+      setSelectedServerId(server.id);
+      const channelData = await getChannels(server.id);
+      setChannels(Array.isArray(channelData) ? channelData : []);
+      setSelectedChannelId('');
+      setMembers([]);
+    } catch (error) {
+      console.error('Erro ao criar servidor:', error);
+    } finally {
+      setIsCreatingServer(false);
+    }
+  };
+
+  const handleCreateChannel = async () => {
+    const name = newChannelName.trim().toLowerCase().replace(/\s+/g, '-');
+    if (!name || !selectedServerId) return;
+    setIsCreatingChannel(true);
+    try {
+      const channel = await createChannel(selectedServerId, name, newChannelType);
+      setChannels((prev) => [...prev, channel]);
+      setNewChannelName('');
+      setSelectedChannelId(channel.id);
+      setActiveView('chat');
+    } catch (error) {
+      console.error('Erro ao criar canal:', error);
+    } finally {
+      setIsCreatingChannel(false);
+    }
+  };
+
+  const handleJoinVoice = async (channelId) => {
+    setVoiceError(null);
+    try {
+      await joinVoice(channelId);
+      setActiveVoiceChannelId(channelId);
+      setIsConnected(true);
+      setVoiceUiState((prev) => ({ ...prev, isMuted: false, isDeafened: false, isSpeaking: true }));
+    } catch (error) {
+      console.error('Erro ao entrar no canal de voz:', error);
+      setVoiceError('Não foi possível entrar no canal de voz.');
+    }
   };
 
   return (
-    <div className="flex h-[calc(100dvh-8rem)] min-h-[680px] flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/80 shadow-2xl shadow-black/30">
-      <div className="flex flex-1 overflow-hidden">
-        <DiscordServerList
-          servers={serversLoading ? [] : servers}
-          selectedServerId={selectedServerId}
-          onSelectServer={async (serverId) => {
-            setSelectedServerId(serverId);
-            setChannelsLoading(true);
-            try {
-              const channelData = await getChannels(serverId);
-              const normalizedChannels = Array.isArray(channelData) ? channelData : [];
-              setChannels(normalizedChannels);
-              const textChannel = normalizedChannels.find((channel) => channel.type === 'text');
-              setSelectedChannelId(textChannel?.id || '');
-              const memberData = await getMembers(serverId);
-              setMembers(Array.isArray(memberData) ? memberData : []);
-            } catch (error) {
-              console.error('Erro ao trocar de servidor:', error);
-            } finally {
-              setChannelsLoading(false);
-            }
-            setActiveView('chat');
-          }}
-        />
+      <div className="flex h-[calc(100dvh-8rem)] min-h-[680px] flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/80 shadow-2xl shadow-black/30">
+        <div className="flex flex-1 overflow-hidden">
+          <DiscordServerList
+            servers={serversLoading ? [] : servers}
+            selectedServerId={selectedServerId}
+            onSelectServer={async (serverId) => {
+              setSelectedServerId(serverId);
+              setChannelsLoading(true);
+              try {
+                const channelData = await getChannels(serverId);
+                const normalizedChannels = Array.isArray(channelData) ? channelData : [];
+                setChannels(normalizedChannels);
+                const textChannel = normalizedChannels.find((channel) => channel.type === 'text');
+                setSelectedChannelId(textChannel?.id || '');
+                const memberData = await getMembers(serverId);
+                setMembers(Array.isArray(memberData) ? memberData : []);
+              } catch (error) {
+                console.error('Erro ao trocar de servidor:', error);
+              } finally {
+                setChannelsLoading(false);
+              }
+              setActiveView('chat');
+            }}
+            onCreateServer={handleCreateServer}
+            isCreatingServer={isCreatingServer}
+            newServerName={newServerName}
+            onNewServerNameChange={setNewServerName}
+          />
 
         <DiscordChannelSidebar
           server={selectedServer}
@@ -213,6 +276,13 @@ const DiscordPage = () => {
           selectedChannelId={selectedChannelId}
           selectedChannelType={selectedChannel?.type || 'text'}
           onSelectChannel={handleChannelSelect}
+          onCreateChannel={handleCreateChannel}
+          isCreatingChannel={isCreatingChannel}
+          newChannelName={newChannelName}
+          onNewChannelNameChange={setNewChannelName}
+          newChannelType={newChannelType}
+          onNewChannelTypeChange={setNewChannelType}
+          onJoinVoice={handleJoinVoice}
         />
 
         <main className="flex min-w-0 flex-1 flex-col">

@@ -54,9 +54,13 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
 };
 
 export const getGuilds = () => request<any[]>('/servers');
+export const createGuild = (name: string) => request<any>('/servers', { method: 'POST', body: JSON.stringify({ name }) });
 export const getChannels = (guildId: string) => request<any[]>(`/servers/${guildId}/channels`);
+export const createChannel = (serverId: string, name: string, type = 'text') => request<any>(`/servers/${serverId}/channels`, { method: 'POST', body: JSON.stringify({ name, type }) });
 export const getMembers = (guildId: string) => request<any[]>(`/servers/${guildId}/members`);
 export const getMessages = (channelId: string, limit = 50) => request<any[]>(`/channels/${channelId}/messages?limit=${limit}`);
 export const sendMessage = (channelId: string, content: string) => request<any>(`/channels/${channelId}/messages`, { method: 'POST', body: JSON.stringify({ content }) });
 export const getMember = (memberId: string) => request<any>(`/members/${memberId}`);
 export const getBotStatus = () => request<any>('/bot/status');
+export const joinVoice = (channelId: string) => request<any>('/voice/join', { method: 'POST', body: JSON.stringify({ channel_id: channelId }) });
+export const leaveVoice = (channelId: string) => request<any>('/voice/leave', { method: 'POST', body: JSON.stringify({ channel_id: channelId }) });
