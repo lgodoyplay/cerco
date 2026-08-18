@@ -1,6 +1,7 @@
 import type { Server as HttpServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { fluxerApi } from './apiClient';
+import WebSocket from 'ws';
 
 export interface GatewayInfo {
   url: string;
@@ -47,7 +48,7 @@ export interface FluxerGatewayClientOptions {
 
 export class FluxerGatewayClient {
   private ws: WebSocket | null = null;
-  private heartbeatInterval: number | null = null;
+  private heartbeatTimer: NodeJS.Timeout | null = null;
   private sequence: number | null = null;
   private sessionId: string | null = null;
   private reconnectAttempts = 0;
@@ -78,34 +79,36 @@ export class FluxerGatewayClient {
     url.searchParams.set('v', '1');
     url.searchParams.set('encoding', 'json');
 
+    console.log('[Fluxer Gateway] Conectando:', url.toString());
+
     this.ws = new WebSocket(url.toString());
 
-    this.ws.onopen = () => {
-      console.log('[Fluxer Gateway] Conectado');
+    this.ws.on('open', () => {
+      console.log('[Fluxer Gateway] WebSocket OPEN');
       this.reconnectAttempts = 0;
       this.reconnectBackoff = 1000;
-    };
+    });
 
-    this.ws.onmessage = (event) => {
+    this.ws.on('message', (data) => {
       try {
-        const message = JSON.parse(event.data as string) as GatewayDispatch;
+        const message = JSON.parse(data.toString()) as GatewayDispatch;
         this.handleMessage(message);
       } catch (error) {
         console.error('[Fluxer Gateway] Falha ao parsear mensagem:', error);
       }
-    };
+    });
 
-    this.ws.onerror = (error) => {
-      console.error('[Fluxer Gateway] Erro:', error);
-    };
+    this.ws.on('error', (error) => {
+      console.error('[Fluxer Gateway] WebSocket ERROR:', error);
+    });
 
-    this.ws.onclose = (event) => {
-      console.log('[Fluxer Gateway] Fechado:', event.code, event.reason);
+    this.ws.on('close', (code, reason) => {
+      console.log('[Fluxer Gateway] WebSocket CLOSE:', code, reason?.toString?.() || reason);
       this.clearHeartbeat();
       if (!this.closed && this.options.reconnect) {
         this.scheduleReconnect();
       }
-    };
+    });
   }
 
   private handleMessage(message: GatewayDispatch) {
@@ -120,7 +123,9 @@ export class FluxerGatewayClient {
     }
 
     if (message.t === 'HELLO') {
-      this.startHeartbeat((message.d as Record<string, unknown>)?.heartbeat_interval as number);
+      const heartbeatInterval = (message.d as Record<string, unknown>)?.heartbeat_interval as number;
+      console.log('[Fluxer Gateway] HELLO heartbeat_interval=', heartbeatInterval);
+      this.startHeartbeat(heartbeatInterval);
       this.identify();
     }
 
@@ -146,7 +151,7 @@ export class FluxerGatewayClient {
 
   private startHeartbeat(intervalMs: number) {
     this.clearHeartbeat();
-    this.heartbeatInterval = window.setInterval(() => {
+    this.heartbeatTimer = setInterval(() => {
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
       const payload = {
         op: FLUXER_GATEWAY_OPCODES.HEARTBEAT,
@@ -157,9 +162,9 @@ export class FluxerGatewayClient {
   }
 
   private clearHeartbeat() {
-    if (this.heartbeatInterval !== null) {
-      clearInterval(this.heartbeatInterval);
-      this.heartbeatInterval = null;
+    if (this.heartbeatTimer !== null) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
     }
   }
 

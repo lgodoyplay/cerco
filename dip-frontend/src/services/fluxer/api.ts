@@ -19,6 +19,7 @@ const normalizeApiBase = (value: string) => {
 };
 
 const API_BASE = normalizeApiBase(configuredApiUrl);
+console.log('[Fluxer Frontend] API_BASE:', API_BASE);
 
 const buildHeaders = () => ({
   'Content-Type': 'application/json',

@@ -199,12 +199,15 @@ const DiscordPage = () => {
 
     const loadStatus = async () => {
       try {
+        console.log('[Fluxer Frontend] Carregando status do bot...');
         const status = await fluxerGetBotStatus();
+        console.log('[Fluxer Frontend] Status recebido:', status);
         if (mounted) {
           setBotStatus(status || { status: 'connected', uptime: 0, guilds: 0 });
           setConnectionState('connected');
         }
       } catch (error) {
+        console.error('[Fluxer Frontend] Falha ao carregar status:', error);
         if (mounted) {
           setConnectionState('disconnected');
         }

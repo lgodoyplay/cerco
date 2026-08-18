@@ -27,21 +27,25 @@ class FluxerSocket {
 
     this.socket.on('connect', () => {
       this.connectionState = 'connected';
+      console.log('[Fluxer Socket] Socket.IO conectado:', this.socket?.id);
       this.emit('fluxer:status', { state: 'connected' });
     });
 
     this.socket.on('disconnect', (reason) => {
       this.connectionState = 'disconnected';
+      console.log('[Fluxer Socket] Socket.IO desconectado:', reason);
       this.emit('fluxer:status', { state: 'disconnected', reason });
     });
 
-    this.socket.on('connect_error', () => {
+    this.socket.on('connect_error', (error) => {
       this.connectionState = 'reconnecting';
+      console.log('[Fluxer Socket] Socket.IO connect_error:', error?.message || error);
       this.emit('fluxer:status', { state: 'reconnecting' });
     });
 
-    this.socket.on('reconnect_attempt', () => {
+    this.socket.on('reconnect_attempt', (attempt) => {
       this.connectionState = 'reconnecting';
+      console.log('[Fluxer Socket] Socket.IO reconnect_attempt:', attempt);
       this.emit('fluxer:status', { state: 'reconnecting' });
     });
 

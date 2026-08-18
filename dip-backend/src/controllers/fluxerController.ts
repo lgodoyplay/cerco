@@ -200,8 +200,10 @@ export const fluxerController = {
       const status = await fluxerApi.get<any>('/users/@me');
       return res.json({ status: 'connected', bot: status });
     } catch (error: any) {
-      console.error('[Fluxer] getBotStatus erro:', error?.message || error);
-      return res.status(502).json({ status: 'offline', error: 'Falha ao conectar no Fluxer.' });
+      const statusCode = error?.response?.status;
+      const message = error?.response?.data?.message || error?.message || 'Falha ao conectar no Fluxer.';
+      console.error('[Fluxer] getBotStatus erro:', statusCode, message);
+      return res.status(502).json({ status: 'offline', error: message });
     }
   },
 

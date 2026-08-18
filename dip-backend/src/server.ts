@@ -19,6 +19,7 @@ import discordRoutes from './routes/discord.routes';
 import fluxerRoutes from './routes/fluxer.routes';
 import internalCommsRoutes from './routes/internalComms.routes';
 import { initializeSocketServer } from './websocket/socketServer';
+import { fluxerGateway } from './services/fluxer';
 
 dotenv.config();
 
@@ -171,7 +172,19 @@ async function startServer() {
   await seedInternalComms();
   server = httpServer.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+  console.log('[Fluxer] API base:', process.env.FLUXER_API_URL || 'https://api.fluxer.app/v1');
+  console.log('[Fluxer] Gateway token configured:', Boolean(process.env.FLUXER_BOT_TOKEN));
   });
+
+  const tokenConfigured = Boolean(process.env.FLUXER_BOT_TOKEN);
+  console.log('[Fluxer] FLUXER_BOT_TOKEN configured:', tokenConfigured);
+  if (tokenConfigured) {
+    fluxerGateway.connect().catch((error) => {
+      console.error('[Fluxer] Falha ao conectar gateway no startup:', error);
+    });
+  } else {
+    console.warn('[Fluxer] FLUXER_BOT_TOKEN não configurado; gateway não iniciado.');
+  }
 }
 
 async function gracefulShutdown(signal: string) {
