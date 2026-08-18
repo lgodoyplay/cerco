@@ -13,6 +13,7 @@ import {
   Phone,
   Video,
 } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 const ChannelHeader = ({
   channel,

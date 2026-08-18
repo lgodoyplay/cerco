@@ -2,10 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MoreHorizontal, Reply, Trash2, Pin, Copy, Flag, User, Paperclip, MessageCircleMore } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-const cn = (...inputs) => twMerge(clsx(inputs));
+import { cn } from '../../lib/utils';
 
 const MessageList = ({ messages, onSelectMember }) => {
   const [hoveredId, setHoveredId] = useState(null);

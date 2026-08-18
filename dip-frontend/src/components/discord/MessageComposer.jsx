@@ -16,10 +16,7 @@ import {
   Image as ImageIcon,
   GripVertical,
 } from 'lucide-react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-const cn = (...inputs) => twMerge(clsx(inputs));
+import { cn } from '../../lib/utils';
 
 const emojiOptions = ['😀', '😊', '🚀', '👏', '🔥', '💡', '👍', '👎', '🎯', '⭐', '💪', '🤝'];
 

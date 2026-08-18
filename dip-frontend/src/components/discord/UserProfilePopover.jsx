@@ -1,9 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Copy, Shield, Calendar, Mail, Phone, UserPlus, UserCheck } from 'lucide-react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-const cn = (...inputs) => twMerge(clsx(inputs));
+import { cn } from '../../lib/utils';
 
 const statusStyles = {
   online: 'bg-emerald-400',

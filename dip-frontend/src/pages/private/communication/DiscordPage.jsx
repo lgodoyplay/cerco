@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { cn } from '../../../lib/utils';
 import {
   Compass,
   MessageCircleMore,
@@ -33,8 +32,6 @@ import {
 } from '../../../services/fluxer/api';
 import { fluxerSocket } from '../../../services/fluxer/socket';
 import { fluxerVoiceService } from '../../../services/fluxer/voice';
-
-const cn = (...inputs) => twMerge(clsx(inputs));
 
 import ServerSidebar from '../../../components/discord/ServerSidebar';
 import ChannelSidebar from '../../../components/discord/ChannelSidebar';

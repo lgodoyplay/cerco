@@ -1,10 +1,7 @@
 import React, { useEffect } from 'react';
 import { useJitsiCall } from '../../hooks/useJitsiCall';
 import { Mic, MicOff, Video, VideoOff, MonitorUp, PhoneOff, Users, Minimize2, Maximize2, X } from 'lucide-react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-const cn = (...inputs: any[]) => twMerge(clsx(inputs));
+import { cn } from '../../lib/utils';
 
 type JitsiCallProps = {
   conversationId: string;
