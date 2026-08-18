@@ -63,7 +63,7 @@ const ServerSidebar = ({
     [voiceChannels, searchQuery]
   );
 
-  const server = servers.find((s) => s.id === selectedServerId);
+  const server = Array.isArray(servers) ? servers.find((s) => s.id === selectedServerId) : undefined;
 
   return (
     <div className="flex w-full flex-col border-r border-slate-800 bg-slate-900/95 lg:w-72" ref={sidebarRef}>
