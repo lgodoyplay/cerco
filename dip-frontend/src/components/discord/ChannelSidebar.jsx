@@ -1,5 +1,5 @@
 import React from 'react';
-import { Hash, Volume2, Plus, Settings, Search, Circle, ChevronDown, ChevronRight } from 'lucide-react';
+import { Hash, Volume2, Plus, Settings, Search, Circle, ChevronDown, ChevronRight, Users } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
