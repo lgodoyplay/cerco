@@ -16,6 +16,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 import bcrypt from 'bcryptjs';
 import http from 'http';
 import discordRoutes from './routes/discord.routes';
+import fluxerRoutes from './routes/fluxer.routes';
 import internalCommsRoutes from './routes/internalComms.routes';
 import { initializeSocketServer } from './websocket/socketServer';
 
@@ -83,6 +84,7 @@ app.use('/investigations', investigationRoutes);
 app.use('/public', publicRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/api/discord', discordRoutes);
+app.use('/api/fluxer', fluxerRoutes);
 app.use('/api', internalCommsRoutes);
 
 app.get('/', (req, res) => {
