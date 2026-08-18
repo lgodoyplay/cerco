@@ -9,3 +9,4 @@ uploads
 !dip-frontend/src/**/*.ts
 !dip-frontend/src/**/*.tsx
 prisma/migrations
+*.db
