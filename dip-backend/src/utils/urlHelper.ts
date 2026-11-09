@@ -5,7 +5,8 @@
 
 export const getImageUrl = (filename: string | null | undefined, bucket = 'uploads'): string | null => {
   if (!filename) return null;
-  
+  if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
+
   const baseUrl = process.env.CDN_URL || `http://localhost:${process.env.PORT || 3000}`;
   return `${baseUrl}/${bucket}/${filename}`;
 };
@@ -22,5 +23,5 @@ export const getUploadPath = (filename: string): string => {
 export const extractFilenameFromUrl = (url: string | null): string | null => {
   if (!url) return null;
   const parts = url.split('/');
-  return parts[parts.length - 1];
+  return parts[parts.length - 1] || null;
 };

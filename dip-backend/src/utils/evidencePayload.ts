@@ -83,8 +83,8 @@ export const buildEvidencePayload = async ({
     };
   }
 
-  const { processImage, storeUploadedFile } = await import('../middlewares/uploadV2.middleware');
-  const { getImageUrl } = await import('../utils/urlHelper');
+  const { processImage, storeUploadedFile } = await import('../middlewares/uploadV2.middleware.js');
+  const { getImageUrl } = await import('../utils/urlHelper.js');
 
   const filename = normalizedType === 'Imagem'
     ? await processImage(file as Express.Multer.File, userId)

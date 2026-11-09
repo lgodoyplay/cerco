@@ -122,21 +122,22 @@ export const generateSrcSet = (baseUrl: string, filename: string): string => {
 export const getImageMetadata = async (imageBuffer: Buffer) => {
   try {
     const metadata = await sharp(imageBuffer).metadata();
-    
+    const meta: any = metadata;
+
     return {
-      width: metadata.width,
-      height: metadata.height,
-      format: metadata.format,
-      space: metadata.space,
-      channels: metadata.channels,
-      depth: metadata.depth,
-      isProgressive: metadata.isProgressive,
-      pages: metadata.pages,
-      pageHeight: metadata.pageHeight,
-      loop: metadata.loop,
-      pageDuration: metadata.pageDuration,
-      hasAlpha: metadata.hasAlpha,
-      orientation: metadata.orientation
+      width: meta.width,
+      height: meta.height,
+      format: meta.format,
+      space: meta.space,
+      channels: meta.channels,
+      depth: meta.depth,
+      isProgressive: meta.isProgressive,
+      pages: meta.pages,
+      pageHeight: meta.pageHeight,
+      loop: meta.loop,
+      pageDuration: meta.pageDuration,
+      hasAlpha: meta.hasAlpha,
+      orientation: meta.orientation
     };
   } catch (error) {
     console.error('❌ Erro ao extrair metadata:', error);

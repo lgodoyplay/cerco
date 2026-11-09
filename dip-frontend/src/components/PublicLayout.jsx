@@ -25,9 +25,9 @@ const PublicLayout = () => {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <img src="/LOGO.gif" alt="Logo FEDERAL EUFORIA" className="relative flex items-center justify-center w-10 h-10 rounded-lg border border-federal-700 group-hover:border-federal-500 transition-colors shadow-[0_0_15px_rgba(30,58,138,0.3)] object-cover" />
+              <img src="/LOGO.gif" alt="Logo Polícia Civil - Euforia" className="relative flex items-center justify-center w-10 h-10 rounded-lg border border-federal-700 group-hover:border-federal-500 transition-colors shadow-[0_0_15px_rgba(30,58,138,0.3)] object-cover" />
               <div className="flex flex-col justify-center">
-                <span className="text-lg font-bold tracking-tight text-white uppercase leading-none">FEDERAL EUFORIA</span>
+                <span className="text-lg font-bold tracking-tight text-white uppercase leading-none">Polícia Civil - Euforia</span>
               </div>
             </Link>
 
@@ -105,11 +105,11 @@ const PublicLayout = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src="/LOGO.gif" alt="Logo FEDERAL EUFORIA" className="w-6 h-6 object-cover" />
-                <span className="font-bold text-lg text-white">FEDERAL EUFORIA</span>
+                <img src="/LOGO.gif" alt="Logo Polícia Civil - Euforia" className="w-6 h-6 object-cover" />
+                <span className="font-bold text-lg text-white">Polícia Civil - Euforia</span>
               </div>
               <p className="text-slate-500 text-sm leading-relaxed">
-                FEDERAL EUFORIA - INVESTIGATIVA DO ESTADO DA EUFORIA.<br/>
+                Polícia Civil - Euforia.<br/>
                 Compromisso com a verdade e a justiça.
               </p>
             </div>

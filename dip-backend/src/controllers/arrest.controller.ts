@@ -117,7 +117,11 @@ export const listArrests = async (req: Request, res: Response) => {
 
 export const getArrest = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      return res.status(400).json({ error: 'ID da prisão é obrigatório' });
+    }
+
     const arrest = await prisma.arrest.findUnique({
       where: { id },
       include: { policial: { select: { nome: true, patente: true, cargo: true } } }

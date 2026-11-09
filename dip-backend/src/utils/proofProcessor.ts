@@ -91,22 +91,23 @@ export const extractImageMetadata = async (filePath) => {
   try {
     const image = sharp(filePath);
     const metadata = await image.metadata();
+    const meta: any = metadata;
 
     return {
       tipo_arquivo: 'Imagem',
       dimensoes: {
-        largura: metadata.width,
-        altura: metadata.height,
-        area: (metadata.width * metadata.height) / (1024 * 1024) // em MP
+        largura: meta.width,
+        altura: meta.height,
+        area: (meta.width * meta.height) / (1024 * 1024) // em MP
       },
-      formato: metadata.format,
+      formato: meta.format,
       tamanho_arquivo: (await fs.stat(filePath)).size,
-      tem_exif: !!metadata.exif,
-      orientacao: metadata.orientation,
-      colorspace: metadata.colorspace,
-      hasAlpha: metadata.hasAlpha,
-      isProgressive: metadata.isProgressive,
-      density: metadata.density,
+      tem_exif: !!meta.exif,
+      orientacao: meta.orientation,
+      colorspace: meta.colorspace,
+      hasAlpha: meta.hasAlpha,
+      isProgressive: meta.isProgressive,
+      density: meta.density,
       // Gerar thumbnail automaticamente
       thumbnail: await image
         .resize(200, 200, { fit: 'cover' })

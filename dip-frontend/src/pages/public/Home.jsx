@@ -371,14 +371,14 @@ const Home = () => {
           <div className="flex-1 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/60 border border-federal-700/70 text-federal-200 text-xs font-semibold uppercase tracking-[0.18em]">
               <Shield size={16} className="text-federal-400" />
-              <span>policia federal Estadual</span>
+              <span>Polícia Civil - Euforia</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white">
-              FEDERAL EUFORIA
+              Polícia Civil
             </h1>
             <p className="text-lg text-slate-300 max-w-2xl">
-              FEDERAL EUFORIA - INVESTIGATIVA DO ESTADO DA EUFORIA.
-              Unidade especializada da policia federal, atuando na preservação da ordem pública.
+              Polícia Civil - Euforia.
+              Unidade especializada em investigação e preservação da ordem pública.
             </p>
             <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">

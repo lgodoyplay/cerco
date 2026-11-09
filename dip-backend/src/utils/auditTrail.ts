@@ -51,10 +51,10 @@ export const createAuditLog = async (
   acao,
   novosDados = null,
   dadosAntigos = null,
-  metadados = {}
+  metadados: Record<string, any> = {}
 ) => {
   try {
-    // Preparar dados para auditoria
+    const metadata = metadados as Record<string, any>;
     const auditEntry = {
       investigacao_id: investigacaoId,
       usuario_id: usuarioId,
@@ -64,9 +64,9 @@ export const createAuditLog = async (
       mudancas: calculaMudancas(dadosAntigos, novosDados),
       metadados: JSON.stringify({
         timestamp: new Date().toISOString(),
-        ip: metadados.ip || null,
-        userAgent: metadados.userAgent || null,
-        ...metadados
+        ip: metadata.ip || null,
+        userAgent: metadata.userAgent || null,
+        ...metadata
       }),
       criado_em: new Date().toISOString()
     };

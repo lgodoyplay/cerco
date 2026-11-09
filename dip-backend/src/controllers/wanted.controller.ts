@@ -107,7 +107,7 @@ export const listWanted = async (req: Request, res: Response) => {
 
 export const getWanted = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     if (!id) return res.status(400).json({ error: 'ID is required' });
     const wanted = await prisma.wanted.findUnique({ where: { id } });
     if (!wanted) return res.status(404).json({ error: 'Procurado não encontrado' });

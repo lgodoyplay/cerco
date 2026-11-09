@@ -69,7 +69,11 @@ export const createInvestigation = async (req: Request, res: Response) => {
 
 export const addEvidence = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      return res.status(400).json({ error: 'ID da investigação é obrigatório' });
+    }
+
     const { tipo, descricao, conteudo } = req.body;
     const file = req.file;
     const userId = (req as any).user.id;
@@ -104,7 +108,7 @@ export const addEvidence = async (req: Request, res: Response) => {
         tipo: evidencePayload.tipo,
         descricao: evidencePayload.descricao,
         conteudo: evidencePayload.conteudo || ''
-      }
+      } as any
     });
 
     await createLog(userId, 'Prova Adicionada', `Prova ${evidencePayload.tipo} em investigação ${id}`, req.ip);
@@ -163,14 +167,18 @@ export const listInvestigations = async (req: Request, res: Response) => {
 
 export const getInvestigation = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const investigation = await prisma.investigation.findUnique({
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      return res.status(400).json({ error: 'ID da investigação é obrigatório' });
+    }
+
+    const investigation: any = await prisma.investigation.findUnique({
       where: { id },
       include: { 
         investigador: { select: { nome: true } },
         evidences: true 
       }
-    });
+    } as any);
 
     if (!investigation) return res.status(404).json({ error: 'Investigação não encontrada' });
 
@@ -183,7 +191,10 @@ export const getInvestigation = async (req: Request, res: Response) => {
 // ✨ NOVO: Atualizar investigação com validação
 export const updateInvestigation = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      return res.status(400).json({ error: 'ID da investigação é obrigatório' });
+    }
     const userId = (req as any).user.id;
 
     // ✅ VALIDAÇÃO
@@ -198,7 +209,7 @@ export const updateInvestigation = async (req: Request, res: Response) => {
     // Buscar investigação existente para auditoria
     const investigationBefore = await prisma.investigation.findUnique({
       where: { id }
-    });
+    } as any);
 
     if (!investigationBefore) {
       return res.status(404).json({ error: 'Investigação não encontrada' });
@@ -215,7 +226,7 @@ export const updateInvestigation = async (req: Request, res: Response) => {
     const investigation = await prisma.investigation.update({
       where: { id },
       data: updateData
-    });
+    } as any);
 
     // 📋 Log de auditoria
     try {
@@ -240,11 +251,15 @@ export const updateInvestigation = async (req: Request, res: Response) => {
 
 export const finalizeInvestigation = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const investigation = await prisma.investigation.findUnique({
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      return res.status(400).json({ error: 'ID da investigação é obrigatório' });
+    }
+
+    const investigation: any = await prisma.investigation.findUnique({
       where: { id },
       include: { evidences: true, investigador: true }
-    });
+    } as any);
 
     if (!investigation) return res.status(404).json({ error: 'Investigação não encontrada' });
 
@@ -259,16 +274,17 @@ export const finalizeInvestigation = async (req: Request, res: Response) => {
     // Generate PDF
     const doc = new PDFDocument();
     const filename = `relatorio-${id}.pdf`;
+    const investigadorNome = (investigation as any).investigador?.nome || 'Não informado';
     const pdfPath = path.join(__dirname, '../../uploads', filename);
     const writeStream = fs.createWriteStream(pdfPath);
 
     doc.pipe(writeStream);
 
-    doc.fontSize(25).text('RELATÓRIO DE INVESTIGAÇÃO - DPF - POLÍCIA FEDERAL', { align: 'center' });
+    doc.fontSize(25).text('RELATÓRIO DE INVESTIGAÇÃO - POLÍCIA CIVIL - EUFORIA', { align: 'center' });
     doc.moveDown();
     doc.fontSize(12).text(`Título: ${investigation.titulo}`);
     doc.text(`Status: Finalizada`);
-    doc.text(`Investigador: ${investigation.investigador.nome}`);
+    doc.text(`Investigador: ${investigadorNome}`);
     doc.text(`Data Início: ${investigation.dataInicio.toLocaleDateString()}`);
     doc.text(`Data Fim: ${new Date().toLocaleDateString()}`);
     doc.moveDown();
@@ -277,7 +293,7 @@ export const finalizeInvestigation = async (req: Request, res: Response) => {
     doc.moveDown();
     
     doc.text('PROVAS ANEXADAS:', { underline: true });
-    investigation.evidences.forEach((ev, index) => {
+    (investigation.evidences || []).forEach((ev: any, index: number) => {
       doc.moveDown();
       doc.text(`${index + 1}. Tipo: ${ev.tipo} - ${ev.descricao || ''}`);
       doc.text(`Arquivo: ${ev.conteudo}`);

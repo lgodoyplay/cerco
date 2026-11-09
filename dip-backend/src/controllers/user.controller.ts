@@ -28,7 +28,11 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      return res.status(400).json({ error: 'ID do usuário é obrigatório' });
+    }
+
     const { nome, login, cargo, patente, permissoes, ativo, senha } = req.body;
     
     const data: any = { nome, login, cargo, patente, ativo };
@@ -55,7 +59,11 @@ export const updateUser = async (req: Request, res: Response) => {
 
 export const deleteUser = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      return res.status(400).json({ error: 'ID do usuário é obrigatório' });
+    }
+
     await prisma.user.delete({ where: { id } });
     res.status(204).send();
   } catch (error) {

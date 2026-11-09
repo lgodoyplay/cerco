@@ -89,7 +89,7 @@ app.use('/api/fluxer', fluxerRoutes);
 app.use('/api', internalCommsRoutes);
 
 app.get('/', (req, res) => {
-  res.send('API Polícia Federal Backend is running');
+  res.send('API Polícia Civil - Euforia Backend is running');
 });
 
 app.get('/health', async (req, res) => {
