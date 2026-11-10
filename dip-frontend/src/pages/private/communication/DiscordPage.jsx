@@ -173,17 +173,8 @@ const DiscordPage = () => {
 
       if (event === 'fluxer:event') {
         const data = payload;
-        if (data?.event === 'MESSAGE_CREATE') {
-          setMessages((prev) => {
-            const exists = prev.some((m) => m.id === data.payload.id);
-            if (exists) return prev;
-            return [...prev, data.payload];
-          });
-        } else if (data?.event === 'MESSAGE_UPDATE') {
-          setMessages((prev) => prev.map((m) => (m.id === data.payload.id ? data.payload : m)));
-        } else if (data?.event === 'MESSAGE_DELETE') {
-          setMessages((prev) => prev.filter((m) => m.id !== data.payload.id));
-        } else if (data?.event === 'VOICE_STATE_UPDATE') {
+
+        if (data?.event === 'VOICE_STATE_UPDATE') {
           const voiceState = data.payload;
           if (voiceState?.channel_id) {
             setActiveVoiceChannelId(voiceState.channel_id);

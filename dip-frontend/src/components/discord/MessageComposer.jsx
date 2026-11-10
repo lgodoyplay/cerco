@@ -63,8 +63,9 @@ const MessageComposer = ({
   };
 
   const handleSend = () => {
-    if (!draft?.trim()) return;
-    onSend();
+    const trimmed = draft?.trim();
+    if (!trimmed) return;
+    onSend?.(trimmed);
     textareaRef.current?.focus();
   };
 
