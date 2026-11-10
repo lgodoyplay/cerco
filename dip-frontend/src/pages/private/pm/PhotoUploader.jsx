@@ -37,12 +37,13 @@ const PhotoUploader = ({ photos, setPhotos }) => {
       // Upload cropped image
       const res = await fetch(croppedImageBase64);
       const blob = await res.blob();
+      const mimeType = blob.type || originalFile?.type || 'image/png';
       const fileName = `${Date.now()}-${originalFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
       
       const { data, error } = await supabase.storage
         .from('prf-evidence')
         .upload(fileName, blob, {
-           contentType: 'image/jpeg'
+           contentType: mimeType
         });
 
       if (error) {

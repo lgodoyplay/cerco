@@ -103,7 +103,8 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
     try {
       const res = await fetch(croppedImageBase64);
       const blob = await res.blob();
-      const file = new File([blob], originalFile.name, { type: 'image/jpeg' });
+      const mimeType = blob.type || originalFile?.type || 'image/png';
+      const file = new File([blob], originalFile.name, { type: mimeType });
 
       setError(null);
       setWarning(null);
