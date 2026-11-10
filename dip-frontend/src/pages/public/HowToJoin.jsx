@@ -9,28 +9,28 @@ const HowToJoin = () => {
   const steps = [
     {
       icon: FileCheck,
-      title: "1. Inscrição",
-      desc: "Aguarde a abertura do edital e preencha o formulário oficial no portal da prefeitura ou Discord."
+      title: "1. Inscrição inicial",
+      desc: "O candidato preenche o formulário de cadastro com dados pessoais, Discord, cidade e motivação para participar do processo."
     },
     {
       icon: Brain,
-      title: "2. Prova Teórica",
-      desc: "Avaliação de conhecimentos sobre a instituição, carreira e requisitos (20 questões)."
-    },
-    {
-      icon: Dumbbell,
-      title: "3. Teste Físico",
-      desc: "Teste de aptidão física (TAF) avaliando resistência, força e agilidade."
+      title: "2. Etapa 1 — Conhecimentos gerais",
+      desc: "Avaliação sobre missão institucional, hierarquia, disciplina e postura profissional dentro da corporação."
     },
     {
       icon: UserPlus,
-      title: "4. Entrevista",
-      desc: "Avaliação psicológica e comportamental com a corregedoria e comando."
+      title: "3. Etapa 2 — Legislação e procedimento",
+      desc: "Teste sobre corrupção, abordagens, uso do equipamento, uso de sirene e procedimentos operacionais corretos."
     },
     {
       icon: Award,
-      title: "5. Academia de Polícia",
-      desc: "Curso de formação intensivo. Os aprovados se tornam Cadetes."
+      title: "4. Etapa 3 — Operação e zelo institucional",
+      desc: "Avaliação final sobre códigos de comunicação, uso da força, ética, atuação e correto comportamento em serviço."
+    },
+    {
+      icon: CheckCircle2,
+      title: "5. Resultado e aprovação",
+      desc: "Ao final, o sistema calcula automaticamente a pontuação total e define o candidato como aprovado ou reprovado no processo."
     }
   ];
 
