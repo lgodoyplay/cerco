@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
 
 const importMetaEnv = ((import.meta as any).env ?? {}) as Record<string, string | undefined>;
-const configuredApiUrl = (importMetaEnv.VITE_FLUXER_API_URL || importMetaEnv.VITE_API_URL || '/api/fluxer').trim();
+const DEFAULT_BACKEND_URL = 'https://backecerco.onrender.com';
+const configuredApiUrl = (importMetaEnv.VITE_FLUXER_API_URL || importMetaEnv.VITE_API_URL || DEFAULT_BACKEND_URL).trim();
 
 const normalizeApiBase = (value: string) => {
   const trimmed = value.trim();

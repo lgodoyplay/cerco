@@ -13,5 +13,42 @@ services:
         generateValue: true
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: "3000"
+      - key: BOT_API_SECRET
+        sync: false # must match the exact same value configured in the bot service
+      - key: BOT_URL
+        sync: false # e.g. https://dip-discord-bot.onrender.com
+      - key: CORS_ORIGIN
+        sync: false # e.g. https://cerco-ccv.pages.dev
 
-  # Frontend is deployed to Netlify manually or linked, Render is best for Backend here.
+  # Discord bot service (Render)
+  - type: web
+    name: dip-discord-bot
+    env: node
+    root: bot
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
+      - key: PORT
+        value: "10000"
+      - key: BACKEND_URL
+        value: https://dip-backend.onrender.com
+      - key: BOT_API_SECRET
+        sync: false # must match the exact same value configured in the backend service
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_GUILD_ID
+        sync: false
+      - key: DISCORD_ENABLE_GUILD_MEMBERS_INTENT
+        value: "true"
+      - key: DISCORD_ENABLE_MESSAGE_CONTENT_INTENT
+        value: "true"
+
+  # Frontend is deployed to Netlify/Cloudflare Pages manually or linked; Render is best for backend/bot here.
