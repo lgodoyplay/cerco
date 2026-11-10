@@ -53,6 +53,7 @@ class FluxerSocket {
       this.emit('fluxer:event', data);
     });
 
+    // Initialize the socket connection
     return this.socket;
   }
 
@@ -82,3 +83,8 @@ class FluxerSocket {
 }
 
 export const fluxerSocket = new FluxerSocket();
+
+// Auto-connect when the module is imported
+if (typeof window !== 'undefined') {
+  fluxerSocket.connect();
+}
