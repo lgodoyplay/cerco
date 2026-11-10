@@ -29,7 +29,6 @@ if (hasWindow) {
   isInstalled = readInstalledState();
 
   window.addEventListener('beforeinstallprompt', (event) => {
-    event.preventDefault();
     deferredPrompt = event;
     emitInstallState();
   });
