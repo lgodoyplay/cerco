@@ -1,7 +1,7 @@
 import { io, type Socket } from 'socket.io-client';
 
 const importMetaEnv = ((import.meta as any).env ?? {}) as Record<string, string | undefined>;
-const socketUrl = (importMetaEnv.VITE_FLUXER_GATEWAY_URL || window.location.origin).replace(/\/$/, '');
+const socketUrl = (importMetaEnv.VITE_FLUXER_GATEWAY_URL || importMetaEnv.VITE_API_URL || 'https://backecerco.onrender.com').replace(/\/$/, '');
 
 export type FluxerGatewayListener = (event: string, payload: unknown) => void;
 

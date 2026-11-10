@@ -34,12 +34,13 @@ const PORT = process.env.PORT || 3000;
 const httpServer = http.createServer(app);
 initializeSocketServer(httpServer);
 
+const normalizeOrigin = (value: string) => value.trim().replace(/\/$/, '');
 const allowedOrigins = [
   'https://cerco-ccv.pages.dev',
   'https://www.cerco-ccv.pages.dev',
   'http://localhost:5173',
   'http://localhost:3000',
-  ...(process.env.CORS_ORIGIN?.split(',') || []).filter(Boolean),
+  ...(process.env.CORS_ORIGIN?.split(',') || []).map(normalizeOrigin).filter(Boolean),
 ];
 
 app.use(helmet());
