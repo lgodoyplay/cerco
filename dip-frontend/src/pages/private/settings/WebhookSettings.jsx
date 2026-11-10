@@ -228,14 +228,14 @@ const WebhookSettings = () => {
   };
 
   const renderWebhookCard = ({ key, title, description, icon: Icon, accent, buttonClass }) => (
-    <div key={key} className="rounded-3xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl shadow-slate-950/10">
-      <div className="flex items-start gap-4">
-        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${accent}`}>
-          <Icon size={22} />
+    <div key={key} className="rounded-3xl border border-slate-800 bg-slate-900/90 p-4 sm:p-5 shadow-xl shadow-slate-950/10">
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl border ${accent}`}>
+          <Icon size={20} className="sm:h-[22px] sm:w-[22px]" />
         </div>
-        <div className="space-y-1">
-          <h3 className="text-base font-bold text-white">{title}</h3>
-          <p className="text-sm text-slate-400">{description}</p>
+        <div className="min-w-0 flex-1 space-y-1">
+          <h3 className="text-base font-bold text-white break-words">{title}</h3>
+          <p className="text-sm text-slate-400 break-words">{description}</p>
         </div>
       </div>
 
@@ -249,19 +249,19 @@ const WebhookSettings = () => {
           value={config[key]}
           onChange={handleChange}
           placeholder="https://discord.com/api/webhooks/..."
-          className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-white focus:outline-none focus:border-federal-500"
+          className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-federal-500 break-all"
         />
       </div>
 
-      <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <p className="text-xs text-slate-500">
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs text-slate-500 leading-relaxed">
           Use um canal exclusivo para manter cada fluxo organizado.
         </p>
         <button
           type="button"
           onClick={() => handleTestWebhook(key, config[key], title)}
           disabled={testingKey === key}
-          className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${buttonClass}`}
+          className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto ${buttonClass}`}
         >
           <MessageSquare size={16} />
           {testingKey === key ? 'Testando...' : 'Testar Webhook'}
@@ -271,41 +271,41 @@ const WebhookSettings = () => {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-6 lg:p-7">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+    <div className="space-y-6 px-0 sm:px-1">
+      <div className="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-4 sm:p-6 lg:p-7">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-federal-500/20 bg-federal-500/10 text-federal-200 text-xs font-semibold uppercase tracking-[0.18em]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-federal-500/20 bg-federal-500/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-federal-200 sm:text-xs">
               <Share2 size={14} />
               Painel de Integrações
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <h2 className="flex items-center gap-2 text-xl font-bold text-white sm:text-2xl">
                 <Share2 className="text-federal-500" />
                 Integrações & Webhooks
               </h2>
-              <p className="text-slate-400 mt-1 max-w-3xl">
+              <p className="mt-1 max-w-3xl text-sm text-slate-400 sm:text-base">
                 Configure os canais do Discord para receber notificações automáticas do sistema em uma tela mais organizada e padronizada.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full lg:w-auto lg:min-w-[420px]">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4">
-              <p className="text-xs uppercase font-bold tracking-wide text-slate-500">Canais</p>
-              <p className="text-2xl font-bold text-white mt-2">12</p>
+          <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4 lg:w-auto lg:min-w-[420px]">
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-3 sm:p-4">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 sm:text-xs">Canais</p>
+              <p className="mt-2 text-2xl font-bold text-white">12</p>
             </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4">
-              <p className="text-xs uppercase font-bold tracking-wide text-slate-500">Principais</p>
-              <p className="text-2xl font-bold text-white mt-2">3</p>
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-3 sm:p-4">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 sm:text-xs">Principais</p>
+              <p className="mt-2 text-2xl font-bold text-white">3</p>
             </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4">
-              <p className="text-xs uppercase font-bold tracking-wide text-slate-500">Admin</p>
-              <p className="text-2xl font-bold text-white mt-2">5</p>
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-3 sm:p-4">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 sm:text-xs">Admin</p>
+              <p className="mt-2 text-2xl font-bold text-white">5</p>
             </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4">
-              <p className="text-xs uppercase font-bold tracking-wide text-slate-500">Operacional</p>
-              <p className="text-2xl font-bold text-white mt-2">4</p>
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-3 sm:p-4">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500 sm:text-xs">Operacional</p>
+              <p className="mt-2 text-2xl font-bold text-white">4</p>
             </div>
           </div>
         </div>
@@ -324,22 +324,22 @@ const WebhookSettings = () => {
       <div className="space-y-6">
         {WEBHOOK_GROUPS.map((group) => (
           <section key={group.title} className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h3 className="text-lg font-bold text-white">{group.title}</h3>
                 <p className="text-sm text-slate-400">{group.description}</p>
               </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4 xl:grid-cols-2">
               {group.items.map(renderWebhookCard)}
             </div>
           </section>
         ))}
       </div>
 
-      <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-4 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-white">Salvar Configurações</p>
             <p className="text-sm text-slate-400">
@@ -349,7 +349,7 @@ const WebhookSettings = () => {
           <button
             onClick={handleSave}
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-federal-600 hover:bg-federal-500 px-8 py-3 text-white font-bold shadow-lg shadow-federal-900/20 transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-federal-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-federal-900/20 transition-all hover:-translate-y-0.5 hover:bg-federal-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
             <Save size={20} />
             {loading ? 'Salvando...' : 'Salvar Configurações'}

@@ -99,46 +99,46 @@ const IntegrationManager = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-8">
-      <div className="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-6 lg:p-7">
-        <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+    <div className="mx-auto max-w-7xl space-y-6 px-3 pb-8 sm:px-4 lg:px-0">
+      <div className="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-4 sm:p-6 lg:p-7">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-federal-500/20 bg-federal-500/10 text-federal-200 text-xs font-semibold uppercase tracking-[0.18em]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-federal-500/20 bg-federal-500/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-federal-200 sm:text-xs">
               <UserCog size={14} />
               Pedidos de Login
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+              <h1 className="flex items-center gap-3 text-2xl font-bold text-white sm:text-3xl">
                 <UserCog className="text-federal-500" size={30} />
                 Integração
               </h1>
-              <p className="text-slate-400 mt-2 max-w-2xl">
+              <p className="mt-2 max-w-2xl text-sm text-slate-400 sm:text-base">
                 Todos os pedidos enviados pela página inicial ficam salvos aqui para análise, aprovação ou recusa.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full xl:w-auto xl:min-w-[560px]">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4">
-              <p className="text-xs uppercase font-bold tracking-wide text-slate-500">Total</p>
-              <p className="text-2xl font-bold text-white mt-2">{stats.total}</p>
+          <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4 xl:w-auto xl:min-w-[560px]">
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-3 sm:p-4">
+              <p className="text-[10px] uppercase font-bold tracking-wide text-slate-500 sm:text-xs">Total</p>
+              <p className="mt-2 text-2xl font-bold text-white">{stats.total}</p>
             </div>
-            <div className="rounded-2xl border border-amber-500/15 bg-amber-500/5 p-4">
-              <p className="text-xs uppercase font-bold tracking-wide text-amber-300/80">Pendentes</p>
-              <p className="text-2xl font-bold text-amber-200 mt-2">{stats.pendente}</p>
+            <div className="rounded-2xl border border-amber-500/15 bg-amber-500/5 p-3 sm:p-4">
+              <p className="text-[10px] uppercase font-bold tracking-wide text-amber-300/80 sm:text-xs">Pendentes</p>
+              <p className="mt-2 text-2xl font-bold text-amber-200">{stats.pendente}</p>
             </div>
-            <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/5 p-4">
-              <p className="text-xs uppercase font-bold tracking-wide text-emerald-300/80">Aprovados</p>
-              <p className="text-2xl font-bold text-emerald-200 mt-2">{stats.aprovado}</p>
+            <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/5 p-3 sm:p-4">
+              <p className="text-[10px] uppercase font-bold tracking-wide text-emerald-300/80 sm:text-xs">Aprovados</p>
+              <p className="mt-2 text-2xl font-bold text-emerald-200">{stats.aprovado}</p>
             </div>
-            <div className="rounded-2xl border border-red-500/15 bg-red-500/5 p-4">
-              <p className="text-xs uppercase font-bold tracking-wide text-red-300/80">Recusados</p>
-              <p className="text-2xl font-bold text-red-200 mt-2">{stats.recusado}</p>
+            <div className="rounded-2xl border border-red-500/15 bg-red-500/5 p-3 sm:p-4">
+              <p className="text-[10px] uppercase font-bold tracking-wide text-red-300/80 sm:text-xs">Recusados</p>
+              <p className="mt-2 text-2xl font-bold text-red-200">{stats.recusado}</p>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+        <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/70 p-3 sm:p-4">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
             <input
@@ -146,39 +146,39 @@ const IntegrationManager = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar por nome, passaporte, telefone, login ou Discord..."
-              className="w-full pl-10 pr-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-federal-500"
+              className="w-full rounded-xl border border-slate-800 bg-slate-900 py-3 pl-10 pr-4 text-white placeholder:text-slate-500 focus:border-federal-500 focus:outline-none"
             />
           </div>
         </div>
       </div>
 
       {notification && (
-        <div className="px-4 py-3 rounded-xl border border-federal-500/20 bg-federal-500/10 text-federal-200 text-sm">
+        <div className="rounded-xl border border-federal-500/20 bg-federal-500/10 px-4 py-3 text-sm text-federal-200">
           {notification}
         </div>
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center min-h-[240px] bg-slate-900 border border-slate-800 rounded-3xl">
-          <div className="w-10 h-10 border-4 border-slate-700 border-t-federal-500 rounded-full animate-spin" />
+        <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-slate-800 bg-slate-900">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-700 border-t-federal-500" />
         </div>
       ) : filteredRequests.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-12 text-center">
-          <Shield className="mx-auto text-slate-600 mb-4" size={40} />
-          <p className="text-slate-300 font-semibold">Nenhum pedido de login encontrado.</p>
-          <p className="text-slate-500 text-sm mt-2">Quando alguém usar o botão da home, vai aparecer aqui.</p>
+        <div className="rounded-3xl border border-slate-800 bg-slate-900 p-8 text-center sm:p-12">
+          <Shield className="mx-auto mb-4 text-slate-600" size={40} />
+          <p className="font-semibold text-slate-300">Nenhum pedido de login encontrado.</p>
+          <p className="mt-2 text-sm text-slate-500">Quando alguém usar o botão da home, vai aparecer aqui.</p>
         </div>
       ) : (
         <div className="grid gap-5">
           {filteredRequests.map((request) => {
             const meta = STATUS_META[request.status] || STATUS_META.pendente;
             return (
-              <div key={request.id} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-5 shadow-xl shadow-slate-950/10">
-                <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-4">
+              <div key={request.id} className="space-y-5 rounded-3xl border border-slate-800 bg-slate-900 p-4 shadow-xl shadow-slate-950/10 sm:p-6">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-3">
-                      <h2 className="text-xl font-bold text-white">{request.full_name}</h2>
-                      <span className={`px-3 py-1 rounded-full border text-xs font-bold ${meta.className}`}>
+                      <h2 className="text-lg font-bold text-white sm:text-xl">{request.full_name}</h2>
+                      <span className={`rounded-full border px-3 py-1 text-xs font-bold ${meta.className}`}>
                         {meta.label}
                       </span>
                     </div>
@@ -189,14 +189,14 @@ const IntegrationManager = () => {
 
                   {can('integration_manage') && (
                     <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3">
-                      <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-slate-500 mb-3">
+                      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
                         Ações Rápidas
                       </p>
                       <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
                           onClick={() => handleStatusChange(request.id, 'em_analise')}
-                          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-600/90 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+                          className="inline-flex items-center gap-2 rounded-xl bg-blue-600/90 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
                         >
                           <Clock3 size={15} />
                           Em análise
@@ -204,7 +204,7 @@ const IntegrationManager = () => {
                         <button
                           type="button"
                           onClick={() => handleStatusChange(request.id, 'aprovado')}
-                          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors"
+                          className="inline-flex items-center gap-2 rounded-xl bg-emerald-600/90 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
                         >
                           <CheckCircle2 size={15} />
                           Aprovar
@@ -212,7 +212,7 @@ const IntegrationManager = () => {
                         <button
                           type="button"
                           onClick={() => handleStatusChange(request.id, 'recusado')}
-                          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-red-600/90 hover:bg-red-500 text-white text-sm font-semibold transition-colors"
+                          className="inline-flex items-center gap-2 rounded-xl bg-red-600/90 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-500"
                         >
                           <XCircle size={15} />
                           Recusar
@@ -222,42 +222,40 @@ const IntegrationManager = () => {
                   )}
                 </div>
 
-                <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
-                  <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
-                    <p className="text-xs text-slate-500 uppercase font-bold mb-2 flex items-center gap-2">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                    <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500">
                       <IdCard size={14} />
                       Passaporte
                     </p>
-                    <p className="text-white font-semibold">{request.passport_id}</p>
+                    <p className="break-all font-semibold text-white">{request.passport_id}</p>
                   </div>
-                  <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
-                    <p className="text-xs text-slate-500 uppercase font-bold mb-2 flex items-center gap-2">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                    <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500">
                       <Phone size={14} />
                       Telefone do jogo
                     </p>
-                    <p className="text-white font-semibold">{request.phone}</p>
+                    <p className="break-all font-semibold text-white">{request.phone}</p>
                   </div>
-                  <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
-                    <p className="text-xs text-slate-500 uppercase font-bold mb-2 flex items-center gap-2">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                    <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500">
                       <UserCog size={14} />
                       Login desejado
                     </p>
-                    <p className="text-white font-semibold">{request.desired_login}</p>
+                    <p className="break-all font-semibold text-white">{request.desired_login}</p>
                   </div>
-                  <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
-                    <p className="text-xs text-slate-500 uppercase font-bold mb-2 flex items-center gap-2">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                    <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500">
                       <MessageSquare size={14} />
                       Discord
                     </p>
-                    <p className="text-white font-semibold">{request.discord_name || 'Nao informado'}</p>
+                    <p className="break-all font-semibold text-white">{request.discord_name || 'Nao informado'}</p>
                   </div>
                 </div>
 
-                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
-                  <p className="text-xs text-slate-500 uppercase font-bold mb-2">Observações</p>
-                  <p className="text-slate-200 whitespace-pre-wrap">
-                    {request.details || 'Sem observações adicionais.'}
-                  </p>
+                <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Observações</p>
+                  <p className="whitespace-pre-wrap text-slate-200">{request.details || 'Sem observações adicionais.'}</p>
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800">
