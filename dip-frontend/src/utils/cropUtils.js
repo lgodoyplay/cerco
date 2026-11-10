@@ -82,6 +82,15 @@ const resizeCanvas = (canvas, maxSize) => {
   return { width, height };
 };
 
+const prepareCanvas = (canvas, ctx, width, height, mimeType) => {
+  ctx.clearRect(0, 0, width, height);
+
+  if (mimeType === 'image/jpeg') {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+  }
+};
+
 const getCroppedImg = async (imageSrc, pixelCrop, rotation = 0, options = {}) => {
   if (!imageSrc) {
     throw new Error('Imagem não fornecida.');
@@ -104,11 +113,7 @@ const getCroppedImg = async (imageSrc, pixelCrop, rotation = 0, options = {}) =>
 
   canvas.width = rotatedDimensions.width;
   canvas.height = rotatedDimensions.height;
-
-  if (outputMimeType === 'image/jpeg') {
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
+  prepareCanvas(canvas, ctx, canvas.width, canvas.height, outputMimeType);
 
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(getRadianAngle(safeRotation));
@@ -124,11 +129,7 @@ const getCroppedImg = async (imageSrc, pixelCrop, rotation = 0, options = {}) =>
 
   croppedCanvas.width = crop.width;
   croppedCanvas.height = crop.height;
-
-  if (outputMimeType === 'image/jpeg') {
-    croppedCtx.fillStyle = '#ffffff';
-    croppedCtx.fillRect(0, 0, crop.width, crop.height);
-  }
+  prepareCanvas(croppedCanvas, croppedCtx, crop.width, crop.height, outputMimeType);
 
   croppedCtx.drawImage(
     canvas,
@@ -149,11 +150,7 @@ const getCroppedImg = async (imageSrc, pixelCrop, rotation = 0, options = {}) =>
 
     resizedCanvas.width = resized.width;
     resizedCanvas.height = resized.height;
-
-    if (outputMimeType === 'image/jpeg') {
-      resizedCtx.fillStyle = '#ffffff';
-      resizedCtx.fillRect(0, 0, resized.width, resized.height);
-    }
+    prepareCanvas(resizedCanvas, resizedCtx, resized.width, resized.height, outputMimeType);
 
     resizedCtx.drawImage(croppedCanvas, 0, 0, resized.width, resized.height);
     return resizedCanvas.toDataURL(outputMimeType, quality);
