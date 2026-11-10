@@ -84,7 +84,7 @@ const MessageList = ({ messages, onSelectMember }) => {
   }
 
   return (
-    <div className="space-y-1">
+    <div className="h-full min-h-0 overflow-y-auto space-y-1">
       {groupedMessages.map((group, groupIndex) => (
         <div key={`group-${groupIndex}`}>
           {showDateSeparator(group.timestamp, groupIndex) && (

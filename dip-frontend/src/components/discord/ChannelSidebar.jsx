@@ -119,7 +119,7 @@ const ServerSidebar = ({
   const server = Array.isArray(servers) ? servers.find((s) => s.id === selectedServerId) : undefined;
 
   return (
-    <div className="flex w-full flex-col border-r border-slate-800 bg-slate-900/95 lg:w-72" ref={sidebarRef}>
+    <div className="flex min-h-0 w-full flex-col overflow-hidden border-r border-slate-800 bg-slate-900/95 lg:w-72" ref={sidebarRef}>
       <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-federal-500 to-fuchsia-600 text-xs font-bold text-white">
@@ -147,7 +147,7 @@ const ServerSidebar = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 py-3 scrollbar-thin">
+      <div className="min-h-0 flex-1 overflow-y-auto px-2 py-3 scrollbar-thin">
         <div className="mb-4 px-2">
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />

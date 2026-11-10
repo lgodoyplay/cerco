@@ -431,7 +431,7 @@ const DiscordPage = () => {
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         {isBackendOffline && (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
             <div className="rounded-full border border-slate-700 p-4 text-slate-400">
@@ -498,8 +498,8 @@ const DiscordPage = () => {
               />
             </div>
 
-            <main className="flex min-w-0 flex-1 flex-col relative">
-              <div className={'flex-1 flex flex-col min-w-0 ' + (activeJitsiCall && !isJitsiMinimized ? 'hidden' : '')}>
+            <main className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+              <div className={'flex min-h-0 flex-1 flex-col min-w-0 ' + (activeJitsiCall && !isJitsiMinimized ? 'hidden' : '')}>
                 <DiscordChat
                   channel={selectedChannel}
                   onSelectMember={handleSelectMember}
