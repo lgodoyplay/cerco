@@ -117,6 +117,32 @@ const getCroppedImg = async (
     const outputMimeType = resolveOutputMimeType(imageSrc, mimeType);
     
     const image = await createImage(imageSrc);
+    const MAX_ANALYSIS_DIMENSION = 2000;
+    const scaleDown = Math.min(1, MAX_ANALYSIS_DIMENSION / Math.max(image.width, image.height));
+
+    let workImage = image;
+    let renderScale = 1;
+
+    if (scaleDown < 1) {
+        const scaledCanvas = document.createElement('canvas');
+        scaledCanvas.width = Math.max(1, Math.round(image.width * scaleDown));
+        scaledCanvas.height = Math.max(1, Math.round(image.height * scaleDown));
+        const scaledCtx = scaledCanvas.getContext('2d');
+
+        if (!scaledCtx) {
+            throw new Error('Contexto 2D não suportado no ajuste de escala');
+        }
+
+        scaledCtx.drawImage(image, 0, 0, scaledCanvas.width, scaledCanvas.height);
+        workImage = scaledCanvas;
+        renderScale = scaleDown;
+    }
+
+    const cropX = pixelCrop.x * renderScale;
+    const cropY = pixelCrop.y * renderScale;
+    const cropWidth = pixelCrop.width * renderScale;
+    const cropHeight = pixelCrop.height * renderScale;
+
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
 
@@ -126,8 +152,8 @@ const getCroppedImg = async (
 
     const rotRad = getRadianAngle(rotation);
     const { width: bBoxWidth, height: bBoxHeight } = rotateSize(
-        image.width,
-        image.height,
+        workImage.width,
+        workImage.height,
         rotation
     );
 
@@ -144,17 +170,17 @@ const getCroppedImg = async (
     // Transformações
     ctx.translate(bBoxWidth / 2, bBoxHeight / 2);
     ctx.rotate(rotRad);
-    ctx.translate(-image.width / 2, -image.height / 2);
+    ctx.translate(-workImage.width / 2, -workImage.height / 2);
 
     // Desenhar imagem
-    ctx.drawImage(image, 0, 0);
+    ctx.drawImage(workImage, 0, 0);
 
     // Extrair área cortada
     const data = ctx.getImageData(
-        pixelCrop.x,
-        pixelCrop.y,
-        pixelCrop.width,
-        pixelCrop.height
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight
     );
 
     // Criar canvas final
@@ -165,8 +191,8 @@ const getCroppedImg = async (
         throw new Error('Contexto 2D não suportado no canvas final');
     }
 
-    finalCanvas.width = pixelCrop.width;
-    finalCanvas.height = pixelCrop.height;
+    finalCanvas.width = cropWidth;
+    finalCanvas.height = cropHeight;
 
     if (outputMimeType === 'image/jpeg') {
         finalCtx.fillStyle = '#ffffff';
