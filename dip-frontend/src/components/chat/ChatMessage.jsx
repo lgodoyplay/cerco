@@ -2,12 +2,17 @@ import React from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Trash2 } from 'lucide-react';
+import { getAvatarPublicUrl } from '../../lib/avatar';
 
 const ChatMessage = ({ message, isCurrentUser, onDelete }) => {
   const safeDate = message?.created_at ? new Date(message.created_at) : new Date();
   const formattedTime = isNaN(safeDate.getTime())
     ? ''
     : format(safeDate, 'HH:mm', { locale: ptBR });
+  const avatarSrc = getAvatarPublicUrl(message?.user_avatar_url || message?.avatar_url || null)
+    || message?.user_avatar_url
+    || message?.avatar_url
+    || null;
 
   return (
     <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
@@ -25,8 +30,8 @@ const ChatMessage = ({ message, isCurrentUser, onDelete }) => {
         )}
 
         <div className="flex items-center gap-2 mb-1.5">
-          {message?.user_avatar_url ? (
-            <img src={message.user_avatar_url} alt={message?.user_name || 'Usuário'} className="w-7 h-7 rounded-full object-cover border border-slate-700" />
+          {avatarSrc ? (
+            <img src={avatarSrc} alt={message?.user_name || 'Usuário'} className="w-7 h-7 rounded-full object-cover border border-slate-700" />
           ) : (
             <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-semibold text-slate-200">
               {message?.user_name?.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase() || 'U'}

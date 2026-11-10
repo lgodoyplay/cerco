@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase';
+import { getAvatarPublicUrl } from '../../lib/avatar';
 
 const CHAT_TABLE = 'global_chat_messages';
 
@@ -9,10 +10,21 @@ const isMissingTableError = (error) => {
   return code === '42P01' || code === 'PGRST205' || message.includes('does not exist') || message.includes('relation') || message.includes('not found');
 };
 
-const normalizeMessage = (message, currentUser) => {
+const getProfileAvatar = (userId, profileMap, fallback) => {
+  const profile = userId ? profileMap?.[userId] : null;
+  const rawAvatarUrl = profile?.avatar_url || fallback || null;
+  return getAvatarPublicUrl(rawAvatarUrl) || rawAvatarUrl || null;
+};
+
+const normalizeMessage = (message, currentUser, profileMap = {}) => {
   const senderId = message?.user_id || message?.userId;
-  const senderName = message?.user_name || message?.userName || message?.sender_name || 'Usuário';
-  const avatarUrl = message?.user_avatar_url || message?.avatar_url || null;
+  const senderName = profileMap?.[senderId]?.full_name
+    || message?.user_name
+    || message?.userName
+    || message?.sender_name
+    || 'Usuário';
+  const rawAvatarUrl = message?.user_avatar_url || message?.avatar_url || null;
+  const avatarUrl = getProfileAvatar(senderId, profileMap, rawAvatarUrl);
 
   return {
     id: message?.id,
@@ -45,7 +57,24 @@ export const chatService = {
       }
 
       const safeData = Array.isArray(data) ? data : [];
-      return safeData.map((message) => normalizeMessage(message, currentUser));
+      const senderIds = [...new Set(safeData.map((message) => message?.user_id).filter(Boolean))];
+      let profileMap = {};
+
+      if (senderIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url')
+          .in('id', senderIds);
+
+        if (!profilesError && Array.isArray(profilesData)) {
+          profileMap = profilesData.reduce((acc, profile) => {
+            acc[profile.id] = profile;
+            return acc;
+          }, {});
+        }
+      }
+
+      return safeData.map((message) => normalizeMessage(message, currentUser, profileMap));
     } catch (error) {
       console.warn('Chat: exceção ao buscar mensagens', error);
       return [];
@@ -58,11 +87,16 @@ export const chatService = {
     if (!safeContent) return null;
 
     try {
+      const normalizedAvatar = getAvatarPublicUrl(currentUser.avatar_url || currentUser.avatar || null)
+        || currentUser.avatar_url
+        || currentUser.avatar
+        || null;
+
       const payload = {
         user_id: currentUser.id,
         content: safeContent.slice(0, 1000),
         user_name: currentUser.full_name || currentUser.username || currentUser.email || 'Usuário',
-        user_avatar_url: currentUser.avatar_url || null,
+        user_avatar_url: normalizedAvatar,
         user_role: currentUser.role || null,
       };
 
@@ -121,9 +155,24 @@ export const chatService = {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: CHAT_TABLE },
-        (payload) => {
+        async (payload) => {
           if (typeof onMessage !== 'function') return;
-          const message = normalizeMessage(payload.new, currentUser);
+
+          let profileMap = {};
+          const senderId = payload?.new?.user_id;
+          if (senderId) {
+            const { data: profilesData } = await supabase
+              .from('profiles')
+              .select('id, full_name, avatar_url')
+              .eq('id', senderId)
+              .single();
+
+            if (profilesData) {
+              profileMap[profilesData.id] = profilesData;
+            }
+          }
+
+          const message = normalizeMessage(payload.new, currentUser, profileMap);
           onMessage(message);
         }
       )
