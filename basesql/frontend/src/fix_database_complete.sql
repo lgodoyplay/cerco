@@ -134,6 +134,13 @@ CREATE POLICY "Global chat insert for authenticated users"
   TO authenticated
   WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
 
+DROP POLICY IF EXISTS "Global chat delete for authenticated users" ON public.global_chat_messages;
+CREATE POLICY "Global chat delete for authenticated users"
+  ON public.global_chat_messages
+  FOR DELETE
+  TO authenticated
+  USING (auth.uid() = user_id);
+
 -- 3. CORREÇÃO DA FUNÇÃO DE RESET (RPC)
 -- Agora a função é capaz de lidar com erros e garantir a limpeza
 CREATE OR REPLACE FUNCTION reset_system_data()

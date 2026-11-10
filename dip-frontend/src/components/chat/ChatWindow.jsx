@@ -3,6 +3,7 @@ import { X, Minus, MessageCircleMore, LoaderCircle, Plus, Trash2 } from 'lucide-
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { chatService } from './ChatService';
+import { getAvatarPublicUrl } from '../../lib/avatar';
 
 const createUniqueId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
@@ -17,8 +18,9 @@ const makeConversationItem = (id, name, avatarUrl, muted = false) => ({
 const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChange }) => {
   const [messages, setMessages] = useState([]);
   const [groupMessages, setGroupMessages] = useState({});
+  const normalizedUserAvatar = getAvatarPublicUrl(user?.avatar_url || user?.avatar || null) || user?.avatar_url || user?.avatar || null;
   const [conversations, setConversations] = useState([
-    makeConversationItem('general', 'Chat Geral', user?.avatar_url || null, false),
+    makeConversationItem('general', 'Chat Geral', normalizedUserAvatar, false),
   ]);
   const [selectedConversationId, setSelectedConversationId] = useState('general');
   const [loading, setLoading] = useState(true);
@@ -49,15 +51,16 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
   };
 
   useEffect(() => {
+    const nextAvatar = getAvatarPublicUrl(user?.avatar_url || user?.avatar || null) || user?.avatar_url || user?.avatar || null;
     setConversations((prev) => {
       const next = [...prev];
       const generalIndex = next.findIndex((conv) => conv.id === 'general');
       if (generalIndex >= 0) {
-        next[generalIndex] = { ...next[generalIndex], avatarUrl: user?.avatar_url || null };
+        next[generalIndex] = { ...next[generalIndex], avatarUrl: nextAvatar };
       }
       return next;
     });
-  }, [user?.avatar_url]);
+  }, [user?.avatar_url, user?.avatar]);
 
   useEffect(() => {
     const loadMessages = async () => {
@@ -182,7 +185,8 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
     if (!name) return;
 
     const id = createUniqueId();
-    const newConversation = makeConversationItem(id, name, user?.avatar_url || null, false);
+    const groupAvatar = getAvatarPublicUrl(user?.avatar_url || user?.avatar || null) || user?.avatar_url || user?.avatar || null;
+    const newConversation = makeConversationItem(id, name, groupAvatar, false);
     newConversation.isGroup = true;
 
     setConversations((prev) => [
@@ -299,7 +303,7 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
                 key={message.id}
                 message={message}
                 isCurrentUser={message.isCurrentUser || message.user_id === user?.id}
-                onDelete={selectedConversationId === 'general' || message.user_id === user?.id ? handleDeleteMessage : undefined}
+                onDelete={message.user_id === user?.id ? handleDeleteMessage : undefined}
               />
             ))}
             <div ref={bottomRef} />

@@ -31,3 +31,10 @@ CREATE POLICY "Global chat update for authenticated users"
   FOR UPDATE
   TO authenticated
   USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Global chat delete for authenticated users" ON public.global_chat_messages;
+CREATE POLICY "Global chat delete for authenticated users"
+  ON public.global_chat_messages
+  FOR DELETE
+  TO authenticated
+  USING (auth.uid() = user_id);
