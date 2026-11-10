@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import AvatarUpload from '../../components/AvatarUpload';
+import { getAvatarPublicUrl } from '../../lib/avatar';
 import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText, AlertTriangle, X, Play, Square, Link2, ArrowLeft } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -106,13 +107,15 @@ const ProfilePage = () => {
 
   const handleAvatarUpload = async (url) => {
     try {
+      const normalizedUrl = getAvatarPublicUrl(url) || url;
+
       const { error } = await supabase
         .from('profiles')
-        .update({ avatar_url: url })
+        .update({ avatar_url: normalizedUrl })
         .eq('id', user.id);
       if (error) throw error;
-      setProfile({ ...profile, avatar_url: url });
-      updateUser({ avatar_url: url });
+      setProfile({ ...profile, avatar_url: normalizedUrl });
+      updateUser({ avatar_url: normalizedUrl });
       setMessage({ type: 'success', text: 'Foto de perfil atualizada!' });
     } catch (error) {
       console.error('Error updating avatar:', error.message);

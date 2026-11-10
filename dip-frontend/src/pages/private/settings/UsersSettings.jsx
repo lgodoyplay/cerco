@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../../hooks/useSettings';
 import { supabase } from '../../../lib/supabase';
+import { getAvatarPublicUrl } from '../../../lib/avatar';
 import { Plus, Edit2, Trash2, Shield, User, Users, Power, Search, Check, X, BookOpen, GraduationCap, Mail, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
 import AvatarUpload from '../../../components/AvatarUpload';
@@ -247,9 +248,10 @@ const UsersSettings = () => {
   };
 
   const handleAvatarUpdate = async (url) => {
-    setFormData(prev => ({ ...prev, avatar_url: url }));
+    const normalizedUrl = getAvatarPublicUrl(url) || url;
+    setFormData(prev => ({ ...prev, avatar_url: normalizedUrl }));
     if (editingUser) {
-      await supabase.from('profiles').update({ avatar_url: url }).eq('id', editingUser.id);
+      await supabase.from('profiles').update({ avatar_url: normalizedUrl }).eq('id', editingUser.id);
       if (refreshUsers) refreshUsers();
     }
   };
@@ -345,7 +347,7 @@ const UsersSettings = () => {
               <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 overflow-hidden">
                 {user.avatar_url || user.avatar ? (
                    <img 
-                     src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/avatars/${user.avatar_url || user.avatar}`}
+                     src={getAvatarPublicUrl(user.avatar_url || user.avatar) || ''}
                      className="w-full h-full object-cover"
                      onError={(e) => e.target.style.display = 'none'}
                      alt={user.name}

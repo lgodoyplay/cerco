@@ -102,17 +102,13 @@ const MemberList = ({ room }) => {
                             <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-600 group-hover:border-slate-500 transition-colors">
                                 {member.profiles?.avatar_url ? (
                                     <img 
-                                        src={member.profiles.avatar_url?.startsWith('http') 
-                                            ? getAvatarPublicUrl(member.profiles.avatar_url) || ''
-                                            : ''
-                                        } 
+                                        src={getAvatarPublicUrl(member.profiles.avatar_url) || ''}
                                         className="w-full h-full object-cover" 
                                         alt="Avatar" 
                                         onError={(e) => {
                                             e.target.onerror = null;
                                             e.target.style.display = 'none';
                                             e.target.parentElement.classList.add('flex', 'items-center', 'justify-center');
-                                            // Create a span element for initials
                                             const span = document.createElement('span');
                                             span.className = 'text-sm font-bold text-slate-300';
                                             span.innerText = getInitials(member.profiles?.full_name);

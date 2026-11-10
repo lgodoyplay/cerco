@@ -69,7 +69,7 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
 
       const uploadedUrl = getAvatarPublicUrl(filePath) || localPreviewUrl;
       setAvatarUrl(uploadedUrl);
-      onUpload(filePath);
+      onUpload(uploadedUrl);
     } catch (error) {
       console.error('Erro ao salvar avatar:', error);
       alert(error.message || 'Não foi possível salvar a foto.');
