@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SettingsProvider } from './context/SettingsContext';
@@ -128,6 +128,31 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+const appTitles = {
+  '/': 'Polícia Civil - Euforia',
+  '/landing': 'Polícia Civil - Euforia',
+  '/login': 'Polícia Civil - Euforia | Login',
+  '/codigo-penal': 'Polícia Civil - Euforia | Código Penal',
+  '/rules': 'Polícia Civil - Euforia | Regras',
+  '/join': 'Polícia Civil - Euforia | Como Fazer Parte',
+  '/corregedoria': 'Polícia Civil - Euforia | Corregedoria',
+  '/pesquisas-e-apuracoes': 'Polícia Civil - Euforia | Pesquisas e Apurações',
+  '/dashboard': 'Polícia Civil - Euforia | Dashboard',
+};
+
+const BrowserTitle = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const pathname = location.pathname;
+    const fallbackTitle = 'Polícia Civil - Euforia';
+    const title = appTitles[pathname] || fallbackTitle;
+    document.title = title;
+  }, [location.pathname]);
+
+  return null;
+};
+
 function App() {
   // Debug log to verify version
   console.log('App Version: 2026-01-21 v2 - Fixes');
@@ -137,6 +162,7 @@ function App() {
       <SettingsProvider>
         <ThemeManager />
         <BrowserRouter>
+          <BrowserTitle />
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
             {/* Public Routes */}

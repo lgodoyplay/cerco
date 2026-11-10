@@ -235,7 +235,7 @@ const ProtectiveMeasuresManager = () => {
         description: measure.details || measure.restrictions || 'Sem detalhes adicionais.',
         color: actionLabel === 'Retirada' ? 0xdc2626 : 0xf59e0b,
         actorName: resolveWebhookActorName(user),
-        footerText: 'Sistema FEDERAL EUFORIA - Medida Protetiva',
+        footerText: 'Sistema Polícia Civil - Euforia - Medida Protetiva',
         fields: [
           { name: 'Vitima', value: `${measure.victim_name} (${measure.victim_passport})`, inline: true },
           { name: 'Agressor', value: `${measure.aggressor_name} (${measure.aggressor_passport})`, inline: true },

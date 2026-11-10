@@ -135,7 +135,7 @@ const ExonerationCreate = () => {
         description: payload.reason,
         color: 0xbe123c,
         actorName: resolveWebhookActorName(user),
-        footerText: 'Sistema FEDERAL EUFORIA - Exoneracao',
+        footerText: 'Sistema Polícia Civil - Euforia - Exoneracao',
         fields: [
           { name: 'Nome', value: payload.fullName, inline: true },
           { name: 'Passaporte', value: payload.passportId, inline: true },

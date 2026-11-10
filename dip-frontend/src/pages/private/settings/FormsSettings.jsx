@@ -59,7 +59,7 @@ const FormsSettings = () => {
           { name: "Status", value: "Conectado", inline: true },
           { name: "Origem", value: "Painel Administrativo", inline: true }
         ],
-        footer: { text: "Sistema de Recrutamento FEDERAL EUFORIA" },
+        footer: { text: "Sistema de Recrutamento Polícia Civil - Euforia" },
         timestamp: new Date().toISOString()
       };
 

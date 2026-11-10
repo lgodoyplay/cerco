@@ -55,7 +55,7 @@ export const createBaseWebhookEmbed = ({
   color = 0x3b82f6,
   actorName = 'Sistema',
   fields = [],
-  footerText = 'Sistema FEDERAL EUFORIA'
+  footerText = 'Sistema Polícia Civil - Euforia'
 }) => ({
   title: truncate(title, 256),
   description: truncate(description, 4096),

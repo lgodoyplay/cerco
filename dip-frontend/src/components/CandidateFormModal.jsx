@@ -19,7 +19,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
   const quizQuestions = [
     {
       id: 1,
-      question: 'Qual é a principal missão de um Agente FEDERAL EUFORIA?',
+      question: 'Qual é a principal missão de um Agente da Polícia Civil - Euforia?',
       options: [
         { id: 'a', text: 'Ganhar muito dinheiro e ter poder' },
         { id: 'b', text: 'Servir e proteger a sociedade, cumprindo a lei' },
@@ -179,7 +179,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
     },
     {
       id: 17,
-      question: 'A quem a FEDERAL EUFORIA se subordina?',
+      question: 'A quem a Polícia Civil - Euforia se subordina?',
       options: [
         { id: 'a', text: 'Ao Exército' },
         { id: 'b', text: 'Ao Ministério da Justiça e Segurança Pública' },
@@ -209,7 +209,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
     },
     {
       id: 20,
-      question: 'Por que você deseja entrar para a Polícia Federal?',
+      question: 'Por que você deseja entrar para a Polícia Civil - Euforia?',
       options: [
         { id: 'a', text: 'Para ter arma e distintivo' },
         { id: 'b', text: 'Para contribuir com a segurança e justiça da sociedade' },
@@ -303,7 +303,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
           { name: "✅ Pontuação Quiz", value: `${score}/10` || 'N/A', inline: true },
           { name: "📄 Motivação", value: formData.mensagem || 'N/A' }
         ],
-        footer: { text: "Sistema de Recrutamento FEDERAL EUFORIA" },
+        footer: { text: "Sistema de Recrutamento Polícia Civil - Euforia" },
         timestamp: new Date().toISOString()
       };
 
@@ -371,7 +371,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
           {!showQuiz ? (
             <>
               <div className="text-center mb-10">
-                <h2 className="text-3xl font-bold text-white mb-4">Candidatura à FEDERAL EUFORIA</h2>
+                <h2 className="text-3xl font-bold text-white mb-4">Candidatura à Polícia Civil - Euforia</h2>
                 <p className="text-slate-400">
                   Preencha o formulário e faça o teste de admissão para demonstrar seu interesse em fazer parte da 
                   nossa equipe de elite.
@@ -405,7 +405,7 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte da FEDERAL EUFORIA?</label>
+                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte da Polícia Civil - Euforia?</label>
                   <textarea 
                     required
                     value={candidateForm.mensagem}

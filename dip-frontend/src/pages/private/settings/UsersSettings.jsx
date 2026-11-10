@@ -287,11 +287,11 @@ const UsersSettings = () => {
 
   const handlePromoteToAgent = async () => {
     if (!editingUser) return;
-    if (!window.confirm('Deseja promover este usuário a Agente FEDERAL EUFORIA? Isso dará acesso às funções básicas.')) return;
+    if (!window.confirm('Deseja promover este usuário a Agente da Polícia Civil - Euforia? Isso dará acesso às funções básicas.')) return;
 
     try {
-      await updateUser(editingUser.id, { ...formData, role: 'Agente FEDERAL EUFORIA' });
-      setFormData(prev => ({ ...prev, role: 'Agente FEDERAL EUFORIA' }));
+      await updateUser(editingUser.id, { ...formData, role: 'Agente da Polícia Civil - Euforia' });
+      setFormData(prev => ({ ...prev, role: 'Agente da Polícia Civil - Euforia' }));
       alert('Usuário promovido com sucesso!');
     } catch (error) {
       console.error('Error promoting user:', error);
@@ -641,7 +641,7 @@ const UsersSettings = () => {
                       <h4 className="font-bold text-white">Progresso da Academia</h4>
                       <p className="text-sm text-slate-400">Marque os módulos concluídos pelo aluno.</p>
                     </div>
-                    {formData.role !== 'Agente FEDERAL EUFORIA' && (
+                    {formData.role !== 'Agente da Polícia Civil - Euforia' && (
                       <button
                         onClick={handlePromoteToAgent}
                         className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg"

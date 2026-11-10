@@ -325,7 +325,7 @@ const RegisterArrest = ({ embedded = false }) => {
               { name: "Motivo", value: formData.reason },
               { name: "Oficial Responsável", value: formData.officer, inline: true }
             ],
-            footer: { text: "Sistema Prisional FEDERAL EUFORIA" },
+            footer: { text: "Sistema Prisional Polícia Civil - Euforia" },
             timestamp: new Date().toISOString()
           };
           

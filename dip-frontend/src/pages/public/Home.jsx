@@ -307,7 +307,7 @@ const Home = () => {
             description: payload.details || 'Solicitacao enviada pela pagina inicial.',
             color: 0x2563eb,
             actorName: payload.full_name,
-            footerText: 'Sistema FEDERAL EUFORIA - Integracao',
+            footerText: 'Sistema Polícia Civil - Euforia - Integracao',
             fields: [
               { name: 'Passaporte', value: payload.passport_id, inline: true },
               { name: 'Telefone', value: payload.phone, inline: true },
@@ -413,7 +413,7 @@ const Home = () => {
                         </h2>
                         <p className="max-w-xl text-sm sm:text-base leading-relaxed text-slate-300">
                           Acesse o fluxo de entrada da corporação, confira requisitos e veja como iniciar
-                          seu processo de participação dentro da FEDERAL EUFORIA.
+                          seu processo de participação dentro da Polícia Civil - Euforia.
                         </p>
                       </div>
                     </div>
@@ -632,14 +632,14 @@ const Home = () => {
                         Estado da Euforia
                       </p>
                       <p className="text-sm font-medium text-slate-100">
-                        FEDERAL EUFORIA - policia federal Estadual
+                        Polícia Civil - Euforia - polícia civil estadual
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="mt-4 space-y-3 text-sm text-slate-300">
                   <p>
-                    A FEDERAL EUFORIA é uma unidade especializada da policia federal do Estado da Euforia.
+                    A Polícia Civil - Euforia é uma unidade especializada da polícia civil do Estado da Euforia.
                   </p>
                   <p>
                     Atua exclusivamente na investigação de tráfico de drogas, facções criminosas locais e crimes relacionados.
@@ -778,11 +778,11 @@ const Home = () => {
           <div className="space-y-4">
             <h2 className="text-3xl sm:text-4xl font-bold text-white flex items-center gap-3">
               <Shield size={30} className="text-federal-400" />
-              O que é a FEDERAL EUFORIA
+              O que é a Polícia Civil - Euforia
             </h2>
             <p className="text-slate-300 text-base leading-relaxed">
-              O FEDERAL EUFORIA é o Departamento Estadual de Investigação de Narcóticos,
-              uma unidade especializada da policia federal do Estado da Euforia,
+              O Polícia Civil - Euforia é o Departamento Estadual de Investigação de Narcóticos,
+              uma unidade especializada da polícia civil do Estado da Euforia,
               responsável por apurar infrações penais relacionadas ao tráfico de drogas
               e crime organizado dentro do território estadual.
             </p>
@@ -869,7 +869,7 @@ const Home = () => {
               <h3 className="text-lg font-bold text-white">Apoio Operacional</h3>
             </div>
             <p className="text-sm text-slate-300">
-              Apoio a outras unidades da policia federal, produção de relatórios investigativos
+              Apoio a outras unidades da polícia civil, produção de relatórios investigativos
               e cumprimento de mandatos judiciais estaduais.
             </p>
           </div>
@@ -1167,7 +1167,7 @@ const Home = () => {
           <div className="px-6 sm:px-8 py-8 space-y-6">
             <div className="space-y-2">
               <p className="text-lg font-bold text-white">
-                O que define o Agente FEDERAL EUFORIA?
+                O que define o Agente da Polícia Civil - Euforia?
               </p>
               <ul className="space-y-1 text-sm font-semibold text-federal-100">
                 <li>LEALDADE À CONSTITUIÇÃO E AO ESTADO DA EUFORIA.</li>
@@ -1182,7 +1182,7 @@ const Home = () => {
                   Legalidade
                 </p>
                 <p className="text-slate-200">
-                  Toda ação policial deve estar estritamente amparada na lei estadual. O Agente FEDERAL EUFORIA é, antes de tudo, um garantidor de direitos.
+                  Toda ação policial deve estar estritamente amparada na lei estadual. O Agente da Polícia Civil - Euforia é, antes de tudo, um garantidor de direitos.
                 </p>
               </div>
               <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4">
@@ -1218,7 +1218,7 @@ const Home = () => {
                   Regime Disciplinar
                 </p>
                 <p className="text-sm text-red-100">
-                  Infrações que atentam contra o decoro e a eficácia da FEDERAL EUFORIA.
+                  Infrações que atentam contra o decoro e a eficácia da Polícia Civil - Euforia.
                 </p>
               </div>
             </div>
@@ -1266,7 +1266,7 @@ const Home = () => {
               </h2>
             </div>
             <p className="text-sm text-slate-300 mb-4">
-              O que se espera de todo integrante da FEDERAL EUFORIA no exercício de suas funções.
+              O que se espera de todo integrante da Polícia Civil - Euforia no exercício de suas funções.
             </p>
             <div className="space-y-3 text-sm text-slate-100">
               <div className="flex items-start gap-3">
@@ -1293,11 +1293,11 @@ const Home = () => {
             <div className="space-y-4 text-sm text-slate-100">
               <div className="border-l-2 border-federal-500 pl-3">
                 <p className="font-bold text-federal-200">Competência Estadual</p>
-                <p className="text-xs text-slate-300">A FEDERAL EUFORIA atua exclusivamente dentro do Estado da Euforia, sob jurisdição estadual.</p>
+                <p className="text-xs text-slate-300">A Polícia Civil - Euforia atua exclusivamente dentro do Estado da Euforia, sob jurisdição estadual.</p>
               </div>
               <div className="border-l-2 border-federal-500 pl-3">
-                <p className="font-bold text-federal-200">policia federal</p>
-                <p className="text-xs text-slate-300">Unidade especializada da policia federal Estadual.</p>
+                <p className="font-bold text-federal-200">polícia civil</p>
+                <p className="text-xs text-slate-300">Unidade especializada da polícia civil Estadual.</p>
               </div>
               <div className="border-l-2 border-federal-500 pl-3">
                 <p className="font-bold text-federal-200">Contato de Emergência</p>
@@ -1319,7 +1319,7 @@ const Home = () => {
             <Siren className="text-red-600 animate-pulse sm:hidden" size={32} />
           </h2>
           <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-            Ajude a FEDERAL EUFORIA a localizar criminosos perigosos no Estado da Euforia. Sua identidade será mantida em absoluto sigilo.
+            Ajude a Polícia Civil - Euforia a localizar criminosos perigosos no Estado da Euforia. Sua identidade será mantida em absoluto sigilo.
           </p>
         </div>
 
@@ -1392,7 +1392,7 @@ const Home = () => {
               <div>
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-federal-900/40 border border-federal-700/50 text-federal-300 text-xs font-semibold uppercase tracking-wider mb-2">
                   <Newspaper size={14} />
-                  <span>Boletim FEDERAL EUFORIA</span>
+                  <span>Boletim Polícia Civil - Euforia</span>
                 </div>
                 <h2 className="text-3xl font-bold text-white">Últimas Notícias e Operações</h2>
               </div>

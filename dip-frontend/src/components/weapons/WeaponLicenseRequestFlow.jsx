@@ -39,7 +39,7 @@ const rules = [
 
 const steps = [
   'Preencher este formulario de solicitacao.',
-  'Aguardar a analise inicial da FEDERAL EUFORIA.',
+  'Aguardar a analise inicial da Polícia Civil - Euforia.',
   'Entrar na etapa de processo para entregar laudo medico, laudo juridico e comprovante de pagamento.',
   'Aguardar a liberacao final do porte pela equipe responsavel.',
   'Receber o porte com data de emissao e data de renovacao.'
@@ -173,7 +173,7 @@ const WeaponLicenseRequestFlow = ({
           description: 'Pedido inicial de porte de armas enviado para analise.',
           color: 0xf59e0b,
           actorName: resolveWebhookActorName(user) === 'Sistema' ? formData.fullName : resolveWebhookActorName(user),
-          footerText: 'Sistema de Armas - FEDERAL EUFORIA',
+          footerText: 'Sistema de Armas - Polícia Civil - Euforia',
           fields: [
             { name: 'Solicitante', value: createdLicense.full_name, inline: true },
             { name: 'Passaporte', value: createdLicense.passport_id, inline: true },
