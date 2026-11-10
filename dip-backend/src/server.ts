@@ -59,9 +59,10 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 500,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.path.startsWith('/api/fluxer') || req.path.startsWith('/api/discord'),
   message: { error: 'Muitas requisições. Tente novamente em 15 minutos.' }
 });
 app.use('/api/', apiLimiter);
