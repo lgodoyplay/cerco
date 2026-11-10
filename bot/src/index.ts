@@ -138,6 +138,26 @@ const serializeMessage = (message: any) => ({
   timestamp: message.createdAt?.toISOString?.() || new Date().toISOString(),
 });
 
+const findMessageById = async (messageId: string) => {
+  for (const guild of client.guilds.cache.values()) {
+    for (const channel of guild.channels.cache.values()) {
+      const channelAny = channel as any;
+      if (!channelAny || typeof channelAny.messages?.fetch !== 'function') continue;
+
+      try {
+        const message = await channelAny.messages.fetch(messageId);
+        if (message) {
+          return { channel: channelAny, message };
+        }
+      } catch {
+        // continue scanning other channels
+      }
+    }
+  }
+
+  return null;
+};
+
 const getTargetGuild = (guildId?: string) => {
   if (!guildId) {
     return client.guilds.cache.first() || null;
@@ -210,6 +230,94 @@ app.post('/api/discord/channels/:channelId/messages', async (req: Request, res: 
   } catch (error) {
     console.warn('Falha ao enviar mensagem para o Discord:', error);
     return res.status(502).json({ error: 'Não foi possível enviar a mensagem.' });
+  }
+});
+app.patch('/api/discord/channels/:channelId/messages/:messageId', async (req: Request, res: Response) => {
+  const channelId = Array.isArray(req.params.channelId) ? req.params.channelId[0] : req.params.channelId;
+  const messageId = Array.isArray(req.params.messageId) ? req.params.messageId[0] : req.params.messageId;
+  const channel = client.channels.cache.get(channelId || '') as any;
+
+  if (!channel || typeof channel.messages?.fetch !== 'function') {
+    return res.status(404).json({ error: 'Canal não encontrado.' });
+  }
+
+  const content = typeof req.body?.content === 'string' ? req.body.content.trim() : '';
+  if (!content) {
+    return res.status(400).json({ error: 'Conteúdo da mensagem é obrigatório.' });
+  }
+
+  try {
+    const message = await channel.messages.fetch(messageId);
+    const updated = await message.edit(content);
+    return res.json(serializeMessage(updated));
+  } catch (error) {
+    console.warn('Falha ao editar mensagem no Discord:', error);
+    return res.status(502).json({ error: 'Não foi possível editar a mensagem.' });
+  }
+});
+app.delete('/api/discord/channels/:channelId/messages/:messageId', async (req: Request, res: Response) => {
+  const channelId = Array.isArray(req.params.channelId) ? req.params.channelId[0] : req.params.channelId;
+  const messageId = Array.isArray(req.params.messageId) ? req.params.messageId[0] : req.params.messageId;
+  const channel = client.channels.cache.get(channelId || '') as any;
+
+  if (!channel || typeof channel.messages?.fetch !== 'function') {
+    return res.status(404).json({ error: 'Canal não encontrado.' });
+  }
+
+  try {
+    const message = await channel.messages.fetch(messageId);
+    await message.delete();
+    return res.status(204).send();
+  } catch (error) {
+    console.warn('Falha ao excluir mensagem do Discord:', error);
+    return res.status(502).json({ error: 'Não foi possível excluir a mensagem.' });
+  }
+});
+app.put('/api/discord/messages/:messageId/reactions', async (req: Request, res: Response) => {
+  const messageId = Array.isArray(req.params.messageId) ? req.params.messageId[0] : req.params.messageId;
+  const emoji = typeof req.body?.emoji === 'string' ? req.body.emoji : typeof req.body?.emoji?.name === 'string' ? req.body.emoji.name : '';
+
+  if (!messageId || !emoji) {
+    return res.status(400).json({ error: 'messageId e emoji são obrigatórios.' });
+  }
+
+  try {
+    const found = await findMessageById(messageId);
+    if (!found) {
+      return res.status(404).json({ error: 'Mensagem não encontrada.' });
+    }
+
+    await found.message.react(emoji);
+    return res.json({ ok: true, messageId, emoji });
+  } catch (error) {
+    console.warn('Falha ao adicionar reação no Discord:', error);
+    return res.status(502).json({ error: 'Não foi possível adicionar a reação.' });
+  }
+});
+app.delete('/api/discord/messages/:messageId/reactions/:emoji', async (req: Request, res: Response) => {
+  const messageId = Array.isArray(req.params.messageId) ? req.params.messageId[0] : req.params.messageId;
+  const emoji = Array.isArray(req.params.emoji) ? req.params.emoji[0] : req.params.emoji;
+
+  if (!messageId || !emoji) {
+    return res.status(400).json({ error: 'messageId e emoji são obrigatórios.' });
+  }
+
+  try {
+    const found = await findMessageById(messageId);
+    if (!found) {
+      return res.status(404).json({ error: 'Mensagem não encontrada.' });
+    }
+
+    const reaction = found.message.reactions.cache.get(emoji) || found.message.reactions.cache.find((entry: any) => entry.emoji.name === decodeURIComponent(emoji));
+    if (!reaction) {
+      return res.status(204).send();
+    }
+
+    await reaction.users.remove(client.user?.id || '');
+    return res.status(204).send();
+  } catch (error) {
+    console.warn('Falha ao remover reação no Discord:', error);
+    return res.status(502).json({ error: 'Não foi possível remover a reação.' });
   }
 });
 app.get('/api/discord/members/:memberId', (req: Request, res: Response) => {
