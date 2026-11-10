@@ -40,24 +40,80 @@ const ServerSidebar = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const textChannels = React.useMemo(
-    () => channels.filter((channel) => channel.type === 'text'),
-    [channels]
-  );
+  const groupedCategories = React.useMemo(() => {
+    const sectionMap = new Map();
 
-  const voiceChannels = React.useMemo(
-    () => channels.filter((channel) => channel.type === 'voice'),
-    [channels]
-  );
+    const addSection = (id, label, channelsList = []) => {
+      const normalizedLabel = label || 'Sem categoria';
+      if (!sectionMap.has(id)) {
+        sectionMap.set(id, {
+          id,
+          label: normalizedLabel,
+          text: [],
+          voice: [],
+        });
+      }
 
-  const filteredText = React.useMemo(
-    () => textChannels.filter((ch) => ch.name.toLowerCase().includes(searchQuery.toLowerCase())),
-    [textChannels, searchQuery]
-  );
+      const section = sectionMap.get(id);
+      channelsList.forEach((channel) => {
+        if (channel.type === 'text') section.text.push(channel);
+        if (channel.type === 'voice') section.voice.push(channel);
+      });
+    };
 
-  const filteredVoice = React.useMemo(
-    () => voiceChannels.filter((ch) => ch.name.toLowerCase().includes(searchQuery.toLowerCase())),
-    [voiceChannels, searchQuery]
+    const topLevelText = channels.filter((channel) => channel.type === 'text' && !channel.parentId && !channel.parent_id);
+    const topLevelVoice = channels.filter((channel) => channel.type === 'voice' && !channel.parentId && !channel.parent_id);
+
+    if (topLevelText.length || topLevelVoice.length) {
+      addSection('uncategorized', 'Sem categoria', [...topLevelText, ...topLevelVoice]);
+    }
+
+    channels
+      .filter((channel) => channel.type === 'category')
+      .forEach((category) => {
+        const children = channels.filter(
+          (channel) => (channel.parentId ?? channel.parent_id) === category.id
+        );
+        addSection(category.id, category.name, children);
+      });
+
+    return Array.from(sectionMap.values()).filter(
+      (section) => section.text.length || section.voice.length
+    );
+  }, [channels]);
+
+  const filteredSections = React.useMemo(() => {
+    const term = searchQuery.trim().toLowerCase();
+    if (!term) return groupedCategories;
+
+    return groupedCategories
+      .map((section) => ({
+        ...section,
+        text: section.text.filter((channel) => channel.name.toLowerCase().includes(term)),
+        voice: section.voice.filter((channel) => channel.name.toLowerCase().includes(term)),
+      }))
+      .filter((section) => section.text.length || section.voice.length);
+  }, [groupedCategories, searchQuery]);
+
+  const renderChannelButton = (channel) => (
+    <button
+      key={channel.id}
+      onClick={() => onSelectChannel(channel)}
+      className={cn(
+        'group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all',
+        selectedChannelId === channel.id
+          ? 'bg-federal-600/20 text-white shadow-inner'
+          : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+      )}
+    >
+      {channel.type === 'voice' ? (
+        <Volume2 size={14} className="shrink-0 text-slate-500" />
+      ) : (
+        <Hash size={14} className="shrink-0 text-slate-500" />
+      )}
+      <span className="truncate">{channel.name}</span>
+      {channel.unread && <Circle size={8} className="ml-auto shrink-0 fill-rose-400 text-rose-400" />}
+    </button>
   );
 
   const server = Array.isArray(servers) ? servers.find((s) => s.id === selectedServerId) : undefined;
@@ -104,89 +160,80 @@ const ServerSidebar = ({
           </div>
         </div>
 
-        <div className="mb-4">
-          <div className="mb-1 flex items-center justify-between px-2">
-            <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-500">Canais de texto</span>
-            <span className="text-[10px] font-semibold text-slate-600">{filteredText.length}</span>
-          </div>
-          <div className="space-y-0.5">
-            {filteredText.map((channel) => (
-              <button
-                key={channel.id}
-                onClick={() => onSelectChannel(channel)}
-                className={cn(
-                  'group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all',
-                  selectedChannelId === channel.id
-                    ? 'bg-federal-600/20 text-white shadow-inner'
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                )}
-              >
-                <Hash size={14} className="shrink-0 text-slate-500" />
-                <span className="truncate">{channel.name}</span>
-                {channel.unread && <Circle size={8} className="ml-auto shrink-0 fill-rose-400 text-rose-400" />}
-              </button>
-            ))}
-          </div>
-          {isAddingChannel ? (
-            <div className="mt-2 space-y-2 rounded-lg border border-dashed border-slate-700 bg-slate-950/60 p-2">
-              <input
-                value={newChannelName}
-                onChange={(e) => onNewChannelNameChange(e.target.value)}
-                placeholder="nome-do-canal"
-                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-federal-500"
-                autoFocus
-              />
-              <div className="flex gap-2">
-                <select
-                  value={newChannelType}
-                  onChange={(e) => onNewChannelTypeChange(e.target.value)}
-                  className="flex-1 rounded-lg border border-slate-800 bg-slate-950 px-2 py-2 text-xs text-slate-200 outline-none focus:border-federal-500"
-                >
-                  <option value="text">Texto</option>
-                  <option value="voice">Voz</option>
-                </select>
-                 <button
-                   onClick={() => onCreateChannel(selectedServerId, newChannelName, newChannelType)}
-                   disabled={isCreatingChannel || !newChannelName.trim()}
-                   className="rounded-lg border border-federal-700 bg-federal-900/40 px-3 py-2 text-xs font-semibold text-federal-200 transition hover:bg-federal-800/60 disabled:opacity-50"
-                 >
-                   Criar
-                 </button>
-              </div>
+        {filteredSections.map((section) => (
+          <div key={section.id} className="mb-4">
+            <div className="mb-1 flex items-center justify-between px-2">
+              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-500">
+                {section.label}
+              </span>
+              <span className="text-[10px] font-semibold text-slate-600">
+                {section.text.length + section.voice.length}
+              </span>
             </div>
-          ) : (
-            <button
-              onClick={() => setIsAddingChannel(true)}
-              className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-500 transition hover:bg-slate-800 hover:text-slate-300"
-            >
-              <Plus size={14} /> Adicionar canal
-            </button>
-          )}
-        </div>
 
-        <div>
-          <div className="mb-1 flex items-center justify-between px-2">
-            <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-slate-500">Canais de voz</span>
-            <span className="text-[10px] font-semibold text-slate-600">{filteredVoice.length}</span>
+            {section.text.length > 0 && (
+              <div className="space-y-0.5">
+                {section.text.map(renderChannelButton)}
+              </div>
+            )}
+
+            {section.voice.length > 0 && (
+              <div className="mt-1 space-y-0.5">
+                {section.voice.map((channel) => (
+                  <button
+                    key={channel.id}
+                    onClick={() => onJoinVoice(channel.id)}
+                    className={cn(
+                      'group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all',
+                      selectedChannelId === channel.id
+                        ? 'bg-federal-600/20 text-white shadow-inner'
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    )}
+                  >
+                    <Volume2 size={14} className="shrink-0 text-slate-500" />
+                    <span className="truncate">{channel.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="space-y-0.5">
-            {filteredVoice.map((channel) => (
-              <button
-                key={channel.id}
-                onClick={() => onJoinVoice(channel.id)}
-                className={cn(
-                  'group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-all',
-                  selectedChannelId === channel.id
-                    ? 'bg-federal-600/20 text-white shadow-inner'
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                )}
+        ))}
+
+        {isAddingChannel ? (
+          <div className="mt-2 space-y-2 rounded-lg border border-dashed border-slate-700 bg-slate-950/60 p-2">
+            <input
+              value={newChannelName}
+              onChange={(e) => onNewChannelNameChange(e.target.value)}
+              placeholder="nome-do-canal"
+              className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none focus:border-federal-500"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <select
+                value={newChannelType}
+                onChange={(e) => onNewChannelTypeChange(e.target.value)}
+                className="flex-1 rounded-lg border border-slate-800 bg-slate-950 px-2 py-2 text-xs text-slate-200 outline-none focus:border-federal-500"
               >
-                <Volume2 size={14} className="shrink-0 text-slate-500" />
-                <span className="truncate">{channel.name}</span>
+                <option value="text">Texto</option>
+                <option value="voice">Voz</option>
+              </select>
+              <button
+                onClick={() => onCreateChannel(selectedServerId, newChannelName, newChannelType)}
+                disabled={isCreatingChannel || !newChannelName.trim()}
+                className="rounded-lg border border-federal-700 bg-federal-900/40 px-3 py-2 text-xs font-semibold text-federal-200 transition hover:bg-federal-800/60 disabled:opacity-50"
+              >
+                Criar
               </button>
-            ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <button
+            onClick={() => setIsAddingChannel(true)}
+            className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-500 transition hover:bg-slate-800 hover:text-slate-300"
+          >
+            <Plus size={14} /> Adicionar canal
+          </button>
+        )}
       </div>
     </div>
   );

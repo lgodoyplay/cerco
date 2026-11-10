@@ -71,13 +71,45 @@ const serializeGuild = (guild: any) => ({
   memberCount: guild.memberCount || 0,
 });
 
-const serializeChannel = (channel: any) => ({
-  id: channel.id,
-  name: channel.name,
-  type: channel.type === 2 ? 'voice' : 'text',
-  topic: channel.topic || null,
-  position: channel.position || 0,
-});
+const getChannelType = (channel: any): string => {
+  switch (channel.type) {
+    case 0:
+      return 'text';
+    case 2:
+      return 'voice';
+    case 4:
+      return 'category';
+    case 5:
+      return 'announcement';
+    case 10:
+    case 11:
+    case 12:
+      return 'thread';
+    case 13:
+      return 'stage';
+    default:
+      return 'text';
+  }
+};
+
+const serializeChannel = (channel: any) => {
+  const type = getChannelType(channel);
+  const parentId = channel.parentId ?? channel.parent_id ?? null;
+
+  return {
+    id: channel.id,
+    name: channel.name,
+    type,
+    parentId,
+    categoryId: parentId,
+    topic: channel.topic || null,
+    position: channel.position || 0,
+    guildId: channel.guildId || null,
+    isCategory: channel.type === 4,
+    isText: type === 'text',
+    isVoice: type === 'voice',
+  };
+};
 
 const serializeMember = (member: any) => ({
   id: member.id,
