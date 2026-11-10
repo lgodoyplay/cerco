@@ -160,70 +160,20 @@ const getCroppedImg = async (
     rotation = 0,
     options = {}
 ) => {
-    // Validação de entrada
     if (!imageSrc) {
         throw new Error('Imagem não fornecida');
     }
-    
-    if (!pixelCrop || typeof pixelCrop.x !== 'number') {
+
+    if (!pixelCrop || typeof pixelCrop.x !== 'number' || typeof pixelCrop.y !== 'number' || typeof pixelCrop.width !== 'number' || typeof pixelCrop.height !== 'number') {
         throw new Error('Área de corte não definida. Selecione uma área válida.');
     }
 
     const { quality, mimeType, maxSize } = { ...CROP_DEFAULTS, ...options };
     const outputMimeType = resolveOutputMimeType(imageSrc, mimeType);
-    
     const image = await createImage(imageSrc);
-    const MAX_ANALYSIS_DIMENSION = 2000;
-    const scaleDown = Math.min(1, MAX_ANALYSIS_DIMENSION / Math.max(image.width, image.height));
 
-    let workImage = image;
-    let renderScale = 1;
-
-    if (scaleDown < 1) {
-        const scaledCanvas = document.createElement('canvas');
-        scaledCanvas.width = Math.max(1, Math.round(image.width * scaleDown));
-        scaledCanvas.height = Math.max(1, Math.round(image.height * scaleDown));
-        const scaledCtx = scaledCanvas.getContext('2d');
-
-        if (!scaledCtx) {
-            throw new Error('Contexto 2D não suportado no ajuste de escala');
-        }
-
-        scaledCtx.drawImage(image, 0, 0, scaledCanvas.width, scaledCanvas.height);
-        workImage = scaledCanvas;
-        renderScale = scaleDown;
-    }
-
-    const cropX = pixelCrop.x * renderScale;
-    const cropY = pixelCrop.y * renderScale;
-    const cropWidth = Math.max(1, pixelCrop.width * renderScale);
-    const cropHeight = Math.max(1, pixelCrop.height * renderScale);
-
-    const sourceCanvas = document.createElement('canvas');
-    sourceCanvas.width = workImage.width;
-    sourceCanvas.height = workImage.height;
-    const sourceCtx = sourceCanvas.getContext('2d');
-
-    if (!sourceCtx) {
-        throw new Error('Contexto 2D não suportado no cálculo de área útil');
-    }
-
-    sourceCtx.drawImage(workImage, 0, 0);
-    const sourceImageData = sourceCtx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
-    const sourceBounds = getNonTransparentBounds(sourceImageData, sourceCanvas.width, sourceCanvas.height, 8);
-    const selectedAlphaCoverage = getAlphaCoverage(sourceImageData, cropX, cropY, cropWidth, cropHeight);
-    const selectedRatio = selectedAlphaCoverage / Math.max(1, cropWidth * cropHeight);
-
-    const effectiveCrop = {
-        x: cropX,
-        y: cropY,
-        width: cropWidth,
-        height: cropHeight
-    };
-
-    if (cropWidth < 8 || cropHeight < 8 || selectedRatio < 0.08) {
-        Object.assign(effectiveCrop, sourceBounds);
-    }
+    const rotRad = getRadianAngle(rotation);
+    const { width: rotatedWidth, height: rotatedHeight } = rotateSize(image.width, image.height, rotation);
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -232,60 +182,53 @@ const getCroppedImg = async (
         throw new Error('Contexto 2D não suportado');
     }
 
-    const rotRad = getRadianAngle(rotation);
-    const { width: bBoxWidth, height: bBoxHeight } = rotateSize(
-        workImage.width,
-        workImage.height,
-        rotation
-    );
+    canvas.width = rotatedWidth;
+    canvas.height = rotatedHeight;
 
-    // Configurar canvas com tamanho do bounding box
-    canvas.width = bBoxWidth;
-    canvas.height = bBoxHeight;
-
-    // Mantém fundo opaco ao converter para JPEG para evitar áreas pretas
     if (outputMimeType === 'image/jpeg') {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // Transformações
-    ctx.translate(bBoxWidth / 2, bBoxHeight / 2);
+    ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.rotate(rotRad);
-    ctx.translate(-workImage.width / 2, -workImage.height / 2);
+    ctx.translate(-image.width / 2, -image.height / 2);
+    ctx.drawImage(image, 0, 0);
 
-    // Desenhar imagem
-    ctx.drawImage(workImage, 0, 0);
+    const croppedCanvas = document.createElement('canvas');
+    const croppedCtx = croppedCanvas.getContext('2d');
 
-    // Extrair área cortada
-    const data = ctx.getImageData(
-        effectiveCrop.x,
-        effectiveCrop.y,
-        effectiveCrop.width,
-        effectiveCrop.height
-    );
-
-    // Criar canvas final
-    const finalCanvas = document.createElement('canvas');
-    const finalCtx = finalCanvas.getContext('2d');
-    
-    if (!finalCtx) {
+    if (!croppedCtx) {
         throw new Error('Contexto 2D não suportado no canvas final');
     }
 
-    finalCanvas.width = effectiveCrop.width;
-    finalCanvas.height = effectiveCrop.height;
+    const safeWidth = Math.max(1, Math.round(pixelCrop.width));
+    const safeHeight = Math.max(1, Math.round(pixelCrop.height));
+    const safeX = Math.max(0, Math.round(pixelCrop.x));
+    const safeY = Math.max(0, Math.round(pixelCrop.y));
+
+    croppedCanvas.width = safeWidth;
+    croppedCanvas.height = safeHeight;
 
     if (outputMimeType === 'image/jpeg') {
-        finalCtx.fillStyle = '#ffffff';
-        finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+        croppedCtx.fillStyle = '#ffffff';
+        croppedCtx.fillRect(0, 0, safeWidth, safeHeight);
     }
 
-    finalCtx.putImageData(data, 0, 0);
+    croppedCtx.drawImage(
+        canvas,
+        safeX,
+        safeY,
+        safeWidth,
+        safeHeight,
+        0,
+        0,
+        safeWidth,
+        safeHeight
+    );
 
-    // Redimensionar se necessário
-    if (maxSize && (finalCanvas.width > maxSize || finalCanvas.height > maxSize)) {
-        const { width, height } = resizeCanvas(finalCanvas, maxSize);
+    if (maxSize && (croppedCanvas.width > maxSize || croppedCanvas.height > maxSize)) {
+        const { width, height } = resizeCanvas(croppedCanvas, maxSize);
         const resizedCanvas = document.createElement('canvas');
         const resizedCtx = resizedCanvas.getContext('2d');
         resizedCanvas.width = width;
@@ -294,11 +237,11 @@ const getCroppedImg = async (
             resizedCtx.fillStyle = '#ffffff';
             resizedCtx.fillRect(0, 0, width, height);
         }
-        resizedCtx.drawImage(finalCanvas, 0, 0, width, height);
+        resizedCtx.drawImage(croppedCanvas, 0, 0, width, height);
         return resizedCanvas.toDataURL(outputMimeType, quality);
     }
 
-    return finalCanvas.toDataURL(outputMimeType, quality);
+    return croppedCanvas.toDataURL(outputMimeType, quality);
 };
 
 export default getCroppedImg;
