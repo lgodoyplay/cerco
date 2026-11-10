@@ -32,6 +32,7 @@ const ImageCropperModal = ({
         enableFreeCrop,
         handleFreeCropSizeChange,
         undo,
+        reset,
         canUndo,
         isAspectSelected
     } = useImageCropper(initialAspect);
@@ -73,7 +74,12 @@ const ImageCropperModal = ({
     };
     
     useEffect(() => {
-        if (imageSrc && croppedAreaPixels && !isProcessing) {
+        if (!imageSrc) {
+            setPreviewUrl(null);
+            return;
+        }
+
+        if (croppedAreaPixels && !isProcessing) {
             const generatePreview = async () => {
                 try {
                     const preview = await getCroppedImg(
@@ -88,8 +94,17 @@ const ImageCropperModal = ({
                 }
             };
             generatePreview();
+            return;
         }
+
+        setPreviewUrl(null);
     }, [imageSrc, croppedAreaPixels, rotation, isProcessing]);
+
+    useEffect(() => {
+        if (isOpen && imageSrc) {
+            reset();
+        }
+    }, [isOpen, imageSrc, reset]);
 
     const handleSave = async () => {
         if (!croppedAreaPixels) {

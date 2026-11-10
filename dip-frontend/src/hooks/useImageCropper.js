@@ -22,6 +22,13 @@ const useImageCropper = (initialAspect = 4/3) => {
     // History para undo/redo
     const [history, setHistory] = useState([]);
 
+    const cloneStateSnapshot = useCallback((snapshot) => ({
+        ...snapshot,
+        crop: snapshot.crop ? { ...snapshot.crop } : { x: 0, y: 0 },
+        freeCropSize: snapshot.freeCropSize ? { ...snapshot.freeCropSize } : { width: 260, height: 260 },
+        croppedAreaPixels: snapshot.croppedAreaPixels ? { ...snapshot.croppedAreaPixels } : null
+    }), []);
+
     // Reset quando abre ou muda aspect inicial
     useEffect(() => {
         reset();
@@ -29,23 +36,30 @@ const useImageCropper = (initialAspect = 4/3) => {
 
     // Salvar no histórico
     const saveToHistory = useCallback(() => {
-        setHistory(h => [...h.slice(-9), { ...state }]); // Manter últimos 10 estados
-    }, [state]);
+        setHistory(h => [...h.slice(-9), cloneStateSnapshot(state)]);
+    }, [cloneStateSnapshot, state]);
 
     // Setters com histórico
     const setCrop = useCallback((crop) => {
-        saveToHistory();
-        setState(s => ({ ...s, crop }));
-    }, [saveToHistory]);
+        setState(s => ({
+            ...s,
+            crop: typeof crop === 'function' ? crop(s.crop) : crop
+        }));
+    }, []);
 
     const setZoom = useCallback((zoom) => {
-        saveToHistory();
-        setState(s => ({ ...s, zoom: Math.max(1, Math.min(3, zoom)) }));
-    }, [saveToHistory]);
+        setState(s => ({
+            ...s,
+            zoom: Math.max(1, Math.min(3, Number(typeof zoom === 'function' ? zoom(s.zoom) : zoom) || 1))
+        }));
+    }, []);
 
     const setRotation = useCallback((rotation) => {
         saveToHistory();
-        setState(s => ({ ...s, rotation: ((rotation % 360) + 360) % 360 }));
+        setState(s => ({
+            ...s,
+            rotation: ((Number(typeof rotation === 'function' ? rotation(s.rotation) : rotation) % 360) + 360) % 360
+        }));
     }, [saveToHistory]);
 
     const setAspect = useCallback((aspect) => {
