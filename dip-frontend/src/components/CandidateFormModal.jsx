@@ -1,367 +1,328 @@
-import React, { useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { ChevronRight, X, Check, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-const CandidateFormModal = ({ isOpen, onClose }) => {
-  // Candidate Form
-  const [candidateForm, setCandidateForm] = useState({
-    nome: '',
-    telefone: '',
-    mensagem: ''
-  });
-  const [formStatus, setFormStatus] = useState('idle'); // idle, submitting, success, error
-  
-  // Quiz State
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [quizAnswers, setQuizAnswers] = useState({});
-  const [quizStatus, setQuizStatus] = useState('idle'); // idle, success, failed
-
-  const quizQuestions = [
-    {
-      id: 1,
-      question: 'Qual é a principal missão de um Agente da Polícia Civil - Euforia?',
-      options: [
-        { id: 'a', text: 'Ganhar muito dinheiro e ter poder' },
+const examStages = [
+  {
+    id: 'etapa_1',
+    label: 'Etapa 1',
+    title: 'Conhecimentos gerais da corporação',
+    questions: [
+      { id: 1, question: 'Qual é a principal missão da Polícia Civil - Euforia?', options: [
+        { id: 'a', text: 'Promover apenas a repressão por meio da força bruta' },
         { id: 'b', text: 'Servir e proteger a sociedade, cumprindo a lei' },
-        { id: 'c', text: 'Mandar na cidade' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 2,
-      question: 'O que significa Hierarquia na Polícia?',
-      options: [
-        { id: 'a', text: 'Que todos são iguais e ninguém manda em ninguém' },
-        { id: 'b', text: 'Respeito aos níveis de comando e subordinação funcional' },
-        { id: 'c', text: 'Que o mais velho de idade manda mais' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 3,
-      question: 'O que é Disciplina?',
-      options: [
-        { id: 'a', text: 'Fazer o que quiser quando ninguém está olhando' },
-        { id: 'b', text: 'Obediência às regras, normas e ordens superiores' },
-        { id: 'c', text: 'Castigar as pessoas' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 4,
-      question: 'Como deve ser o tratamento do policial com o cidadão?',
-      options: [
-        { id: 'a', text: 'Agressivo e intimidaddor sempre' },
-        { id: 'b', text: 'Respeitoso, firme e profissional' },
-        { id: 'c', text: 'Debochado e irônico' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 5,
-      question: 'Em caso de ordem manifestamente ilegal de um superior, o que fazer?',
-      options: [
-        { id: 'a', text: 'Cumprir sem questionar' },
+        { id: 'c', text: 'Atuar apenas em eventos e espetáculos' }
+      ], correct: 'b' },
+      { id: 2, question: 'O que significa hierarquia na Polícia?', options: [
+        { id: 'a', text: 'A ausência de disciplina e obediencia' },
+        { id: 'b', text: 'A organização funcional e respeitos aos níveis de comando' },
+        { id: 'c', text: 'A vontade individual de cada agente' }
+      ], correct: 'b' },
+      { id: 3, question: 'O que é disciplina no serviço público?', options: [
+        { id: 'a', text: 'Cumprir regras, normas e ordens superiores' },
+        { id: 'b', text: 'Fazer o que quiser sem prestar contas' },
+        { id: 'c', text: 'Ignorar procedimentos para ganhar tempo' }
+      ], correct: 'a' },
+      { id: 4, question: 'Como deve ser o tratamento com o cidadão?', options: [
+        { id: 'a', text: 'Respeitoso, firme e profissional' },
+        { id: 'b', text: 'Agressivo sempre que houver conflito' },
+        { id: 'c', text: 'Diferente conforme a vontade do policial' }
+      ], correct: 'a' },
+      { id: 5, question: 'Em caso de ordem manifestamente ilegal, o correto é:', options: [
+        { id: 'a', text: 'Cumprir sem questionar e perder a dignidade' },
         { id: 'b', text: 'Não cumprir e reportar à autoridade competente' },
-        { id: 'c', text: 'Fazer de conta que não ouviu' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 6,
-      question: 'O que caracteriza o crime de Corrupção Passiva?',
-      options: [
-        { id: 'a', text: 'Solicitar ou receber vantagem indevida em razão da função' },
-        { id: 'b', text: 'Prender alguém por engano' },
-        { id: 'c', text: 'Chegar atrasado no plantão' }
-      ],
-      correct: 'a'
-    },
-    {
-      id: 7,
-      question: 'Quando o policial deve utilizar a sirene e o giroflex?',
-      options: [
-        { id: 'a', text: 'Para furar o sinal vermelho e chegar cedo em casa' },
-        { id: 'b', text: 'Apenas em situações de emergência ou perseguição' },
-        { id: 'c', text: 'Para passear na cidade' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 8,
-      question: 'Qual é o procedimento correto ao realizar uma abordagem?',
-      options: [
-        { id: 'a', text: 'Chegar atirando para garantir a segurança' },
-        { id: 'b', text: 'Verbalizar, identificar-se e garantir a segurança de todos' },
-        { id: 'c', text: 'Pedir o dinheiro do suspeito' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 9,
-      question: 'O que é "Metagaming" (em contexto de RP/Simulação)?',
-      options: [
+        { id: 'c', text: 'Ignorar e agir como se nada tivesse acontecido' }
+      ], correct: 'b' }
+    ]
+  },
+  {
+    id: 'etapa_2',
+    label: 'Etapa 2',
+    title: 'Legislação e procedimento',
+    questions: [
+      { id: 6, question: 'O que caracteriza a corrupção passiva?', options: [
+        { id: 'a', text: 'Receber ou solicitar vantagem indevida em razão da função' },
+        { id: 'b', text: 'Fazer ronda sem documentação' },
+        { id: 'c', text: 'Cometer uma infração de trânsito' }
+      ], correct: 'a' },
+      { id: 7, question: 'Quando se deve usar sirene e giroflex?', options: [
+        { id: 'a', text: 'Somente em situações de emergência ou perseguição' },
+        { id: 'b', text: 'Todos os dias no deslocamento' },
+        { id: 'c', text: 'Para se diferenciar dos civis em qualquer momento' }
+      ], correct: 'a' },
+      { id: 8, question: 'Qual a conduta correta ao realizar uma abordagem?', options: [
+        { id: 'a', text: 'Verbalizar, identificar-se e garantir a segurança de todos' },
+        { id: 'b', text: 'Fazer uma checagem violenta sem aviso' },
+        { id: 'c', text: 'Atacar o suspeito para garantir o controle' }
+      ], correct: 'a' },
+      { id: 9, question: 'O que é metagaming em um contexto de RP?', options: [
         { id: 'a', text: 'Usar informações externas ao personagem para obter vantagem' },
-        { id: 'b', text: 'Jogar muito bem' },
-        { id: 'c', text: 'Ser o chefe da polícia' }
-      ],
-      correct: 'a'
-    },
-    {
-      id: 10,
-      question: 'O policial pode usar a viatura para fins pessoais?',
-      options: [
-        { id: 'a', text: 'Sim, se colocar gasolina do próprio bolso' },
-        { id: 'b', text: 'Não, a viatura é para uso exclusivo em serviço' },
-        { id: 'c', text: 'Sim, para buscar o filho na escola' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 11,
-      question: 'O que significa a sigla QTH no código Q?',
-      options: [
-        { id: 'a', text: 'Qual o seu nome?' },
-        { id: 'b', text: 'Qual a sua localização?' },
-        { id: 'c', text: 'Estou com fome' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 12,
-      question: 'O que significa a sigla QRU no código Q?',
-      options: [
+        { id: 'b', text: 'Cumprir a rotina administrativa corretamente' },
+        { id: 'c', text: 'Pedir ajuda aos colegas em situações simples' }
+      ], correct: 'a' },
+      { id: 10, question: 'A viatura pode ser usada para fins pessoais?', options: [
+        { id: 'a', text: 'Sim, desde que o agente queira usar para lazer' },
+        { id: 'b', text: 'Não, deve ser usada exclusivamente em serviço' },
+        { id: 'c', text: 'Somente quando o patrulhamento estiver em baixa' }
+      ], correct: 'b' }
+    ]
+  },
+  {
+    id: 'etapa_3',
+    label: 'Etapa 3',
+    title: 'Operação e zelo institucional',
+    questions: [
+      { id: 11, question: 'O que significa a sigla QTH no código Q?', options: [
+        { id: 'a', text: 'Qual a sua localização?' },
+        { id: 'b', text: 'Qual o seu apelido?' },
+        { id: 'c', text: 'Estou vagando pela cidade' }
+      ], correct: 'a' },
+      { id: 12, question: 'O que significa a sigla QRU no código Q?', options: [
         { id: 'a', text: 'Ocorrência / Problema' },
-        { id: 'b', text: 'Estou indo almoçar' },
-        { id: 'c', text: 'Obrigado' }
-      ],
-      correct: 'a'
-    },
-    {
-      id: 13,
-      question: 'O uso da força policial deve ser:',
-      options: [
-        { id: 'a', text: 'Máximo e letal desde o início' },
-        { id: 'b', text: 'Progressivo, moderado e proporcional à ameaça' },
-        { id: 'c', text: 'Aleatório' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 14,
-      question: 'Um cidadão desacata o policial. Qual a conduta correta?',
-      options: [
-        { id: 'a', text: 'Agredir o cidadão imediatamente' },
-        { id: 'b', text: 'Dar voz de prisão por desacato e conduzir à delegacia' },
-        { id: 'c', text: 'Xingar de volta' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 15,
-      question: 'Qual é o dever do policial ao presenciar um crime fora de serviço?',
-      options: [
-        { id: 'a', text: 'Fingir que não viu' },
-        { id: 'b', text: 'Agir (se possível e seguro) ou acionar o apoio imediatamente' },
-        { id: 'c', text: 'Filmar e postar na internet' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 16,
-      question: 'O que é Prevaricação?',
-      options: [
-        { id: 'a', text: 'Roubar dinheiro' },
-        { id: 'b', text: 'Deixar de praticar ato de ofício por interesse pessoal' },
-        { id: 'c', text: 'Faltar ao serviço' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 17,
-      question: 'A quem a Polícia Civil - Euforia se subordina?',
-      options: [
-        { id: 'a', text: 'Ao Exército' },
-        { id: 'b', text: 'Ao Ministério da Justiça e Segurança Pública' },
-        { id: 'c', text: 'Ao Prefeito' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 18,
-      question: 'É permitido ao policial divulgar informações sigilosas de investigações?',
-      options: [
-        { id: 'a', text: 'Sim, para ficar famoso' },
-        { id: 'b', text: 'Não, é crime de violação de sigilo funcional' },
-        { id: 'c', text: 'Sim, se for para amigos' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 19,
-      question: 'Qual a importância do Relatório de Ocorrência?',
-      options: [
-        { id: 'a', text: 'Nenhuma, é burocracia inútil' },
-        { id: 'b', text: 'Registrar oficialmente os fatos para futuras investigações e processos' },
-        { id: 'c', text: 'Gastarr papel' }
-      ],
-      correct: 'b'
-    },
-    {
-      id: 20,
-      question: 'Por que você deseja entrar para a Polícia Civil - Euforia?',
-      options: [
-        { id: 'a', text: 'Para ter arma e distintivo' },
-        { id: 'b', text: 'Para contribuir com a segurança e justiça da sociedade' },
-        { id: 'c', text: 'Porque o salário é bom' }
-      ],
-      correct: 'b'
-    }
-  ];
+        { id: 'b', text: 'Preciso de um veículo' },
+        { id: 'c', text: 'Vou almoçar' }
+      ], correct: 'a' },
+      { id: 13, question: 'O uso da força deve ser:', options: [
+        { id: 'a', text: 'Progressivo, moderado e proporcional à ameaça' },
+        { id: 'b', text: 'Máximo e letal desde o início' },
+        { id: 'c', text: 'Incentivado sem necessidade' }
+      ], correct: 'a' },
+      { id: 14, question: 'Se um cidadão desacata o policial, a conduta correta é?', options: [
+        { id: 'a', text: 'Fazer uso da força imediatamente e sem aviso' },
+        { id: 'b', text: 'Aplicar o devido procedimento legal e conduzir com rigor' },
+        { id: 'c', text: 'Responder com ofensa para manter autoridade' }
+      ], correct: 'b' },
+      { id: 15, question: 'Ao presenciar um crime fora de serviço, o policial deve:', options: [
+        { id: 'a', text: 'Ignorar e continuar o caminho' },
+        { id: 'b', text: 'Agir quando seguro ou acionar o suporte imediatamente' },
+        { id: 'c', text: 'Guardar segredo e não comunicar nada' }
+      ], correct: 'b' }
+    ]
+  }
+];
+
+const totalQuestions = examStages.reduce((count, stage) => count + stage.questions.length, 0);
+const passThreshold = Math.ceil(totalQuestions * 0.8);
+
+const getDefaultForm = () => ({
+  nome: '',
+  telefone: '',
+  cidade: '',
+  discord_user: '',
+  mensagem: ''
+});
+
+const generateRecruitmentCode = () => `RC-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+
+const getStageScore = (stageId, answers) => {
+  const stage = examStages.find((item) => item.id === stageId);
+  if (!stage) return 0;
+
+  return stage.questions.reduce((score, question) => {
+    const answer = answers[`${stageId}-${question.id}`];
+    return answer === question.correct ? score + 1 : score;
+  }, 0);
+};
+
+const getTotalScore = (answers) => {
+  return examStages.reduce((score, stage) => score + getStageScore(stage.id, answers), 0);
+};
+
+const CandidateFormModal = ({ isOpen, onClose }) => {
+  const [candidateForm, setCandidateForm] = useState(getDefaultForm());
+  const [formStatus, setFormStatus] = useState('idle');
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizStatus, setQuizStatus] = useState('idle');
+  const [stageIndex, setStageIndex] = useState(0);
+  const [examAnswers, setExamAnswers] = useState({});
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const currentStage = examStages[stageIndex];
+  const stageAnswered = useMemo(() => {
+    if (!currentStage) return false;
+    return currentStage.questions.every((question) => Boolean(examAnswers[`${currentStage.id}-${question.id}`]));
+  }, [currentStage, examAnswers]);
+
+  const resetFlow = () => {
+    setFormStatus('idle');
+    setShowQuiz(false);
+    setQuizStatus('idle');
+    setStageIndex(0);
+    setExamAnswers({});
+    setErrorMessage('');
+    setCandidateForm(getDefaultForm());
+  };
 
   const handleStartQuiz = (e) => {
     e.preventDefault();
     setShowQuiz(true);
+    setQuizStatus('idle');
+    setErrorMessage('');
   };
 
-  const handleQuizAnswer = (questionId, optionId) => {
-    setQuizAnswers(prev => ({
+  const handleAnswer = (questionId, optionId) => {
+    if (!currentStage) return;
+    setExamAnswers((prev) => ({
       ...prev,
-      [questionId]: optionId
+      [`${currentStage.id}-${questionId}`]: optionId
     }));
+    setErrorMessage('');
   };
 
-  const handleQuizSubmit = async () => {
-    let score = 0;
-    quizQuestions.forEach(q => {
-      if (quizAnswers[q.id] === q.correct) {
-        score++;
-      }
-    });
-
-    if (score >= 10) {
-      setQuizStatus('success');
-      await submitApplication(score);
-    } else {
-      setQuizStatus('failed');
+  const handleNextStage = () => {
+    if (!stageAnswered) {
+      setErrorMessage('Responda todas as questões desta etapa antes de continuar.');
+      return;
     }
+
+    if (stageIndex < examStages.length - 1) {
+      setStageIndex((prev) => prev + 1);
+      setErrorMessage('');
+      return;
+    }
+
+    handleQuizSubmit();
   };
 
   const handleRetryQuiz = () => {
     setQuizStatus('idle');
-    setQuizAnswers({});
+    setStageIndex(0);
+    setExamAnswers({});
+    setErrorMessage('');
   };
 
-  const sendDiscordNotification = async (formData, score) => {
+  const sendDiscordNotification = async (formData, totalScore, stageScores) => {
     try {
-      console.log('🔄 Tentando buscar configuração do Discord...');
-      
-      // Tentar buscar URL do webhook
       const { data: settingsData, error: dbError } = await supabase
         .from('system_settings')
         .select('value')
         .eq('key', 'discord_config')
-        .maybeSingle(); // Use maybeSingle to avoid error on no rows
+        .maybeSingle();
 
       if (dbError) {
-        console.error('❌ Erro de permissão/banco ao buscar Discord Config:', dbError);
-        // Tentar fallback hardcoded ou alertar
+        console.error('Erro ao buscar config do Discord:', dbError);
         return;
       }
 
       if (!settingsData) {
-        console.error('❌ Configuração discord_config não encontrada no banco (linhas = 0).');
+        console.warn('Configuração discord_config não encontrada.');
         return;
       }
 
       let webhookUrl = settingsData?.value?.formsWebhook || settingsData?.value?.webhookUrl;
-
-      // Fallback: Check if value is string (should be jsonb but safety first)
       if (!webhookUrl && typeof settingsData.value === 'string') {
         try {
-            const parsed = JSON.parse(settingsData.value);
-            webhookUrl = parsed.formsWebhook || parsed.webhookUrl;
-        } catch (e) {
-            console.warn('Erro ao fazer parse manual do JSON:', e);
+          const parsed = JSON.parse(settingsData.value);
+          webhookUrl = parsed.formsWebhook || parsed.webhookUrl;
+        } catch (error) {
+          console.warn('Erro ao parsear webhook no banco:', error);
         }
       }
 
       if (!webhookUrl) {
-        console.warn('⚠️ Nenhuma URL de Webhook configurada no banco (formsWebhook ou webhookUrl vazios).');
-        console.log('Dados recebidos:', settingsData.value);
+        console.warn('Nenhum webhook configurado para recruiting notification.');
         return;
       }
 
-      console.log('✅ URL encontrada. Enviando notificação...');
-
       const embed = {
-        title: "📝 Nova Candidatura Recebida",
-        color: 0x1e293b, // Slate 800
+        title: '🧪 Nova avaliação de recrutamento',
+        color: 0x1d4ed8,
         fields: [
-          { name: "👤 Nome / Discord", value: formData.nome || 'N/A', inline: true },
-          { name: "📱 Telefone", value: formData.telefone || 'N/A', inline: true },
-          { name: "✅ Pontuação Quiz", value: `${score}/10` || 'N/A', inline: true },
-          { name: "📄 Motivação", value: formData.mensagem || 'N/A' }
+          { name: '👤 Nome', value: formData.nome || 'N/A', inline: true },
+          { name: '🛰️ Discord', value: formData.discord_user || formData.nome || 'N/A', inline: true },
+          { name: '📍 Cidade', value: formData.cidade || 'N/A', inline: true },
+          { name: '📱 Telefone', value: formData.telefone || 'N/A', inline: true },
+          { name: '🔐 Código', value: formData.codigo_identificacao || 'N/A', inline: true },
+          { name: '✅ Pontuação total', value: `${totalScore}/${totalQuestions}`, inline: true },
+          { name: '📊 Etapas', value: `1:${stageScores.etapa_1}/5 | 2:${stageScores.etapa_2}/5 | 3:${stageScores.etapa_3}/5`, inline: false },
+          { name: '📄 Motivação', value: formData.mensagem || 'N/A', inline: false }
         ],
-        footer: { text: "Sistema de Recrutamento Polícia Civil - Euforia" },
+        footer: { text: 'Sistema de recrutamento da Polícia Civil - Euforia' },
         timestamp: new Date().toISOString()
       };
 
-      const response = await fetch(webhookUrl, {
+      await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ embeds: [embed] })
       });
-
-      if (response.ok) {
-        console.log('✅ Notificação enviada com sucesso para o Discord!');
-      } else {
-        console.error(`❌ Falha ao enviar para Discord: ${response.status} ${response.statusText}`);
-      }
     } catch (error) {
-      console.error('❌ Erro crítico ao enviar notificação Discord:', error);
+      console.error('Erro ao configurar notificação para o Discord:', error);
     }
   };
 
-  const submitApplication = async (score) => {
+  const submitApplication = async (totalScore, stageScores) => {
     setFormStatus('submitting');
-    try {
-      const { error } = await supabase
-        .from('candidatos')
-        .insert([{
-          nome: candidateForm.nome,
-          telefone: candidateForm.telefone,
-          mensagem: candidateForm.mensagem,
-          pontuacao_quiz: score
-        }]);
 
+    try {
+      const recruitmentCode = generateRecruitmentCode();
+      const payload = {
+        nome: candidateForm.nome,
+        telefone: candidateForm.telefone,
+        cidade: candidateForm.cidade,
+        email: candidateForm.discord_user,
+        discord_user: candidateForm.discord_user,
+        mensagem: candidateForm.mensagem,
+        codigo_identificacao: recruitmentCode,
+        etapa_atual: totalScore >= passThreshold ? 'aprovado' : 'reprovado',
+        pontuacao_total: totalScore,
+        pontuacao_etapa_1: stageScores.etapa_1,
+        pontuacao_etapa_2: stageScores.etapa_2,
+        pontuacao_etapa_3: stageScores.etapa_3,
+        status: totalScore >= passThreshold ? 'Aprovado' : 'Rejeitado',
+        pontuacao_quiz: totalScore
+      };
+
+      const { error } = await supabase.from('candidatos').insert([payload]);
       if (error) throw error;
 
-      // Enviar notificação
-      await sendDiscordNotification(candidateForm, score);
+      await sendDiscordNotification({
+        ...candidateForm,
+        codigo_identificacao: recruitmentCode
+      }, totalScore, stageScores);
 
       setFormStatus('success');
-      setCandidateForm({ nome: '', telefone: '', mensagem: '' });
       setTimeout(() => {
-        setFormStatus('idle');
-        setShowQuiz(false);
-        setQuizStatus('idle');
-        setQuizAnswers({});
-        onClose(); // Close modal on success
-      }, 3000);
+        resetFlow();
+        onClose();
+      }, 3200);
     } catch (error) {
       console.error('Erro ao enviar candidatura:', error);
       setFormStatus('error');
+      setErrorMessage('Não foi possível salvar sua inscrição. Tente novamente.');
     }
+  };
+
+  const handleQuizSubmit = async () => {
+    if (Object.keys(examAnswers).length !== totalQuestions) {
+      setErrorMessage('Responda todas as 15 questões antes de finalizar o recrutamento.');
+      return;
+    }
+
+    const stageScores = {
+      etapa_1: getStageScore('etapa_1', examAnswers),
+      etapa_2: getStageScore('etapa_2', examAnswers),
+      etapa_3: getStageScore('etapa_3', examAnswers)
+    };
+
+    const totalScore = getTotalScore(examAnswers);
+
+    if (totalScore >= passThreshold) {
+      setQuizStatus('submitting');
+      await submitApplication(totalScore, stageScores);
+      return;
+    }
+
+    setQuizStatus('failed');
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl shadow-2xl animate-fade-in-up overflow-hidden max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="relative p-8 md:p-12">
-          <button 
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl shadow-2xl animate-fade-in-up overflow-hidden max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="relative p-6 md:p-8">
+          <button
             onClick={onClose}
             className="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full transition-colors"
           >
@@ -370,11 +331,10 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
 
           {!showQuiz ? (
             <>
-              <div className="text-center mb-10">
+              <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-white mb-4">Candidatura à Polícia Civil - Euforia</h2>
                 <p className="text-slate-400">
-                  Preencha o formulário e faça o teste de admissão para demonstrar seu interesse em fazer parte da 
-                  nossa equipe de elite.
+                  Preencha o formulário e siga as 3 etapas de avaliação para concluir o processo de recrutamento.
                 </p>
               </div>
 
@@ -382,88 +342,125 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Nome no Discord</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       required
                       value={candidateForm.nome}
-                      onChange={(e) => setCandidateForm({...candidateForm, nome: e.target.value})}
+                      onChange={(e) => setCandidateForm({ ...candidateForm, nome: e.target.value })}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
                       placeholder="Ex: usuario#1234"
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Telefone / WhatsApp (In-Game)</label>
-                    <input 
-                      type="tel" 
+                    <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Discord / Nome do usuário</label>
+                    <input
+                      type="text"
+                      required
+                      value={candidateForm.discord_user}
+                      onChange={(e) => setCandidateForm({ ...candidateForm, discord_user: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
+                      placeholder="Ex: usuario123"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Telefone / WhatsApp</label>
+                    <input
+                      type="tel"
                       required
                       value={candidateForm.telefone}
-                      onChange={(e) => setCandidateForm({...candidateForm, telefone: e.target.value})}
+                      onChange={(e) => setCandidateForm({ ...candidateForm, telefone: e.target.value })}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
                       placeholder="(00) 00000-0000"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Cidade</label>
+                    <input
+                      type="text"
+                      value={candidateForm.cidade}
+                      onChange={(e) => setCandidateForm({ ...candidateForm, cidade: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors"
+                      placeholder="Sua cidade"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Por que você quer fazer parte da Polícia Civil - Euforia?</label>
-                  <textarea 
+                  <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">Motivação para fazer parte da corporação</label>
+                  <textarea
                     required
                     value={candidateForm.mensagem}
-                    onChange={(e) => setCandidateForm({...candidateForm, mensagem: e.target.value})}
+                    onChange={(e) => setCandidateForm({ ...candidateForm, mensagem: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-federal-500 transition-colors h-32 resize-none"
-                    placeholder="Conte-nos sobre sua experiência e motivações..."
+                    placeholder="Conte-nos sua motivação, experiência e disponibilidade..."
                   />
                 </div>
 
-                <button 
+                <button
                   type="submit"
                   className="w-full py-4 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-federal-900/20 flex items-center justify-center gap-2"
                 >
-                  Iniciar Teste de Admissão
+                  Iniciar processo de recrutamento
                   <ChevronRight size={20} />
                 </button>
               </form>
             </>
           ) : (
-            <div className="space-y-8 animate-fade-in-up">
-              {quizStatus === 'idle' && (
+            <div className="space-y-6 animate-fade-in-up">
+              {quizStatus === 'idle' && currentStage && (
                 <>
-                  <div className="text-center mb-8">
-                    <h2 className="text-2xl font-bold text-white mb-2">Teste de Admissão</h2>
-                    <p className="text-slate-400">Responda corretamente a pelo menos 10 das 20 questões para enviar sua candidatura.</p>
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b border-slate-800 pb-5">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-federal-500">{currentStage.label}</p>
+                      <h2 className="text-2xl font-bold text-white mt-2">{currentStage.title}</h2>
+                    </div>
+                    <div className="text-sm text-slate-400">
+                      {stageIndex + 1} / {examStages.length}
+                    </div>
                   </div>
 
-                  <div className="space-y-6">
-                    {quizQuestions.map((q, index) => (
-                      <div key={q.id} className="bg-slate-950/50 p-6 rounded-xl border border-slate-800">
+                  {errorMessage && (
+                    <div className="flex items-start gap-3 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                      <AlertTriangle className="mt-0.5 shrink-0" size={18} />
+                      <span>{errorMessage}</span>
+                    </div>
+                  )}
+
+                  <div className="space-y-5">
+                    {currentStage.questions.map((question, index) => (
+                      <div key={question.id} className="bg-slate-950/60 p-5 rounded-xl border border-slate-800">
                         <p className="text-white font-bold mb-4 flex gap-3">
                           <span className="text-federal-500">#{index + 1}</span>
-                          {q.question}
+                          {question.question}
                         </p>
+
                         <div className="space-y-3">
-                          {q.options.map((opt) => (
-                            <label 
-                              key={opt.id} 
+                          {question.options.map((option) => (
+                            <label
+                              key={option.id}
                               className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors border ${
-                                quizAnswers[q.id] === opt.id 
-                                  ? 'bg-federal-500/20 border-federal-500 text-white' 
-                                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800'
+                                examAnswers[`${currentStage.id}-${question.id}`] === option.id
+                                  ? 'bg-federal-500/20 border-federal-500 text-white'
+                                  : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
                               }`}
                             >
-                              <input 
-                                type="radio" 
-                                name={`question-${q.id}`} 
-                                value={opt.id}
-                                checked={quizAnswers[q.id] === opt.id}
-                                onChange={() => handleQuizAnswer(q.id, opt.id)}
+                              <input
+                                type="radio"
+                                name={`question-${question.id}`}
+                                value={option.id}
+                                checked={examAnswers[`${currentStage.id}-${question.id}`] === option.id}
+                                onChange={() => handleAnswer(question.id, option.id)}
                                 className="hidden"
                               />
                               <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                                quizAnswers[q.id] === opt.id ? 'border-federal-500' : 'border-slate-600'
+                                examAnswers[`${currentStage.id}-${question.id}`] === option.id ? 'border-federal-500' : 'border-slate-600'
                               }`}>
-                                {quizAnswers[q.id] === opt.id && <div className="w-2 h-2 rounded-full bg-federal-500" />}
+                                {examAnswers[`${currentStage.id}-${question.id}`] === option.id && <div className="w-2 h-2 rounded-full bg-federal-500" />}
                               </div>
-                              <span className="text-sm">{opt.text}</span>
+                              <span className="text-sm">{option.text}</span>
                             </label>
                           ))}
                         </div>
@@ -471,64 +468,72 @@ const CandidateFormModal = ({ isOpen, onClose }) => {
                     ))}
                   </div>
 
-                  <div className="flex gap-4">
-                    <button 
+                  <div className="flex gap-4 pt-2">
+                    <button
                       type="button"
                       onClick={() => setShowQuiz(false)}
-                      className="w-1/3 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all"
+                      className="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all"
                     >
                       Voltar
                     </button>
-                    <button 
+                    <button
                       type="button"
-                      onClick={handleQuizSubmit}
-                      disabled={Object.keys(quizAnswers).length < 20}
-                      className={`w-2/3 py-4 font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                        Object.keys(quizAnswers).length < 20
-                          ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                          : 'bg-federal-600 hover:bg-federal-500 text-white hover:-translate-y-1 shadow-lg shadow-federal-900/20'
-                      }`}
+                      onClick={handleNextStage}
+                      className="w-2/3 py-3 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-xl transition-all hover:-translate-y-1 shadow-lg shadow-federal-900/20"
                     >
-                      Enviar Respostas
-                      <ChevronRight size={20} />
+                      {stageIndex === examStages.length - 1 ? `Finalizar avaliação (${totalQuestions} questões)` : 'Próxima etapa'}
                     </button>
                   </div>
                 </>
               )}
 
               {quizStatus === 'failed' && (
-                <div className="text-center py-12">
+                <div className="text-center py-10">
                   <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500 animate-bounce">
                     <X size={40} />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Reprovado no Teste</h3>
-                  <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                    Você não atingiu a pontuação mínima necessária (10/20). Estude o regulamento e tente novamente.
+                  <h3 className="text-2xl font-bold text-white mb-2">Reprovado na avaliação</h3>
+                  <p className="text-slate-400 mb-8 max-w-lg mx-auto">
+                    Você obteve {getTotalScore(examAnswers)}/{totalQuestions} pontos. A nota mínima para avançar é {passThreshold}/{totalQuestions} ({Math.ceil(totalQuestions * 0.8)}). Tente novamente no próximo processo.
                   </p>
-                  <button 
+                  <button
                     onClick={handleRetryQuiz}
                     className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all hover:-translate-y-1"
                   >
-                    Tentar Novamente
+                    Tentar novamente
                   </button>
                 </div>
               )}
 
-              {quizStatus === 'success' && (
-                <div className="text-center py-12">
+              {quizStatus === 'submitting' && (
+                <div className="text-center py-10">
+                  <div className="w-20 h-20 bg-federal-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-federal-500 animate-pulse">
+                    <Check size={40} />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Avaliando sua candidatura...</h3>
+                  <p className="text-slate-400">Enviando os resultados e validando sua identidade para o processo.</p>
+                </div>
+              )}
+
+              {formStatus === 'success' && (
+                <div className="text-center py-10">
                   <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500 animate-bounce">
                     <Check size={40} />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Aprovado!</h3>
-                  <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                    Parabéns! Sua candidatura foi enviada com sucesso para análise da corregedoria.
+                  <h3 className="text-2xl font-bold text-white mb-2">Candidatura aprovada na fase de avaliação</h3>
+                  <p className="text-slate-400 max-w-xl mx-auto">
+                    Sua inscrição foi registrada com sucesso. A equipe da Polícia Civil - Euforia vai analisar sua identificação e dados de Discord para o próximo passo.
                   </p>
-                  {formStatus === 'submitting' && (
-                    <div className="flex items-center justify-center gap-2 text-federal-500">
-                      <span className="w-2 h-2 rounded-full bg-federal-500 animate-pulse" />
-                      Enviando dados...
-                    </div>
-                  )}
+                </div>
+              )}
+
+              {formStatus === 'error' && (
+                <div className="text-center py-10">
+                  <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500 animate-bounce">
+                    <X size={40} />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Erro ao salvar inscrição</h3>
+                  <p className="text-slate-400">{errorMessage || 'Não foi possível concluir o cadastro no momento.'}</p>
                 </div>
               )}
             </div>

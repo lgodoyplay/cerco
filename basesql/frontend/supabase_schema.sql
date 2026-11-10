@@ -90,8 +90,17 @@ create table public.candidatos (
   nome text not null,
   email text,
   telefone text,
+  discord_user text,
+  cidade text,
   mensagem text,
+  codigo_identificacao text unique,
   status text default 'Pendente', -- Pendente, Em Análise, Aprovado, Rejeitado
+  etapa_atual text default 'inscricao',
+  pontuacao_total integer default 0,
+  pontuacao_etapa_1 integer default 0,
+  pontuacao_etapa_2 integer default 0,
+  pontuacao_etapa_3 integer default 0,
+  dados_avaliacao jsonb default '{}'::jsonb,
   created_at timestamp with time zone default now()
 );
 

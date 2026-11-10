@@ -107,7 +107,7 @@ const FormsSettings = () => {
         .eq('id', id);
 
       if (error) throw error;
-      
+
       setCandidates(candidates.filter(c => c.id !== id));
     } catch (error) {
       console.error('Erro ao excluir:', error);
@@ -115,10 +115,28 @@ const FormsSettings = () => {
     }
   };
 
-  const filteredCandidates = candidates.filter(candidate => 
-    (candidate.nome || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (candidate.email || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const normalizeCandidateStatus = (candidate) => {
+    const explicitStatus = candidate?.status?.toString?.().trim();
+    if (explicitStatus) return explicitStatus;
+
+    const score = Number(candidate?.pontuacao_total ?? candidate?.pontuacao_quiz ?? 0);
+    return score >= 12 ? 'Aprovado' : 'Pendente';
+  };
+
+  const filteredCandidates = candidates.filter(candidate => {
+    const term = searchTerm.toLowerCase();
+    const matchText = [
+      candidate.nome,
+      candidate.discord_user,
+      candidate.email,
+      candidate.codigo_identificacao,
+      candidate.cidade,
+      candidate.telefone,
+      normalizeCandidateStatus(candidate)
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    return matchText.includes(term);
+  });
 
   return (
     <div className="space-y-6">
@@ -203,11 +221,26 @@ const FormsSettings = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-center gap-2 text-slate-300">
                       <CheckCircle2 size={16} className="text-federal-500" />
-                      Acertos na Prova: {candidate.pontuacao_quiz || 'N/A'}/5
+                      Pontuação total: {candidate.pontuacao_total ?? candidate.pontuacao_quiz ?? 'N/A'}/15
                     </div>
                     <div className="flex items-center gap-2 text-slate-300">
                       <Phone size={16} className="text-federal-500" />
-                      {candidate.telefone}
+                      {candidate.telefone || 'Telefone não informado'}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-slate-300">
+                    <div className="rounded-lg bg-slate-900/70 border border-slate-800 px-3 py-2">
+                      <span className="text-xs uppercase text-slate-500 block mb-1">Status</span>
+                      <span className="font-semibold text-white">{normalizeCandidateStatus(candidate)}</span>
+                    </div>
+                    <div className="rounded-lg bg-slate-900/70 border border-slate-800 px-3 py-2">
+                      <span className="text-xs uppercase text-slate-500 block mb-1">Código</span>
+                      <span className="font-semibold text-white">{candidate.codigo_identificacao || '—'}</span>
+                    </div>
+                    <div className="rounded-lg bg-slate-900/70 border border-slate-800 px-3 py-2">
+                      <span className="text-xs uppercase text-slate-500 block mb-1">Discord</span>
+                      <span className="font-semibold text-white">{candidate.discord_user || candidate.nome || '—'}</span>
                     </div>
                   </div>
 
@@ -220,7 +253,7 @@ const FormsSettings = () => {
                 </div>
 
                 <div className="flex flex-row md:flex-col justify-end gap-2 border-t md:border-t-0 md:border-l border-slate-700 pt-4 md:pt-0 md:pl-6">
-                  <button 
+                  <button
                     onClick={() => handleDelete(candidate.id)}
                     className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors flex items-center gap-2"
                     title="Excluir"
