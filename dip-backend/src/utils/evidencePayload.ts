@@ -1,3 +1,4 @@
+import type { Express } from 'express';
 import { sanitizeDescription } from './investigationValidator';
 
 export const normalizeProofType = (type: string | undefined | null = '') => {

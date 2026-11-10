@@ -23,12 +23,17 @@ const client = new Client({
   partials: [Partials.Channel],
 });
 
-const BACKEND_URL = (env.BACKEND_URL || env.DISCORD_BACKEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+const isLocalDev = env.NODE_ENV !== 'production';
+const BACKEND_URL = (env.BACKEND_URL || env.DISCORD_BACKEND_URL || (isLocalDev ? 'http://localhost:3000' : '')).replace(/\/$/, '');
 const BOT_API_SECRET = (env.BOT_API_SECRET || env.DISCORD_BOT_SECRET || '').trim();
 const DISCORD_BOT_TOKEN = (env.DISCORD_BOT_TOKEN || env.DISCORD_TOKEN || '').trim();
 const DISCORD_CLIENT_ID = (env.DISCORD_CLIENT_ID || env.CLIENT_ID || '').trim();
 const DISCORD_GUILD_ID = (env.DISCORD_GUILD_ID || env.GUILD_ID || '').trim();
 const PORT = Number(env.PORT || 4001);
+
+if (!BACKEND_URL) {
+  console.warn('[bot] BACKEND_URL não configurado. Defina a URL pública do backend em produção.');
+}
 
 const normalizeToken = (value: string) => value.replace(/^['"]|['"]$/g, '').trim();
 const TOKEN = normalizeToken(DISCORD_BOT_TOKEN);

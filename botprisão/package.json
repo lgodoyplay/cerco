@@ -1,0 +1,30 @@
+{
+  "name": "policia-civil-rp-bot",
+  "version": "1.0.0",
+  "description": "Bot profissional para corporação de Polícia Civil RP (Discord.js v14 + banco local).",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "deploy:commands": "node scripts/deploy-commands.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "discord",
+    "discordjs",
+    "policia-civil",
+    "rp"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.56.0",
+    "discord.js": "^14.19.3",
+    "dotenv": "^16.6.1",
+    "mongodb": "^6.18.0",
+    "winston": "^3.17.0"
+  }
+}

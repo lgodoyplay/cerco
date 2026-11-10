@@ -13,7 +13,7 @@
  * - Versionamento automático
  */
 
-import type { Request, Response } from 'express';
+import type { Express, Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import { createLog } from '../utils/logger';
 import { uploadArrestPhoto, deleteFromSupabase } from '../utils/supabaseStorage';

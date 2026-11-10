@@ -11,7 +11,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuid } from 'uuid';
 import sharp from 'sharp';
-import type { Request } from 'express';
+import type { Express } from 'express';
 
 // ======================== SUPABASE CLIENT ========================
 const supabaseUrl = process.env.SUPABASE_URL;

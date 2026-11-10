@@ -1,7 +1,12 @@
 import axios from 'axios';
 
-const BOT_URL = process.env.BOT_URL || 'http://localhost:4001';
-const BOT_SECRET = process.env.BOT_API_SECRET || '';
+const isLocalDev = process.env.NODE_ENV !== 'production';
+const BOT_URL = (process.env.BOT_URL || (isLocalDev ? 'http://localhost:4001' : '')).replace(/\/$/, '');
+const BOT_SECRET = (process.env.BOT_API_SECRET || '').trim();
+
+if (!BOT_URL || !BOT_SECRET) {
+  console.warn('[discordBridgeService] BOT_URL/BOT_API_SECRET não configurados. Configure as URLs públicas do bot do Discloud antes de usar o bridge do Discord.');
+}
 
 const buildHeaders = () => ({
   'x-bot-secret': BOT_SECRET,
@@ -88,6 +93,30 @@ class DiscordBridgeService {
     } catch (error) {
       console.warn('Discord bot indisponível para status:', error);
       return { status: 'offline', uptime: 0, latency: 0, guilds: 0 };
+    }
+  }
+
+  async editMessage(channelId: string, messageId: string, content: string) {
+    try {
+      const { data } = await axios.patch(
+        `${BOT_URL}/api/discord/channels/${channelId}/messages/${messageId}`,
+        { content },
+        { headers: buildHeaders() }
+      );
+      return data;
+    } catch (error) {
+      console.warn('Discord bot indisponível para editar mensagem:', error);
+      return null;
+    }
+  }
+
+  async deleteMessage(channelId: string, messageId: string) {
+    try {
+      await axios.delete(`${BOT_URL}/api/discord/channels/${channelId}/messages/${messageId}`, { headers: buildHeaders() });
+      return true;
+    } catch (error) {
+      console.warn('Discord bot indisponível para excluir mensagem:', error);
+      return false;
     }
   }
 

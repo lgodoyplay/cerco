@@ -8,6 +8,7 @@
  * 4. WebP + fallback para navegadores antigos
  */
 
+import type { Express } from 'express';
 import sharp from 'sharp';
 import { v4 as uuid } from 'uuid';
 

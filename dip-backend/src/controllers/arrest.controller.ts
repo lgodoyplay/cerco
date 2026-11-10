@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Express, Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import { createLog } from '../utils/logger';
 import { processImage, extractFilenameFromUrl, deleteUploadFile } from '../middlewares/uploadV2.middleware';
