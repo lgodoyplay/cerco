@@ -243,7 +243,16 @@ export const fluxerController = {
       }
 
       if (shouldUseDiscordBridge()) {
-        return res.status(501).json({ error: 'Chamada de voz não está implementada no bot local.' });
+        const room = await import('../services/jitsi/jitsiService.js').then(({ createJitsiRoom }) => createJitsiRoom(channelId, 'voice'));
+        return res.status(200).json({
+          supported: false,
+          fallback: 'jitsi',
+          channelId,
+          type: 'voice',
+          roomName: room.roomName,
+          domain: room.domain,
+          message: 'Chamada de voz local não implementada. Usando fallback Jitsi.',
+        });
       }
 
       const data = await fluxerApi.post<any>(`/channels/${encodeURIComponent(channelId)}/call`);
@@ -262,7 +271,13 @@ export const fluxerController = {
       }
 
       if (shouldUseDiscordBridge()) {
-        return res.status(501).json({ error: 'Encerramento de chamada de voz não está implementado no bot local.' });
+        return res.status(200).json({
+          supported: false,
+          fallback: 'jitsi',
+          channelId,
+          ended: true,
+          message: 'Chamada de voz local não implementada. Fallback Jitsi encerrado.',
+        });
       }
 
       const data = await fluxerApi.post<any>(`/channels/${encodeURIComponent(channelId)}/call/end`);

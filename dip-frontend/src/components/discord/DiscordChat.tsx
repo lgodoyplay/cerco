@@ -34,9 +34,15 @@ const DiscordChat = ({ channel, onSelectMember, onStartVoiceCall, onStartVideoCa
       setError(null);
 
       try {
-        const data = await fluxerGetMessages(cid, 50);
+        const data = await fluxerGetMessages(cid, 100);
+        const normalized = Array.isArray(data)
+          ? [...data]
+              .filter((message) => message && (message.id || message.content || message.author))
+              .sort((a, b) => new Date(a.timestamp || a.createdAt || 0).getTime() - new Date(b.timestamp || b.createdAt || 0).getTime())
+          : [];
+
         if (mountedRef.current) {
-          setMessages(Array.isArray(data) ? data : []);
+          setMessages(normalized);
         }
       } catch (err: any) {
         if (mountedRef.current) {
@@ -64,7 +70,10 @@ const DiscordChat = ({ channel, onSelectMember, onStartVoiceCall, onStartVideoCa
       try {
         const created = await fluxerSendMessage(cid, content.trim());
         if (mountedRef.current) {
-          setMessages((prev) => [...prev, created]);
+          setMessages((prev) => {
+            const merged = [...prev, created].filter(Boolean);
+            return merged.sort((a, b) => new Date(a.timestamp || a.createdAt || 0).getTime() - new Date(b.timestamp || b.createdAt || 0).getTime());
+          });
           setDraft('');
         }
       } catch (err: any) {

@@ -304,6 +304,18 @@ const DiscordPage = () => {
 
     try {
       const call = await fluxerStartVoiceCall(channelId);
+
+      if (call?.fallback === 'jitsi' || call?.supported === false) {
+        setActiveJitsiCall({
+          conversationId: channelId,
+          roomName: call?.roomName || `voice-${channelId}`,
+          domain: call?.domain || 'meet.jit.si',
+          type: 'voice',
+        });
+        setIsJitsiMinimized(false);
+        return;
+      }
+
       const voiceServer = call?.voice_server || call;
       const liveKitInfo = {
         endpoint: voiceServer?.endpoint,
@@ -320,6 +332,17 @@ const DiscordPage = () => {
       setActiveVoiceChannelId(channelId);
     } catch (error) {
       console.error('Erro ao entrar no canal de voz:', error);
+      if (String(error?.message || '').toLowerCase().includes('não está implementada') || String(error?.message || '').toLowerCase().includes('not implemented')) {
+        const roomName = `voice-${channelId}`;
+        setActiveJitsiCall({
+          conversationId: channelId,
+          roomName,
+          domain: 'meet.jit.si',
+          type: 'voice',
+        });
+        setIsJitsiMinimized(false);
+        return;
+      }
       setVoiceError(error?.message || 'Não foi possível entrar no canal de voz.');
     }
   };
