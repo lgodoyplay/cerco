@@ -324,7 +324,14 @@ async function registerCommands() {
       await rest.put(Routes.applicationCommands(DISCORD_CLIENT_ID), { body: slashCommands });
     }
     console.log('Comandos slash registrados');
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 10002 || error?.status === 404) {
+      console.warn('[Discord] Application ID inconsistente. Verifique DISCORD_CLIENT_ID e DISCORD_GUILD_ID. O token do bot ou a aplicação no Discord Developer Portal não correspondem ao servidor/APP que está sendo usado.');
+      console.warn(`Client ID atual: ${DISCORD_CLIENT_ID || 'não configurado'}`);
+      console.warn(`Guild ID atual: ${guildId || 'não configurado'}`);
+      return;
+    }
+
     console.warn('Falha ao registrar comandos slash:', error);
   }
 }
