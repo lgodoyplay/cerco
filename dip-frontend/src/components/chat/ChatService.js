@@ -88,6 +88,32 @@ export const chatService = {
     }
   },
 
+  async deleteMessage(messageId, currentUser) {
+    if (!messageId) return false;
+
+    try {
+      const { error } = await supabase
+        .from(CHAT_TABLE)
+        .delete()
+        .eq('id', messageId)
+        .eq('user_id', currentUser?.id || '');
+
+      if (error) {
+        if (isMissingTableError(error)) {
+          console.info('Chat: tabela ainda não existe no banco; não foi possível excluir a mensagem.');
+          return false;
+        }
+        console.warn('Chat: erro ao apagar mensagem', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.warn('Chat: exceção ao apagar mensagem', error);
+      return false;
+    }
+  },
+
   subscribeToMessages(currentUser, onMessage) {
     const channel = supabase.channel(`global-chat-${currentUser?.id || 'anonymous'}`);
 

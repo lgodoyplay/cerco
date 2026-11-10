@@ -1,9 +1,9 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { MessageCircleMore } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 
-const ChatMessage = ({ message, isCurrentUser }) => {
+const ChatMessage = ({ message, isCurrentUser, onDelete }) => {
   const safeDate = message?.created_at ? new Date(message.created_at) : new Date();
   const formattedTime = isNaN(safeDate.getTime())
     ? ''
@@ -11,7 +11,19 @@ const ChatMessage = ({ message, isCurrentUser }) => {
 
   return (
     <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[85%] rounded-2xl px-3 py-2.5 shadow-sm ${isCurrentUser ? 'bg-federal-600 text-white' : 'bg-slate-800/90 text-slate-100 border border-slate-700'}`}>
+      <div className={`group relative max-w-[85%] rounded-2xl px-3 py-2.5 shadow-sm ${isCurrentUser ? 'bg-federal-600 text-white' : 'bg-slate-800/90 text-slate-100 border border-slate-700'}`}>
+        {isCurrentUser && typeof onDelete === 'function' && (
+          <button
+            type="button"
+            onClick={() => onDelete(message?.id)}
+            className="absolute -top-2 -right-2 hidden h-7 w-7 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-300 shadow-md transition hover:bg-red-600 hover:text-white group-hover:flex"
+            aria-label="Apagar mensagem"
+            title="Apagar mensagem"
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
+
         <div className="flex items-center gap-2 mb-1.5">
           {message?.user_avatar_url ? (
             <img src={message.user_avatar_url} alt={message?.user_name || 'Usuário'} className="w-7 h-7 rounded-full object-cover border border-slate-700" />
