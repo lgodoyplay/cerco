@@ -98,6 +98,62 @@ const resolveOutputMimeType = (imageSrc, mimeType) => {
     return mimeType || 'image/jpeg';
 };
 
+const getNonTransparentBounds = (imageData, width, height, margin = 0) => {
+    let minX = width;
+    let minY = height;
+    let maxX = -1;
+    let maxY = -1;
+
+    const { data } = imageData;
+
+    for (let y = 0; y < height; y += 1) {
+        for (let x = 0; x < width; x += 1) {
+            const alpha = data[(y * width + x) * 4 + 3];
+            if (alpha > 8) {
+                if (x < minX) minX = x;
+                if (y < minY) minY = y;
+                if (x > maxX) maxX = x;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+
+    if (maxX < 0 || maxY < 0) {
+        return { x: 0, y: 0, width, height };
+    }
+
+    const safeMargin = Math.max(0, Math.round(margin));
+    const x = Math.max(0, minX - safeMargin);
+    const y = Math.max(0, minY - safeMargin);
+    const cropWidth = Math.min(width - x, maxX - minX + 1 + safeMargin * 2);
+    const cropHeight = Math.min(height - y, maxY - minY + 1 + safeMargin * 2);
+
+    return { x, y, width: cropWidth, height: cropHeight };
+};
+
+const getAlphaCoverage = (imageData, x, y, width, height) => {
+    if (!width || !height) return 0;
+
+    const { data, width: sourceWidth } = imageData;
+    let visiblePixels = 0;
+
+    for (let py = 0; py < height; py += 1) {
+        for (let px = 0; px < width; px += 1) {
+            const sx = x + px;
+            const sy = y + py;
+            if (sx < 0 || sy < 0 || sx >= sourceWidth || sy >= imageData.height) {
+                continue;
+            }
+            const alpha = data[(sy * sourceWidth + sx) * 4 + 3];
+            if (alpha > 8) {
+                visiblePixels += 1;
+            }
+        }
+    }
+
+    return visiblePixels;
+};
+
 const getCroppedImg = async (
     imageSrc,
     pixelCrop,
@@ -140,8 +196,34 @@ const getCroppedImg = async (
 
     const cropX = pixelCrop.x * renderScale;
     const cropY = pixelCrop.y * renderScale;
-    const cropWidth = pixelCrop.width * renderScale;
-    const cropHeight = pixelCrop.height * renderScale;
+    const cropWidth = Math.max(1, pixelCrop.width * renderScale);
+    const cropHeight = Math.max(1, pixelCrop.height * renderScale);
+
+    const sourceCanvas = document.createElement('canvas');
+    sourceCanvas.width = workImage.width;
+    sourceCanvas.height = workImage.height;
+    const sourceCtx = sourceCanvas.getContext('2d');
+
+    if (!sourceCtx) {
+        throw new Error('Contexto 2D não suportado no cálculo de área útil');
+    }
+
+    sourceCtx.drawImage(workImage, 0, 0);
+    const sourceImageData = sourceCtx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+    const sourceBounds = getNonTransparentBounds(sourceImageData, sourceCanvas.width, sourceCanvas.height, 8);
+    const selectedAlphaCoverage = getAlphaCoverage(sourceImageData, cropX, cropY, cropWidth, cropHeight);
+    const selectedRatio = selectedAlphaCoverage / Math.max(1, cropWidth * cropHeight);
+
+    const effectiveCrop = {
+        x: cropX,
+        y: cropY,
+        width: cropWidth,
+        height: cropHeight
+    };
+
+    if (cropWidth < 8 || cropHeight < 8 || selectedRatio < 0.08) {
+        Object.assign(effectiveCrop, sourceBounds);
+    }
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -177,10 +259,10 @@ const getCroppedImg = async (
 
     // Extrair área cortada
     const data = ctx.getImageData(
-        cropX,
-        cropY,
-        cropWidth,
-        cropHeight
+        effectiveCrop.x,
+        effectiveCrop.y,
+        effectiveCrop.width,
+        effectiveCrop.height
     );
 
     // Criar canvas final
@@ -191,8 +273,8 @@ const getCroppedImg = async (
         throw new Error('Contexto 2D não suportado no canvas final');
     }
 
-    finalCanvas.width = cropWidth;
-    finalCanvas.height = cropHeight;
+    finalCanvas.width = effectiveCrop.width;
+    finalCanvas.height = effectiveCrop.height;
 
     if (outputMimeType === 'image/jpeg') {
         finalCtx.fillStyle = '#ffffff';
