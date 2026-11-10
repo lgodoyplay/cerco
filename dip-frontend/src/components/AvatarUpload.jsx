@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { getAvatarPublicUrl } from '../lib/avatar';
 import { Camera, Loader2, User } from 'lucide-react';
 import ImageCropperModal from './common/ImageCropperModal';
 
@@ -16,14 +17,14 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
 
   const downloadImage = async (path) => {
     try {
-      const { data, error } = await supabase.storage.from('avatars').download(path);
-      if (error) {
-        throw error;
+      const publicUrl = getAvatarPublicUrl(path);
+      if (!publicUrl) {
+        setAvatarUrl(null);
+        return;
       }
-      const url = URL.createObjectURL(data);
-      setAvatarUrl(url);
+      setAvatarUrl(publicUrl);
     } catch (error) {
-      console.log('Error downloading image: ', error.message);
+      console.log('Error resolving image: ', error.message);
     }
   };
 
@@ -66,6 +67,8 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
         throw uploadError;
       }
 
+      const uploadedUrl = getAvatarPublicUrl(filePath) || localPreviewUrl;
+      setAvatarUrl(uploadedUrl);
       onUpload(filePath);
     } catch (error) {
       console.error('Erro ao salvar avatar:', error);

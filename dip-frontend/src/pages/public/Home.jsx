@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { getAvatarPublicUrl } from '../../lib/avatar';
 import {
   Shield,
   AlertTriangle,
@@ -712,7 +713,7 @@ const Home = () => {
               <div className="w-16 h-16 rounded-full overflow-hidden border border-slate-700">
                 {stream.user?.avatar_url ? (
                   <img
-                    src={stream.user.avatar_url.startsWith('http') ? stream.user.avatar_url : supabase.storage.from('avatars').getPublicUrl(stream.user.avatar_url).data.publicUrl}
+                    src={getAvatarPublicUrl(stream.user.avatar_url) || ''}
                     alt={stream.user.full_name}
                     className="w-full h-full object-cover"
                   />

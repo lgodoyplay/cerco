@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { getAvatarPublicUrl } from '../lib/avatar';
 
 export type CallType = 'voice' | 'video';
 export type CallStatus = 'idle' | 'joining' | 'joined' | 'left' | 'error';
@@ -127,10 +128,7 @@ export const useJitsiCall = (options: UseJitsiCallOptions) => {
       try {
         await loadJitsiScript();
 
-        const avatarUrl =
-          user?.avatar_url && user.avatar_url.startsWith('http')
-            ? user.avatar_url
-            : undefined;
+        const avatarUrl = user?.avatar_url ? getAvatarPublicUrl(user.avatar_url) || undefined : undefined;
 
         const options = {
           roomName,

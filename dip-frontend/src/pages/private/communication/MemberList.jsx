@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../context/AuthContext';
+import { getAvatarPublicUrl } from '../../../lib/avatar';
 import { UserMinus } from 'lucide-react';
 
 import { getInitials } from '../../../utils/stringUtils';
@@ -102,8 +103,8 @@ const MemberList = ({ room }) => {
                                 {member.profiles?.avatar_url ? (
                                     <img 
                                         src={member.profiles.avatar_url?.startsWith('http') 
-                                            ? member.profiles.avatar_url 
-                                            : supabase.storage.from('avatars').getPublicUrl(member.profiles.avatar_url).data.publicUrl
+                                            ? getAvatarPublicUrl(member.profiles.avatar_url) || ''
+                                            : ''
                                         } 
                                         className="w-full h-full object-cover" 
                                         alt="Avatar" 

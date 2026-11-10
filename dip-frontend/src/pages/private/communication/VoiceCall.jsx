@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { getAvatarPublicUrl } from '../../../lib/avatar';
 import { Minimize2, Maximize2, X, Mic, MicOff, Video, VideoOff } from 'lucide-react';
 
 const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, className }) => {
@@ -28,9 +29,7 @@ const VoiceCall = ({ room, user, onClose, isMinimized, onToggleMinimize, classNa
                 userInfo: {
                     displayName: user.full_name,
                     email: user.email,
-                    avatarUrl: user.avatar_url?.startsWith('http') 
-                        ? user.avatar_url 
-                        : supabase.storage.from('avatars').getPublicUrl(user.avatar_url).data.publicUrl
+                    avatarUrl: getAvatarPublicUrl(user.avatar_url) || undefined
                 },
                 configOverwrite: {
                     startWithAudioMuted: false,

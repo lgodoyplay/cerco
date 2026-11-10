@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Shield, UserCheck, AlertTriangle, FileText, X, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { getAvatarPublicUrl } from '../../lib/avatar';
 
 const SearchAndInvestigations = () => {
   const [activeTab, setActiveTab] = useState('verify'); // 'verify' | 'criminals'
@@ -182,9 +183,7 @@ const SearchAndInvestigations = () => {
                     <div className="w-24 h-24 rounded-full bg-slate-800 border-4 border-emerald-500/30 overflow-hidden relative">
                        {verifyResult.avatar_url ? (
                          <img 
-                           src={verifyResult.avatar_url.startsWith('http') 
-                             ? verifyResult.avatar_url 
-                             : supabase.storage.from('avatars').getPublicUrl(verifyResult.avatar_url).data.publicUrl} 
+                           src={getAvatarPublicUrl(verifyResult.avatar_url) || ''} 
                            alt="Avatar" 
                            className="w-full h-full object-cover" 
                          />

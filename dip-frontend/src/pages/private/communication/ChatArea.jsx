@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { getAvatarPublicUrl } from '../../../lib/avatar';
 import { useAuth } from '../../../context/AuthContext';
 import { Send, Hash, Phone, Menu, Users, Mic } from 'lucide-react';
 
@@ -210,10 +211,7 @@ const ChatArea = ({ room, onOpenRooms, onOpenMembers, onJoinVoice }) => {
                                         <div className="w-10 h-10 rounded-full bg-slate-700 flex-shrink-0 overflow-hidden mt-0.5">
                                              {msg.profiles?.avatar_url ? (
                                                  <img 
-                                                    src={msg.profiles.avatar_url.startsWith('http') 
-                                                        ? msg.profiles.avatar_url 
-                                                        : supabase.storage.from('avatars').getPublicUrl(msg.profiles.avatar_url).data.publicUrl
-                                                    } 
+                                                    src={getAvatarPublicUrl(msg.profiles.avatar_url) || ''} 
                                                     className="w-full h-full object-cover" 
                                                     alt="Avatar" 
                                                  />
