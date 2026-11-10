@@ -65,6 +65,12 @@ const ImageCropperModal = ({
 
     // Gerar preview em tempo real
     const [previewUrl, setPreviewUrl] = useState(null);
+    const checkerboardStyle = {
+        backgroundColor: '#0f172a',
+        backgroundImage: 'linear-gradient(45deg, rgba(148,163,184,0.18) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,0.18) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,0.18) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,0.18) 75%)',
+        backgroundSize: '20px 20px',
+        backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0'
+    };
     
     useEffect(() => {
         if (imageSrc && croppedAreaPixels && !isProcessing) {
@@ -134,7 +140,7 @@ const ImageCropperModal = ({
                 </div>
 
                 {/* Cropper Area */}
-                <div className="relative h-64 sm:h-96 w-full overflow-hidden border-b border-slate-800 bg-[linear-gradient(45deg,#0f172a_25%,transparent_25%),linear-gradient(-45deg,#0f172a_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#0f172a_75%),linear-gradient(-45deg,transparent_75%,#0f172a_75%)] bg-[length:24px_24px] bg-[position:0_0,0_12px,12px_-12px,-12px_0]">
+                <div className="relative h-64 sm:h-96 w-full overflow-hidden border-b border-slate-800" style={checkerboardStyle}>
                     <Cropper
                         image={imageSrc}
                         crop={crop}
@@ -153,8 +159,9 @@ const ImageCropperModal = ({
                         <div 
                             className="absolute top-2 right-2 w-20 h-20 border-2 border-federal-500 rounded-lg overflow-hidden shadow-lg"
                             title="Preview do corte"
+                            style={checkerboardStyle}
                         >
-                            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" style={{ background: 'transparent' }} />
                         </div>
                     )}
                 </div>
