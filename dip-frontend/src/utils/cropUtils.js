@@ -88,6 +88,16 @@ const resizeCanvas = (canvas, maxSize) => {
  * @param {Object} options - Opções { quality, mimeType, maxSize }
  * @returns {Promise<string>} - Imagem cortada em base64
  */
+const resolveOutputMimeType = (imageSrc, mimeType) => {
+    if (typeof imageSrc === 'string' && imageSrc.startsWith('data:image/png')) {
+        return 'image/png';
+    }
+    if (typeof imageSrc === 'string' && imageSrc.startsWith('data:image/webp')) {
+        return 'image/webp';
+    }
+    return mimeType || 'image/jpeg';
+};
+
 const getCroppedImg = async (
     imageSrc,
     pixelCrop,
@@ -104,6 +114,7 @@ const getCroppedImg = async (
     }
 
     const { quality, mimeType, maxSize } = { ...CROP_DEFAULTS, ...options };
+    const outputMimeType = resolveOutputMimeType(imageSrc, mimeType);
     
     const image = await createImage(imageSrc);
     const canvas = document.createElement('canvas');
@@ -123,6 +134,12 @@ const getCroppedImg = async (
     // Configurar canvas com tamanho do bounding box
     canvas.width = bBoxWidth;
     canvas.height = bBoxHeight;
+
+    // Mantém fundo opaco ao converter para JPEG para evitar áreas pretas
+    if (outputMimeType === 'image/jpeg') {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
     // Transformações
     ctx.translate(bBoxWidth / 2, bBoxHeight / 2);
@@ -150,6 +167,12 @@ const getCroppedImg = async (
 
     finalCanvas.width = pixelCrop.width;
     finalCanvas.height = pixelCrop.height;
+
+    if (outputMimeType === 'image/jpeg') {
+        finalCtx.fillStyle = '#ffffff';
+        finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+    }
+
     finalCtx.putImageData(data, 0, 0);
 
     // Redimensionar se necessário
@@ -159,11 +182,15 @@ const getCroppedImg = async (
         const resizedCtx = resizedCanvas.getContext('2d');
         resizedCanvas.width = width;
         resizedCanvas.height = height;
+        if (outputMimeType === 'image/jpeg') {
+            resizedCtx.fillStyle = '#ffffff';
+            resizedCtx.fillRect(0, 0, width, height);
+        }
         resizedCtx.drawImage(finalCanvas, 0, 0, width, height);
-        return resizedCanvas.toDataURL(mimeType, quality);
+        return resizedCanvas.toDataURL(outputMimeType, quality);
     }
 
-    return finalCanvas.toDataURL(mimeType, quality);
+    return finalCanvas.toDataURL(outputMimeType, quality);
 };
 
 export default getCroppedImg;

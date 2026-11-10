@@ -57,8 +57,10 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
       const localPreviewUrl = URL.createObjectURL(blob);
       setAvatarUrl(localPreviewUrl);
 
-      const file = new File([blob], `avatar.${fileExt}`, { type: 'image/jpeg' });
-      const fileName = `${Math.random()}.${fileExt}`;
+      const safeExt = (fileExt || 'png').toLowerCase();
+      const mimeType = blob.type || (safeExt === 'png' ? 'image/png' : 'image/jpeg');
+      const file = new File([blob], `avatar.${safeExt}`, { type: mimeType });
+      const fileName = `${Math.random()}.${safeExt}`;
       const filePath = `${fileName}`;
 
       let { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
