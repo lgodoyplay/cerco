@@ -4,7 +4,18 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '../../lib/utils';
 
-const MessageList = ({ messages, onSelectMember }) => {
+const MessageList = ({
+  messages,
+  onSelectMember,
+  onDeleteMessage,
+  onEditMessage,
+  onAddReaction,
+  onRemoveReaction,
+  pendingEditId,
+  pendingEditText,
+  setPendingEditId,
+  setPendingEditText,
+}) => {
   const [hoveredId, setHoveredId] = useState(null);
   const messagesEndRef = useRef(null);
 
@@ -162,16 +173,63 @@ const MessageList = ({ messages, onSelectMember }) => {
               </div>
 
               <div className="space-y-1">
-                {group.messages.map((msg, msgIndex) => (
-                  <div
-                    key={msg.id || `${group.author.id}-${msgIndex}-${msg.timestamp}`}
-                    className={cn(
-                      'max-w-[85%] rounded-2xl border border-slate-800 bg-slate-900/80 px-3 py-2 text-sm leading-6 text-slate-200 shadow-sm shadow-black/10',
-                      msgIndex > 0 && 'ml-2 border-slate-700/70 bg-slate-900/60'
-                    )}
+                {group.messages.map((msg, msgIndex) => {
+                  const isEditing = pendingEditId === msg.id;
+
+                  return (
+                    <div
+                      key={msg.id || `${group.author.id}-${msgIndex}-${msg.timestamp}`}
+                      className={cn(
+                        'max-w-[85%] rounded-2xl border border-slate-800 bg-slate-900/80 px-3 py-2 text-sm leading-6 text-slate-200 shadow-sm shadow-black/10',
+                        msgIndex > 0 && 'ml-2 border-slate-700/70 bg-slate-900/60'
+                      )}
+                    >
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <textarea
+                            value={pendingEditText}
+                            onChange={(event) => setPendingEditText(event.target.value)}
+                            rows={3}
+                            className="w-full resize-none rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-federal-500"
+                          />
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => onEditMessage?.(msg.id, pendingEditText)}
+                              className="rounded-lg bg-federal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-federal-500"
+                            >
+                              Salvar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPendingEditId(null);
+                                setPendingEditText('');
+                              }}
+                              className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>{msg.content || 'Mensagem vazia'}</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {['👍', '❤️', '😂', '🔥'].map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => onAddReaction?.(group.messages[0]?.id, emoji)}
+                    className="rounded-full border border-slate-700 bg-slate-900/80 px-2 py-1 text-xs text-slate-300 transition hover:border-federal-500 hover:text-white"
                   >
-                    {msg.content || 'Mensagem vazia'}
-                  </div>
+                    {emoji}
+                  </button>
                 ))}
               </div>
 
@@ -213,13 +271,32 @@ const MessageList = ({ messages, onSelectMember }) => {
                 <button className="p-1.5 text-slate-500 transition hover:bg-slate-800 hover:text-white" title="Responder">
                   <Reply size={14} />
                 </button>
-                <button className="p-1.5 text-slate-500 transition hover:bg-slate-800 hover:text-white" title="Copiar">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const firstMessage = group.messages[group.messages.length - 1];
+                    if (firstMessage) {
+                      setPendingEditId(firstMessage.id);
+                      setPendingEditText(firstMessage.content || '');
+                    }
+                  }}
+                  className="p-1.5 text-slate-500 transition hover:bg-slate-800 hover:text-white"
+                  title="Editar"
+                >
                   <Copy size={14} />
                 </button>
                 <button className="p-1.5 text-slate-500 transition hover:bg-slate-800 hover:text-white" title="Fixar">
                   <Pin size={14} />
                 </button>
-                <button className="p-1.5 text-rose-400 transition hover:bg-slate-800 hover:text-rose-300" title="Excluir">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const firstMessage = group.messages[group.messages.length - 1];
+                    if (firstMessage) onDeleteMessage?.(firstMessage.id);
+                  }}
+                  className="p-1.5 text-rose-400 transition hover:bg-slate-800 hover:text-rose-300"
+                  title="Excluir"
+                >
                   <Trash2 size={14} />
                 </button>
               </div>
