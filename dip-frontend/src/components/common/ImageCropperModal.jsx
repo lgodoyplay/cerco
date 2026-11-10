@@ -134,7 +134,7 @@ const ImageCropperModal = ({
                 </div>
 
                 {/* Cropper Area */}
-                <div className="relative h-64 sm:h-96 bg-black w-full">
+                <div className="relative h-64 sm:h-96 w-full overflow-hidden border-b border-slate-800 bg-[linear-gradient(45deg,#0f172a_25%,transparent_25%),linear-gradient(-45deg,#0f172a_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#0f172a_75%),linear-gradient(-45deg,transparent_75%,#0f172a_75%)] bg-[length:24px_24px] bg-[position:0_0,0_12px,12px_-12px,-12px_0]">
                     <Cropper
                         image={imageSrc}
                         crop={crop}
