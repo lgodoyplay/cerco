@@ -4,6 +4,7 @@ import {
   buildDefaultCorporation,
   normalizeCorporationList,
   getUserStructureAssignments,
+  applyCorporationAssignment,
 } from './corporationUtils.js';
 
 test('buildDefaultCorporation returns default department, division and sector collections', () => {
@@ -26,6 +27,20 @@ test('normalizeCorporationList converts legacy string arrays into structured ite
   assert.equal(typeof normalized[0].id, 'string');
   assert.deepEqual(normalized[0].members, []);
   assert.equal(normalized[0].chiefId, '');
+});
+
+test('applyCorporationAssignment allows assigning members before defining the chief', () => {
+  const firstAssignment = applyCorporationAssignment({ chiefId: '', members: [] }, 'u-2', 'member');
+  assert.equal(firstAssignment.chiefId, '');
+  assert.deepEqual(firstAssignment.members, ['u-2']);
+
+  const secondAssignment = applyCorporationAssignment(firstAssignment, 'u-1', 'chief');
+  assert.equal(secondAssignment.chiefId, 'u-1');
+  assert.deepEqual(secondAssignment.members, ['u-2']);
+
+  const toggledMember = applyCorporationAssignment(secondAssignment, 'u-2', 'member');
+  assert.equal(toggledMember.chiefId, 'u-1');
+  assert.deepEqual(toggledMember.members, []);
 });
 
 test('getUserStructureAssignments returns all units that include the user as chief or member', () => {

@@ -112,6 +112,52 @@ export const normalizeCorporationData = (payload = {}) => {
   }, {});
 };
 
+export const applyCorporationAssignment = (currentState = { chiefId: '', members: [] }, userId, mode = 'member') => {
+  const normalizedUserId = userId == null ? '' : String(userId);
+  const normalizedMembers = Array.isArray(currentState?.members)
+    ? currentState.members.filter(Boolean).map(String)
+    : [];
+
+  const safeState = {
+    chiefId: currentState?.chiefId ? String(currentState.chiefId) : '',
+    members: normalizedMembers,
+  };
+
+  if (!normalizedUserId) {
+    return safeState;
+  }
+
+  const memberSet = safeState.members.filter((memberId) => memberId !== normalizedUserId);
+
+  if (mode === 'chief') {
+    return {
+      ...safeState,
+      chiefId: normalizedUserId,
+      members: memberSet,
+    };
+  }
+
+  if (safeState.chiefId === normalizedUserId) {
+    return {
+      ...safeState,
+      chiefId: '',
+      members: memberSet,
+    };
+  }
+
+  if (safeState.members.includes(normalizedUserId)) {
+    return {
+      ...safeState,
+      members: memberSet,
+    };
+  }
+
+  return {
+    ...safeState,
+    members: [...memberSet, normalizedUserId],
+  };
+};
+
 export const getUserStructureAssignments = (corporation = {}, userId) => {
   if (!userId) return [];
 

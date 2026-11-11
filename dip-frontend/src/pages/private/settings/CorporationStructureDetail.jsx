@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, ShieldCheck, Users, UserCog, AlertTriangle } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 import {
+  applyCorporationAssignment,
   getCorporateTypeLabel,
   normalizeCorporationList,
 } from '../../../utils/corporationUtils';
@@ -38,25 +39,11 @@ const CorporationStructureDetail = () => {
   }, [users]);
 
   const handleChiefSelect = (userId) => {
-    setForm((prev) => ({
-      ...prev,
-      chiefId: userId,
-      members: prev.members.filter((memberId) => memberId !== userId),
-    }));
+    setForm((prev) => applyCorporationAssignment(prev, userId, 'chief'));
   };
 
   const handleMemberToggle = (userId) => {
-    setForm((prev) => {
-      if (userId === prev.chiefId) {
-        return prev;
-      }
-
-      const members = prev.members.includes(userId)
-        ? prev.members.filter((memberId) => memberId !== userId)
-        : [...prev.members, userId];
-
-      return { ...prev, members };
-    });
+    setForm((prev) => applyCorporationAssignment(prev, userId, 'member'));
   };
 
   const handleSave = async () => {
@@ -151,7 +138,14 @@ const CorporationStructureDetail = () => {
               <label className="block text-sm font-medium text-slate-300 mb-2">Chefe da estrutura</label>
               <select
                 value={form.chiefId}
-                onChange={(event) => setForm((prev) => ({ ...prev, chiefId: event.target.value }))}
+                onChange={(event) => {
+                  const nextValue = event.target.value;
+                  if (!nextValue) {
+                    setForm((prev) => ({ ...prev, chiefId: '' }));
+                    return;
+                  }
+                  handleChiefSelect(nextValue);
+                }}
                 className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-white focus:border-federal-500 focus:outline-none"
               >
                 <option value="">Selecione o responsável</option>
@@ -212,36 +206,51 @@ const CorporationStructureDetail = () => {
                 <div className="text-sm text-slate-400">Nenhum usuário cadastrado para adicionar.</div>
               ) : (
                 availableUsers.map((user) => {
-                  const isSelected = form.members.includes(user.id) || form.chiefId === user.id;
+                  const isChief = form.chiefId === user.id;
+                  const isMember = form.members.includes(user.id);
 
                   return (
-                    <button
+                    <div
                       key={user.id}
-                      type="button"
-                      onClick={() => {
-                        if (!form.chiefId) {
-                          handleChiefSelect(user.id);
-                          return;
-                        }
-
-                        if (form.chiefId === user.id) {
-                          setForm((prev) => ({ ...prev, chiefId: '' }));
-                          return;
-                        }
-
-                        handleMemberToggle(user.id);
-                      }}
-                      className={`flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left transition ${
-                        isSelected
+                      className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2 transition ${
+                        isChief || isMember
                           ? 'border-federal-500/50 bg-federal-500/10 text-white'
-                          : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500'
+                          : 'border-slate-700 bg-slate-900 text-slate-300'
                       }`}
                     >
-                      <span>{user.name || user.username || 'Usuário sem nome'}</span>
-                      <span className="text-xs text-slate-400">
-                        {form.chiefId === user.id ? 'Chefe' : isSelected ? 'Lotado' : 'Adicionar'}
-                      </span>
-                    </button>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{user.name || user.username || 'Usuário sem nome'}</p>
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-slate-400">
+                          {isChief ? 'Chefe' : isMember ? 'Membro' : 'Disponível'}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleChiefSelect(user.id)}
+                          className={`rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] transition ${
+                            isChief
+                              ? 'border-federal-500 bg-federal-500/20 text-white'
+                              : 'border-slate-600 text-slate-300 hover:border-federal-500 hover:text-white'
+                          }`}
+                        >
+                          {isChief ? 'Chefe' : 'Chefe'}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleMemberToggle(user.id)}
+                          className={`rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] transition ${
+                            isMember
+                              ? 'border-emerald-500/60 bg-emerald-500/10 text-emerald-200'
+                              : 'border-slate-600 text-slate-300 hover:border-emerald-500 hover:text-white'
+                          }`}
+                        >
+                          {isMember ? 'Remover' : 'Membro'}
+                        </button>
+                      </div>
+                    </div>
                   );
                 })
               )}
