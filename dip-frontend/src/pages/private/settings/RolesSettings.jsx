@@ -243,6 +243,17 @@ const RolesSettings = () => {
     setEditingRoleColor('#f59e0b');
   };
 
+  const handleUpdateRoleColor = async (roleId, nextColor) => {
+    if (!nextColor) return;
+
+    const updatedRoles = roles.map((role) =>
+      role.id === roleId ? { ...role, color: nextColor } : role
+    );
+
+    await updateRoles(updatedRoles);
+    logAction(`Cor do cargo atualizada: ${nextColor}`);
+  };
+
   const moveRole = async (roleId, direction) => {
     const orderedRoles = sortRoles(roles);
     const sameTypeRoles = orderedRoles.filter((role) => getRoleType(role) === activeRoleType);
@@ -531,8 +542,21 @@ const RolesSettings = () => {
                         }}
                         className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-medium text-slate-200 hover:border-federal-500 hover:text-white"
                       >
-                        Editar nome
+                        Editar cargo
                       </button>
+                    )}
+
+                    {editingRoleId !== role.id && (
+                      <label className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300">
+                        <span>Cor</span>
+                        <input
+                          type="color"
+                          value={role.color || '#f59e0b'}
+                          onChange={(event) => handleUpdateRoleColor(role.id, event.target.value)}
+                          className="h-8 w-9 cursor-pointer rounded-md border border-slate-600 bg-transparent p-0"
+                          aria-label={`Selecionar cor do cargo ${role.title}`}
+                        />
+                      </label>
                     )}
 
                     <button
