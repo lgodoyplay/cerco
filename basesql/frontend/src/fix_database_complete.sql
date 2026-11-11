@@ -150,7 +150,13 @@ CREATE POLICY "Global chat delete for authenticated users"
       WHERE p.id = auth.uid()
         AND (
           lower(COALESCE(p.role, '')) LIKE '%admin%'
+          OR lower(COALESCE(p.role, '')) LIKE '%diretor%'
+          OR lower(COALESCE(p.role, '')) LIKE '%comandante%'
+          OR lower(COALESCE(p.role, '')) LIKE '%superuser%'
+          OR lower(COALESCE(p.role, '')) LIKE '%developer%'
           OR lower(COALESCE(p.permissions::text, '')) LIKE '%admin_access%'
+          OR lower(COALESCE(p.permissions::text, '')) LIKE '%superuser%'
+          OR lower(COALESCE(p.permissions::text, '')) LIKE '%developer%'
         )
     )
   );

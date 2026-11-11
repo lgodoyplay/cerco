@@ -50,7 +50,19 @@ export const isAdminDeleteCandidate = (currentUser, canDeleteAnyMessage = false)
   if (canDeleteAnyMessage) return true;
 
   const roleName = String(currentUser?.role || currentUser?.user_role || '').toLowerCase();
-  if (roleName.includes('admin')) return true;
+  const adminRoleKeywords = [
+    'admin',
+    'administrador',
+    'administradora',
+    'diretor',
+    'diretora',
+    'comandante',
+    'superuser',
+    'developer',
+    'dev',
+  ];
+
+  if (adminRoleKeywords.some((keyword) => roleName.includes(keyword))) return true;
 
   const permissionValues = [];
   const permissionSource = currentUser?.permissions ?? currentUser?.raw_user_meta_data?.permissions ?? [];
@@ -61,7 +73,14 @@ export const isAdminDeleteCandidate = (currentUser, canDeleteAnyMessage = false)
     permissionValues.push(String(permissionSource).toLowerCase());
   }
 
-  return permissionValues.some((permission) => permission.includes('admin_access') || permission.includes('admin'));
+  return permissionValues.some((permission) => (
+    permission.includes('admin_access')
+    || permission.includes('admin')
+    || permission.includes('superuser')
+    || permission.includes('developer')
+    || permission.includes('diretor')
+    || permission.includes('comandante')
+  ));
 };
 
 export const chatService = {
