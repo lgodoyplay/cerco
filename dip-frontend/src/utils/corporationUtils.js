@@ -112,14 +112,17 @@ export const normalizeCorporationData = (payload = {}) => {
   }, {});
 };
 
-export const applyCorporationAssignment = (currentState = { chiefId: '', members: [] }, userId, mode = 'member') => {
+export const applyCorporationAssignment = (currentState = { name: '', chiefId: '', members: [] }, userId, mode = 'member') => {
   const normalizedUserId = userId == null ? '' : String(userId);
-  const normalizedMembers = Array.isArray(currentState?.members)
-    ? currentState.members.filter(Boolean).map(String)
+  const previousState = currentState && typeof currentState === 'object' ? currentState : {};
+  const normalizedMembers = Array.isArray(previousState.members)
+    ? previousState.members.filter(Boolean).map(String)
     : [];
 
   const safeState = {
-    chiefId: currentState?.chiefId ? String(currentState.chiefId) : '',
+    ...previousState,
+    name: typeof previousState.name === 'string' ? previousState.name : '',
+    chiefId: previousState.chiefId ? String(previousState.chiefId) : '',
     members: normalizedMembers,
   };
 

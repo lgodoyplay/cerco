@@ -29,16 +29,19 @@ test('normalizeCorporationList converts legacy string arrays into structured ite
   assert.equal(normalized[0].chiefId, '');
 });
 
-test('applyCorporationAssignment allows assigning members before defining the chief', () => {
-  const firstAssignment = applyCorporationAssignment({ chiefId: '', members: [] }, 'u-2', 'member');
+test('applyCorporationAssignment preserves the structure name while assigning chief and members', () => {
+  const firstAssignment = applyCorporationAssignment({ name: 'GRAER', chiefId: '', members: [] }, 'u-2', 'member');
+  assert.equal(firstAssignment.name, 'GRAER');
   assert.equal(firstAssignment.chiefId, '');
   assert.deepEqual(firstAssignment.members, ['u-2']);
 
   const secondAssignment = applyCorporationAssignment(firstAssignment, 'u-1', 'chief');
+  assert.equal(secondAssignment.name, 'GRAER');
   assert.equal(secondAssignment.chiefId, 'u-1');
   assert.deepEqual(secondAssignment.members, ['u-2']);
 
   const toggledMember = applyCorporationAssignment(secondAssignment, 'u-2', 'member');
+  assert.equal(toggledMember.name, 'GRAER');
   assert.equal(toggledMember.chiefId, 'u-1');
   assert.deepEqual(toggledMember.members, []);
 });
