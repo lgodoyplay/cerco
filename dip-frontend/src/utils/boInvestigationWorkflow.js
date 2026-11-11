@@ -549,7 +549,7 @@ export const isStepUnlocked = (step, workflow) => {
   return workflow.steps.slice(0, stepIndex).every((item) => item.status === 'concluida');
 };
 
-export const updateWorkflowStepDocument = (boId, workflow, stepNumber, documentId) => {
+export const updateWorkflowStepDocument = (boId, workflow, stepNumber, documentId, nextValue) => {
   if (!workflow || !boId) return workflow;
 
   const nextWorkflow = {
@@ -561,7 +561,7 @@ export const updateWorkflowStepDocument = (boId, workflow, stepNumber, documentI
         ...step,
         documents: (step.documents || []).map((document) => ({
           ...document,
-          uploaded: document.id === documentId ? !document.uploaded : document.uploaded
+          uploaded: document.id === documentId ? Boolean(nextValue ?? !document.uploaded) : document.uploaded
         }))
       };
     })

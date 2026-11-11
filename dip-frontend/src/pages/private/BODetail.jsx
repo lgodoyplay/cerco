@@ -46,6 +46,7 @@ const BODetail = ({ variant = 'default' }) => {
   const [newInvolvedRole, setNewInvolvedRole] = useState('');
   const [newDiligence, setNewDiligence] = useState('');
   const [newDiligencePlan, setNewDiligencePlan] = useState('');
+  const [stageAttachmentDrafts, setStageAttachmentDrafts] = useState({});
 
   const canManage = can('bo_manage');
 
@@ -174,10 +175,93 @@ const BODetail = ({ variant = 'default' }) => {
     setCurrentStepIndex((prev) => Math.min(prev + 1, (workflow.steps?.length || 1) - 1));
   };
 
-  const handleToggleDocument = (stepNumber, documentId) => {
+  const isYouTubeUrl = (value = '') => /(?:youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(value || '');
+
+  const handleToggleDocument = (stepNumber, documentId, nextValue) => {
     if (!bo?.id || !workflow) return;
-    const nextWorkflow = updateWorkflowStepDocument(bo.id, workflow, stepNumber, documentId);
+    const nextWorkflow = updateWorkflowStepDocument(bo.id, workflow, stepNumber, documentId, nextValue);
     setWorkflow(nextWorkflow);
+  };
+
+  const handleStageAttachmentFile = (stepNumber, file) => {
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setStageAttachmentDrafts((prev) => ({
+        ...prev,
+        [stepNumber]: {
+          ...(prev[stepNumber] || { label: '', url: '' }),
+          label: prev[stepNumber]?.label || file.name,
+          url: typeof reader.result === 'string' ? reader.result : '',
+          fileName: file.name
+        }
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveStageAttachment = (stepNumber) => {
+    if (!bo?.id || !workflow) return;
+
+    const draft = stageAttachmentDrafts[stepNumber] || {};
+    const url = String(draft.url || '').trim();
+    const label = String(draft.label || draft.fileName || '').trim();
+
+    if (!url) {
+      setNotification({ type: 'warning', message: 'Informe o link ou selecione o arquivo PDF/imagem antes de salvar.' });
+      return;
+    }
+
+    const nextWorkflow = {
+      ...workflow,
+      steps: workflow.steps.map((step) => {
+        if (step.number !== stepNumber) return step;
+
+        const nextDocuments = [
+          ...(step.documents || []),
+          {
+            id: `attachment-${Date.now()}`,
+            label: label || (isYouTubeUrl(url) ? 'Vídeo do YouTube' : 'Documento anexado'),
+            url,
+            fileName: draft.fileName || label || 'Anexo',
+            type: isYouTubeUrl(url) ? 'youtube' : 'file',
+            uploaded: true,
+            createdAt: new Date().toISOString()
+          }
+        ];
+
+        return {
+          ...step,
+          documents: nextDocuments,
+          notes: step.notes || `Prova registrada na etapa ${step.number}.`
+        };
+      })
+    };
+
+    const saved = saveWorkflowForBo(bo.id, nextWorkflow);
+    setWorkflow(saved || nextWorkflow);
+    setStageAttachmentDrafts((prev) => ({ ...prev, [stepNumber]: { label: '', url: '', fileName: '' } }));
+    setNotification({ type: 'success', message: 'Prova salva e marcada como concluída na etapa.' });
+  };
+
+  const handleRemoveStageAttachment = (stepNumber, documentId) => {
+    if (!bo?.id || !workflow) return;
+
+    const nextWorkflow = {
+      ...workflow,
+      steps: workflow.steps.map((step) => (
+        step.number !== stepNumber
+          ? step
+          : {
+              ...step,
+              documents: (step.documents || []).filter((document) => document.id !== documentId)
+            }
+      ))
+    };
+
+    const saved = saveWorkflowForBo(bo.id, nextWorkflow);
+    setWorkflow(saved || nextWorkflow);
   };
 
   const handleWorkflowNote = (stepNumber, value) => {
@@ -520,6 +604,110 @@ const BODetail = ({ variant = 'default' }) => {
                         </div>
 
                         <p className="text-sm text-slate-300 mb-4">{currentStep.description}</p>
+
+                        <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3 mb-4">
+                          <div className="flex items-center justify-between gap-3 mb-3">
+                            <div>
+                              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Provas e anexos da etapa</p>
+                              <p className="text-sm text-slate-300">Salve PDF, link ou vídeo e marque como concluído.</p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.2fr_1fr_auto] gap-3">
+                            <input
+                              type="text"
+                              value={stageAttachmentDrafts[currentStep.number]?.label || ''}
+                              onChange={(event) => setStageAttachmentDrafts((prev) => ({
+                                ...prev,
+                                [currentStep.number]: {
+                                  ...(prev[currentStep.number] || { label: '', url: '', fileName: '' }),
+                                  label: event.target.value
+                                }
+                              }))}
+                              placeholder="Nome da prova"
+                              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
+                            />
+                            <input
+                              type="url"
+                              value={stageAttachmentDrafts[currentStep.number]?.url || ''}
+                              onChange={(event) => setStageAttachmentDrafts((prev) => ({
+                                ...prev,
+                                [currentStep.number]: {
+                                  ...(prev[currentStep.number] || { label: '', url: '', fileName: '' }),
+                                  url: event.target.value
+                                }
+                              }))}
+                              placeholder="Link do PDF / YouTube / vídeo"
+                              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
+                            />
+                            <label className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-200 hover:border-federal-500">
+                              Arquivo
+                              <input
+                                type="file"
+                                accept=".pdf,image/*,video/*"
+                                onChange={(event) => handleStageAttachmentFile(currentStep.number, event.target.files?.[0])}
+                                className="hidden"
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => handleSaveStageAttachment(currentStep.number)}
+                              className="rounded-lg bg-federal-600 hover:bg-federal-500 px-3 py-2 text-xs font-bold text-white"
+                            >
+                              Salvar
+                            </button>
+                          </div>
+
+                          <div className="mt-3 space-y-2">
+                            {(currentStep.documents || []).length ? (
+                              currentStep.documents.map((document) => (
+                                <div key={document.id} className="rounded-lg border border-slate-700 bg-slate-950/70 p-3">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="inline-flex items-center rounded-full border border-federal-500/30 bg-federal-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.15em] text-federal-300">
+                                          {document.type === 'youtube' ? 'YouTube' : 'Arquivo'}
+                                        </span>
+                                        <span className="text-sm font-bold text-white truncate">{document.label || 'Prova da etapa'}</span>
+                                      </div>
+                                      {document.url && (
+                                        <a
+                                          href={document.url}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="inline-block text-xs text-sky-300 hover:text-sky-200 truncate max-w-full"
+                                        >
+                                          {document.url}
+                                        </a>
+                                      )}
+                                    </div>
+
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <label className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300">
+                                        <input
+                                          type="checkbox"
+                                          checked={Boolean(document.uploaded)}
+                                          onChange={() => handleToggleDocument(currentStep.number, document.id, !document.uploaded)}
+                                          className="h-4 w-4 accent-emerald-500"
+                                        />
+                                        Concluído
+                                      </label>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRemoveStageAttachment(currentStep.number, document.id)}
+                                        className="text-[10px] uppercase tracking-[0.15em] text-red-300 hover:text-red-200"
+                                      >
+                                        Remover
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-slate-500">Nenhuma prova salva nesta etapa ainda.</p>
+                            )}
+                          </div>
+                        </div>
 
                         {currentStep.number === 1 && (
                           <div className="space-y-3">
