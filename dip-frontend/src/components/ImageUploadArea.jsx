@@ -1,6 +1,22 @@
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
+import ImageCropperModal from './common/ImageCropperModal';
+
+const dataURLToFile = (dataURL, fileName = 'image.jpg') => {
+  const arr = dataURL.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+
+  return new File([u8arr], fileName, { type: mime, lastModified: Date.now() });
+};
 
 // ======================== VALIDAÇÃO ========================
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -52,6 +68,9 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState(null);
   const [warning, setWarning] = useState(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorImage, setEditorImage] = useState('');
+  const [pendingFile, setPendingFile] = useState(null);
   const inputRef = useRef(null);
 
   const handleDragOver = (e) => {
@@ -71,6 +90,15 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
     if (file && file.type.startsWith('image/')) {
       processSelectedFile(file);
     }
+  };
+
+  const closeEditor = () => {
+    if (editorImage.startsWith('blob:')) {
+      URL.revokeObjectURL(editorImage);
+    }
+    setEditorOpen(false);
+    setEditorImage('');
+    setPendingFile(null);
   };
 
   const processSelectedFile = (file) => {
@@ -95,14 +123,10 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
         height: img.naturalHeight || img.height,
       });
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onUpload(id, reader.result, file);
-      };
-      reader.onerror = () => {
-        setError('❌ Erro ao ler arquivo');
-      };
-      reader.readAsDataURL(file);
+      const objectUrl = URL.createObjectURL(file);
+      setPendingFile(file);
+      setEditorImage(objectUrl);
+      setEditorOpen(true);
     };
 
     img.onerror = () => {
@@ -110,6 +134,14 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
     };
 
     img.src = URL.createObjectURL(file);
+  };
+
+  const handleCropComplete = (croppedDataUrl) => {
+    if (!pendingFile) return;
+
+    const croppedFile = dataURLToFile(croppedDataUrl, pendingFile.name || 'image.jpg');
+    onUpload(id, croppedDataUrl, croppedFile);
+    closeEditor();
   };
 
   const handleChange = (e) => {
@@ -214,6 +246,15 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
           <span>Foto pendente</span>
         </div>
       )}
+
+      <ImageCropperModal
+        imageSrc={editorImage}
+        isOpen={editorOpen}
+        onClose={closeEditor}
+        onCropComplete={handleCropComplete}
+        aspect={aspect}
+        showPreview
+      />
     </div>
   );
 };

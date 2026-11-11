@@ -2,10 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { getAvatarPublicUrl } from '../lib/avatar';
 import { Camera, Loader2, User } from 'lucide-react';
+import ImageCropperModal from './common/ImageCropperModal';
+
+const dataURLToFile = (dataURL, fileName = 'avatar.jpg') => {
+  const arr = dataURL.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+
+  return new File([u8arr], fileName, { type: mime, lastModified: Date.now() });
+};
 
 const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorImage, setEditorImage] = useState('');
+  const [pendingFile, setPendingFile] = useState(null);
 
   useEffect(() => {
     if (url) downloadImage(url);
@@ -52,6 +71,23 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
     }
   };
 
+  const closeEditor = () => {
+    if (editorImage.startsWith('blob:')) {
+      URL.revokeObjectURL(editorImage);
+    }
+    setEditorOpen(false);
+    setEditorImage('');
+    setPendingFile(null);
+  };
+
+  const handleCropComplete = async (croppedImage) => {
+    if (!pendingFile) return;
+
+    const editedFile = dataURLToFile(croppedImage, pendingFile.name || 'avatar.jpg');
+    await uploadOriginalFile(editedFile);
+    closeEditor();
+  };
+
   const handleFileSelect = (event) => {
     if (!event.target.files || event.target.files.length === 0) {
       return;
@@ -60,12 +96,16 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
     const file = event.target.files[0];
     const img = new Image();
 
-    img.onload = async () => {
+    img.onload = () => {
       console.log('Dimensões originais do avatar:', {
         width: img.naturalWidth || img.width,
         height: img.naturalHeight || img.height,
       });
-      await uploadOriginalFile(file);
+
+      const objectUrl = URL.createObjectURL(file);
+      setPendingFile(file);
+      setEditorImage(objectUrl);
+      setEditorOpen(true);
     };
 
     img.onerror = () => {
@@ -123,6 +163,15 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
           />
         </div>
       )}
+
+      <ImageCropperModal
+        imageSrc={editorImage}
+        isOpen={editorOpen}
+        onClose={closeEditor}
+        onCropComplete={handleCropComplete}
+        aspect={1}
+        showPreview
+      />
     </div>
   );
 };

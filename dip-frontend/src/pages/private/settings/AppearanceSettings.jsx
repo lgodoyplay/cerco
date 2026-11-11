@@ -2,10 +2,29 @@ import React, { useState } from 'react';
 import { Palette, Upload, Moon, Sun, Check, Layout, Loader2 } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 import { supabase } from '../../../lib/supabase';
+import ImageCropperModal from '../../../components/common/ImageCropperModal';
+
+const dataURLToFile = (dataURL, fileName = 'logo.jpg') => {
+  const arr = dataURL.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+
+  return new File([u8arr], fileName, { type: mime, lastModified: Date.now() });
+};
 
 const AppearanceSettings = () => {
   const { appearance, updateAppearance, logAction } = useSettings();
   const [uploading, setUploading] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorImage, setEditorImage] = useState('');
+  const [pendingFile, setPendingFile] = useState(null);
 
   const colors = [
     { id: 'blue', name: 'Azul Federal', class: 'bg-blue-600' },
@@ -35,42 +54,63 @@ const AppearanceSettings = () => {
     logAction('Link do Discord atualizado na home');
   };
 
+  const closeEditor = () => {
+    if (editorImage.startsWith('blob:')) {
+      URL.revokeObjectURL(editorImage);
+    }
+    setEditorOpen(false);
+    setEditorImage('');
+    setPendingFile(null);
+  };
+
+  const handleLogoCropComplete = async (croppedDataUrl) => {
+    if (!pendingFile) return;
+
+    const croppedFile = dataURLToFile(croppedDataUrl, pendingFile.name || 'logo.jpg');
+
+    try {
+      setUploading(true);
+
+      const safeExt = (croppedFile.name?.split('.').pop() || 'png').toLowerCase();
+      const fileName = `system-logo-${Date.now()}.${safeExt}`;
+      const filePath = `system/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, croppedFile, { contentType: croppedFile.type || 'image/png' });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      updateAppearance({ ...appearance, logoUrl: publicUrl });
+      logAction('Nova logo do sistema carregada');
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      alert('Erro ao carregar logo. Verifique as permissões.');
+    } finally {
+      setUploading(false);
+      closeEditor();
+    }
+  };
+
   const handleLogoSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const img = new Image();
-    img.onload = async () => {
+    img.onload = () => {
       console.log('Dimensões originais da logo:', {
         width: img.naturalWidth || img.width,
         height: img.naturalHeight || img.height,
       });
 
-      try {
-        setUploading(true);
-
-        const safeExt = (file.name?.split('.').pop() || 'png').toLowerCase();
-        const fileName = `system-logo-${Date.now()}.${safeExt}`;
-        const filePath = `system/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(filePath, file, { contentType: file.type || 'image/png' });
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(filePath);
-
-        updateAppearance({ ...appearance, logoUrl: publicUrl });
-        logAction('Nova logo do sistema carregada');
-      } catch (error) {
-        console.error('Error uploading logo:', error);
-        alert('Erro ao carregar logo. Verifique as permissões.');
-      } finally {
-        setUploading(false);
-      }
+      const objectUrl = URL.createObjectURL(file);
+      setPendingFile(file);
+      setEditorImage(objectUrl);
+      setEditorOpen(true);
     };
 
     img.onerror = () => {
@@ -224,7 +264,15 @@ const AppearanceSettings = () => {
           </div>
         </section>
       </div>
-      
+
+      <ImageCropperModal
+        imageSrc={editorImage}
+        isOpen={editorOpen}
+        onClose={closeEditor}
+        onCropComplete={handleLogoCropComplete}
+        aspect={1}
+        showPreview
+      />
     </div>
   );
 };
