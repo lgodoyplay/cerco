@@ -1,49 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Camera, X } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
-import ImageCropperModal from '../../../components/common/ImageCropperModal';
 
 const PhotoUploader = ({ photos, setPhotos }) => {
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [tempImage, setTempImage] = useState(null);
-  const [originalFile, setOriginalFile] = useState(null);
-
-  const processFileForCrop = (file) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setTempImage(reader.result);
-      setOriginalFile(file);
-      setCropModalOpen(true);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-
-    // Process only the first file if multiple selected (since we need to crop one by one)
-    // Or iterate? Iterating with modal is hard. Let's process the first one for crop.
-    // Ideally we should allow selecting one by one.
-    const file = files[0];
-    processFileForCrop(file);
-    
-    // Reset input
-    e.target.value = '';
-  };
-
-  const handleCropComplete = async (croppedImageBase64) => {
+  const uploadOriginalFile = async (file) => {
     try {
-      // Upload cropped image
-      const res = await fetch(croppedImageBase64);
-      const blob = await res.blob();
-      const mimeType = blob.type || originalFile?.type || 'image/png';
-      const fileName = `${Date.now()}-${originalFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-      
-      const { data, error } = await supabase.storage
+      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+      const { error } = await supabase.storage
         .from('prf-evidence')
-        .upload(fileName, blob, {
-           contentType: mimeType
+        .upload(fileName, file, {
+          contentType: file.type || 'image/jpeg',
         });
 
       if (error) {
@@ -54,14 +20,33 @@ const PhotoUploader = ({ photos, setPhotos }) => {
         .from('prf-evidence')
         .getPublicUrl(fileName);
 
-      setPhotos([...photos, publicUrlData.publicUrl]);
-      setCropModalOpen(false);
-      setTempImage(null);
-      setOriginalFile(null);
+      setPhotos((prevPhotos) => [...prevPhotos, publicUrlData.publicUrl]);
     } catch (e) {
-      console.error('Error uploading cropped image:', e);
+      console.error('Error uploading image:', e);
       alert(`Erro ao enviar imagem: ${e.message}`);
     }
+  };
+
+  const handleUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    for (const file of files) {
+      if (file.type.startsWith('image/')) {
+        const img = new Image();
+        img.onload = () => {
+          console.log('Dimensões originais da foto:', {
+            width: img.naturalWidth || img.width,
+            height: img.naturalHeight || img.height,
+          });
+        };
+        img.src = URL.createObjectURL(file);
+
+        await uploadOriginalFile(file);
+      }
+    }
+
+    e.target.value = '';
   };
 
   const removePhoto = (index) => {
@@ -74,14 +59,6 @@ const PhotoUploader = ({ photos, setPhotos }) => {
     <div className="space-y-4">
         <label className="block text-sm font-medium text-slate-400">Fotos (Evidências/Estado do Veículo)</label>
         
-        <ImageCropperModal
-          isOpen={cropModalOpen}
-          onClose={() => setCropModalOpen(false)}
-          imageSrc={tempImage}
-          onCropComplete={handleCropComplete}
-          aspect={16/9} // Landscape for vehicle photos
-        />
-
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {photos.map((url, index) => (
                 <div key={index} className="relative aspect-video bg-slate-800 rounded-lg overflow-hidden group border border-slate-700">

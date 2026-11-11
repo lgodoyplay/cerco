@@ -2,14 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { getAvatarPublicUrl } from '../lib/avatar';
 import { Camera, Loader2, User } from 'lucide-react';
-import ImageCropperModal from './common/ImageCropperModal';
 
 const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [tempImage, setTempImage] = useState(null);
-  const [fileExt, setFileExt] = useState('jpg');
 
   useEffect(() => {
     if (url) downloadImage(url);
@@ -28,48 +24,24 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
     }
   };
 
-  const handleFileSelect = (event) => {
-    if (!event.target.files || event.target.files.length === 0) {
-      return;
-    }
-    const file = event.target.files[0];
-    const ext = file.name.split('.').pop();
-    setFileExt(ext);
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setTempImage(reader.result);
-      setCropModalOpen(true);
-    };
-    reader.readAsDataURL(file);
-    
-    // Reset input
-    event.target.value = '';
-  };
-
-  const handleCropComplete = async (croppedImageBase64) => {
+  const uploadOriginalFile = async (file) => {
     try {
-      setCropModalOpen(false);
       setUploading(true);
 
-      const res = await fetch(croppedImageBase64);
-      const blob = await res.blob();
-      const localPreviewUrl = URL.createObjectURL(blob);
-      setAvatarUrl(localPreviewUrl);
+      const safeExt = (file.name?.split('.').pop() || 'png').toLowerCase();
+      const mimeType = file.type || (safeExt === 'png' ? 'image/png' : 'image/jpeg');
+      const fileName = `${Date.now()}.${safeExt}`;
+      const filePath = fileName;
 
-      const safeExt = (fileExt || 'png').toLowerCase();
-      const mimeType = blob.type || (safeExt === 'png' ? 'image/png' : 'image/jpeg');
-      const file = new File([blob], `avatar.${safeExt}`, { type: mimeType });
-      const fileName = `${Math.random()}.${safeExt}`;
-      const filePath = `${fileName}`;
-
-      let { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { contentType: mimeType });
 
       if (uploadError) {
         throw uploadError;
       }
 
-      const uploadedUrl = getAvatarPublicUrl(filePath) || localPreviewUrl;
+      const uploadedUrl = getAvatarPublicUrl(filePath);
       setAvatarUrl(uploadedUrl);
       onUpload(uploadedUrl);
     } catch (error) {
@@ -78,6 +50,30 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleFileSelect = (event) => {
+    if (!event.target.files || event.target.files.length === 0) {
+      return;
+    }
+
+    const file = event.target.files[0];
+    const img = new Image();
+
+    img.onload = async () => {
+      console.log('Dimensões originais do avatar:', {
+        width: img.naturalWidth || img.width,
+        height: img.naturalHeight || img.height,
+      });
+      await uploadOriginalFile(file);
+    };
+
+    img.onerror = () => {
+      alert('Não foi possível ler a imagem original para enviar.');
+    };
+
+    img.src = URL.createObjectURL(file);
+    event.target.value = '';
   };
 
   return (
@@ -112,7 +108,7 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
             className="flex items-center gap-2 px-4 py-2 bg-federal-600 hover:bg-federal-500 text-white rounded-lg cursor-pointer transition-colors shadow-lg font-bold text-sm"
           >
             <Camera size={18} />
-            {uploading ? 'Enviando...' : 'Alterar Foto'}
+            {uploading ? 'Enviando...' : 'Enviar Foto'}
           </label>
           <input
             style={{
@@ -127,15 +123,6 @@ const AvatarUpload = ({ url, onUpload, size = 150, editable = true }) => {
           />
         </div>
       )}
-
-      {/* Modal de Recorte (Quadrado para Avatar) */}
-      <ImageCropperModal 
-        isOpen={cropModalOpen}
-        onClose={() => setCropModalOpen(false)}
-        imageSrc={tempImage}
-        onCropComplete={handleCropComplete}
-        aspect={1}
-      />
     </div>
   );
 };

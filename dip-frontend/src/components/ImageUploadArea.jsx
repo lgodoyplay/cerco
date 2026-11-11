@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
-import ImageCropperModal from './common/ImageCropperModal';
 
 // ======================== VALIDAÇÃO ========================
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -51,9 +50,6 @@ const validateImageDimensions = (img) => {
 // ======================== COMPONENT ========================
 const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = false, aspect = 4/3 }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [tempImage, setTempImage] = useState(null);
-  const [originalFile, setOriginalFile] = useState(null);
   const [error, setError] = useState(null);
   const [warning, setWarning] = useState(null);
   const inputRef = useRef(null);
@@ -73,81 +69,54 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) {
-      processFileForCrop(file);
+      processSelectedFile(file);
     }
   };
 
-  const processFileForCrop = (file) => {
+  const processSelectedFile = (file) => {
     setError(null);
     setWarning(null);
 
-    // Validar arquivo
     const validationErrors = validateImage(file);
     if (validationErrors.length > 0) {
       setError(validationErrors.join('\n'));
       return;
     }
 
-    // Validar dimensões
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const img = new Image();
-      img.onload = () => {
-        const dimErrors = validateImageDimensions(img);
-        if (dimErrors.length > 0) {
-          setWarning(dimErrors.join('\n'));
-        }
+    const img = new Image();
+    img.onload = () => {
+      const dimErrors = validateImageDimensions(img);
+      if (dimErrors.length > 0) {
+        setWarning(dimErrors.join('\n'));
+      }
 
-        setTempImage(reader.result);
-        setOriginalFile(file);
-        setCropModalOpen(true);
-      };
-      img.onerror = () => {
-        setError('❌ Erro ao carregar imagem');
-      };
-      img.src = reader.result;
-    };
-    reader.onerror = () => {
-      setError('❌ Erro ao ler arquivo');
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleCropComplete = async (croppedImageBase64) => {
-    try {
-      const res = await fetch(croppedImageBase64);
-      const blob = await res.blob();
-      const mimeType = normalizeImageMimeType({
-        type: blob.type || originalFile?.type || 'image/png',
-        name: originalFile?.name || 'upload-image'
+      console.log('Dimensões originais da imagem:', {
+        width: img.naturalWidth || img.width,
+        height: img.naturalHeight || img.height,
       });
-      const safeName = (originalFile?.name || 'upload-image')
-        .replace(/\.[^/.]+$/, '')
-        .replace(/[^a-zA-Z0-9-_]+/g, '_') || 'upload-image';
-      const extension = mimeType === 'image/png' ? '.png' : mimeType === 'image/webp' ? '.webp' : '.jpg';
-      const file = new File([blob], `${safeName}${extension}`, { type: mimeType });
 
-      setError(null);
-      setWarning(null);
-      onUpload(id, croppedImageBase64, file);
-      setCropModalOpen(false);
-      setTempImage(null);
-      setOriginalFile(null);
-    } catch (e) {
-      console.error("❌ Erro ao processar imagem cortada", e);
-      setError('Erro ao processar imagem. Tente novamente.');
-      // Fallback to original if something fails
-      onUpload(id, tempImage, originalFile);
-      setCropModalOpen(false);
-    }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        onUpload(id, reader.result, file);
+      };
+      reader.onerror = () => {
+        setError('❌ Erro ao ler arquivo');
+      };
+      reader.readAsDataURL(file);
+    };
+
+    img.onerror = () => {
+      setError('❌ Erro ao carregar imagem');
+    };
+
+    img.src = URL.createObjectURL(file);
   };
 
   const handleChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      processFileForCrop(file);
+      processSelectedFile(file);
     }
-    // Reset value to allow selecting same file again
     e.target.value = '';
   };
 
@@ -237,15 +206,6 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
           </div>
         )}
       </div>
-      
-      {/* Modal de Recorte */}
-      <ImageCropperModal 
-        isOpen={cropModalOpen}
-        onClose={() => setCropModalOpen(false)}
-        imageSrc={tempImage}
-        onCropComplete={handleCropComplete}
-        aspect={aspect}
-      />
       
       {/* Validation Status */}
       {!image && required && (

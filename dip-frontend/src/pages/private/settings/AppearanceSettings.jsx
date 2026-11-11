@@ -2,14 +2,10 @@ import React, { useState } from 'react';
 import { Palette, Upload, Moon, Sun, Check, Layout, Loader2 } from 'lucide-react';
 import { useSettings } from '../../../hooks/useSettings';
 import { supabase } from '../../../lib/supabase';
-import ImageCropperModal from '../../../components/common/ImageCropperModal';
 
 const AppearanceSettings = () => {
   const { appearance, updateAppearance, logAction } = useSettings();
   const [uploading, setUploading] = useState(false);
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [tempImage, setTempImage] = useState(null);
-  const [fileExt, setFileExt] = useState('png');
 
   const colors = [
     { id: 'blue', name: 'Azul Federal', class: 'bg-blue-600' },
@@ -40,50 +36,49 @@ const AppearanceSettings = () => {
   };
 
   const handleLogoSelect = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
-    
-    const ext = file.name.split('.').pop();
-    setFileExt(ext);
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setTempImage(reader.result);
-      setCropModalOpen(true);
+    const img = new Image();
+    img.onload = async () => {
+      console.log('Dimensões originais da logo:', {
+        width: img.naturalWidth || img.width,
+        height: img.naturalHeight || img.height,
+      });
+
+      try {
+        setUploading(true);
+
+        const safeExt = (file.name?.split('.').pop() || 'png').toLowerCase();
+        const fileName = `system-logo-${Date.now()}.${safeExt}`;
+        const filePath = `system/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, file, { contentType: file.type || 'image/png' });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(filePath);
+
+        updateAppearance({ ...appearance, logoUrl: publicUrl });
+        logAction('Nova logo do sistema carregada');
+      } catch (error) {
+        console.error('Error uploading logo:', error);
+        alert('Erro ao carregar logo. Verifique as permissões.');
+      } finally {
+        setUploading(false);
+      }
     };
-    reader.readAsDataURL(file);
+
+    img.onerror = () => {
+      alert('Não foi possível ler a imagem original da logo.');
+    };
+
+    img.src = URL.createObjectURL(file);
     e.target.value = '';
-  };
-
-  const handleCropComplete = async (croppedImageBase64) => {
-    try {
-      setUploading(true);
-      setCropModalOpen(false);
-      
-      const res = await fetch(croppedImageBase64);
-      const blob = await res.blob();
-      const fileName = `system-logo-${Date.now()}.${fileExt}`;
-      const file = new File([blob], fileName, { type: blob.type });
-      const filePath = `system/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      updateAppearance({ ...appearance, logoUrl: publicUrl });
-      logAction('Nova logo do sistema carregada');
-    } catch (error) {
-      console.error('Error uploading logo:', error);
-      alert('Erro ao carregar logo. Verifique as permissões.');
-    } finally {
-      setUploading(false);
-    }
   };
 
   return (
@@ -230,14 +225,6 @@ const AppearanceSettings = () => {
         </section>
       </div>
       
-      {/* Modal de Recorte para Logo (Aspecto Livre ou 1:1) */}
-      <ImageCropperModal 
-        isOpen={cropModalOpen}
-        onClose={() => setCropModalOpen(false)}
-        imageSrc={tempImage}
-        onCropComplete={handleCropComplete}
-        aspect={1} 
-      />
     </div>
   );
 };
