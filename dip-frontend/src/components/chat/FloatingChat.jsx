@@ -68,12 +68,12 @@ const FloatingChat = () => {
       <button
         type="button"
         onClick={toggleChat}
-        className="relative flex h-14 w-14 items-center justify-center rounded-full border border-slate-700 bg-slate-900/95 text-white shadow-2xl shadow-black/40 transition hover:scale-105 hover:bg-slate-800"
+        className="relative flex h-14 w-14 items-center justify-center overflow-visible rounded-full border border-slate-700 bg-slate-900/95 text-white shadow-2xl shadow-black/40 transition hover:scale-105 hover:bg-slate-800"
         aria-label="Abrir chat geral"
       >
         <MessageCircleMore size={24} />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-lg shadow-red-950/50">
+          <span className="pointer-events-none absolute -right-1.5 -top-1.5 z-20 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-lg shadow-red-950/50 ring-2 ring-slate-900">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
