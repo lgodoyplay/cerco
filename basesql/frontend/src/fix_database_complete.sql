@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
 );
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view their own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can view personal and global notifications" ON public.notifications;
 CREATE POLICY "Users can view personal and global notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id OR user_id IS NULL);
 DROP POLICY IF EXISTS "Users can insert notifications for themselves or global" ON public.notifications;
 CREATE POLICY "Users can insert notifications for themselves or global" ON public.notifications FOR INSERT WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
@@ -142,6 +143,7 @@ AS $$
   );
 $$;
 
+ALTER FUNCTION public.is_admin_for_chat_delete OWNER TO postgres;
 GRANT EXECUTE ON FUNCTION public.is_admin_for_chat_delete() TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.delete_global_chat_message(message_id uuid)
@@ -169,6 +171,7 @@ BEGIN
 END;
 $$;
 
+ALTER FUNCTION public.delete_global_chat_message OWNER TO postgres;
 GRANT EXECUTE ON FUNCTION public.delete_global_chat_message(uuid) TO authenticated;
 
 DROP POLICY IF EXISTS "Global chat read for authenticated users" ON public.global_chat_messages;

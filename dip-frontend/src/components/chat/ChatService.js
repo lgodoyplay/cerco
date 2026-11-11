@@ -194,24 +194,29 @@ export const chatService = {
     const canDeleteThisMessage = canDeleteAnyMessage || isAdminDeleteCandidate(currentUser, false);
 
     try {
-      const rpcCall = async () => supabase.rpc('delete_global_chat_message', { message_id: messageId });
+      let rpcError = null;
       if (canDeleteThisMessage || currentUser?.id) {
-        const { data, error } = await rpcCall();
+        const { data, error } = await supabase.rpc('delete_global_chat_message', { message_id: messageId });
 
         if (!error) {
           return Boolean(data);
         }
 
+        rpcError = error;
         const errorMessage = String(error?.message || '').toLowerCase();
-        const shouldFallbackToManualDelete = (
-          error?.code === '42883'
+        const shouldAttemptDirectDelete = (
+          error?.code === '42501'
+          || error?.code === '42883'
           || error?.code === 'PGRST301'
+          || error?.code === 'PGRST116'
+          || errorMessage.includes('permission denied')
           || errorMessage.includes('does not exist')
           || errorMessage.includes('function')
           || errorMessage.includes('not found')
+          || errorMessage.includes('row level security')
         );
 
-        if (!shouldFallbackToManualDelete) {
+        if (!shouldAttemptDirectDelete) {
           console.warn('Chat: erro ao apagar mensagem via RPC', error);
           return false;
         }
@@ -230,7 +235,7 @@ export const chatService = {
           console.info('Chat: tabela ainda não existe no banco; não foi possível excluir a mensagem.');
           return false;
         }
-        console.warn('Chat: erro ao apagar mensagem', error);
+        console.warn('Chat: erro ao apagar mensagem via delete direto', error, { rpcError });
         return false;
       }
 

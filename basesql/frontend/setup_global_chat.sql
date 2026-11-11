@@ -32,6 +32,7 @@ AS $$
   );
 $$;
 
+ALTER FUNCTION public.is_admin_for_chat_delete OWNER TO postgres;
 GRANT EXECUTE ON FUNCTION public.is_admin_for_chat_delete() TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.delete_global_chat_message(message_id uuid)
@@ -59,6 +60,7 @@ BEGIN
 END;
 $$;
 
+ALTER FUNCTION public.delete_global_chat_message OWNER TO postgres;
 GRANT EXECUTE ON FUNCTION public.delete_global_chat_message(uuid) TO authenticated;
 
 DROP POLICY IF EXISTS "Global chat read for authenticated users" ON public.global_chat_messages;
