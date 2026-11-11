@@ -21,7 +21,6 @@ const UsersSettings = () => {
     password: '',
     passport_id: '',
     role: 'Aluno',
-    permissions: [],
     avatar_url: null
   });
 
@@ -38,41 +37,6 @@ const UsersSettings = () => {
   const [anpStages, setAnpStages] = useState([]);
   const [userANPProgress, setUserANPProgress] = useState({});
   const [loadingANP, setLoadingANP] = useState(false);
-
-  const permissionModules = [
-    { id: 'judiciary', label: 'Jurídico' },
-    { id: 'arrest', label: 'Prisões' },
-    { id: 'wanted', label: 'Procurados' },
-    { id: 'bo', label: 'Boletins de Ocorrência' },
-    { id: 'protective_measures', label: 'Medida Protetiva' },
-    { id: 'exonerations', label: 'Exoneração' },
-    { id: 'integration', label: 'Integração' },
-    { id: 'reports', label: 'Denúncias' },
-    { id: 'investigations', label: 'Investigações' },
-    { id: 'forensics', label: 'Perícias' },
-    { id: 'weapons', label: 'Porte de Armas' },
-    { id: 'logistics', label: 'Logística' },
-    { id: 'communication', label: 'Comunicação' },
-    { id: 'revenue', label: 'Receita' },
-    { id: 'pm', label: 'Integração PM' },
-    { id: 'laudos', label: 'Laudos Médicos' },
-    { id: 'lawyer', label: 'Advogados' },
-    { id: 'courses', label: 'Cursos/Ensino' },
-    { id: 'anp', label: 'Gestão ANP' },
-    { id: 'alvaras', label: 'Alvarás' },
-    { id: 'news', label: 'Notícias' },
-    { id: 'settings', label: 'Configurações' },
-    { id: 'warnings', label: 'Advertências' },
-    { id: 'forms', label: 'Formulários' },
-    { id: 'exams', label: 'Resultados de Prova' },
-    { id: 'templates', label: 'Modelos de Documentos' },
-    { id: 'corporation', label: 'Estrutura da Corporação' },
-    { id: 'appearance', label: 'Aparência' },
-    { id: 'security', label: 'Segurança' },
-    { id: 'backup', label: 'Backup & Dados' },
-    { id: 'health', label: 'Diagnóstico do Sistema' },
-    { id: 'logs', label: 'Logs do Sistema' },
-  ];
 
   // Carregar cursos disponíveis quando abrir modal
   useEffect(() => {
@@ -144,7 +108,6 @@ const UsersSettings = () => {
         password: '',
         passport_id: user.passport_id || '', 
         role: user.role,
-        permissions: user.permissions,
         avatar_url: user.avatar_url
       });
       setNewEmail(''); // Reset email field
@@ -157,7 +120,6 @@ const UsersSettings = () => {
         password: '',
         passport_id: '',
         role: 'Aluno',
-        permissions: ['communication_view', 'logistics_view'],
         avatar_url: null
       });
       setUserCourses([]);
@@ -205,15 +167,6 @@ const UsersSettings = () => {
     } finally {
       setUpdatingEmail(false);
     }
-  };
-
-  const togglePermission = (permId) => {
-    setFormData(prev => ({
-      ...prev,
-      permissions: prev.permissions.includes(permId) 
-        ? prev.permissions.filter(p => p !== permId)
-        : [...prev.permissions, permId]
-    }));
   };
 
   const handleAddCourseToUser = async () => {
@@ -542,51 +495,6 @@ const UsersSettings = () => {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase mb-2 block">Permissões de Acesso</label>
-                      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                        {permissionModules.map(module => (
-                          <div key={module.id} className="bg-slate-950 border border-slate-800 rounded-lg p-3">
-                            <div className="text-sm font-bold text-slate-300 mb-2 border-b border-slate-800 pb-1">{module.label}</div>
-                            <div className="grid grid-cols-2 gap-3">
-                                {/* View Permission */}
-                                <label className="flex items-center gap-2 cursor-pointer group select-none">
-                                    <div className={clsx(
-                                    "w-4 h-4 rounded border flex items-center justify-center transition-colors",
-                                    formData.permissions.includes(`${module.id}_view`) ? "bg-federal-500 border-federal-500" : "border-slate-600 group-hover:border-slate-500"
-                                    )}>
-                                    {formData.permissions.includes(`${module.id}_view`) && <Check size={12} className="text-white" />}
-                                    </div>
-                                    <input 
-                                    type="checkbox" 
-                                    className="hidden"
-                                    checked={formData.permissions.includes(`${module.id}_view`)}
-                                    onChange={() => togglePermission(`${module.id}_view`)}
-                                    />
-                                    <span className="text-sm text-slate-400 group-hover:text-slate-300">Consultar</span>
-                                </label>
-
-                                {/* Manage Permission */}
-                                <label className="flex items-center gap-2 cursor-pointer group select-none">
-                                    <div className={clsx(
-                                    "w-4 h-4 rounded border flex items-center justify-center transition-colors",
-                                    formData.permissions.includes(`${module.id}_manage`) ? "bg-federal-500 border-federal-500" : "border-slate-600 group-hover:border-slate-500"
-                                    )}>
-                                    {formData.permissions.includes(`${module.id}_manage`) && <Check size={12} className="text-white" />}
-                                    </div>
-                                    <input 
-                                    type="checkbox" 
-                                    className="hidden"
-                                    checked={formData.permissions.includes(`${module.id}_manage`)}
-                                    onChange={() => togglePermission(`${module.id}_manage`)}
-                                    />
-                                    <span className="text-sm text-slate-400 group-hover:text-slate-300">Gerenciar</span>
-                                </label>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                 </form>
               ) : activeTab === 'courses' ? (
                 <div className="space-y-6">

@@ -362,11 +362,7 @@ export const SettingsProvider = ({ children }) => {
     try {
       console.log('Adding user with data:', userData);
       
-      // Force default permissions for Aluno if not specified
-      let permissionsToSave = userData.permissions || [];
-      if (userData.role === 'Aluno' && permissionsToSave.length === 0) {
-          permissionsToSave = ['communication_view', 'logistics_view'];
-      }
+      const permissionsToSave = [];
 
       const payload = {
         p_email: userData.username,
@@ -401,7 +397,7 @@ export const SettingsProvider = ({ children }) => {
         .update({
             full_name: userData.name,
             role: userData.role,
-            permissions: userData.permissions, // Salva as permissões
+            permissions: [],
             avatar_url: userData.avatar_url,
             passport_id: userData.passport_id
         })

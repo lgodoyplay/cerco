@@ -170,20 +170,28 @@ export const usePermissions = () => {
       const title = normalizeRoleName(role.title || role.name);
       return title === normalizedUserRole;
     });
+
     const rolePermissionSet = getRolePermissionSet(roleConfig);
-    const staticRolePermissions = LEGACY_ROLE_PERMISSIONS[user.role] || LEGACY_ROLE_PERMISSIONS[Object.keys(LEGACY_ROLE_PERMISSIONS).find((roleName) => normalizeRoleName(roleName) === normalizedUserRole)] || [];
+    const legacyRolePermissions = LEGACY_ROLE_PERMISSIONS[user.role] || LEGACY_ROLE_PERMISSIONS[Object.keys(LEGACY_ROLE_PERMISSIONS).find((roleName) => normalizeRoleName(roleName) === normalizedUserRole)] || [];
     const userPermissions = Array.isArray(user.permissions) ? user.permissions : [];
+
+    const roleHasExplicitConfig = Boolean(roleConfig && (
+      Array.isArray(roleConfig.permissions) ||
+      Array.isArray(roleConfig.permissionGroups)
+    ));
 
     const hasAdminPermission =
       rolePermissionSet.has(PERMISSIONS.ADMIN_ACCESS) ||
-      userPermissions.includes(PERMISSIONS.ADMIN_ACCESS) ||
-      staticRolePermissions.includes(PERMISSIONS.ADMIN_ACCESS);
+      (!roleHasExplicitConfig && (userPermissions.includes(PERMISSIONS.ADMIN_ACCESS) || legacyRolePermissions.includes(PERMISSIONS.ADMIN_ACCESS)));
 
     if (hasAdminPermission) return true;
 
+    if (roleHasExplicitConfig) {
+      return rolePermissionSet.has(normalizedPermission);
+    }
+
     return (
-      staticRolePermissions.includes(normalizedPermission) ||
-      rolePermissionSet.has(normalizedPermission) ||
+      legacyRolePermissions.includes(normalizedPermission) ||
       userPermissions.includes(normalizedPermission)
     );
   }, [roles, user?.role, user?.permissions]);
