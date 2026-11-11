@@ -194,6 +194,29 @@ export const chatService = {
     const canDeleteThisMessage = canDeleteAnyMessage || isAdminDeleteCandidate(currentUser, false);
 
     try {
+      const rpcCall = async () => supabase.rpc('delete_global_chat_message', { message_id: messageId });
+      if (canDeleteThisMessage || currentUser?.id) {
+        const { data, error } = await rpcCall();
+
+        if (!error) {
+          return Boolean(data);
+        }
+
+        const errorMessage = String(error?.message || '').toLowerCase();
+        const shouldFallbackToManualDelete = (
+          error?.code === '42883'
+          || error?.code === 'PGRST301'
+          || errorMessage.includes('does not exist')
+          || errorMessage.includes('function')
+          || errorMessage.includes('not found')
+        );
+
+        if (!shouldFallbackToManualDelete) {
+          console.warn('Chat: erro ao apagar mensagem via RPC', error);
+          return false;
+        }
+      }
+
       let query = supabase.from(CHAT_TABLE).delete().eq('id', messageId);
 
       if (!canDeleteThisMessage) {

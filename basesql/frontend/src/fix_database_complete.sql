@@ -124,6 +124,53 @@ CREATE TABLE IF NOT EXISTS public.global_chat_messages (
 ALTER TABLE public.global_chat_messages
   ADD COLUMN IF NOT EXISTS user_role_color TEXT;
 ALTER TABLE public.global_chat_messages ENABLE ROW LEVEL SECURITY;
+
+CREATE OR REPLACE FUNCTION public.is_admin_for_chat_delete()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.profiles p
+    WHERE p.id = auth.uid()
+      AND (
+        lower(COALESCE(p.role, '')) ~ '(admin|administrador|administradora|diretor|diretora|comandante|superuser|developer)'
+        OR lower(COALESCE(p.permissions::text, '')) ~ '(admin_access|admin|superuser|developer|diretor|comandante)'
+      )
+  );
+$$;
+
+GRANT EXECUTE ON FUNCTION public.is_admin_for_chat_delete() TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.delete_global_chat_message(message_id uuid)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+DECLARE
+  deleted_count integer := 0;
+BEGIN
+  IF message_id IS NULL THEN
+    RETURN false;
+  END IF;
+
+  DELETE FROM public.global_chat_messages AS gcm
+  WHERE gcm.id = message_id
+    AND (
+      gcm.user_id = auth.uid()
+      OR public.is_admin_for_chat_delete()
+    );
+
+  GET DIAGNOSTICS deleted_count = ROW_COUNT;
+  RETURN deleted_count > 0;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.delete_global_chat_message(uuid) TO authenticated;
+
 DROP POLICY IF EXISTS "Global chat read for authenticated users" ON public.global_chat_messages;
 CREATE POLICY "Global chat read for authenticated users"
   ON public.global_chat_messages
@@ -144,21 +191,7 @@ CREATE POLICY "Global chat delete for authenticated users"
   TO authenticated
   USING (
     auth.uid() = user_id
-    OR EXISTS (
-      SELECT 1
-      FROM public.profiles p
-      WHERE p.id = auth.uid()
-        AND (
-          lower(COALESCE(p.role, '')) LIKE '%admin%'
-          OR lower(COALESCE(p.role, '')) LIKE '%diretor%'
-          OR lower(COALESCE(p.role, '')) LIKE '%comandante%'
-          OR lower(COALESCE(p.role, '')) LIKE '%superuser%'
-          OR lower(COALESCE(p.role, '')) LIKE '%developer%'
-          OR lower(COALESCE(p.permissions::text, '')) LIKE '%admin_access%'
-          OR lower(COALESCE(p.permissions::text, '')) LIKE '%superuser%'
-          OR lower(COALESCE(p.permissions::text, '')) LIKE '%developer%'
-        )
-    )
+    OR public.is_admin_for_chat_delete()
   );
 
 -- 3. CORREÇÃO DA FUNÇÃO DE RESET (RPC)
