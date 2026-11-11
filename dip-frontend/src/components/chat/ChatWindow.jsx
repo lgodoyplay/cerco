@@ -4,6 +4,7 @@ import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { chatService } from './ChatService';
 import { getAvatarPublicUrl } from '../../lib/avatar';
+import { PERMISSIONS, usePermissions } from '../../hooks/usePermissions';
 
 const createUniqueId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
@@ -16,9 +17,11 @@ const makeConversationItem = (id, name, avatarUrl, muted = false) => ({
 });
 
 const ChatWindow = ({ user, isOpen, onClose, minimized, onToggleMinimized, onUnreadChange }) => {
+  const { can } = usePermissions();
   const [messages, setMessages] = useState([]);
   const [groupMessages, setGroupMessages] = useState({});
   const normalizedUserAvatar = getAvatarPublicUrl(user?.avatar_url || user?.avatar || null) || user?.avatar_url || user?.avatar || null;
+  const canDeleteAnyChatMessage = can(PERMISSIONS.ADMIN_ACCESS);
   const [conversations, setConversations] = useState([
     makeConversationItem('general', 'Chat Geral', normalizedUserAvatar, false),
   ]);
@@ -171,7 +174,7 @@ const ChatWindow = ({ user, isOpen, onClose, minimized, onToggleMinimized, onUnr
     if (!messageId) return;
 
     if (selectedConversationId === 'general') {
-      const ok = await chatService.deleteMessage(messageId, user);
+      const ok = await chatService.deleteMessage(messageId, user, canDeleteAnyChatMessage);
       if (ok) {
         setMessages((prev) => prev.filter((message) => message.id !== messageId));
       }
@@ -317,7 +320,7 @@ const ChatWindow = ({ user, isOpen, onClose, minimized, onToggleMinimized, onUnr
                 key={message.id}
                 message={message}
                 isCurrentUser={message.isCurrentUser || message.user_id === user?.id}
-                onDelete={message.user_id === user?.id ? handleDeleteMessage : undefined}
+                onDelete={(message.user_id === user?.id || canDeleteAnyChatMessage) ? handleDeleteMessage : undefined}
               />
             ))}
             <div ref={bottomRef} />

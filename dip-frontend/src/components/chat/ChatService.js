@@ -122,15 +122,17 @@ export const chatService = {
     }
   },
 
-  async deleteMessage(messageId, currentUser) {
+  async deleteMessage(messageId, currentUser, canDeleteAnyMessage = false) {
     if (!messageId) return false;
 
     try {
-      const { error } = await supabase
-        .from(CHAT_TABLE)
-        .delete()
-        .eq('id', messageId)
-        .eq('user_id', currentUser?.id || '');
+      let query = supabase.from(CHAT_TABLE).delete().eq('id', messageId);
+
+      if (!canDeleteAnyMessage) {
+        query = query.eq('user_id', currentUser?.id || '');
+      }
+
+      const { error } = await query;
 
       if (error) {
         if (isMissingTableError(error)) {
