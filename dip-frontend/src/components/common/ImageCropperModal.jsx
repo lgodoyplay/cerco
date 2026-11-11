@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Cropper from 'react-easy-crop';
 import { X, Check, ZoomIn, ZoomOut, RotateCw, Square, LayoutTemplate, RectangleVertical, RectangleHorizontal, ScanLine, Undo2, Eye } from 'lucide-react';
 import getCroppedImg from '../../utils/cropUtils';
@@ -38,6 +38,7 @@ const ImageCropperModal = ({
     } = useImageCropper(initialAspect);
 
     const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+    const lastOpenedImageRef = useRef(null);
 
     const normalizeCropPixels = useCallback((pixels) => {
         if (!pixels || typeof pixels.width !== 'number' || typeof pixels.height !== 'number') {
@@ -143,7 +144,13 @@ const ImageCropperModal = ({
     }, [imageSrc, setCroppedAreaPixels]);
 
     useEffect(() => {
-        if (isOpen && imageSrc) {
+        if (!isOpen || !imageSrc) {
+            lastOpenedImageRef.current = null;
+            return;
+        }
+
+        if (lastOpenedImageRef.current !== imageSrc) {
+            lastOpenedImageRef.current = imageSrc;
             reset();
             setZoom(1);
             setRotation(0);
@@ -158,8 +165,7 @@ const ImageCropperModal = ({
     }, [imageDimensions, croppedAreaPixels, setCroppedAreaPixels]);
 
     const handleSave = async () => {
-        if (!croppedAreaPixels) {
-            alert('Selecione uma área para cortar');
+        if (!croppedAreaPixels || isProcessing) {
             return;
         }
 
@@ -170,7 +176,7 @@ const ImageCropperModal = ({
                 croppedAreaPixels,
                 rotation
             );
-            onCropComplete(croppedImage);
+            await onCropComplete(croppedImage);
             onClose();
         } catch (e) {
             console.error('Erro ao cortar imagem:', e);

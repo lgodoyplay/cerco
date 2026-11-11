@@ -6,6 +6,7 @@ import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useNavigate, useParams } from 'react-router-dom';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
+import { ensureWorkflowForBo } from '../../utils/boInvestigationWorkflow';
 
 const createPersonEntry = () => ({ name: '', passport: '' });
 
@@ -370,6 +371,7 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
 
       // Log action
       logAction(id ? 'UPDATE_BO' : 'CREATE_BO', resourceName, newBO.id, null, newBO);
+      ensureWorkflowForBo(newBO.id, newBO);
 
       // Send Discord Notification
       if (discordConfig?.bulletinsWebhook) {
