@@ -10,12 +10,30 @@ const DEFAULT_CORPORATION = {
 };
 
 const DEFAULT_ROLES = [
-  { id: 1, title: 'Diretor Geral', hierarchy: 1 },
-  { id: 2, title: 'Coordenador', hierarchy: 2 },
-  { id: 3, title: 'Escrivão', hierarchy: 3 },
-  { id: 4, title: 'Agente', hierarchy: 4 },
-  { id: 5, title: 'Aluno', hierarchy: 5 },
+  { id: 1, title: 'Diretor Geral', hierarchy: 1, kind: 'main', category: 'main', isThirdParty: false, permissions: [] },
+  { id: 2, title: 'Coordenador', hierarchy: 2, kind: 'main', category: 'main', isThirdParty: false, permissions: [] },
+  { id: 3, title: 'Escrivão', hierarchy: 3, kind: 'main', category: 'main', isThirdParty: false, permissions: [] },
+  { id: 4, title: 'Agente', hierarchy: 4, kind: 'main', category: 'main', isThirdParty: false, permissions: [] },
+  { id: 5, title: 'Aluno', hierarchy: 5, kind: 'main', category: 'main', isThirdParty: false, permissions: [] },
 ];
+
+const ROLE_STORAGE_KEY = 'cerco_roles_settings';
+
+const getPersistedRoles = () => {
+  try {
+    const rawValue = localStorage.getItem(ROLE_STORAGE_KEY);
+    if (!rawValue) return DEFAULT_ROLES;
+
+    const parsed = JSON.parse(rawValue);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed;
+    }
+  } catch (error) {
+    console.warn('Não foi possível ler cargos persistidos no navegador:', error);
+  }
+
+  return DEFAULT_ROLES;
+};
 
 const DEFAULT_APPEARANCE = {
   theme: 'dark',
@@ -56,8 +74,8 @@ export const SettingsProvider = ({ children }) => {
   // Corporation Structure State (Supabase)
   const [corporation, setCorporation] = useState(DEFAULT_CORPORATION);
 
-  // Roles State (Supabase)
-  const [roles, setRoles] = useState(DEFAULT_ROLES);
+  // Roles State (Supabase + local fallback to avoid losing permissions on redeploy)
+  const [roles, setRoles] = useState(() => getPersistedRoles());
 
   // Templates State (Supabase)
   const [templates, setTemplates] = useState(null);
@@ -94,7 +112,12 @@ export const SettingsProvider = ({ children }) => {
         if (corpSetting) setCorporation(corpSetting.value);
 
         const rolesSetting = data.find(s => s.key === 'roles');
-        if (rolesSetting) setRoles(rolesSetting.value);
+        const persistedRoles = getPersistedRoles();
+        if (rolesSetting && Array.isArray(rolesSetting.value) && rolesSetting.value.length > 0) {
+          setRoles(rolesSetting.value);
+        } else if (Array.isArray(persistedRoles) && persistedRoles.length > 0) {
+          setRoles(persistedRoles);
+        }
 
         const templatesSetting = data.find(s => s.key === 'templates');
         if (templatesSetting) setTemplates(templatesSetting.value);
@@ -208,6 +231,12 @@ export const SettingsProvider = ({ children }) => {
       throw error;
     }
   }, []);
+
+  useEffect(() => {
+    if (Array.isArray(roles) && roles.length > 0) {
+      localStorage.setItem(ROLE_STORAGE_KEY, JSON.stringify(roles));
+    }
+  }, [roles]);
 
   // Fetch Users
   const fetchUsers = useCallback(async () => {
@@ -332,6 +361,10 @@ export const SettingsProvider = ({ children }) => {
 
   const saveSetting = async (key, value) => {
     try {
+      if (key === 'roles' && Array.isArray(value)) {
+        localStorage.setItem(ROLE_STORAGE_KEY, JSON.stringify(value));
+      }
+
       const { error } = await supabase
         .from('system_settings')
         .upsert({ key, value });
