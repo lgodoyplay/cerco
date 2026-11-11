@@ -136,12 +136,19 @@ const RegisterWanted = () => {
 
   const dataURLtoBlob = (dataurl) => {
     if (!dataurl) return null;
-    let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-    while(n--){
-        u8arr[n] = bstr.charCodeAt(n);
+
+    const match = dataurl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/i);
+    const mime = match ? (match[1].toLowerCase() === 'image/jpg' ? 'image/jpeg' : match[1].toLowerCase()) : 'image/jpeg';
+    const [, payload] = dataurl.split(',');
+    const bstr = atob(payload);
+    const n = bstr.length;
+    const u8arr = new Uint8Array(n);
+
+    for (let i = 0; i < n; i++) {
+      u8arr[i] = bstr.charCodeAt(i);
     }
-    return new Blob([u8arr], {type:mime});
+
+    return new Blob([u8arr], { type: mime });
   }
 
   const uploadWantedImage = async (imageKey, dataUrl, document) => {
@@ -149,7 +156,9 @@ const RegisterWanted = () => {
 
     const fileBlob = dataURLtoBlob(dataUrl);
     const sanitizedDoc = document.replace(/[^a-zA-Z0-9]/g, '_');
-    const fileName = `wanted/${Date.now()}_${sanitizedDoc}_${imageKey}.jpg`;
+    const mime = fileBlob?.type || 'image/jpeg';
+    const extension = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg';
+    const fileName = `wanted/${Date.now()}_${sanitizedDoc}_${imageKey}.${extension}`;
       
     const { error: uploadError } = await supabase.storage
       .from('procurados')

@@ -5,15 +5,29 @@ import ImageCropperModal from './common/ImageCropperModal';
 
 // ======================== VALIDAÇÃO ========================
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'image/heic', 'image/heif'];
 const MIN_WIDTH = 400;
 const MIN_HEIGHT = 300;
 
+const normalizeImageMimeType = (file) => {
+  const rawType = file?.type?.toLowerCase() || '';
+  if (rawType === 'image/jpg') return 'image/jpeg';
+  if (rawType === 'image/heic' || rawType === 'image/heif') return 'image/jpeg';
+
+  const extension = file?.name?.split('.').pop()?.toLowerCase();
+  if (['jpg', 'jpeg'].includes(extension)) return 'image/jpeg';
+  if (extension === 'png') return 'image/png';
+  if (extension === 'webp') return 'image/webp';
+
+  return rawType || 'image/jpeg';
+};
+
 const validateImage = (file) => {
   const errors = [];
+  const normalizedMime = normalizeImageMimeType(file);
 
   // Validar tipo
-  if (!ALLOWED_MIMES.includes(file.type)) {
+  if (!ALLOWED_MIMES.includes(normalizedMime)) {
     errors.push('❌ Tipo inválido. Aceitos: JPG, PNG, WebP');
   }
 
@@ -103,8 +117,15 @@ const ImageUploadArea = ({ label, id, image, onUpload, onRemove, required = fals
     try {
       const res = await fetch(croppedImageBase64);
       const blob = await res.blob();
-      const mimeType = blob.type || originalFile?.type || 'image/png';
-      const file = new File([blob], originalFile.name, { type: mimeType });
+      const mimeType = normalizeImageMimeType({
+        type: blob.type || originalFile?.type || 'image/png',
+        name: originalFile?.name || 'upload-image'
+      });
+      const safeName = (originalFile?.name || 'upload-image')
+        .replace(/\.[^/.]+$/, '')
+        .replace(/[^a-zA-Z0-9-_]+/g, '_') || 'upload-image';
+      const extension = mimeType === 'image/png' ? '.png' : mimeType === 'image/webp' ? '.webp' : '.jpg';
+      const file = new File([blob], `${safeName}${extension}`, { type: mimeType });
 
       setError(null);
       setWarning(null);
