@@ -9,49 +9,57 @@ export const BO_PROCESS_STEPS = [
   {
     id: 'etapa_01',
     number: 1,
-    title: 'Abertura da pasta e identificação inicial',
-    description: 'Registrar BO, identificar o caso e reunir a coleta inicial das informações essenciais.',
-    requiredDocs: ['BO cadastrado', 'Identificação inicial', 'Coleta inicial'],
+    title: 'Abertura do BO e registro inicial',
+    description: 'Registrar a ocorrência, identificar as partes e consolidar os primeiros dados do caso.',
+    requiredDocs: ['BO cadastrado', 'Resumo da ocorrência', 'Identificação das partes'],
     status: 'ativa'
   },
   {
     id: 'etapa_02',
     number: 2,
-    title: 'Cenário e perícia',
-    description: 'Mapear o ambiente, os elementos do fato e definir a necessidade de perícia, quando houver.',
-    requiredDocs: ['Mapa do local', 'Avaliação do cenário', 'Necessidade de perícia'],
+    title: 'Coleta inicial e preservação de provas',
+    description: 'Reunir o cenário do fato, preservar indícios e encaminhar elementos materiais ou digitais para análise.',
+    requiredDocs: ['Local e data do fato', 'Preservação de provas', 'Relatório inicial'],
     status: 'bloqueada'
   },
   {
     id: 'etapa_03',
     number: 3,
-    title: 'Testemunhas',
-    description: 'Registrar versões dos fatos e depoimentos relevantes para a apuração.',
-    requiredDocs: ['Lista de testemunhas', 'Depoimentos'],
+    title: 'Depoimentos de testemunhas',
+    description: 'Registrar versões dos fatos, relatos e declarações das testemunhas e das vítimas.',
+    requiredDocs: ['Lista de testemunhas', 'Termos de depoimento', 'Versões dos fatos'],
     status: 'bloqueada'
   },
   {
     id: 'etapa_04',
     number: 4,
-    title: 'Diligências',
-    description: 'Executar verificações complementares, buscas e diligências necessárias.',
-    requiredDocs: ['Plano de diligência', 'Resultado da diligência'],
+    title: 'Indiciado / acusado e depoimento',
+    description: 'Ouvir o acusado, registrar sua versão, contradições e esclarecimentos sobre os fatos.',
+    requiredDocs: ['Identificação do acusado', 'Interrogatório', 'Versão do acusado'],
     status: 'bloqueada'
   },
   {
     id: 'etapa_05',
     number: 5,
-    title: 'Investigados',
-    description: 'Estruturar envolvidos, vínculos e informações relevantes para a investigação.',
-    requiredDocs: ['Lista de investigados', 'Vínculos e observações'],
+    title: 'Diligências complementares',
+    description: 'Executar buscas, perícias, verificações e outras diligências que complementem a investigação.',
+    requiredDocs: ['Plano de diligência', 'Resultado da diligência', 'Documentos complementares'],
     status: 'bloqueada'
   },
   {
     id: 'etapa_06',
     number: 6,
-    title: 'Encerramento e conclusão final',
-    description: 'Formalizar a conclusão, preservar o histórico e encerrar o processo de forma definitiva.',
-    requiredDocs: ['Conclusão final', 'Arquivamento'],
+    title: 'Confronto e cruzamento de provas',
+    description: 'Comparar depoimentos, documentos, mídias e demais provas para validar ou afastar hipóteses.',
+    requiredDocs: ['Cronologia dos fatos', 'Confronto documental', 'Síntese probatória'],
+    status: 'bloqueada'
+  },
+  {
+    id: 'etapa_07',
+    number: 7,
+    title: 'Conclusão e encerramento do processo',
+    description: 'Formalizar a análise final, consolidar a conclusão e arquivar o procedimento com o histórico completo.',
+    requiredDocs: ['Relatório final', 'Conclusão / decisão', 'Arquivamento'],
     status: 'bloqueada'
   }
 ];
@@ -161,7 +169,7 @@ export const loadWorkflowFromSupabase = async (boId) => {
       etapaAtual: Number(processo.etapa_atual || 1),
       steps: steps.length ? steps : createDefaultWorkflow(boId).steps,
       witnesses: (testemunhas || []).map((person) => ({ id: person.id, name: person.nome, document: person.documento || '', depoimento: person.depoimento || '' })),
-      involved: (investigados || []).map((person) => ({ id: person.id, name: person.nome, document: person.documento || '', papel: person.papel || '', observacoes: person.observacoes || '' })),
+      involved: (investigados || []).map((person) => ({ id: person.id, name: person.nome, document: person.documento || '', papel: person.papel || '', depoimento: person.depoimento || '', observacoes: person.observacoes || '' })),
       diligences: (diligencias || []).map((item) => ({ id: item.id, title: item.titulo, description: item.descricao || '', responsavel: item.responsavel || '', status: item.status || 'pendente' })),
       createdAt: processo.created_at || new Date().toISOString(),
       updatedAt: processo.updated_at || new Date().toISOString(),
@@ -252,6 +260,7 @@ export const syncWorkflowToSupabase = async (boId, workflow) => {
       nome: person.name || 'Investigado',
       documento: person.document || '',
       papel: person.papel || '',
+      depoimento: person.depoimento || person.statement || '',
       observacoes: person.observacoes || ''
     }));
 
@@ -397,15 +406,22 @@ export const generateBoInvestigationProcessPDF = (bo, workflow, user) => {
       doc.text(wrappedNotes, margin + 4, y);
       y += wrappedNotes.length * 4.5 + 6;
 
-      if ((workflow.witnesses || []).length && step.number === 5) {
-        const witnessText = (workflow.witnesses || []).map((w) => `- ${w.name || 'Testemunha'}: ${w.statement || 'Sem depoimento'}`).join('\n');
+      if ((workflow.witnesses || []).length && step.number === 3) {
+        const witnessText = (workflow.witnesses || []).map((w) => `- ${w.name || 'Testemunha'}: ${w.depoimento || w.statement || 'Sem depoimento'}`).join('\n');
         const lines = doc.splitTextToSize(witnessText, pageWidth - margin * 2);
         doc.text(lines, margin + 4, y);
         y += lines.length * 4.5 + 6;
       }
 
-      if ((workflow.diligences || []).length && step.number === 6) {
-        const diligenceText = (workflow.diligences || []).map((d) => `- ${d.title || 'Diligência'}: ${d.plan || 'Sem plano registrado'}`).join('\n');
+      if ((workflow.involved || []).length && step.number === 4) {
+        const accusedText = (workflow.involved || []).map((person) => `- ${person.name || 'Investigado'}: ${person.depoimento || person.statement || 'Sem depoimento do acusado'}`).join('\n');
+        const lines = doc.splitTextToSize(accusedText, pageWidth - margin * 2);
+        doc.text(lines, margin + 4, y);
+        y += lines.length * 4.5 + 6;
+      }
+
+      if ((workflow.diligences || []).length && step.number === 5) {
+        const diligenceText = (workflow.diligences || []).map((d) => `- ${d.title || 'Diligência'}: ${d.description || d.plan || 'Sem plano registrado'}`).join('\n');
         const lines = doc.splitTextToSize(diligenceText, pageWidth - margin * 2);
         doc.text(lines, margin + 4, y);
         y += lines.length * 4.5 + 6;

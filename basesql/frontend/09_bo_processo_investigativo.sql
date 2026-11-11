@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS public.bo_investigados (
   nome TEXT NOT NULL,
   documento TEXT,
   papel TEXT,
+  depoimento TEXT,
   observacoes TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -87,6 +88,7 @@ ALTER TABLE public.bo_auditoria ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bo_testemunhas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bo_investigados ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bo_diligencias ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.bo_investigados ADD COLUMN IF NOT EXISTS depoimento TEXT;
 
 DROP POLICY IF EXISTS "Usuarios autenticados podem ver processos do BO" ON public.bo_processos;
 CREATE POLICY "Usuarios autenticados podem ver processos do BO"
@@ -219,16 +221,13 @@ BEGIN
     FROM public.bo_processos p
     CROSS JOIN (
       VALUES
-        (1, 'etapa_01', 'Abertura da pasta', 'Registrar BO, dados iniciais e identificação do caso.', 'ativa', '[{"id":"etapa_01-doc-1","label":"BO cadastrado","uploaded":false,"url":""},{"id":"etapa_01-doc-2","label":"Resumo da ocorrência","uploaded":false,"url":""}]'::jsonb),
-        (2, 'etapa_02', 'Coleta inicial', 'Reunir dados essenciais do fato e partes envolvidas.', 'bloqueada', '[{"id":"etapa_02-doc-1","label":"Identificação de comunicantes","uploaded":false,"url":""},{"id":"etapa_02-doc-2","label":"Local e hora do fato","uploaded":false,"url":""}]'::jsonb),
-        (3, 'etapa_03', 'Cenário e perícia', 'Mapear cenário do crime e preservar elementos físicos.', 'bloqueada', '[{"id":"etapa_03-doc-1","label":"Mapa do local","uploaded":false,"url":""},{"id":"etapa_03-doc-2","label":"Relevância de provas","uploaded":false,"url":""}]'::jsonb),
-        (4, 'etapa_04', 'Provas digitais', 'Analisar fotos, vídeos, mídias e material de apoio.', 'bloqueada', '[{"id":"etapa_04-doc-1","label":"Mídias anexadas","uploaded":false,"url":""},{"id":"etapa_04-doc-2","label":"Registro de origem da prova","uploaded":false,"url":""}]'::jsonb),
-        (5, 'etapa_05', 'Testemunhas', 'Registrar depoimentos e confirmar versões dos fatos.', 'bloqueada', '[{"id":"etapa_05-doc-1","label":"Lista de testemunhas","uploaded":false,"url":""},{"id":"etapa_05-doc-2","label":"Depoimentos","uploaded":false,"url":""}]'::jsonb),
-        (6, 'etapa_06', 'Diligências', 'Executar investigações complementares e buscas relevantes.', 'bloqueada', '[{"id":"etapa_06-doc-1","label":"Plano de diligência","uploaded":false,"url":""},{"id":"etapa_06-doc-2","label":"Resultado da diligência","uploaded":false,"url":""}]'::jsonb),
-        (7, 'etapa_07', 'Investigados', 'Estruturar envolvidos e vínculos com o fato.', 'bloqueada', '[{"id":"etapa_07-doc-1","label":"Lista de investigados","uploaded":false,"url":""},{"id":"etapa_07-doc-2","label":"Pontos de contato","uploaded":false,"url":""}]'::jsonb),
-        (8, 'etapa_08', 'Confronto e cruzamento', 'Comparar depoimentos, provas e elementos objetivos.', 'bloqueada', '[{"id":"etapa_08-doc-1","label":"Cronologia","uploaded":false,"url":""},{"id":"etapa_08-doc-2","label":"Confronto documental","uploaded":false,"url":""}]'::jsonb),
-        (9, 'etapa_09', 'Conclusão técnica', 'Formalizar síntese e evidências que sustentam a conclusão.', 'bloqueada', '[{"id":"etapa_09-doc-1","label":"Relatório final","uploaded":false,"url":""},{"id":"etapa_09-doc-2","label":"Resumo de evidências","uploaded":false,"url":""}]'::jsonb),
-        (10, 'etapa_10', 'Encerramento e arquivamento', 'Encerrar o processo e preservar o histórico para auditoria.', 'bloqueada', '[{"id":"etapa_10-doc-1","label":"Conclusão final","uploaded":false,"url":""},{"id":"etapa_10-doc-2","label":"Arquivamento","uploaded":false,"url":""}]'::jsonb)
+        (1, 'etapa_01', 'Abertura do BO e registro inicial', 'Registrar a ocorrência, identificar as partes e consolidar os primeiros dados do caso.', 'ativa', '[{"id":"etapa_01-doc-1","label":"BO cadastrado","uploaded":false,"url":""},{"id":"etapa_01-doc-2","label":"Resumo da ocorrência","uploaded":false,"url":""}]'::jsonb),
+        (2, 'etapa_02', 'Coleta inicial e preservação de provas', 'Reunir o cenário do fato, preservar indícios e encaminhar elementos materiais ou digitais para análise.', 'bloqueada', '[{"id":"etapa_02-doc-1","label":"Local e data do fato","uploaded":false,"url":""},{"id":"etapa_02-doc-2","label":"Preservação de provas","uploaded":false,"url":""}]'::jsonb),
+        (3, 'etapa_03', 'Depoimentos de testemunhas', 'Registrar versões dos fatos, relatos e declarações das testemunhas e das vítimas.', 'bloqueada', '[{"id":"etapa_03-doc-1","label":"Lista de testemunhas","uploaded":false,"url":""},{"id":"etapa_03-doc-2","label":"Termos de depoimento","uploaded":false,"url":""}]'::jsonb),
+        (4, 'etapa_04', 'Indiciado / acusado e depoimento', 'Ouvir o acusado, registrar sua versão, contradições e esclarecimentos sobre os fatos.', 'bloqueada', '[{"id":"etapa_04-doc-1","label":"Identificação do acusado","uploaded":false,"url":""},{"id":"etapa_04-doc-2","label":"Versão do acusado","uploaded":false,"url":""}]'::jsonb),
+        (5, 'etapa_05', 'Diligências complementares', 'Executar buscas, perícias, verificações e outras diligências que complementem a investigação.', 'bloqueada', '[{"id":"etapa_05-doc-1","label":"Plano de diligência","uploaded":false,"url":""},{"id":"etapa_05-doc-2","label":"Resultado da diligência","uploaded":false,"url":""}]'::jsonb),
+        (6, 'etapa_06', 'Confronto e cruzamento de provas', 'Comparar depoimentos, documentos, mídias e demais provas para validar ou afastar hipóteses.', 'bloqueada', '[{"id":"etapa_06-doc-1","label":"Cronologia dos fatos","uploaded":false,"url":""},{"id":"etapa_06-doc-2","label":"Confronto documental","uploaded":false,"url":""}]'::jsonb),
+        (7, 'etapa_07', 'Conclusão e encerramento do processo', 'Formalizar análise final, consolidar a conclusão e arquivar o procedimento com histórico completo.', 'bloqueada', '[{"id":"etapa_07-doc-1","label":"Relatório final","uploaded":false,"url":""},{"id":"etapa_07-doc-2","label":"Arquivamento","uploaded":false,"url":""}]'::jsonb)
     ) AS etapa(numero, codigo, titulo, descricao, status, documentos)
     WHERE p.bo_id = NEW.id;
   END IF;

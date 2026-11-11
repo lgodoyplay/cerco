@@ -383,15 +383,19 @@ const BODetail = ({ variant = 'default' }) => {
   const canAdvanceCurrentStep = () => {
     if (!currentStep) return false;
 
+    if (currentStep.number === 3) {
+      return (workflow?.witnesses || []).some((w) => w.name?.trim() && (w.depoimento || w.statement || '').trim());
+    }
+
+    if (currentStep.number === 4) {
+      return (workflow?.involved || []).some((person) => person.name?.trim() && (person.depoimento || person.statement || '').trim());
+    }
+
     if (currentStep.number === 5) {
-      return (workflow?.witnesses || []).some((w) => w.name?.trim() && w.statement?.trim());
+      return (workflow?.diligences || []).some((d) => d.title?.trim() && (d.description || d.plan || '').trim());
     }
 
-    if (currentStep.number === 6) {
-      return (workflow?.diligences || []).some((d) => d.title?.trim() && (d.plan || '').trim());
-    }
-
-    if (currentStep.number === 9 || currentStep.number === 10) {
+    if (currentStep.number === 7) {
       return Boolean(currentStep.notes?.trim());
     }
 
@@ -878,10 +882,10 @@ const BODetail = ({ variant = 'default' }) => {
                                   <div key={item.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
                                     <div className="font-bold text-white mb-1">{item.name || 'Testemunha sem nome'}</div>
                                     <textarea
-                                      value={item.statement || ''}
+                                      value={item.depoimento || item.statement || ''}
                                       onChange={(event) => updateWorkflowState((prev) => ({
                                         ...prev,
-                                        witnesses: prev.witnesses.map((w) => w.id === item.id ? { ...w, statement: event.target.value } : w)
+                                        witnesses: prev.witnesses.map((w) => w.id === item.id ? { ...w, depoimento: event.target.value, statement: event.target.value } : w)
                                       }))}
                                       placeholder="Depoimento da testemunha..."
                                       className="w-full min-h-[80px] rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
@@ -896,6 +900,51 @@ const BODetail = ({ variant = 'default' }) => {
                         )}
 
                         {currentStep.number === 4 && (
+                          <div className="space-y-4">
+                            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+                              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-3">Registrar acusado / indiciado</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input
+                                  value={newInvolved}
+                                  onChange={(event) => setNewInvolved(event.target.value)}
+                                  placeholder="Nome do acusado"
+                                  className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
+                                />
+                                <input
+                                  value={newInvolvedRole}
+                                  onChange={(event) => setNewInvolvedRole(event.target.value)}
+                                  placeholder="Papel / vínculo"
+                                  className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
+                                />
+                              </div>
+                              <button type="button" onClick={handleAddInvolved} className="mt-3 rounded-lg bg-federal-600 hover:bg-federal-500 px-3 py-2 text-xs font-bold text-white">Adicionar acusado</button>
+                            </div>
+
+                            <div className="space-y-3">
+                              {(workflow.involved || []).length ? (
+                                workflow.involved.map((item) => (
+                                  <div key={item.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+                                    <div className="font-bold text-white mb-1">{item.name || 'Acusado sem nome'}</div>
+                                    <div className="text-xs text-slate-400 mb-2">{item.papel || 'Sem vínculo informado'}</div>
+                                    <textarea
+                                      value={item.depoimento || item.statement || ''}
+                                      onChange={(event) => updateWorkflowState((prev) => ({
+                                        ...prev,
+                                        involved: prev.involved.map((i) => i.id === item.id ? { ...i, depoimento: event.target.value, statement: event.target.value } : i)
+                                      }))}
+                                      placeholder="Registre o depoimento do acusado, versão, esclarecimentos e contradições..."
+                                      className="w-full min-h-[90px] rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
+                                    />
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-sm text-slate-500">Nenhum acusado registrado.</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {currentStep.number === 5 && (
                           <div className="space-y-4">
                             <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
                               <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-3">Registrar diligências</p>
@@ -922,10 +971,10 @@ const BODetail = ({ variant = 'default' }) => {
                                   <div key={item.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
                                     <div className="font-bold text-white mb-2">{item.title || 'Diligência'}</div>
                                     <textarea
-                                      value={item.plan || ''}
+                                      value={item.plan || item.description || ''}
                                       onChange={(event) => updateWorkflowState((prev) => ({
                                         ...prev,
-                                        diligences: prev.diligences.map((d) => d.id === item.id ? { ...d, plan: event.target.value } : d)
+                                        diligences: prev.diligences.map((d) => d.id === item.id ? { ...d, plan: event.target.value, description: event.target.value } : d)
                                       }))}
                                       placeholder="Escreva o plano, objetivo e resultado esperado da diligência..."
                                       className="w-full min-h-[90px] rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
@@ -939,57 +988,26 @@ const BODetail = ({ variant = 'default' }) => {
                           </div>
                         )}
 
-                        {currentStep.number === 5 && (
-                          <div className="space-y-4">
-                            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
-                              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-3">Registrar investigados</p>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <input
-                                  value={newInvolved}
-                                  onChange={(event) => setNewInvolved(event.target.value)}
-                                  placeholder="Nome do investigado"
-                                  className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
-                                />
-                                <input
-                                  value={newInvolvedRole}
-                                  onChange={(event) => setNewInvolvedRole(event.target.value)}
-                                  placeholder="Papel / vínculo"
-                                  className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
-                                />
-                              </div>
-                              <button type="button" onClick={handleAddInvolved} className="mt-3 rounded-lg bg-federal-600 hover:bg-federal-500 px-3 py-2 text-xs font-bold text-white">Adicionar investigado</button>
-                            </div>
-
-                            <div className="space-y-3">
-                              {(workflow.involved || []).length ? (
-                                workflow.involved.map((item) => (
-                                  <div key={item.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-                                    <div className="font-bold text-white mb-1">{item.name || 'Investigado sem nome'}</div>
-                                    <div className="text-xs text-slate-400 mb-2">{item.papel || 'Sem vínculo informado'}</div>
-                                    <textarea
-                                      value={item.observacoes || ''}
-                                      onChange={(event) => updateWorkflowState((prev) => ({
-                                        ...prev,
-                                        involved: prev.involved.map((i) => i.id === item.id ? { ...i, observacoes: event.target.value } : i)
-                                      }))}
-                                      placeholder="Observações sobre vínculo, contatos e contexto..."
-                                      className="w-full min-h-[80px] rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
-                                    />
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-sm text-slate-500">Nenhum investigado registrado.</p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
                         {currentStep.number === 6 && (
                           <div className="space-y-3">
                             <textarea
                               value={currentStep.notes || ''}
                               onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
-                              placeholder="Descreva o encerramento, a decisão final, a justificativa e o arquivamento do processo..."
+                              placeholder="Compare versões, discursos, provas e elementos objetivos. Descreva contradições, coerência e cruzamento de informações..."
+                              className="w-full min-h-[150px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
+                            />
+                            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-sm text-amber-200">
+                              Esta etapa valida a consistência entre as declarações, as provas e a narrativa do caso.
+                            </div>
+                          </div>
+                        )}
+
+                        {currentStep.number === 7 && (
+                          <div className="space-y-3">
+                            <textarea
+                              value={currentStep.notes || ''}
+                              onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
+                              placeholder="Descreva a conclusão final, a decisão e o arquivamento do processo..."
                               className="w-full min-h-[150px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
                             />
                             <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-sm text-emerald-200">
