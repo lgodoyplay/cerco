@@ -456,24 +456,31 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
     <div className="max-w-4xl mx-auto pb-10">
       
       {/* Header */}
-      <div className="mb-8">
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard/bo-list')}
-          className="mb-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white transition-colors"
-        >
-          Voltar para Lista
-        </button>
-        <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-          <Shield className="text-federal-500" size={32} />
-          {id ? `Editar ${moduleLabel}` : `Registrar ${boTypeConfig.label}`}
-        </h2>
-        <p className="text-slate-400 mt-2">
-          {id ? `Atualize os dados do ${moduleLabel.toLowerCase()} já criado.` : boTypeConfig.helperText}
-        </p>
+      <div className="mb-8 overflow-hidden rounded-3xl border border-slate-700/80 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.48)]">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard/bo-list')}
+              className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:border-slate-500 hover:text-white transition-colors"
+            >
+              <ArrowLeft size={14} />
+              Voltar para Lista
+            </button>
+            <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-federal-500/30 bg-federal-500/10 text-federal-300 shadow-[0_0_26px_rgba(96,165,250,0.18)]">
+                <Shield className="" size={24} />
+              </span>
+              {id ? `Editar ${moduleLabel}` : `Registrar ${boTypeConfig.label}`}
+            </h2>
+            <p className="text-slate-400 mt-2 max-w-2xl">
+              {id ? `Atualize os dados do ${moduleLabel.toLowerCase()} já criado.` : boTypeConfig.helperText}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 p-3">
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.2)]">
         {['cidadao', 'policial'].map((type) => {
           const isSelected = boType === type;
           const config = getBoTypeConfig(type);
@@ -484,14 +491,22 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
               type="button"
               onClick={() => setBoType(type)}
               className={clsx(
-                'rounded-xl border px-4 py-3 text-left transition-all',
+                'rounded-2xl border px-4 py-3 text-left transition-all',
                 isSelected
-                  ? 'border-federal-500 bg-federal-500/10 text-white shadow-[0_0_0_1px_rgba(96,165,250,0.28)]'
-                  : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500'
+                  ? 'border-federal-500 bg-gradient-to-r from-federal-500/15 via-sky-500/10 to-transparent text-white shadow-[0_0_0_1px_rgba(96,165,250,0.25)]'
+                  : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500 hover:bg-slate-800'
               )}
             >
-              <div className="text-sm font-bold">{config.label}</div>
-              <div className="text-xs text-slate-400 mt-1">{config.helperText}</div>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-bold">{config.label}</div>
+                  <div className="text-xs text-slate-400 mt-1">{config.helperText}</div>
+                </div>
+                <span className={clsx(
+                  'inline-flex h-8 w-8 items-center justify-center rounded-full border text-xs font-black',
+                  isSelected ? 'border-amber-300 bg-amber-500/15 text-amber-200' : 'border-slate-600 bg-slate-800 text-slate-300'
+                )}>{type === 'cidadao' ? 'C' : 'P'}</span>
+              </div>
             </button>
           );
         })}
