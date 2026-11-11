@@ -19,8 +19,9 @@ const BOWorkspace = ({ variant = 'default' }) => {
 
   const initialTab = useMemo(() => {
     if (location.search.includes('tab=list') || location.pathname.includes('/bo-list')) return 'list';
+    if (!canManage && canView) return 'list';
     return 'register';
-  }, [location.pathname, location.search]);
+  }, [canManage, canView, location.pathname, location.search]);
 
   const [activeTab, setActiveTab] = useState(initialTab);
 

@@ -188,7 +188,7 @@ function App() {
             <Route index element={<DashboardHome />} />
             
             <Route path="arrest" element={
-              <PermissionGuard permission="arrest_manage">
+              <PermissionGuard permission={['arrest_view', 'arrest_manage']}>
                 <ArrestWorkspace />
               </PermissionGuard>
             } />
@@ -208,12 +208,12 @@ function App() {
             } />
             
             <Route path="bo" element={
-              <PermissionGuard permission="bo_manage">
+              <PermissionGuard permission={['bo_view', 'bo_manage']}>
                 <BOWorkspace />
               </PermissionGuard>
             } />
             <Route path="bo-interno" element={
-              <PermissionGuard permission="bo_manage">
+              <PermissionGuard permission={['bo_interno_view', 'bo_interno_manage']}>
                 <BOWorkspace variant="internal" />
               </PermissionGuard>
             } />
@@ -285,13 +285,13 @@ function App() {
             } />
             
             <Route path="register-wanted" element={
-               <PermissionGuard permission="wanted_manage">
+               <PermissionGuard permission={['wanted_view', 'wanted_manage']}>
                  <WantedWorkspace />
                </PermissionGuard>
             } />
 
             <Route path="wanted" element={
-              <PermissionGuard permission="wanted_view">
+              <PermissionGuard permission={['wanted_view', 'wanted_manage']}>
                 <WantedWorkspace />
               </PermissionGuard>
             } />
@@ -476,7 +476,7 @@ function App() {
             } />
             
             <Route path="news" element={
-              <PermissionGuard permission="news_manage">
+              <PermissionGuard permission={['news_view', 'news_manage']}>
                 <NewsManager />
               </PermissionGuard>
             } />

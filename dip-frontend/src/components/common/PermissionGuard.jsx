@@ -4,10 +4,13 @@ import { ShieldAlert } from 'lucide-react';
 
 const PermissionGuard = ({ permission, children, fallback }) => {
   const { can } = usePermissions();
+  const permissions = Array.isArray(permission) ? permission : [permission];
+  const normalizedPermissions = permissions.filter(Boolean);
+  const hasAccess = normalizedPermissions.some((requiredPermission) => can(requiredPermission));
 
-  if (!can(permission)) {
+  if (!hasAccess) {
     if (fallback) return fallback;
-    
+
     return (
       <div className="flex flex-col items-center justify-center w-full h-full min-h-[60vh] text-slate-400 animate-fade-in">
         <div className="w-20 h-20 bg-slate-900/50 rounded-full flex items-center justify-center mb-6 border border-slate-800 shadow-xl shadow-red-900/10">
@@ -18,7 +21,7 @@ const PermissionGuard = ({ permission, children, fallback }) => {
           Você não tem permissão para acessar esta funcionalidade.
           <br/>
           <span className="text-xs uppercase font-bold tracking-wider text-slate-600 mt-4 block">
-            Permissão Necessária: {permission}
+            Permissão Necessária: {normalizedPermissions.join(' ou ')}
           </span>
         </p>
       </div>

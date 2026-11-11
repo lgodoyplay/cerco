@@ -57,3 +57,11 @@ test('role matching tolerates spacing and punctuation without falling back to le
   assert.match(source, /replace\(\/\[\^a-z0-9\\s\]\//);
   assert.match(source, /replace\(\/\\s\+\/g, ' '\)/);
 });
+
+test('module entry routes allow view-only access without showing access denied', async () => {
+  const appSource = await fs.readFile(path.resolve(process.cwd(), 'src/App.jsx'), 'utf8');
+
+  assert.match(appSource, /permission=\{\[\s*'bo_view'\s*,\s*'bo_manage'\s*\]\}/);
+  assert.match(appSource, /permission=\{\[\s*'arrest_view'\s*,\s*'arrest_manage'\s*\]\}/);
+  assert.match(appSource, /permission=\{\[\s*'wanted_view'\s*,\s*'wanted_manage'\s*\]\}/);
+});

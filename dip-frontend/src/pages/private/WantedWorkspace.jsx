@@ -14,8 +14,9 @@ const WantedWorkspace = () => {
 
   const initialTab = useMemo(() => {
     if (location.search.includes('tab=list')) return 'list';
+    if (!canManage && canView) return 'list';
     return 'register';
-  }, [location.search]);
+  }, [canManage, canView, location.search]);
 
   const [activeTab, setActiveTab] = useState(initialTab);
 
