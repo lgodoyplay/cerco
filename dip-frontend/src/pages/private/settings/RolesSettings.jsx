@@ -32,6 +32,56 @@ const RolesSettings = () => {
   const [newRolePermissions, setNewRolePermissions] = useState(createEmptyPermissionState());
   const [expandedRoleId, setExpandedRoleId] = useState(null);
 
+  const PermissionGroupAccordion = ({ group, groupState, onToggleGroup, onTogglePermission, defaultOpen = true }) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+    const selectedCount = group.permissions.filter((permission) => groupState?.[permission.id]).length;
+    const isAllSelected = group.permissions.length > 0 && group.permissions.every((permission) => groupState?.[permission.id]);
+
+    return (
+      <div className="rounded-xl border border-slate-700 bg-slate-900/80 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          className="w-full flex items-center justify-between gap-3 px-3 py-3 text-left hover:bg-slate-800/70 transition-colors"
+        >
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              onChange={(event) => onToggleGroup(event.target.checked)}
+              onClick={(event) => event.stopPropagation()}
+              className="h-4 w-4 rounded border-slate-500 bg-slate-900 text-federal-500 focus:ring-federal-500"
+            />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-slate-200 truncate">{group.label}</span>
+                <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500">{group.permissions.length} itens</span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">{selectedCount} selecionado{selectedCount !== 1 ? 's' : ''}</p>
+            </div>
+          </div>
+          <ChevronDown size={16} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {isOpen && (
+          <div className="border-t border-slate-700 bg-slate-950/50 p-3 space-y-2">
+            {group.permissions.map((permission) => (
+              <label key={permission.id} className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-300 hover:border-slate-600 transition-colors">
+                <span className="font-medium">{permission.label}</span>
+                <input
+                  type="checkbox"
+                  checked={Boolean(groupState?.[permission.id])}
+                  onChange={() => onTogglePermission(permission.id)}
+                  className="h-4 w-4 rounded border-slate-500 bg-slate-900 text-federal-500 focus:ring-federal-500"
+                />
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const updateGroupSelection = (state, groupId, checked) => {
     const group = PERMISSION_GROUPS.find((item) => item.id === groupId);
     if (!group) return state;
@@ -187,37 +237,19 @@ const RolesSettings = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+            <div className="space-y-3">
               {PERMISSION_GROUPS.map((group) => {
                 const groupState = newRolePermissions[group.id] || {};
-                const isAllSelected = group.permissions.every((permission) => groupState[permission.id]);
 
                 return (
-                  <div key={group.id} className="rounded-xl border border-slate-700 bg-slate-950/70 p-3">
-                    <label className="mb-3 flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm font-semibold text-slate-200">
-                      <span>{group.label}</span>
-                      <input
-                        type="checkbox"
-                        checked={isAllSelected}
-                        onChange={(event) => setNewRolePermissions((prev) => updateGroupSelection(prev, group.id, event.target.checked))}
-                        className="h-4 w-4 rounded border-slate-500 bg-slate-900 text-federal-500 focus:ring-federal-500"
-                      />
-                    </label>
-
-                    <div className="space-y-2">
-                      {group.permissions.map((permission) => (
-                        <label key={permission.id} className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-300 hover:border-slate-600">
-                          <span>{permission.label}</span>
-                          <input
-                            type="checkbox"
-                            checked={Boolean(groupState[permission.id])}
-                            onChange={() => toggleNewRolePermission(group.id, permission.id)}
-                            className="h-4 w-4 rounded border-slate-500 bg-slate-900 text-federal-500 focus:ring-federal-500"
-                          />
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+                  <PermissionGroupAccordion
+                    key={group.id}
+                    group={group}
+                    groupState={groupState}
+                    onToggleGroup={(checked) => setNewRolePermissions((prev) => updateGroupSelection(prev, group.id, checked))}
+                    onTogglePermission={(permissionId) => toggleNewRolePermission(group.id, permissionId)}
+                    defaultOpen={true}
+                  />
                 );
               })}
             </div>
@@ -289,41 +321,17 @@ const RolesSettings = () => {
                 {isExpanded && (
                   <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
                     <div className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Permissões por categoria</div>
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-                      {PERMISSION_GROUPS.map((group) => {
-                        const selectedPermissions = Object.entries(rolePermissionState[group.id] || {})
-                          .filter(([, value]) => value)
-                          .map(([permissionId]) => permissionId);
-                        const isAllSelected = group.permissions.length > 0 && group.permissions.every((permission) => selectedPermissions.includes(permission.id));
-
-                        return (
-                          <div key={`${role.id}-${group.id}`} className="rounded-xl border border-slate-700 bg-slate-900 p-3">
-                            <label className="mb-3 flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm font-semibold text-slate-200">
-                              <span>{group.label}</span>
-                              <input
-                                type="checkbox"
-                                checked={isAllSelected}
-                                onChange={(event) => toggleRoleGroup(role.id, group.id, event.target.checked)}
-                                className="h-4 w-4 rounded border-slate-500 bg-slate-900 text-federal-500 focus:ring-federal-500"
-                              />
-                            </label>
-
-                            <div className="space-y-2">
-                              {group.permissions.map((permission) => (
-                                <label key={`${role.id}-${group.id}-${permission.id}`} className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-300 hover:border-slate-600">
-                                  <span>{permission.label}</span>
-                                  <input
-                                    type="checkbox"
-                                    checked={Boolean(rolePermissionState[group.id]?.[permission.id])}
-                                    onChange={() => toggleRolePermission(role.id, group.id, permission.id)}
-                                    className="h-4 w-4 rounded border-slate-500 bg-slate-900 text-federal-500 focus:ring-federal-500"
-                                  />
-                                </label>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
+                    <div className="space-y-3">
+                      {PERMISSION_GROUPS.map((group) => (
+                        <PermissionGroupAccordion
+                          key={`${role.id}-${group.id}`}
+                          group={group}
+                          groupState={rolePermissionState[group.id] || {}}
+                          onToggleGroup={(checked) => toggleRoleGroup(role.id, group.id, checked)}
+                          onTogglePermission={(permissionId) => toggleRolePermission(role.id, group.id, permissionId)}
+                          defaultOpen={false}
+                        />
+                      ))}
                     </div>
                   </div>
                 )}
