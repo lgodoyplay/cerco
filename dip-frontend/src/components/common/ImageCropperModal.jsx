@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
 import { X, Check, ZoomIn, ZoomOut, RotateCw, Square, LayoutTemplate, RectangleVertical, RectangleHorizontal, ScanLine, Undo2, Eye } from 'lucide-react';
 import getCroppedImg from '../../utils/cropUtils';
@@ -36,6 +36,27 @@ const ImageCropperModal = ({
         canUndo,
         isAspectSelected
     } = useImageCropper(initialAspect);
+
+    const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+
+    const normalizeCropPixels = useCallback((pixels) => {
+        if (!pixels || typeof pixels.width !== 'number' || typeof pixels.height !== 'number') {
+            if (!imageDimensions.width || !imageDimensions.height) {
+                return null;
+            }
+            return { x: 0, y: 0, width: imageDimensions.width, height: imageDimensions.height };
+        }
+
+        const width = Math.max(1, Number(pixels.width) || 1);
+        const height = Math.max(1, Number(pixels.height) || 1);
+
+        return {
+            x: Number.isFinite(pixels.x) ? Number(pixels.x) : 0,
+            y: Number.isFinite(pixels.y) ? Number(pixels.y) : 0,
+            width,
+            height,
+        };
+    }, [imageDimensions]);
 
     // Teclas de atalho
     useEffect(() => {
@@ -101,10 +122,40 @@ const ImageCropperModal = ({
     }, [imageSrc, croppedAreaPixels, rotation, isProcessing]);
 
     useEffect(() => {
+        if (!imageSrc) {
+            setImageDimensions({ width: 0, height: 0 });
+            setCroppedAreaPixels(null);
+            return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+            const nextDimensions = {
+                width: img.naturalWidth || img.width || 0,
+                height: img.naturalHeight || img.height || 0,
+            };
+            setImageDimensions(nextDimensions);
+        };
+        img.onerror = () => {
+            setImageDimensions({ width: 0, height: 0 });
+        };
+        img.src = imageSrc;
+    }, [imageSrc, setCroppedAreaPixels]);
+
+    useEffect(() => {
         if (isOpen && imageSrc) {
             reset();
+            setZoom(1);
+            setRotation(0);
+            setCrop({ x: 0, y: 0 });
         }
-    }, [isOpen, imageSrc, reset]);
+    }, [isOpen, imageSrc, reset, setZoom, setRotation, setCrop]);
+
+    useEffect(() => {
+        if (imageDimensions.width && imageDimensions.height && !croppedAreaPixels) {
+            setCroppedAreaPixels({ x: 0, y: 0, width: imageDimensions.width, height: imageDimensions.height });
+        }
+    }, [imageDimensions, croppedAreaPixels, setCroppedAreaPixels]);
 
     const handleSave = async () => {
         if (!croppedAreaPixels) {
@@ -167,12 +218,18 @@ const ImageCropperModal = ({
                         maxZoom={3}
                         zoomSpeed={0.1}
                         onCropChange={setCrop}
-                        onCropComplete={setCroppedAreaPixels}
+                        onCropComplete={(area, areaPixels) => {
+                            const nextPixels = normalizeCropPixels(areaPixels);
+                            setCroppedAreaPixels(nextPixels);
+                        }}
                         onZoomChange={(nextZoom) => setZoom(Math.max(1, Number(nextZoom) || 1))}
                         onMediaLoaded={() => {
                             setCrop({ x: 0, y: 0 });
                             setZoom(1);
                             setRotation(0);
+                            if (imageDimensions.width && imageDimensions.height) {
+                                setCroppedAreaPixels({ x: 0, y: 0, width: imageDimensions.width, height: imageDimensions.height });
+                            }
                         }}
                         objectFit="contain"
                     />
