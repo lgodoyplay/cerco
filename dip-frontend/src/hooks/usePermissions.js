@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useSettingsContext } from '../context/SettingsContext';
+import { useAuth } from '../context/AuthContext.jsx';
+import { useSettingsContext } from '../context/SettingsContext.jsx';
 
 export const PERMISSIONS = {
   DASHBOARD_VIEW: 'dashboard_view',
@@ -241,7 +241,24 @@ const LEGACY_ROLE_PERMISSIONS = {
   Advogado: [PERMISSIONS.DASHBOARD_VIEW, PERMISSIONS.JUDICIARY_VIEW, PERMISSIONS.ALVARAS_VIEW, PERMISSIONS.ARREST_VIEW],
 };
 
-export const normalizeRoleName = (value) => String(value || '').trim().toLowerCase();
+export const normalizeRoleName = (value) => String(value || '')
+  .trim()
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-z0-9\s]/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+export const findMatchingRoleConfig = (roles = [], userRole) => {
+  const normalizedUserRole = normalizeRoleName(userRole);
+  if (!normalizedUserRole) return null;
+
+  return roles.find((role) => {
+    const title = normalizeRoleName(role?.title || role?.name || '');
+    return title === normalizedUserRole;
+  }) || null;
+};
 
 export const getRolePermissionSet = (role) => {
   if (!role) return new Set();
@@ -277,14 +294,10 @@ export const usePermissions = () => {
     if (user.role === 'Comandante Geral' || user.role === 'Developer') return true;
 
     const normalizedPermission = permission === 'report_manage' ? PERMISSIONS.REPORTS_MANAGE : permission;
-    const normalizedUserRole = normalizeRoleName(user.role);
-    const roleConfig = roles.find((role) => {
-      const title = normalizeRoleName(role.title || role.name);
-      return title === normalizedUserRole;
-    });
+    const roleConfig = findMatchingRoleConfig(roles, user.role);
 
     const rolePermissionSet = getRolePermissionSet(roleConfig);
-    const legacyRolePermissions = LEGACY_ROLE_PERMISSIONS[user.role] || LEGACY_ROLE_PERMISSIONS[Object.keys(LEGACY_ROLE_PERMISSIONS).find((roleName) => normalizeRoleName(roleName) === normalizedUserRole)] || [];
+    const legacyRolePermissions = LEGACY_ROLE_PERMISSIONS[user.role] || LEGACY_ROLE_PERMISSIONS[Object.keys(LEGACY_ROLE_PERMISSIONS).find((roleName) => normalizeRoleName(roleName) === normalizeRoleName(user.role))] || [];
     const userPermissions = Array.isArray(user.permissions) ? user.permissions : [];
 
     const roleHasExplicitConfig = Boolean(roleConfig && (

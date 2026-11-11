@@ -40,3 +40,12 @@ test('permission groups are unique and each module exposes only one clear view/m
   assert.match(source, /Configurações: visualizar \/ pesquisar/i);
   assert.match(source, /Registrar \/ Gerenciar|Registrar \/ gerenciar/i);
 });
+
+test('role matching tolerates spacing and punctuation without falling back to legacy access', async () => {
+  const source = await fs.readFile(filePath, 'utf8');
+
+  assert.match(source, /findMatchingRoleConfig/);
+  assert.match(source, /normalize\('NFD'\)/);
+  assert.match(source, /replace\(\/\[\^a-z0-9\\s\]\//);
+  assert.match(source, /replace\(\/\\s\+\/g, ' '\)/);
+});
