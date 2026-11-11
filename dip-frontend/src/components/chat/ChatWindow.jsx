@@ -4,7 +4,8 @@ import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { chatService } from './ChatService';
 import { getAvatarPublicUrl } from '../../lib/avatar';
-import { PERMISSIONS, usePermissions } from '../../hooks/usePermissions';
+import { PERMISSIONS, usePermissions, normalizeRoleName } from '../../hooks/usePermissions';
+import { useSettings } from '../../hooks/useSettings';
 
 const createUniqueId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
@@ -18,6 +19,7 @@ const makeConversationItem = (id, name, avatarUrl, muted = false) => ({
 
 const ChatWindow = ({ user, isOpen, onClose, minimized, onToggleMinimized, onUnreadChange }) => {
   const { can } = usePermissions();
+  const { roles } = useSettings();
   const [messages, setMessages] = useState([]);
   const [groupMessages, setGroupMessages] = useState({});
   const normalizedUserAvatar = getAvatarPublicUrl(user?.avatar_url || user?.avatar || null) || user?.avatar_url || user?.avatar || null;
@@ -34,6 +36,12 @@ const ChatWindow = ({ user, isOpen, onClose, minimized, onToggleMinimized, onUnr
   const [groupName, setGroupName] = useState('');
   const bottomRef = useRef(null);
   const autoScrollRef = useRef(true);
+
+  const resolveRoleColor = (roleName) => {
+    if (!roleName) return null;
+    const matchingRole = (roles || []).find((role) => normalizeRoleName(role?.title || role?.name) === normalizeRoleName(roleName));
+    return matchingRole?.color || matchingRole?.roleColor || null;
+  };
 
   const notifyUnread = (value) => {
     if (typeof onUnreadChange === 'function') {
@@ -136,7 +144,7 @@ const ChatWindow = ({ user, isOpen, onClose, minimized, onToggleMinimized, onUnr
 
     if (selectedConversationId === 'general') {
       setSending(true);
-      const sentMessage = await chatService.sendMessage(content, user);
+      const sentMessage = await chatService.sendMessage(content, user, resolveRoleColor(user?.role));
       setSending(false);
 
       if (sentMessage) {

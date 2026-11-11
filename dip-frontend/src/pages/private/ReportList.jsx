@@ -7,7 +7,7 @@ import { usePermissions } from '../../hooks/usePermissions';
 
 const ReportList = () => {
   const { can } = usePermissions();
-  const canManage = can('report_manage');
+  const canManage = can('reports_manage');
   const [reports, setReports] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedReport, setSelectedReport] = useState(null);

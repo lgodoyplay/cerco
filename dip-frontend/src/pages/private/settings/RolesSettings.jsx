@@ -47,12 +47,14 @@ const sortRoles = (roleList = []) => {
 const RolesSettings = () => {
   const { roles, updateRoles, logAction } = useSettings();
   const [newRole, setNewRole] = useState('');
+  const [newRoleColor, setNewRoleColor] = useState('#f59e0b');
   const [loading, setLoading] = useState(false);
   const [newRolePermissions, setNewRolePermissions] = useState(createEmptyPermissionState());
   const [expandedRoleId, setExpandedRoleId] = useState(null);
   const [activeRoleType, setActiveRoleType] = useState('main');
   const [editingRoleId, setEditingRoleId] = useState(null);
   const [editingRoleName, setEditingRoleName] = useState('');
+  const [editingRoleColor, setEditingRoleColor] = useState('#f59e0b');
   const displayedRoles = sortRoles(roles).filter((role) => getRoleType(role) === activeRoleType);
 
   const PermissionGroupAccordion = ({ group, groupState, onToggleGroup, onTogglePermission, defaultOpen = true }) => {
@@ -193,6 +195,7 @@ const RolesSettings = () => {
         kind: roleType,
         category: roleType,
         isThirdParty: roleType === 'third_party',
+        color: newRoleColor || '#f59e0b',
         permissions: [...new Set(selectedPermissions)]
       };
 
@@ -221,17 +224,23 @@ const RolesSettings = () => {
     if (!trimmedName) {
       setEditingRoleId(null);
       setEditingRoleName('');
+      setEditingRoleColor('#f59e0b');
       return;
     }
 
     const updatedRoles = roles.map((role) =>
-      role.id === roleId ? { ...role, title: trimmedName } : role
+      role.id === roleId ? {
+        ...role,
+        title: trimmedName,
+        color: editingRoleColor || role.color || '#f59e0b'
+      } : role
     );
 
     await updateRoles(updatedRoles);
     logAction(`Cargo renomeado: ${trimmedName}`);
     setEditingRoleId(null);
     setEditingRoleName('');
+    setEditingRoleColor('#f59e0b');
   };
 
   const moveRole = async (roleId, direction) => {
@@ -299,7 +308,7 @@ const RolesSettings = () => {
         </div>
 
         <form onSubmit={handleAddRole} className="space-y-5 mb-8">
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-4 md:flex-row">
             <input
               type="text"
               value={newRole}
@@ -307,6 +316,16 @@ const RolesSettings = () => {
               className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 outline-none"
               placeholder={activeRoleType === 'third_party' ? 'Nome do cargo de terceiros (ex: Agente de outra guarnição)' : 'Nome do Cargo / Patente (ex: Agente Especial)'}
             />
+            <div className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-slate-300">
+              <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">Cor</span>
+              <input
+                type="color"
+                value={newRoleColor}
+                onChange={(e) => setNewRoleColor(e.target.value)}
+                className="h-10 w-12 cursor-pointer rounded-lg border border-slate-600 bg-transparent p-0"
+                aria-label="Selecionar cor do cargo"
+              />
+            </div>
             <button
               type="submit"
               disabled={loading || !newRole.trim()}
@@ -360,7 +379,11 @@ const RolesSettings = () => {
             const isThirdPartyRole = getRoleType(role) === 'third_party';
 
             return (
-              <div key={role.id} className="rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+              <div
+                key={role.id}
+                className="rounded-xl border bg-slate-900/80 p-4"
+                style={{ borderColor: role.color || '#334155', boxShadow: role.color ? `0 0 0 1px ${role.color}33` : undefined }}
+              >
                 <div className="flex flex-col gap-4 md:flex-row md:items-center">
                   <div className="flex items-center gap-3">
                     <div className="flex flex-col gap-1">
@@ -396,10 +419,18 @@ const RolesSettings = () => {
                             if (event.key === 'Escape') {
                               setEditingRoleId(null);
                               setEditingRoleName('');
+                              setEditingRoleColor(role.color || '#f59e0b');
                             }
                           }}
                           className="flex-1 min-w-[180px] rounded-lg border border-federal-500 bg-slate-950 px-3 py-2 text-white focus:outline-none"
                           autoFocus
+                        />
+                        <input
+                          type="color"
+                          value={editingRoleColor || role.color || '#f59e0b'}
+                          onChange={(event) => setEditingRoleColor(event.target.value)}
+                          className="h-10 w-12 cursor-pointer rounded-lg border border-slate-600 bg-transparent p-0"
+                          aria-label="Selecionar cor do cargo"
                         />
                         <button
                           type="button"
@@ -413,6 +444,7 @@ const RolesSettings = () => {
                           onClick={() => {
                             setEditingRoleId(null);
                             setEditingRoleName('');
+                            setEditingRoleColor(role.color || '#f59e0b');
                           }}
                           className="rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:border-slate-500"
                         >
@@ -443,6 +475,7 @@ const RolesSettings = () => {
                         onClick={() => {
                           setEditingRoleId(role.id);
                           setEditingRoleName(role.title || '');
+                          setEditingRoleColor(role.color || '#f59e0b');
                         }}
                         className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-medium text-slate-200 hover:border-federal-500 hover:text-white"
                       >

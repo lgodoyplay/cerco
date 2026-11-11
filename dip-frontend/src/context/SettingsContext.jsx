@@ -10,11 +10,11 @@ const DEFAULT_CORPORATION = {
 };
 
 const DEFAULT_ROLES = [
-  { id: 1, title: 'Diretor Geral', hierarchy: 1, kind: 'main', category: 'main', isThirdParty: false, permissions: [] },
-  { id: 2, title: 'Coordenador', hierarchy: 2, kind: 'main', category: 'main', isThirdParty: false, permissions: [] },
-  { id: 3, title: 'Escrivão', hierarchy: 3, kind: 'main', category: 'main', isThirdParty: false, permissions: [] },
-  { id: 4, title: 'Agente', hierarchy: 4, kind: 'main', category: 'main', isThirdParty: false, permissions: [] },
-  { id: 5, title: 'Aluno', hierarchy: 5, kind: 'main', category: 'main', isThirdParty: false, permissions: [] },
+  { id: 1, title: 'Diretor Geral', hierarchy: 1, kind: 'main', category: 'main', isThirdParty: false, color: '#f59e0b', permissions: [] },
+  { id: 2, title: 'Coordenador', hierarchy: 2, kind: 'main', category: 'main', isThirdParty: false, color: '#8b5cf6', permissions: [] },
+  { id: 3, title: 'Escrivão', hierarchy: 3, kind: 'main', category: 'main', isThirdParty: false, color: '#3b82f6', permissions: [] },
+  { id: 4, title: 'Agente', hierarchy: 4, kind: 'main', category: 'main', isThirdParty: false, color: '#10b981', permissions: [] },
+  { id: 5, title: 'Aluno', hierarchy: 5, kind: 'main', category: 'main', isThirdParty: false, color: '#f97316', permissions: [] },
 ];
 
 const ROLE_STORAGE_KEY = 'cerco_roles_settings';

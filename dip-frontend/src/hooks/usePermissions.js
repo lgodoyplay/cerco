@@ -314,7 +314,11 @@ export const usePermissions = () => {
     if (!user?.role) return false;
     if (user.role === 'Comandante Geral' || user.role === 'Developer') return true;
 
-    const normalizedPermission = permission === 'report_manage' ? PERMISSIONS.REPORTS_MANAGE : permission;
+    const permissionAliases = {
+      report_manage: PERMISSIONS.REPORTS_MANAGE,
+      report_view: PERMISSIONS.REPORTS_VIEW,
+    };
+    const normalizedPermission = permissionAliases[permission] || permission;
     const roleConfig = findMatchingRoleConfig(roles, user.role);
 
     const rolePermissionSet = getEffectivePermissionSet(roleConfig);
@@ -344,7 +348,8 @@ export const usePermissions = () => {
 
     const hasAdminPermission =
       rolePermissionSet.has(PERMISSIONS.ADMIN_ACCESS) ||
-      (!roleHasExplicitConfig && (effectiveUserPermissions.has(PERMISSIONS.ADMIN_ACCESS) || effectiveLegacyRolePermissions.has(PERMISSIONS.ADMIN_ACCESS)));
+      effectiveUserPermissions.has(PERMISSIONS.ADMIN_ACCESS) ||
+      effectiveLegacyRolePermissions.has(PERMISSIONS.ADMIN_ACCESS);
 
     if (hasAdminPermission) return true;
 

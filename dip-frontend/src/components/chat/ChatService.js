@@ -34,6 +34,7 @@ const normalizeMessage = (message, currentUser, profileMap = {}) => {
     user_name: senderName,
     user_avatar_url: avatarUrl,
     user_role: message?.user_role || null,
+    user_role_color: message?.user_role_color || message?.role_color || null,
     isCurrentUser: senderId === currentUser?.id,
   };
 };
@@ -81,7 +82,7 @@ export const chatService = {
     }
   },
 
-  async sendMessage(content, currentUser) {
+  async sendMessage(content, currentUser, userRoleColor = null) {
     if (!currentUser?.id) return null;
     const safeContent = String(content || '').trim();
     if (!safeContent) return null;
@@ -98,6 +99,7 @@ export const chatService = {
         user_name: currentUser.full_name || currentUser.username || currentUser.email || 'Usuário',
         user_avatar_url: normalizedAvatar,
         user_role: currentUser.role || null,
+        user_role_color: userRoleColor || null,
       };
 
       const { data, error } = await supabase
