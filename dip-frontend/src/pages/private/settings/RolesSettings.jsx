@@ -39,10 +39,9 @@ const RolesSettings = () => {
 
     return (
       <div className="rounded-xl border border-slate-700 bg-slate-900/80 overflow-hidden">
-        <button
-          type="button"
+        <div
           onClick={() => setIsOpen((prev) => !prev)}
-          className="w-full flex items-center justify-between gap-3 px-3 py-3 text-left hover:bg-slate-800/70 transition-colors"
+          className="w-full flex items-center justify-between gap-3 px-3 py-3 text-left hover:bg-slate-800/70 transition-colors cursor-pointer"
         >
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <input
@@ -50,6 +49,7 @@ const RolesSettings = () => {
               checked={isAllSelected}
               onChange={(event) => onToggleGroup(event.target.checked)}
               onClick={(event) => event.stopPropagation()}
+              onPointerDown={(event) => event.stopPropagation()}
               className="h-4 w-4 rounded border-slate-500 bg-slate-900 text-federal-500 focus:ring-federal-500"
             />
             <div className="min-w-0">
@@ -61,17 +61,23 @@ const RolesSettings = () => {
             </div>
           </div>
           <ChevronDown size={16} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </button>
+        </div>
 
         {isOpen && (
           <div className="border-t border-slate-700 bg-slate-950/50 p-3 space-y-2">
             {group.permissions.map((permission) => (
-              <label key={permission.id} className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-300 hover:border-slate-600 transition-colors">
+              <label
+                key={permission.id}
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-300 hover:border-slate-600 transition-colors"
+                onClick={(event) => event.stopPropagation()}
+              >
                 <span className="font-medium">{permission.label}</span>
                 <input
                   type="checkbox"
                   checked={Boolean(groupState?.[permission.id])}
                   onChange={() => onTogglePermission(permission.id)}
+                  onClick={(event) => event.stopPropagation()}
+                  onPointerDown={(event) => event.stopPropagation()}
                   className="h-4 w-4 rounded border-slate-500 bg-slate-900 text-federal-500 focus:ring-federal-500"
                 />
               </label>
