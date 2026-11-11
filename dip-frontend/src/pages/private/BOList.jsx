@@ -213,6 +213,7 @@ const BOList = ({ variant = 'default', embedded = false }) => {
         {canManage && (
           <div className="flex gap-2">
             <button 
+              type="button"
               onClick={() => navigate(createPath)}
               className="px-4 py-2 bg-federal-600 hover:bg-federal-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-federal-900/20 flex items-center gap-2"
             >
@@ -220,6 +221,7 @@ const BOList = ({ variant = 'default', embedded = false }) => {
               + Novo BO
             </button>
             <button 
+              type="button"
               onClick={exportToCSV}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-colors shadow-lg flex items-center gap-2"
             >
