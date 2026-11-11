@@ -91,6 +91,7 @@ const WarningsSettings = React.lazy(() => lazyImport(routeLoaders.WarningsSettin
 const CoursesSettings = React.lazy(() => lazyImport(routeLoaders.CoursesSettings));
 const WebhookSettings = React.lazy(() => lazyImport(routeLoaders.WebhookSettings));
 const CorporationSettings = React.lazy(() => lazyImport(routeLoaders.CorporationSettings));
+const CorporationStructureDetail = React.lazy(() => lazyImport(routeLoaders.CorporationStructureDetail));
 const SystemHealth = React.lazy(() => lazyImport(routeLoaders.SystemHealth));
 const RolesSettings = React.lazy(() => lazyImport(routeLoaders.RolesSettings));
 const CrimesSettings = React.lazy(() => lazyImport(routeLoaders.CrimesSettings));
@@ -529,6 +530,11 @@ function App() {
               <Route path="corporation" element={
                 <PermissionGuard permission="corporation_view">
                   <CorporationSettings />
+                </PermissionGuard>
+              } />
+              <Route path="corporation/:type/:id" element={
+                <PermissionGuard permission="corporation_view">
+                  <CorporationStructureDetail />
                 </PermissionGuard>
               } />
               <Route path="roles" element={

@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSettings } from '../../../hooks/useSettings';
-import { Building, Plus, Trash2, Edit2, Check, X } from 'lucide-react';
+import { normalizeCorporationList, createCorporationItem } from '../../../utils/corporationUtils';
+import { Building, Plus, Trash2, UserCog, Users } from 'lucide-react';
 
 const CorporationSettings = () => {
-  const { corporation, updateCorporation } = useSettings();
+  const navigate = useNavigate();
+  const { corporation, updateCorporation, users } = useSettings();
   const [activeTab, setActiveTab] = useState('departments'); // departments | divisions | sectors
   const [newItem, setNewItem] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const currentList = normalizeCorporationList(corporation?.[activeTab] || [], activeTab);
+
   const handleAddItem = async (e) => {
     e.preventDefault();
-    if (!newItem.trim()) return;
-    
+    const name = newItem.trim();
+    if (!name) return;
+
     setLoading(true);
     try {
-      const currentList = corporation[activeTab] || [];
-      await updateCorporation(activeTab, [...currentList, newItem]);
+      const newEntry = createCorporationItem(name, activeTab);
+      const nextList = [...currentList, newEntry];
+      await updateCorporation(activeTab, nextList);
       setNewItem('');
+      navigate(`/dashboard/settings/corporation/${activeTab}/${newEntry.id}`);
     } catch (error) {
       console.error('Erro ao adicionar item:', error);
     } finally {
@@ -26,8 +34,8 @@ const CorporationSettings = () => {
 
   const handleRemoveItem = async (item) => {
     try {
-      const currentList = corporation[activeTab] || [];
-      await updateCorporation(activeTab, currentList.filter(i => i !== item));
+      const nextList = currentList.filter((entry) => entry.id !== item.id);
+      await updateCorporation(activeTab, nextList);
     } catch (error) {
       console.error('Erro ao remover item:', error);
     }
@@ -87,18 +95,45 @@ const CorporationSettings = () => {
         </form>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {corporation[activeTab]?.map((item, index) => (
-            <div key={index} className="flex items-center justify-between p-4 bg-slate-900 rounded-xl border border-slate-800 group hover:border-federal-500/30 transition-all">
-              <span className="text-white font-medium">{item}</span>
-              <button 
-                onClick={() => handleRemoveItem(item)}
-                className="text-slate-500 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-red-500/10"
+          {currentList.map((item) => {
+            const chief = users.find((user) => user.id === item.chiefId);
+            const memberCount = item.members?.length || 0;
+
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => navigate(`/dashboard/settings/corporation/${activeTab}/${item.id}`)}
+                className="group flex flex-col items-start justify-between gap-3 p-4 bg-slate-900 rounded-xl border border-slate-800 text-left hover:border-federal-500/40 transition-all"
               >
-                <Trash2 size={18} />
+                <div className="flex items-start justify-between w-full gap-3">
+                  <div>
+                    <p className="text-lg font-semibold text-white">{item.name}</p>
+                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
+                      <UserCog size={14} className="text-federal-400" />
+                      {chief ? chief.name : 'Chefe não definido'}
+                    </p>
+                  </div>
+                  <span
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleRemoveItem(item);
+                    }}
+                    className="text-slate-500 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-red-500/10"
+                    aria-label={`Remover ${item.name}`}
+                  >
+                    <Trash2 size={18} />
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <Users size={14} className="text-slate-500" />
+                  {memberCount} membro{memberCount === 1 ? '' : 's'}
+                </div>
               </button>
-            </div>
-          ))}
-          {(!corporation[activeTab] || corporation[activeTab].length === 0) && (
+            );
+          })}
+          {currentList.length === 0 && (
             <div className="col-span-full text-center py-8 text-slate-500">
               Nenhum item cadastrado nesta categoria.
             </div>

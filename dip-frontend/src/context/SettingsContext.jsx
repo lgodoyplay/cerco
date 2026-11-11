@@ -1,14 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { buildDefaultCorporation, normalizeCorporationData } from '../utils/corporationUtils';
 import { getRoleTitles, normalizeRoleAssignment, normalizeRoleDisplay } from '../utils/roleUtils';
 
 const SettingsContext = createContext();
 
-const DEFAULT_CORPORATION = {
-  departments: ['Departamento de Investigações', 'DRE', 'DELEFAZ'],
-  divisions: ['Narcóticos', 'Homicídios', 'Crimes Cibernéticos'],
-  sectors: ['Inteligência', 'Operacional', 'Administrativo']
-};
+const DEFAULT_CORPORATION = buildDefaultCorporation();
 
 const DEFAULT_ROLES = [
   { id: 1, title: 'Diretor Geral', hierarchy: 1, kind: 'main', category: 'main', isThirdParty: false, color: '#f59e0b', permissions: [] },
@@ -110,7 +107,7 @@ export const SettingsProvider = ({ children }) => {
 
       if (data) {
         const corpSetting = data.find(s => s.key === 'corporation');
-        if (corpSetting) setCorporation(corpSetting.value);
+        if (corpSetting) setCorporation(normalizeCorporationData(corpSetting.value));
 
         const rolesSetting = data.find(s => s.key === 'roles');
         const persistedRoles = getPersistedRoles();
@@ -407,7 +404,7 @@ export const SettingsProvider = ({ children }) => {
       if (error) throw error;
       
       // Update local state based on key
-      if (key === 'corporation') setCorporation(value);
+      if (key === 'corporation') setCorporation(normalizeCorporationData(value));
       if (key === 'roles') setRoles(value);
       if (key === 'templates') setTemplates(value);
       if (key === 'appearance') setAppearance(value);
@@ -502,7 +499,8 @@ export const SettingsProvider = ({ children }) => {
   };
 
   const updateCorporation = async (type, list) => {
-    const newCorporation = { ...corporation, [type]: list };
+    const normalizedList = Array.isArray(list) ? list : [];
+    const newCorporation = normalizeCorporationData({ ...corporation, [type]: normalizedList });
     await saveSetting('corporation', newCorporation);
   };
 

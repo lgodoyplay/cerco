@@ -3,12 +3,15 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import AvatarUpload from '../../components/AvatarUpload';
 import { getAvatarPublicUrl } from '../../lib/avatar';
+import { useSettings } from '../../hooks/useSettings';
 import { normalizeRoleDisplay } from '../../utils/roleUtils';
-import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText, AlertTriangle, X, Play, Square, Link2, ArrowLeft } from 'lucide-react';
+import { getUserStructureAssignments } from '../../utils/corporationUtils';
+import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText, AlertTriangle, X, Play, Square, Link2, ArrowLeft, Building2 } from 'lucide-react';
 import clsx from 'clsx';
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
+  const { corporation } = useSettings();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState(null);
@@ -20,6 +23,7 @@ const ProfilePage = () => {
   const [isStartingLive, setIsStartingLive] = useState(false);
   const [liveLinks, setLiveLinks] = useState(['', '', '', '']);
   const [liveLoading, setLiveLoading] = useState(false);
+  const structureAssignments = getUserStructureAssignments(corporation || {}, user?.id);
 
   useEffect(() => {
     if (user) {
@@ -440,6 +444,25 @@ const ProfilePage = () => {
               </div>
             </form>
           </div>
+
+          {structureAssignments.length > 0 && (
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-lg">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <Building2 size={20} className="text-federal-500" />
+                Estrutura da Corporação
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {structureAssignments.map((assignment) => (
+                  <span
+                    key={`${assignment.type}-${assignment.itemId}`}
+                    className="inline-flex items-center rounded-full border border-federal-500/30 bg-federal-950/40 px-3 py-1 text-sm text-federal-200"
+                  >
+                    {assignment.label}: {assignment.name} ({assignment.role})
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Warnings Section */}
           {warnings.length > 0 && (
