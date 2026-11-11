@@ -20,5 +20,17 @@ test('permissions include the individual dashboard menu categories requested by 
   assert.match(source, /id:\s*'work'|id:\s*"work"/);
   assert.match(source, /id:\s*'investigative'|id:\s*"investigative"/);
   assert.match(source, /id:\s*'legal'|id:\s*"legal"/);
-  assert.match(source, /id:\s*'others'|id:\s*"others"/);
+  assert.match(source, /id:\s*'communication'|id:\s*"communication"/);
+  assert.match(source, /id:\s*'settings'|id:\s*"settings"/);
+});
+
+test('permission groups are unique and each module exposes only one clear view/manage pair', async () => {
+  const source = await fs.readFile(filePath, 'utf8');
+
+  const matches = [...source.matchAll(/id:\s*PERMISSIONS\.[A-Z_]+/g)].map((match) => match[0]);
+  const uniqueIds = new Set(matches);
+
+  assert.equal(uniqueIds.size, matches.length, 'Each permission key should be declared once and not repeated in several groups');
+  assert.match(source, /Visualizar \/ Pesquisar|Visualizar \/ pesquisar/i);
+  assert.match(source, /Registrar \/ Gerenciar|Registrar \/ gerenciar/i);
 });
