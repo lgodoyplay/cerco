@@ -364,12 +364,32 @@ export const saveWorkflowForBo = (boId, workflow) => {
   return next;
 };
 
-export const ensureWorkflowForBo = (boId, bo = {}) => {
-  const existing = loadWorkflowForBo(boId);
-  if (existing) return existing;
+export const ensureWorkflowForBo = async (boId, bo = {}) => {
+  if (!boId) return null;
 
-  const created = createDefaultWorkflow(boId, bo);
-  return saveWorkflowForBo(boId, created);
+  try {
+    const remoteWorkflow = await loadWorkflowFromSupabase(boId);
+    if (remoteWorkflow) {
+      const cached = loadWorkflowForBo(boId);
+      if (!cached || JSON.stringify(cached) !== JSON.stringify(remoteWorkflow)) {
+        saveWorkflowForBo(boId, remoteWorkflow);
+      }
+      return remoteWorkflow;
+    }
+
+    const existing = loadWorkflowForBo(boId);
+    if (existing) {
+      const synced = await syncWorkflowToSupabase(boId, existing);
+      return synced || existing;
+    }
+
+    const created = createDefaultWorkflow(boId, bo);
+    return saveWorkflowForBo(boId, created);
+  } catch (error) {
+    console.error('Erro ao garantir workflow do BO:', error);
+    const fallback = loadWorkflowForBo(boId) || createDefaultWorkflow(boId, bo);
+    return saveWorkflowForBo(boId, fallback);
+  }
 };
 
 export const advanceWorkflowStep = (boId, workflow) => {

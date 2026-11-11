@@ -78,6 +78,7 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
   const storageTable = isInternal ? 'boletins_internos' : 'boletins';
   const moduleLabel = isInternal ? 'Boletim Interno' : 'Boletim de Ocorrência';
   const listPath = isInternal ? '/dashboard/bo-interno-list' : '/dashboard/bo-list';
+  const detailPath = isInternal ? '/dashboard/bo-interno-list' : '/dashboard/bo-list';
   const createPath = isInternal ? '/dashboard/bo-interno' : '/dashboard/bo';
   const resourceName = isInternal ? 'boletins_internos' : 'boletins';
   const [formErrors, setFormErrors] = useState({});
@@ -404,7 +405,7 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
 
       // Success
       if (id) {
-        navigate('/dashboard/bo-list', {
+        navigate(`${detailPath}/${id}`, {
           state: {
             notification: {
               type: 'success',
@@ -413,25 +414,14 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
           }
         });
       } else {
-        setNotification({
-          type: 'success',
-          message: 'Boletim de ocorrência registrado com sucesso'
+        navigate(`${detailPath}/${newBO.id}`, {
+          state: {
+            notification: {
+              type: 'success',
+              message: `${moduleLabel} registrado com sucesso.`
+            }
+          }
         });
-        
-        // Clear form and reset date to current time
-        const now = new Date();
-        const formattedDate = now.toISOString().slice(0, 16);
-        setFormData({
-          complainants: [createPersonEntry()],
-          reportedPeople: [createPersonEntry()],
-          description: '',
-          location: '',
-          date: formattedDate,
-          officer: '',
-          arrestOfficerName: '',
-          arrestOfficerId: '',
-        });
-        setFormErrors({});
       }
     } catch (error) {
       console.error('Erro ao registrar BO:', error);

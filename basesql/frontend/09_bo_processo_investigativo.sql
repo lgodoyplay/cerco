@@ -174,6 +174,75 @@ CREATE INDEX IF NOT EXISTS idx_bo_etapas_processo_id ON public.bo_processo_etapa
 CREATE INDEX IF NOT EXISTS idx_bo_documentos_processo_id ON public.bo_documentos(processo_id);
 CREATE INDEX IF NOT EXISTS idx_bo_auditoria_processo_id ON public.bo_auditoria(processo_id);
 
+CREATE OR REPLACE FUNCTION public.criar_processo_bo_default()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.bo_processos p
+    WHERE p.bo_id = NEW.id
+  ) THEN
+    INSERT INTO public.bo_processos (
+      bo_id,
+      titulo,
+      status,
+      etapa_atual,
+      created_by
+    )
+    VALUES (
+      NEW.id,
+      COALESCE(NEW.descricao, 'Pasta Digital Investigativa'),
+      'em_andamento',
+      1,
+      NEW.created_by
+    );
+
+    INSERT INTO public.bo_processo_etapas (
+      processo_id,
+      numero,
+      codigo,
+      titulo,
+      descricao,
+      status,
+      documentos,
+      observacoes
+    )
+    SELECT
+      p.id,
+      etapa.numero,
+      etapa.codigo,
+      etapa.titulo,
+      etapa.descricao,
+      etapa.status,
+      etapa.documentos,
+      ''
+    FROM public.bo_processos p
+    CROSS JOIN (
+      VALUES
+        (1, 'etapa_01', 'Abertura da pasta', 'Registrar BO, dados iniciais e identificação do caso.', 'ativa', '[{"id":"etapa_01-doc-1","label":"BO cadastrado","uploaded":false,"url":""},{"id":"etapa_01-doc-2","label":"Resumo da ocorrência","uploaded":false,"url":""}]'::jsonb),
+        (2, 'etapa_02', 'Coleta inicial', 'Reunir dados essenciais do fato e partes envolvidas.', 'bloqueada', '[{"id":"etapa_02-doc-1","label":"Identificação de comunicantes","uploaded":false,"url":""},{"id":"etapa_02-doc-2","label":"Local e hora do fato","uploaded":false,"url":""}]'::jsonb),
+        (3, 'etapa_03', 'Cenário e perícia', 'Mapear cenário do crime e preservar elementos físicos.', 'bloqueada', '[{"id":"etapa_03-doc-1","label":"Mapa do local","uploaded":false,"url":""},{"id":"etapa_03-doc-2","label":"Relevância de provas","uploaded":false,"url":""}]'::jsonb),
+        (4, 'etapa_04', 'Provas digitais', 'Analisar fotos, vídeos, mídias e material de apoio.', 'bloqueada', '[{"id":"etapa_04-doc-1","label":"Mídias anexadas","uploaded":false,"url":""},{"id":"etapa_04-doc-2","label":"Registro de origem da prova","uploaded":false,"url":""}]'::jsonb),
+        (5, 'etapa_05', 'Testemunhas', 'Registrar depoimentos e confirmar versões dos fatos.', 'bloqueada', '[{"id":"etapa_05-doc-1","label":"Lista de testemunhas","uploaded":false,"url":""},{"id":"etapa_05-doc-2","label":"Depoimentos","uploaded":false,"url":""}]'::jsonb),
+        (6, 'etapa_06', 'Diligências', 'Executar investigações complementares e buscas relevantes.', 'bloqueada', '[{"id":"etapa_06-doc-1","label":"Plano de diligência","uploaded":false,"url":""},{"id":"etapa_06-doc-2","label":"Resultado da diligência","uploaded":false,"url":""}]'::jsonb),
+        (7, 'etapa_07', 'Investigados', 'Estruturar envolvidos e vínculos com o fato.', 'bloqueada', '[{"id":"etapa_07-doc-1","label":"Lista de investigados","uploaded":false,"url":""},{"id":"etapa_07-doc-2","label":"Pontos de contato","uploaded":false,"url":""}]'::jsonb),
+        (8, 'etapa_08', 'Confronto e cruzamento', 'Comparar depoimentos, provas e elementos objetivos.', 'bloqueada', '[{"id":"etapa_08-doc-1","label":"Cronologia","uploaded":false,"url":""},{"id":"etapa_08-doc-2","label":"Confronto documental","uploaded":false,"url":""}]'::jsonb),
+        (9, 'etapa_09', 'Conclusão técnica', 'Formalizar síntese e evidências que sustentam a conclusão.', 'bloqueada', '[{"id":"etapa_09-doc-1","label":"Relatório final","uploaded":false,"url":""},{"id":"etapa_09-doc-2","label":"Resumo de evidências","uploaded":false,"url":""}]'::jsonb),
+        (10, 'etapa_10', 'Encerramento e arquivamento', 'Encerrar o processo e preservar o histórico para auditoria.', 'bloqueada', '[{"id":"etapa_10-doc-1","label":"Conclusão final","uploaded":false,"url":""},{"id":"etapa_10-doc-2","label":"Arquivamento","uploaded":false,"url":""}]'::jsonb)
+    ) AS etapa(numero, codigo, titulo, descricao, status, documentos)
+    WHERE p.bo_id = NEW.id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_criar_processo_bo_default ON public.boletins;
+CREATE TRIGGER trg_criar_processo_bo_default
+AFTER INSERT ON public.boletins
+FOR EACH ROW
+EXECUTE FUNCTION public.criar_processo_bo_default();
+
 -- =========================================
 -- OBSERVAÇÃO
 -- =========================================

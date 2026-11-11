@@ -85,7 +85,7 @@ const BODetail = ({ variant = 'default' }) => {
         return;
       }
 
-      const createdWorkflow = ensureWorkflowForBo(bo.id, bo);
+      const createdWorkflow = await ensureWorkflowForBo(bo.id, bo);
       setWorkflow(createdWorkflow);
     };
 
