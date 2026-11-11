@@ -85,6 +85,9 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
       if (!autoScrollRef.current) {
         setHasNewMessages(true);
         notifyUnread((prev) => prev + 1);
+      } else {
+        setHasNewMessages(false);
+        notifyUnread(0);
       }
     });
 
@@ -177,6 +180,7 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
     autoScrollRef.current = isAtBottom;
     if (isAtBottom) {
       setHasNewMessages(false);
+      notifyUnread(0);
     }
   };
 
