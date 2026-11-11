@@ -241,6 +241,32 @@ export const SettingsProvider = ({ children }) => {
     }
   }, [roles]);
 
+  // Fetch Users
+  const fetchUsers = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*');
+
+      if (error) throw error;
+
+      const mappedUsers = data.map(u => ({
+        id: u.id,
+        name: u.full_name,
+        username: u.email, // Using email as username/login
+        role: normalizeRoleDisplay(u.role),
+        permissions: u.permissions || [], // Carrega permissões do banco
+        avatar_url: u.avatar_url,
+        passport_id: u.passport_id,
+        active: true,
+        patente: normalizeRoleDisplay(u.role) // Mapping role to patente for now
+      }));
+      setUsers(mappedUsers);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  }, []);
+
   const syncProfilesWithRoles = useCallback(async (nextRoles) => {
     const validRoleTitles = getRoleTitles(nextRoles);
 
@@ -272,32 +298,6 @@ export const SettingsProvider = ({ children }) => {
       console.error('Error syncing roles with profiles:', error);
     }
   }, [fetchUsers]);
-
-  // Fetch Users
-  const fetchUsers = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*');
-
-      if (error) throw error;
-
-      const mappedUsers = data.map(u => ({
-        id: u.id,
-        name: u.full_name,
-        username: u.email, // Using email as username/login
-        role: normalizeRoleDisplay(u.role),
-        permissions: u.permissions || [], // Carrega permissões do banco
-        avatar_url: u.avatar_url,
-        passport_id: u.passport_id,
-        active: true,
-        patente: normalizeRoleDisplay(u.role) // Mapping role to patente for now
-      }));
-      setUsers(mappedUsers);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    }
-  }, []);
 
   // Fetch Logs
   const fetchLogs = useCallback(async () => {
