@@ -137,8 +137,8 @@ AS $$
     FROM public.profiles p
     WHERE p.id = auth.uid()
       AND (
-        lower(COALESCE(p.role, '')) ~ '(admin|administrador|administradora|diretor|diretora|comandante|superuser|developer)'
-        OR lower(COALESCE(p.permissions::text, '')) ~ '(admin_access|admin|superuser|developer|diretor|comandante)'
+        lower(COALESCE(p.role, '')) ~ '(admin|administrador|administradora|delegado|diretor|diretora|comandante|superuser|developer)'
+        OR lower(COALESCE(p.permissions::text, '')) ~ '(admin_access|administrativo|acesso administrativo|admin|delegado|superuser|developer|diretor|comandante)'
       )
   );
 $$;

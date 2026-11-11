@@ -54,6 +54,7 @@ export const isAdminDeleteCandidate = (currentUser, canDeleteAnyMessage = false)
     'admin',
     'administrador',
     'administradora',
+    'delegado',
     'diretor',
     'diretora',
     'comandante',
@@ -75,9 +76,12 @@ export const isAdminDeleteCandidate = (currentUser, canDeleteAnyMessage = false)
 
   return permissionValues.some((permission) => (
     permission.includes('admin_access')
+    || permission.includes('acesso administrativo')
+    || permission.includes('administrativo')
     || permission.includes('admin')
     || permission.includes('superuser')
     || permission.includes('developer')
+    || permission.includes('delegado')
     || permission.includes('diretor')
     || permission.includes('comandante')
   ));

@@ -250,6 +250,38 @@ export const normalizeRoleName = (value) => String(value || '')
   .replace(/\s+/g, ' ')
   .trim();
 
+const ADMIN_ROLE_KEYWORDS = [
+  'admin',
+  'administrador',
+  'administradora',
+  'delegado',
+  'diretor',
+  'diretora',
+  'comandante',
+  'superuser',
+  'developer',
+  'dev',
+];
+
+const ADMIN_PERMISSION_KEYWORDS = [
+  'admin_access',
+  'administrativo',
+  'acesso administrativo',
+  'admin',
+  'superuser',
+  'developer',
+  'delegado',
+  'diretor',
+  'comandante',
+];
+
+const hasAdminLikeValue = (value) => {
+  const normalized = normalizeRoleName(value);
+  if (!normalized) return false;
+
+  return ADMIN_ROLE_KEYWORDS.some((keyword) => normalized.includes(keyword));
+};
+
 export const findMatchingRoleConfig = (roles = [], userRole) => {
   const normalizedUserRole = normalizeRoleName(userRole);
   if (!normalizedUserRole) return null;
@@ -312,7 +344,9 @@ export const usePermissions = () => {
 
   const can = useCallback((permission) => {
     if (!user?.role) return false;
-    if (user.role === 'Comandante Geral' || user.role === 'Developer') return true;
+
+    const normalizedRole = normalizeRoleName(user.role);
+    if (ADMIN_ROLE_KEYWORDS.some((keyword) => normalizedRole.includes(keyword))) return true;
 
     const permissionAliases = {
       report_manage: PERMISSIONS.REPORTS_MANAGE,
@@ -349,7 +383,10 @@ export const usePermissions = () => {
     const hasAdminPermission =
       rolePermissionSet.has(PERMISSIONS.ADMIN_ACCESS) ||
       effectiveUserPermissions.has(PERMISSIONS.ADMIN_ACCESS) ||
-      effectiveLegacyRolePermissions.has(PERMISSIONS.ADMIN_ACCESS);
+      effectiveLegacyRolePermissions.has(PERMISSIONS.ADMIN_ACCESS) ||
+      hasAdminLikeValue(user.role) ||
+      Array.from(effectiveUserPermissions).some((item) => ADMIN_PERMISSION_KEYWORDS.some((keyword) => String(item || '').toLowerCase().includes(keyword))) ||
+      Array.from(effectiveLegacyRolePermissions).some((item) => ADMIN_PERMISSION_KEYWORDS.some((keyword) => String(item || '').toLowerCase().includes(keyword)));
 
     if (hasAdminPermission) return true;
 
