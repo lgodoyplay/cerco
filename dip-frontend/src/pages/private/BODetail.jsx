@@ -22,6 +22,7 @@ import {
   updateWorkflowNote,
   updateWorkflowStepDocument
 } from '../../utils/boInvestigationWorkflow';
+import { getInvestigationVideoMedia } from '../../utils/investigationProofMedia';
 
 const BODetail = ({ variant = 'default' }) => {
   const { id } = useParams();
@@ -176,6 +177,9 @@ const BODetail = ({ variant = 'default' }) => {
   };
 
   const isYouTubeUrl = (value = '') => /(?:youtu\.be|youtube\.com|youtube-nocookie\.com)/i.test(value || '');
+  const isImageUrl = (value = '') => /^data:image\//i.test(String(value || '')) || /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/i.test(String(value || ''));
+  const isPdfUrl = (value = '') => /^data:application\/pdf/i.test(String(value || '')) || /\.pdf(\?|$)/i.test(String(value || ''));
+  const isDirectVideoUrl = (value = '') => /^data:video\//i.test(String(value || '')) || /\.(mp4|webm|mov|m4v|ogg|ogv)(\?|$)/i.test(String(value || ''));
 
   const handleToggleDocument = (stepNumber, documentId, nextValue) => {
     if (!bo?.id || !workflow) return;
@@ -658,51 +662,92 @@ const BODetail = ({ variant = 'default' }) => {
                             </button>
                           </div>
 
-                          <div className="mt-3 space-y-2">
+                          <div className="mt-3 space-y-3">
                             {(currentStep.documents || []).length ? (
-                              currentStep.documents.map((document) => (
-                                <div key={document.id} className="rounded-lg border border-slate-700 bg-slate-950/70 p-3">
-                                  <div className="flex items-start justify-between gap-3">
-                                    <div className="min-w-0 flex-1">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="inline-flex items-center rounded-full border border-federal-500/30 bg-federal-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.15em] text-federal-300">
-                                          {document.type === 'youtube' ? 'YouTube' : 'Arquivo'}
-                                        </span>
-                                        <span className="text-sm font-bold text-white truncate">{document.label || 'Prova da etapa'}</span>
+                              currentStep.documents.map((document) => {
+                                const media = getInvestigationVideoMedia(document.url || '');
+                                const isImage = isImageUrl(document.url);
+                                const isPdf = isPdfUrl(document.url);
+                                const isVideo = isDirectVideoUrl(document.url) || Boolean(media.embedUrl);
+
+                                return (
+                                  <div key={document.id} className="rounded-lg border border-slate-700 bg-slate-950/70 p-3">
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <span className="inline-flex items-center rounded-full border border-federal-500/30 bg-federal-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.15em] text-federal-300">
+                                            {document.type === 'youtube' || media.embedUrl ? 'Vídeo' : isPdf ? 'PDF' : isImage ? 'Imagem' : 'Arquivo'}
+                                          </span>
+                                          <span className="text-sm font-bold text-white truncate">{document.label || 'Prova da etapa'}</span>
+                                        </div>
                                       </div>
-                                      {document.url && (
-                                        <a
-                                          href={document.url}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          className="inline-block text-xs text-sky-300 hover:text-sky-200 truncate max-w-full"
+
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <label className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300">
+                                          <input
+                                            type="checkbox"
+                                            checked={Boolean(document.uploaded)}
+                                            onChange={() => handleToggleDocument(currentStep.number, document.id, !document.uploaded)}
+                                            className="h-4 w-4 accent-emerald-500"
+                                          />
+                                          Concluído
+                                        </label>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveStageAttachment(currentStep.number, document.id)}
+                                          className="text-[10px] uppercase tracking-[0.15em] text-red-300 hover:text-red-200"
                                         >
-                                          {document.url}
-                                        </a>
-                                      )}
+                                          Remover
+                                        </button>
+                                      </div>
                                     </div>
 
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      <label className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300">
-                                        <input
-                                          type="checkbox"
-                                          checked={Boolean(document.uploaded)}
-                                          onChange={() => handleToggleDocument(currentStep.number, document.id, !document.uploaded)}
-                                          className="h-4 w-4 accent-emerald-500"
+                                    {isImage && (
+                                      <div className="mt-3 overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
+                                        <img src={document.url} alt={document.label || 'Prova da etapa'} className="max-h-[420px] w-full object-contain" />
+                                      </div>
+                                    )}
+
+                                    {isPdf && (
+                                      <div className="mt-3 overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
+                                        <object data={document.url} type="application/pdf" className="h-[520px] w-full bg-white">
+                                          <embed src={document.url} type="application/pdf" className="h-[520px] w-full" />
+                                        </object>
+                                      </div>
+                                    )}
+
+                                    {media.embedUrl && !isPdf && !isImage && (
+                                      <div className="mt-3 overflow-hidden rounded-xl border border-slate-800 bg-black aspect-video">
+                                        <iframe
+                                          src={media.embedUrl}
+                                          title={document.label || 'Vídeo da prova'}
+                                          className="h-full w-full"
+                                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                          referrerPolicy="strict-origin-when-cross-origin"
+                                          allowFullScreen
                                         />
-                                        Concluído
-                                      </label>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleRemoveStageAttachment(currentStep.number, document.id)}
-                                        className="text-[10px] uppercase tracking-[0.15em] text-red-300 hover:text-red-200"
+                                      </div>
+                                    )}
+
+                                    {isVideo && !media.embedUrl && !isPdf && !isImage && (
+                                      <div className="mt-3 overflow-hidden rounded-xl border border-slate-800 bg-black">
+                                        <video src={document.url} controls className="max-h-[420px] w-full" />
+                                      </div>
+                                    )}
+
+                                    {document.url && !isImage && !isPdf && !media.embedUrl && !isVideo && (
+                                      <a
+                                        href={document.url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="mt-3 inline-block text-xs text-sky-300 hover:text-sky-200 truncate max-w-full"
                                       >
-                                        Remover
-                                      </button>
-                                    </div>
+                                        {document.url}
+                                      </a>
+                                    )}
                                   </div>
-                                </div>
-                              ))
+                                );
+                              })
                             ) : (
                               <p className="text-sm text-slate-500">Nenhuma prova salva nesta etapa ainda.</p>
                             )}
