@@ -147,11 +147,7 @@ CREATE POLICY "Global chat delete for authenticated users"
       WHERE p.id = auth.uid()
         AND (
           lower(COALESCE(p.role, '')) LIKE '%admin%'
-          OR EXISTS (
-            SELECT 1
-            FROM jsonb_array_elements_text(COALESCE(p.permissions, '[]'::jsonb)) AS permission(value)
-            WHERE permission.value = 'admin_access'
-          )
+          OR lower(COALESCE(p.permissions::text, '')) LIKE '%admin_access%'
         )
     )
   );

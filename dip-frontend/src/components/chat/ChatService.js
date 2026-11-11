@@ -39,6 +39,24 @@ const normalizeMessage = (message, currentUser, profileMap = {}) => {
   };
 };
 
+export const isAdminDeleteCandidate = (currentUser, canDeleteAnyMessage = false) => {
+  if (canDeleteAnyMessage) return true;
+
+  const roleName = String(currentUser?.role || currentUser?.user_role || '').toLowerCase();
+  if (roleName.includes('admin')) return true;
+
+  const permissionValues = [];
+  const permissionSource = currentUser?.permissions ?? currentUser?.raw_user_meta_data?.permissions ?? [];
+
+  if (Array.isArray(permissionSource)) {
+    permissionValues.push(...permissionSource.map((item) => String(item || '').toLowerCase()));
+  } else if (permissionSource) {
+    permissionValues.push(String(permissionSource).toLowerCase());
+  }
+
+  return permissionValues.some((permission) => permission.includes('admin_access') || permission.includes('admin'));
+};
+
 export const chatService = {
   async fetchMessages(currentUser) {
     try {
@@ -127,10 +145,12 @@ export const chatService = {
   async deleteMessage(messageId, currentUser, canDeleteAnyMessage = false) {
     if (!messageId) return false;
 
+    const canDeleteThisMessage = canDeleteAnyMessage || isAdminDeleteCandidate(currentUser, false);
+
     try {
       let query = supabase.from(CHAT_TABLE).delete().eq('id', messageId);
 
-      if (!canDeleteAnyMessage) {
+      if (!canDeleteThisMessage) {
         query = query.eq('user_id', currentUser?.id || '');
       }
 
