@@ -253,7 +253,7 @@ const PrivateLayout = () => {
     { 
       label: 'Jurídico',
       items: [
-        { to: '/dashboard/alvaras', icon: Building2, label: 'Alvarás', prefetchKey: 'AlvaraList' },
+        { to: '/dashboard/alvaras', icon: Building2, label: 'Alvarás', prefetchKey: 'AlvaraList', permission: 'alvaras_view' },
         { to: '/dashboard/weapons', icon: Target, label: 'Porte de Armas', prefetchKey: 'WeaponsManager', permission: 'weapons_view' },
         { to: '/dashboard/lawyers', icon: Scale, label: 'Advogados', prefetchKey: 'LawyerDashboard', permission: 'lawyer_view' },
         { to: '/dashboard/judiciary', icon: Gavel, label: 'Jurídico', prefetchKey: 'JudiciaryManager', permission: 'judiciary_view' },
@@ -268,7 +268,7 @@ const PrivateLayout = () => {
     { 
       label: 'Outros',
       items: [
-        { to: '/dashboard/corregedoria', icon: ShieldAlert, label: 'Corregedoria', prefetchKey: 'CorregedoriaList' },
+        { to: '/dashboard/corregedoria', icon: ShieldAlert, label: 'Corregedoria', prefetchKey: 'CorregedoriaList', permission: 'corregedoria_view' },
         { to: '/dashboard/exonerations', icon: BadgeX, label: 'Exoneração', prefetchKey: 'ExonerationsManager', permission: 'exonerations_view' },
         { to: '/dashboard/integration', icon: UserCog, label: 'Integração', prefetchKey: 'IntegrationManager', permission: 'integration_view' },
         { to: '/dashboard/pm', icon: Car, label: 'Integração PM', prefetchKey: 'PMIntegration', permission: 'pm_view' },

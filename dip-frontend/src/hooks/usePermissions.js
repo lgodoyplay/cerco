@@ -8,6 +8,8 @@ export const PERMISSIONS = {
   WANTED_VIEW: 'wanted_view', WANTED_MANAGE: 'wanted_manage',
   REPORTS_VIEW: 'reports_view', REPORTS_MANAGE: 'reports_manage',
   JUDICIARY_VIEW: 'judiciary_view', JUDICIARY_MANAGE: 'judiciary_manage',
+  ALVARAS_VIEW: 'alvaras_view', ALVARAS_MANAGE: 'alvaras_manage',
+  CORREGEDORIA_VIEW: 'corregedoria_view', CORREGEDORIA_MANAGE: 'corregedoria_manage',
   REVENUE_VIEW: 'revenue_view', REVENUE_MANAGE: 'revenue_manage',
   INVESTIGATIONS_VIEW: 'investigations_view', INVESTIGATIONS_MANAGE: 'investigations_manage',
   INFORMANTES_VIEW: 'informantes_view', INFORMANTES_MANAGE: 'informantes_manage',
@@ -39,7 +41,12 @@ export const PERMISSION_GROUPS = [
   { id: 'bo', label: 'Boletins', permissions: [{ id: PERMISSIONS.BO_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.BO_MANAGE, label: 'Gerenciar' }] },
   { id: 'arrest', label: 'Prisões', permissions: [{ id: PERMISSIONS.ARREST_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.ARREST_MANAGE, label: 'Gerenciar' }] },
   { id: 'wanted', label: 'Procurados', permissions: [{ id: PERMISSIONS.WANTED_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.WANTED_MANAGE, label: 'Gerenciar' }] },
-  { id: 'judiciary', label: 'Judiciário', permissions: [{ id: PERMISSIONS.JUDICIARY_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.JUDICIARY_MANAGE, label: 'Gerenciar' }] },
+  { id: 'judiciary', label: 'Jurídico', permissions: [
+    { id: PERMISSIONS.JUDICIARY_VIEW, label: 'Visualizar jurídico' },
+    { id: PERMISSIONS.JUDICIARY_MANAGE, label: 'Gerenciar jurídico' },
+    { id: PERMISSIONS.ALVARAS_VIEW, label: 'Visualizar Alvarás' },
+    { id: PERMISSIONS.ALVARAS_MANAGE, label: 'Gerenciar Alvarás' },
+  ] },
   { id: 'reports', label: 'Denúncias', permissions: [{ id: PERMISSIONS.REPORTS_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.REPORTS_MANAGE, label: 'Gerenciar' }] },
   { id: 'investigations', label: 'Investigações', permissions: [{ id: PERMISSIONS.INVESTIGATIONS_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.INVESTIGATIONS_MANAGE, label: 'Gerenciar' }] },
   { id: 'forensics', label: 'Perícias', permissions: [{ id: PERMISSIONS.FORENSICS_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.FORENSICS_MANAGE, label: 'Gerenciar' }] },
@@ -56,6 +63,10 @@ export const PERMISSION_GROUPS = [
   { id: 'courses', label: 'Cursos', permissions: [{ id: PERMISSIONS.COURSES_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.COURSES_MANAGE, label: 'Gerenciar' }] },
   { id: 'anp', label: 'ANP', permissions: [{ id: PERMISSIONS.ANP_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.ANP_MANAGE, label: 'Gerenciar' }] },
   { id: 'news', label: 'Notícias', permissions: [{ id: PERMISSIONS.NEWS_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.NEWS_MANAGE, label: 'Gerenciar' }] },
+  { id: 'others', label: 'Outros', permissions: [
+    { id: PERMISSIONS.CORREGEDORIA_VIEW, label: 'Visualizar Corregedoria' },
+    { id: PERMISSIONS.CORREGEDORIA_MANAGE, label: 'Gerenciar Corregedoria' },
+  ] },
   { id: 'settings', label: 'Configurações', permissions: [{ id: PERMISSIONS.SETTINGS_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.SETTINGS_MANAGE, label: 'Gerenciar' }] },
   { id: 'warnings', label: 'Advertências', permissions: [{ id: PERMISSIONS.WARNINGS_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.WARNINGS_MANAGE, label: 'Gerenciar' }] },
   { id: 'forms', label: 'Formulários', permissions: [{ id: PERMISSIONS.FORMS_VIEW, label: 'Visualizar' }, { id: PERMISSIONS.EXAMS_VIEW, label: 'Acesso a provas' }] },
@@ -125,8 +136,8 @@ const LEGACY_ROLE_PERMISSIONS = {
     PERMISSIONS.SETTINGS_VIEW,
   ],
   Recruta: [PERMISSIONS.BO_VIEW, PERMISSIONS.ARREST_VIEW, PERMISSIONS.PROTECTIVE_MEASURES_VIEW, PERMISSIONS.EXONERATIONS_VIEW, PERMISSIONS.INTEGRATION_VIEW],
-  Juiz: [PERMISSIONS.JUDICIARY_VIEW, PERMISSIONS.JUDICIARY_MANAGE, PERMISSIONS.BO_VIEW, PERMISSIONS.ARREST_VIEW, PERMISSIONS.WANTED_VIEW, PERMISSIONS.INVESTIGATIONS_VIEW, PERMISSIONS.INFORMANTES_VIEW],
-  Advogado: [PERMISSIONS.JUDICIARY_VIEW, PERMISSIONS.ARREST_VIEW],
+  Juiz: [PERMISSIONS.JUDICIARY_VIEW, PERMISSIONS.JUDICIARY_MANAGE, PERMISSIONS.ALVARAS_VIEW, PERMISSIONS.ALVARAS_MANAGE, PERMISSIONS.BO_VIEW, PERMISSIONS.ARREST_VIEW, PERMISSIONS.WANTED_VIEW, PERMISSIONS.INVESTIGATIONS_VIEW, PERMISSIONS.INFORMANTES_VIEW],
+  Advogado: [PERMISSIONS.JUDICIARY_VIEW, PERMISSIONS.ALVARAS_VIEW, PERMISSIONS.ARREST_VIEW],
 };
 
 export const normalizeRoleName = (value) => String(value || '').trim().toLowerCase();
