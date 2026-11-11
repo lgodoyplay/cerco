@@ -118,8 +118,11 @@ CREATE TABLE IF NOT EXISTS public.global_chat_messages (
     user_name TEXT,
     user_avatar_url TEXT,
     user_role TEXT,
+    user_role_color TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.global_chat_messages
+  ADD COLUMN IF NOT EXISTS user_role_color TEXT;
 ALTER TABLE public.global_chat_messages ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Global chat read for authenticated users" ON public.global_chat_messages;
 CREATE POLICY "Global chat read for authenticated users"

@@ -10,6 +10,13 @@ const isMissingTableError = (error) => {
   return code === '42P01' || code === 'PGRST205' || message.includes('does not exist') || message.includes('relation') || message.includes('not found');
 };
 
+const isMissingColumnError = (error) => {
+  const code = error?.code || '';
+  const message = String(error?.message || '').toLowerCase();
+
+  return code === '42703' || message.includes('column') && message.includes('does not exist');
+};
+
 const getProfileAvatar = (userId, profileMap, fallback) => {
   const profile = userId ? profileMap?.[userId] : null;
   const rawAvatarUrl = profile?.avatar_url || fallback || null;
@@ -111,31 +118,51 @@ export const chatService = {
         || currentUser.avatar
         || null;
 
-      const payload = {
+      const basePayload = {
         user_id: currentUser.id,
         content: safeContent.slice(0, 1000),
         user_name: currentUser.full_name || currentUser.username || currentUser.email || 'Usuário',
         user_avatar_url: normalizedAvatar,
         user_role: currentUser.role || null,
-        user_role_color: userRoleColor || null,
       };
 
-      const { data, error } = await supabase
-        .from(CHAT_TABLE)
-        .insert(payload)
-        .select('*')
-        .single();
+      const payloadCandidates = [basePayload];
 
-      if (error) {
+      if (userRoleColor) {
+        payloadCandidates.push({
+          ...basePayload,
+          user_role_color: userRoleColor,
+        });
+      }
+
+      let lastError = null;
+
+      for (const payload of payloadCandidates) {
+        const { data, error } = await supabase
+          .from(CHAT_TABLE)
+          .insert(payload)
+          .select('*')
+          .single();
+
+        if (!error) {
+          return normalizeMessage(data, currentUser);
+        }
+
+        lastError = error;
+
         if (isMissingTableError(error)) {
           console.info('Chat: tabela ainda não existe no banco; não foi possível enviar a mensagem.');
           return null;
         }
-        console.warn('Chat: erro ao enviar mensagem', error);
-        return null;
+
+        if (!isMissingColumnError(error)) {
+          console.warn('Chat: erro ao enviar mensagem', error);
+          return null;
+        }
       }
 
-      return normalizeMessage(data, currentUser);
+      console.warn('Chat: erro ao enviar mensagem', lastError);
+      return null;
     } catch (error) {
       console.warn('Chat: exceção ao enviar mensagem', error);
       return null;
