@@ -15,8 +15,16 @@ const CorporationStructureDetail = () => {
   const { type, id } = useParams();
   const { corporation, users, updateCorporation } = useSettings();
   const safeType = validTypes.includes(type) ? type : 'departments';
-  const currentList = normalizeCorporationList(corporation?.[safeType] || [], safeType);
-  const currentItem = currentList.find((item) => item.id === id) || null;
+
+  const currentList = useMemo(
+    () => normalizeCorporationList(corporation?.[safeType] || [], safeType),
+    [corporation, safeType]
+  );
+
+  const currentItem = useMemo(
+    () => currentList.find((item) => item.id === id) || null,
+    [currentList, id]
+  );
 
   const [form, setForm] = useState({ name: '', chiefId: '', members: [] });
   const [saving, setSaving] = useState(false);
