@@ -78,6 +78,7 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
   const { user } = useAuth();
   const [reformulating, setReformulating] = useState(false);
   const [boType, setBoType] = useState('cidadao');
+  const isPoliceBo = boType === 'policial';
   const boTypeConfig = getBoTypeConfig(boType);
   const isInternal = variant === 'internal';
   const storageTable = isInternal ? 'boletins_internos' : 'boletins';
@@ -172,9 +173,9 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
       ...prev,
       date: formattedDate,
       officer: prev.officer || user?.full_name || user?.nome || user?.username || '',
-      arrestOfficerId: prev.arrestOfficerId || user?.badge || ''
+      ...(isPoliceBo ? { arrestOfficerId: prev.arrestOfficerId || user?.badge || '' } : { arrestOfficerName: '', arrestOfficerId: '' })
     }));
-  }, [id, user]);
+  }, [id, user, isPoliceBo]);
 
   useEffect(() => {
     if (!id) return;
@@ -324,8 +325,13 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
         localizacao: formData.location,
         data_fato: formData.date,
         policial_responsavel: officerName,
-        nome_policial_prisao: formData.arrestOfficerName,
-        id_policial_prisao: formData.arrestOfficerId,
+        ...(isPoliceBo ? {
+          nome_policial_prisao: formData.arrestOfficerName,
+          id_policial_prisao: formData.arrestOfficerId
+        } : {
+          nome_policial_prisao: '',
+          id_policial_prisao: ''
+        }),
         status: id ? existingStatus : 'Registrado'
       };
 
@@ -396,7 +402,7 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
               { name: "Local", value: formData.location, inline: true },
               { name: "Data e Hora do Fato", value: formData.date, inline: true },
               { name: "Policial Responsável pelo BO", value: officerName, inline: true },
-              ...(formData.arrestOfficerName ? [{ name: "Policial Responsável pela Prisão", value: `${formData.arrestOfficerName} (${formData.arrestOfficerId || 'ID não informado'})`, inline: true }] : [])
+              ...(isPoliceBo && formData.arrestOfficerName ? [{ name: "Policial Responsável pela Prisão", value: `${formData.arrestOfficerName} (${formData.arrestOfficerId || 'ID não informado'})`, inline: true }] : [])
             ],
             footer: { text: "Sistema de Ocorrências Polícia Civil - Euforia" },
             timestamp: new Date().toISOString()
@@ -489,7 +495,16 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
             <button
               key={type}
               type="button"
-              onClick={() => setBoType(type)}
+              onClick={() => {
+                setBoType(type);
+                if (type === 'cidadao') {
+                  setFormData((prev) => ({
+                    ...prev,
+                    arrestOfficerName: '',
+                    arrestOfficerId: ''
+                  }));
+                }
+              }}
               className={clsx(
                 'rounded-2xl border px-4 py-3 text-left transition-all',
                 isSelected
@@ -690,43 +705,47 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
             )}
           </div>
 
-          {/* Nome do Policial Responsável pela Prisão em Flagrante */}
-          <div>
-            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
-              Nome do Policial Responsável pela Prisão em Flagrante
-              <span className="text-slate-500 ml-1">(Opcional)</span>
-            </label>
-            <div className="relative">
-              <User className="absolute left-4 top-3.5 text-slate-600" size={20} />
-              <input
-                type="text"
-                name="arrestOfficerName"
-                value={formData.arrestOfficerName}
-                onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
-                placeholder="Nome completo do policial"
-              />
-            </div>
-          </div>
+          {isPoliceBo && (
+            <>
+              {/* Nome do Policial Responsável pela Prisão em Flagrante */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
+                  Nome do Policial Responsável pela Prisão em Flagrante
+                  <span className="text-slate-500 ml-1">(Opcional)</span>
+                </label>
+                <div className="relative">
+                  <User className="absolute left-4 top-3.5 text-slate-600" size={20} />
+                  <input
+                    type="text"
+                    name="arrestOfficerName"
+                    value={formData.arrestOfficerName}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                    placeholder="Nome completo do policial"
+                  />
+                </div>
+              </div>
 
-          {/* ID do Policial Responsável pela Prisão em Flagrante */}
-          <div>
-            <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
-              ID/Distintivo do Policial Responsável pela Prisão em Flagrante
-              <span className="text-slate-500 ml-1">(Opcional)</span>
-            </label>
-            <div className="relative">
-              <Shield className="absolute left-4 top-3.5 text-slate-600" size={20} />
-              <input
-                type="text"
-                name="arrestOfficerId"
-                value={formData.arrestOfficerId}
-                onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
-                placeholder="Distintivo ou ID"
-              />
-            </div>
-          </div>
+              {/* ID do Policial Responsável pela Prisão em Flagrante */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
+                  ID/Distintivo do Policial Responsável pela Prisão em Flagrante
+                  <span className="text-slate-500 ml-1">(Opcional)</span>
+                </label>
+                <div className="relative">
+                  <Shield className="absolute left-4 top-3.5 text-slate-600" size={20} />
+                  <input
+                    type="text"
+                    name="arrestOfficerId"
+                    value={formData.arrestOfficerId}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
+                    placeholder="Distintivo ou ID"
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Descrição */}
           <div className="md:col-span-2">
