@@ -25,12 +25,35 @@ const getRolePermissionState = (role = {}) => {
   }, {});
 };
 
+const getRoleType = (role = {}) => {
+  if (role.kind === 'third_party' || role.category === 'third_party' || role.isThirdParty) return 'third_party';
+  return 'main';
+};
+
+const sortRoles = (roleList = []) => {
+  return [...roleList].sort((a, b) => {
+    const categoryOrder = { main: 0, third_party: 1 };
+    const aType = getRoleType(a);
+    const bType = getRoleType(b);
+
+    if (categoryOrder[aType] !== categoryOrder[bType]) {
+      return categoryOrder[aType] - categoryOrder[bType];
+    }
+
+    return (a.hierarchy || 0) - (b.hierarchy || 0);
+  });
+};
+
 const RolesSettings = () => {
   const { roles, updateRoles, logAction } = useSettings();
   const [newRole, setNewRole] = useState('');
   const [loading, setLoading] = useState(false);
   const [newRolePermissions, setNewRolePermissions] = useState(createEmptyPermissionState());
   const [expandedRoleId, setExpandedRoleId] = useState(null);
+  const [activeRoleType, setActiveRoleType] = useState('main');
+  const [editingRoleId, setEditingRoleId] = useState(null);
+  const [editingRoleName, setEditingRoleName] = useState('');
+  const displayedRoles = sortRoles(roles).filter((role) => getRoleType(role) === activeRoleType);
 
   const PermissionGroupAccordion = ({ group, groupState, onToggleGroup, onTogglePermission, defaultOpen = true }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -153,6 +176,7 @@ const RolesSettings = () => {
 
     setLoading(true);
     try {
+      const roleType = activeRoleType === 'third_party' ? 'third_party' : 'main';
       const nextHierarchy = roles.length > 0 ? Math.max(...roles.map((role) => role.hierarchy || 0)) + 1 : 1;
       const selectedPermissions = Object.entries(newRolePermissions).flatMap(([groupId, permissionsById]) => {
         const group = PERMISSION_GROUPS.find((item) => item.id === groupId);
@@ -166,6 +190,9 @@ const RolesSettings = () => {
         id: Date.now(),
         title: newRole.trim(),
         hierarchy: nextHierarchy,
+        kind: roleType,
+        category: roleType,
+        isThirdParty: roleType === 'third_party',
         permissions: [...new Set(selectedPermissions)]
       };
 
@@ -189,11 +216,57 @@ const RolesSettings = () => {
     logAction(`Cargo removido: ID ${id}`);
   };
 
-  const moveRole = async (index, direction) => {
-    const newRoles = [...roles];
-    const [movedRole] = newRoles.splice(index, 1);
-    newRoles.splice(index + direction, 0, movedRole);
-    const updatedRoles = newRoles.map((role, idx) => ({ ...role, hierarchy: idx + 1 }));
+  const handleRenameRole = async (roleId) => {
+    const trimmedName = editingRoleName.trim();
+    if (!trimmedName) {
+      setEditingRoleId(null);
+      setEditingRoleName('');
+      return;
+    }
+
+    const updatedRoles = roles.map((role) =>
+      role.id === roleId ? { ...role, title: trimmedName } : role
+    );
+
+    await updateRoles(updatedRoles);
+    logAction(`Cargo renomeado: ${trimmedName}`);
+    setEditingRoleId(null);
+    setEditingRoleName('');
+  };
+
+  const moveRole = async (roleId, direction) => {
+    const orderedRoles = sortRoles(roles);
+    const sameTypeRoles = orderedRoles.filter((role) => getRoleType(role) === activeRoleType);
+    const currentIndex = sameTypeRoles.findIndex((role) => role.id === roleId);
+    if (currentIndex === -1) return;
+
+    const nextIndex = currentIndex + direction;
+    if (nextIndex < 0 || nextIndex >= sameTypeRoles.length) return;
+
+    const [movedRole] = sameTypeRoles.splice(currentIndex, 1);
+    sameTypeRoles.splice(nextIndex, 0, movedRole);
+
+    const rebuiltRoles = [];
+    const sameTypeQueue = [...sameTypeRoles];
+
+    orderedRoles.forEach((role) => {
+      if (getRoleType(role) !== activeRoleType) {
+        rebuiltRoles.push(role);
+        return;
+      }
+
+      if (sameTypeQueue.length > 0) {
+        rebuiltRoles.push(sameTypeQueue.shift());
+      }
+    });
+
+    const updatedRoles = rebuiltRoles.map((role, idx) => ({
+      ...role,
+      hierarchy: idx + 1,
+      kind: getRoleType(role),
+      isThirdParty: getRoleType(role) === 'third_party'
+    }));
+
     await updateRoles(updatedRoles);
   };
 
@@ -208,6 +281,23 @@ const RolesSettings = () => {
       </div>
 
       <div className="bg-slate-950 border border-slate-800 rounded-xl p-6">
+        <div className="mb-6 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveRoleType('main')}
+            className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${activeRoleType === 'main' ? 'bg-federal-600 text-white' : 'bg-slate-900 text-slate-300 border border-slate-700 hover:border-slate-500'}`}
+          >
+            Cargos da corporação
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveRoleType('third_party')}
+            className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${activeRoleType === 'third_party' ? 'bg-amber-600 text-white' : 'bg-slate-900 text-slate-300 border border-slate-700 hover:border-slate-500'}`}
+          >
+            Cargos terceiros
+          </button>
+        </div>
+
         <form onSubmit={handleAddRole} className="space-y-5 mb-8">
           <div className="flex gap-4">
             <input
@@ -215,7 +305,7 @@ const RolesSettings = () => {
               value={newRole}
               onChange={(e) => setNewRole(e.target.value)}
               className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 outline-none"
-              placeholder="Nome do Cargo / Patente (ex: Agente Especial)"
+              placeholder={activeRoleType === 'third_party' ? 'Nome do cargo de terceiros (ex: Agente de outra guarnição)' : 'Nome do Cargo / Patente (ex: Agente Especial)'}
             />
             <button
               type="submit"
@@ -263,10 +353,11 @@ const RolesSettings = () => {
         </form>
 
         <div className="space-y-3">
-          {roles.slice().sort((a, b) => (a.hierarchy || 0) - (b.hierarchy || 0)).map((role, index) => {
+          {displayedRoles.map((role, index) => {
             const rolePermissionState = getRolePermissionState(role);
             const isExpanded = expandedRoleId === role.id;
             const adminPermissionOnRole = Boolean(rolePermissionState.admin?.[PERMISSIONS.ADMIN_ACCESS]);
+            const isThirdPartyRole = getRoleType(role) === 'third_party';
 
             return (
               <div key={role.id} className="rounded-xl border border-slate-800 bg-slate-900/80 p-4">
@@ -274,15 +365,15 @@ const RolesSettings = () => {
                   <div className="flex items-center gap-3">
                     <div className="flex flex-col gap-1">
                       <button
-                        onClick={() => moveRole(index, -1)}
+                        onClick={() => moveRole(role.id, -1)}
                         disabled={index === 0}
                         className="text-slate-500 hover:text-white disabled:opacity-30 transition-colors"
                       >
                         <ArrowUp size={16} />
                       </button>
                       <button
-                        onClick={() => moveRole(index, 1)}
-                        disabled={index === roles.length - 1}
+                        onClick={() => moveRole(role.id, 1)}
+                        disabled={index === displayedRoles.length - 1}
                         className="text-slate-500 hover:text-white disabled:opacity-30 transition-colors"
                       >
                         <ArrowDown size={16} />
@@ -295,7 +386,47 @@ const RolesSettings = () => {
                   </div>
 
                   <div className="flex-1">
-                    <h3 className="text-white font-bold">{role.title}</h3>
+                    {editingRoleId === role.id ? (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <input
+                          value={editingRoleName}
+                          onChange={(event) => setEditingRoleName(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') handleRenameRole(role.id);
+                            if (event.key === 'Escape') {
+                              setEditingRoleId(null);
+                              setEditingRoleName('');
+                            }
+                          }}
+                          className="flex-1 min-w-[180px] rounded-lg border border-federal-500 bg-slate-950 px-3 py-2 text-white focus:outline-none"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRenameRole(role.id)}
+                          className="rounded-lg bg-federal-600 px-3 py-2 text-xs font-bold text-white hover:bg-federal-500"
+                        >
+                          Salvar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingRoleId(null);
+                            setEditingRoleName('');
+                          }}
+                          className="rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:border-slate-500"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-white font-bold">{role.title}</h3>
+                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.15em] ${isThirdPartyRole ? 'border-amber-500/40 bg-amber-500/10 text-amber-300' : 'border-federal-500/40 bg-federal-500/10 text-federal-300'}`}>
+                          {isThirdPartyRole ? 'Terceiro' : 'Corpo'}
+                        </span>
+                      </div>
+                    )}
                     <p className="text-xs text-slate-400">
                       {adminPermissionOnRole
                         ? 'Acesso administrativo ativo'
@@ -306,6 +437,19 @@ const RolesSettings = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    {editingRoleId !== role.id && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingRoleId(role.id);
+                          setEditingRoleName(role.title || '');
+                        }}
+                        className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-medium text-slate-200 hover:border-federal-500 hover:text-white"
+                      >
+                        Editar nome
+                      </button>
+                    )}
+
                     <button
                       type="button"
                       onClick={() => setExpandedRoleId(isExpanded ? null : role.id)}
