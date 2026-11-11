@@ -3,6 +3,32 @@ export const getPeopleList = (value, fallback = '') => {
   return fallback ? [{ name: fallback, passport: '' }] : [];
 };
 
+export const getBoTypeConfig = (boType = 'cidadao') => {
+  const normalized = String(boType || 'cidadao').trim().toLowerCase();
+
+  if (normalized === 'policial') {
+    return {
+      value: 'policial',
+      label: 'BO Policial',
+      primaryLabel: 'Vítima',
+      secondaryLabel: 'Culpado / Suspeito',
+      helperText: 'Inclua as vítimas, os culpados e as informações do fato.',
+      primaryPlaceholder: 'Nome da vítima',
+      secondaryPlaceholder: 'Nome do culpado ou suspeito'
+    };
+  }
+
+  return {
+    value: 'cidadao',
+    label: 'BO Cidadão',
+    primaryLabel: 'Comunicante',
+    secondaryLabel: 'Pessoa Denunciada',
+    helperText: 'Inclua quem está registrando e quem está sendo denunciado.',
+    primaryPlaceholder: 'Nome do comunicante',
+    secondaryPlaceholder: 'Nome do denunciado'
+  };
+};
+
 export const formatPeopleSummary = (people = [], fallback = 'Nao informado') => {
   const validPeople = (Array.isArray(people) ? people : [])
     .map((person) => ({

@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
 import { ensureWorkflowForBo } from '../../utils/boInvestigationWorkflow';
+import { getBoTypeConfig } from '../../utils/boHelpers';
 
 const createPersonEntry = () => ({ name: '', passport: '' });
 
@@ -76,6 +77,8 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
   const { can } = usePermissions();
   const { user } = useAuth();
   const [reformulating, setReformulating] = useState(false);
+  const [boType, setBoType] = useState('cidadao');
+  const boTypeConfig = getBoTypeConfig(boType);
   const isInternal = variant === 'internal';
   const storageTable = isInternal ? 'boletins_internos' : 'boletins';
   const moduleLabel = isInternal ? 'Boletim Interno' : 'Boletim de Ocorrência';
@@ -463,11 +466,35 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
         </button>
         <h2 className="text-3xl font-bold text-white flex items-center gap-3">
           <Shield className="text-federal-500" size={32} />
-          {id ? `Editar ${moduleLabel}` : `Registrar ${moduleLabel}`}
+          {id ? `Editar ${moduleLabel}` : `Registrar ${boTypeConfig.label}`}
         </h2>
         <p className="text-slate-400 mt-2">
-          {id ? `Atualize os dados do ${moduleLabel.toLowerCase()} já criado.` : 'Preencha os dados abaixo para registrar uma nova ocorrência no sistema.'}
+          {id ? `Atualize os dados do ${moduleLabel.toLowerCase()} já criado.` : boTypeConfig.helperText}
         </p>
+      </div>
+
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 p-3">
+        {['cidadao', 'policial'].map((type) => {
+          const isSelected = boType === type;
+          const config = getBoTypeConfig(type);
+
+          return (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setBoType(type)}
+              className={clsx(
+                'rounded-xl border px-4 py-3 text-left transition-all',
+                isSelected
+                  ? 'border-federal-500 bg-federal-500/10 text-white shadow-[0_0_0_1px_rgba(96,165,250,0.28)]'
+                  : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500'
+              )}
+            >
+              <div className="text-sm font-bold">{config.label}</div>
+              <div className="text-xs text-slate-400 mt-1">{config.helperText}</div>
+            </button>
+          );
+        })}
       </div>
 
       <NotificationBanner
@@ -483,14 +510,16 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
           {/* Comunicante */}
           <div className="md:col-span-2">
             <div className="flex items-center justify-between gap-3 mb-3">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Pessoas Fazendo o Registro</label>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">
+                {boType === 'policial' ? 'Vítimas' : 'Pessoas Fazendo o Registro'}
+              </label>
               <button
                 type="button"
                 onClick={() => addPersonField('complainants')}
                 className="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition-colors"
               >
                 <Plus size={14} />
-                Adicionar Pessoa
+                {boType === 'policial' ? 'Adicionar Vítima' : 'Adicionar Pessoa'}
               </button>
             </div>
 
@@ -509,7 +538,7 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
                           ? "border border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
                           : "border border-slate-700 focus:border-federal-500 focus:ring-1 focus:ring-federal-500"
                       )}
-                      placeholder={`Nome do comunicante ${index + 1}`}
+                      placeholder={`${boTypeConfig.primaryPlaceholder} ${index + 1}`}
                     />
                   </div>
                   <div className="relative">
@@ -544,14 +573,16 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
 
           <div className="md:col-span-2">
             <div className="flex items-center justify-between gap-3 mb-3">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Pessoas Denunciadas</label>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">
+                {boType === 'policial' ? 'Culpados / Suspeitos' : 'Pessoas Denunciadas'}
+              </label>
               <button
                 type="button"
                 onClick={() => addPersonField('reportedPeople')}
                 className="inline-flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition-colors"
               >
                 <Plus size={14} />
-                Adicionar Pessoa
+                {boType === 'policial' ? 'Adicionar Culpado' : 'Adicionar Pessoa'}
               </button>
             </div>
 
@@ -565,7 +596,7 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
                       value={person.name}
                       onChange={(e) => handlePersonChange('reportedPeople', index, 'name', e.target.value)}
                       className="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 focus:ring-1 focus:ring-federal-500 transition-all outline-none"
-                      placeholder={`Nome do denunciado ${index + 1}`}
+                      placeholder={`${boTypeConfig.secondaryPlaceholder} ${index + 1}`}
                     />
                   </div>
                   <div className="relative">
