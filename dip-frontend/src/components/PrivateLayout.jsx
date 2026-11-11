@@ -44,6 +44,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getInitials } from '../utils/stringUtils';
+import { normalizeRoleDisplay } from '../utils/roleUtils';
 import { dedupeNotifications, getVisibleNotifications } from '../utils/notifications.js';
 import { getAvatarPublicUrl } from '../lib/avatar';
 import FloatingChat from './chat/FloatingChat';
@@ -378,7 +379,7 @@ const PrivateLayout = () => {
                   <p className="text-sm font-semibold text-white truncate group-hover:text-federal-400 transition-colors">
                     {user?.full_name || user?.username || 'Agente'}
                   </p>
-                  <p className="text-xs text-federal-400 truncate">{user?.role || 'Agente'}</p>
+                  <p className="text-xs text-federal-400 truncate">{normalizeRoleDisplay(user?.role)}</p>
                   {user?.passport_id && (
                     <p className="text-[10px] text-slate-500 font-mono mt-0.5">#{user.passport_id}</p>
                   )}
@@ -572,7 +573,7 @@ const PrivateLayout = () => {
                 <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl shadow-black/50 z-50 overflow-hidden">
                   <div className="p-3 border-b border-slate-800">
                     <p className="text-sm font-semibold text-white truncate">{user?.full_name || user?.username || 'Agente'}</p>
-                    <p className="text-xs text-federal-400">{user?.role || 'Agente'}</p>
+                    <p className="text-xs text-federal-400">{normalizeRoleDisplay(user?.role)}</p>
                     {user?.passport_id && (
                       <p className="text-[10px] text-slate-500 font-mono mt-0.5">#{user.passport_id}</p>
                     )}

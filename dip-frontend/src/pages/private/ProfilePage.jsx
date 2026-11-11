@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import AvatarUpload from '../../components/AvatarUpload';
 import { getAvatarPublicUrl } from '../../lib/avatar';
+import { normalizeRoleDisplay } from '../../utils/roleUtils';
 import { User, Shield, Calendar, BookOpen, Save, CheckCircle, FileText, AlertTriangle, X, Play, Square, Link2, ArrowLeft } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -346,7 +347,7 @@ const ProfilePage = () => {
               <h2 className="text-xl font-bold text-white">{profile?.full_name}</h2>
               <div className="flex items-center justify-center gap-2 mt-2 text-federal-400 font-medium bg-federal-950/30 py-1 px-3 rounded-full border border-federal-500/20 inline-flex">
                 <Shield size={14} />
-                {profile?.role || 'Agente'}
+                {normalizeRoleDisplay(profile?.role)}
               </div>
 
               <div className="mt-6 grid grid-cols-2 gap-4 w-full pt-6 border-t border-slate-800">

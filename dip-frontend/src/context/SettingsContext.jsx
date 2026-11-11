@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { getRoleTitles, normalizeRoleAssignment, normalizeRoleDisplay } from '../utils/roleUtils';
 
 const SettingsContext = createContext();
 
@@ -25,7 +26,7 @@ const getPersistedRoles = () => {
     if (!rawValue) return DEFAULT_ROLES;
 
     const parsed = JSON.parse(rawValue);
-    if (Array.isArray(parsed) && parsed.length > 0) {
+    if (Array.isArray(parsed)) {
       return parsed;
     }
   } catch (error) {
@@ -113,9 +114,9 @@ export const SettingsProvider = ({ children }) => {
 
         const rolesSetting = data.find(s => s.key === 'roles');
         const persistedRoles = getPersistedRoles();
-        if (rolesSetting && Array.isArray(rolesSetting.value) && rolesSetting.value.length > 0) {
+        if (rolesSetting && Array.isArray(rolesSetting.value)) {
           setRoles(rolesSetting.value);
-        } else if (Array.isArray(persistedRoles) && persistedRoles.length > 0) {
+        } else if (Array.isArray(persistedRoles)) {
           setRoles(persistedRoles);
         }
 
@@ -233,10 +234,44 @@ export const SettingsProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (Array.isArray(roles) && roles.length > 0) {
+    if (Array.isArray(roles)) {
       localStorage.setItem(ROLE_STORAGE_KEY, JSON.stringify(roles));
+    } else {
+      localStorage.removeItem(ROLE_STORAGE_KEY);
     }
   }, [roles]);
+
+  const syncProfilesWithRoles = useCallback(async (nextRoles) => {
+    const validRoleTitles = getRoleTitles(nextRoles);
+
+    try {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('id, role');
+
+      if (error) throw error;
+
+      const staleProfileIds = (profiles || [])
+        .filter((profile) => {
+          const currentRole = normalizeRoleDisplay(profile?.role);
+          return Boolean(currentRole) && !validRoleTitles.has(currentRole);
+        })
+        .map((profile) => profile.id);
+
+      if (staleProfileIds.length > 0) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ role: '' })
+          .in('id', staleProfileIds);
+
+        if (updateError) throw updateError;
+      }
+
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error syncing roles with profiles:', error);
+    }
+  }, [fetchUsers]);
 
   // Fetch Users
   const fetchUsers = useCallback(async () => {
@@ -251,12 +286,12 @@ export const SettingsProvider = ({ children }) => {
         id: u.id,
         name: u.full_name,
         username: u.email, // Using email as username/login
-        role: u.role,
+        role: normalizeRoleDisplay(u.role),
         permissions: u.permissions || [], // Carrega permissões do banco
         avatar_url: u.avatar_url,
         passport_id: u.passport_id,
         active: true,
-        patente: u.role // Mapping role to patente for now
+        patente: normalizeRoleDisplay(u.role) // Mapping role to patente for now
       }));
       setUsers(mappedUsers);
     } catch (error) {
@@ -396,13 +431,14 @@ export const SettingsProvider = ({ children }) => {
       console.log('Adding user with data:', userData);
       
       const permissionsToSave = [];
+      const safeRole = normalizeRoleAssignment(userData.role, roles);
 
       const payload = {
         p_email: userData.username,
         p_password: userData.password,
         p_full_name: userData.name,
         p_passport_id: userData.passport_id || '',
-        p_role: userData.role,
+        p_role: safeRole,
         p_permissions: permissionsToSave
       };
 
@@ -424,12 +460,13 @@ export const SettingsProvider = ({ children }) => {
 
   const updateUser = async (id, userData) => {
     try {
-      // We can update the profile name/role
+      const safeRole = normalizeRoleAssignment(userData.role, roles);
+
       const { error } = await supabase
         .from('profiles')
         .update({
             full_name: userData.name,
-            role: userData.role,
+            role: safeRole,
             permissions: [],
             avatar_url: userData.avatar_url,
             passport_id: userData.passport_id
@@ -469,7 +506,10 @@ export const SettingsProvider = ({ children }) => {
     await saveSetting('corporation', newCorporation);
   };
 
-  const updateRoles = (newRoles) => saveSetting('roles', newRoles);
+  const updateRoles = async (newRoles) => {
+    await saveSetting('roles', newRoles);
+    await syncProfilesWithRoles(newRoles);
+  };
   const updateTemplates = (newTemplates) => saveSetting('templates', newTemplates);
   const updateAppearance = (newAppearance) => saveSetting('appearance', newAppearance);
   const updateSecurity = (newSecurity) => saveSetting('security', newSecurity);

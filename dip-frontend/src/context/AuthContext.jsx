@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { normalizeRoleDisplay } from '../utils/roleUtils';
 
 const AuthContext = createContext(null);
 
@@ -42,7 +43,7 @@ export const AuthProvider = ({ children }) => {
             ...session.user, 
             ...(profile || {}), 
             username: profile?.full_name || session.user.email,
-            role: profile?.role || prev?.role || 'Agente'
+            role: normalizeRoleDisplay(profile?.role) ?? normalizeRoleDisplay(prev?.role) ?? ''
           }));
         }
       } else {

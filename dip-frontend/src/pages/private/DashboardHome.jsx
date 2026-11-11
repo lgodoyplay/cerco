@@ -3,6 +3,7 @@ import { Users, AlertTriangle, FileText, TrendingUp, Search, BadgeCheck, Sun, Mo
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { getAvatarPublicUrl } from '../../lib/avatar';
+import { normalizeRoleDisplay } from '../../utils/roleUtils';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 
 const useCurrentDateTime = () => {
@@ -236,7 +237,7 @@ const DashboardHome = () => {
         .map((profile) => ({
           id: profile.id,
           name: profile.full_name,
-          role: profile.role || 'Usuário',
+          role: normalizeRoleDisplay(profile.role),
           code: profile.passport_id || profile.codigo_funcional || 'Sem código',
           avatar: getAvatarPublicUrl(profile.avatar_url) || null,
         }))
