@@ -79,6 +79,13 @@ const BOList = ({ variant = 'default', embedded = false }) => {
     }
   };
 
+  const normalizeBoStatus = (status) => {
+    const value = String(status || '').trim().toLowerCase();
+    if (value.includes('resol')) return 'Resolvido';
+    if (value.includes('process') || value.includes('andamento')) return 'Em processo';
+    return 'Registrado';
+  };
+
   const filteredBoletins = boletins.filter(bo => {
     const denunciados = formatPeopleSummary(getPeopleList(bo.denunciados_json), '');
     const matchesSearch = (bo.comunicante || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -87,7 +94,7 @@ const BOList = ({ variant = 'default', embedded = false }) => {
       (bo.localizacao || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (bo.id || '').toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = !filterStatus || bo.status === filterStatus;
+    const matchesStatus = !filterStatus || normalizeBoStatus(bo.status) === normalizeBoStatus(filterStatus);
     
     const boDate = bo.data_fato ? new Date(bo.data_fato).setHours(0,0,0,0) : null;
     const startDate = filterDateStart ? new Date(filterDateStart).setHours(0,0,0,0) : null;
@@ -245,7 +252,7 @@ const BOList = ({ variant = 'default', embedded = false }) => {
           >
             <option value="">Todos os Status</option>
             <option value="Registrado">Registrado</option>
-            <option value="Em Andamento">Em Andamento</option>
+            <option value="Em processo">Em processo</option>
             <option value="Resolvido">Resolvido</option>
           </select>
           
@@ -337,7 +344,7 @@ const BOList = ({ variant = 'default', embedded = false }) => {
                   </td>
                   <td className="p-4">
                     <span className="px-2 py-1 rounded text-xs font-bold border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                      {bo.status}
+                      {normalizeBoStatus(bo.status)}
                     </span>
                   </td>
                   <td className="p-4 text-right">

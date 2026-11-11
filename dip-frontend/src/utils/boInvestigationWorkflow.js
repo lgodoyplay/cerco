@@ -1,3 +1,4 @@
+import { jsPDF } from 'jspdf';
 import { supabase } from '../lib/supabase';
 
 export const BO_PROCESS_STEPS = [
@@ -103,7 +104,7 @@ export const createDefaultWorkflow = (boId, bo = {}) => {
     id: `workflow-${boId}`,
     boId,
     titulo: bo?.descricao ? `Processo - ${bo.descricao.slice(0, 80)}` : 'Pasta Digital Investigativa',
-    status: 'em_andamento',
+    status: 'em_processo',
     etapaAtual: 1,
     steps,
     witnesses: [],
@@ -180,7 +181,7 @@ export const loadWorkflowFromSupabase = async (boId) => {
       id: processo.id,
       boId: boId,
       titulo: processo.titulo || 'Pasta Digital Investigativa',
-      status: processo.status || 'em_andamento',
+      status: processo.status || 'em_processo',
       etapaAtual: Number(processo.etapa_atual || 1),
       steps: steps.length ? steps : createDefaultWorkflow(boId).steps,
       witnesses: (testemunhas || []).map((person) => ({ id: person.id, name: person.nome, document: person.documento || '', depoimento: person.depoimento || '' })),
@@ -223,7 +224,7 @@ export const syncWorkflowToSupabase = async (boId, workflow) => {
           {
             bo_id: boId,
             titulo: workflow.titulo || 'Pasta Digital Investigativa',
-            status: workflow.status || 'em_andamento',
+            status: workflow.status || 'em_processo',
             etapa_atual: Number(workflow.etapaAtual || 1),
             created_by: userData?.user?.id || null
           }
@@ -304,7 +305,7 @@ export const syncWorkflowToSupabase = async (boId, workflow) => {
       .from('bo_processos')
       .update({
         titulo: workflow.titulo || 'Pasta Digital Investigativa',
-        status: workflow.status || 'em_andamento',
+        status: workflow.status || 'em_processo',
         etapa_atual: Number(workflow.etapaAtual || 1),
         updated_at: new Date().toISOString()
       })
@@ -319,7 +320,7 @@ export const syncWorkflowToSupabase = async (boId, workflow) => {
       detalhes: {
         bo_id: boId,
         etapa_atual: Number(workflow.etapaAtual || 1),
-        status: workflow.status || 'em_andamento',
+        status: workflow.status || 'em_processo',
         updated_at: new Date().toISOString()
       }
     };
@@ -362,6 +363,93 @@ export const saveWorkflowForBo = (boId, workflow) => {
   }
 
   return next;
+};
+
+export const generateBoInvestigationProcessPDF = (bo, workflow, user) => {
+  if (!bo || !workflow) return false;
+
+  try {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 14;
+    let y = 20;
+
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PROCESSO INVESTIGATIVO - BO', pageWidth / 2, y, { align: 'center' });
+    y += 12;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`BO: ${bo.id}`, margin, y);
+    doc.text(`Responsável: ${bo.policial_responsavel || user?.full_name || user?.nome || user?.username || 'Não informado'}`, pageWidth / 2, y);
+    y += 8;
+    doc.text(`Local: ${bo.localizacao || 'Não informado'}`, margin, y);
+    doc.text(`Data do fato: ${bo.data_fato || 'Não informado'}`, pageWidth / 2, y);
+    y += 12;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumo dos fatos', margin, y);
+    y += 8;
+    doc.setFont('helvetica', 'normal');
+    const summaryLines = doc.splitTextToSize(bo.descricao || 'Sem descrição.', pageWidth - margin * 2);
+    doc.text(summaryLines, margin, y);
+    y += summaryLines.length * 5 + 8;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Etapas do processo', margin, y);
+    y += 8;
+
+    const stepEntries = (workflow.steps || []).filter((step) => step.status === 'concluida' || step.number === workflow.etapaAtual || step.number <= workflow.etapaAtual);
+
+    stepEntries.forEach((step) => {
+      if (y > 250) {
+        doc.addPage();
+        y = 20;
+      }
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text(`${step.number}. ${step.title}`, margin, y);
+      y += 7;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+
+      const notes = step.notes?.trim() ? step.notes.trim() : 'Sem observações registradas.';
+      const wrappedNotes = doc.splitTextToSize(notes, pageWidth - margin * 2);
+      doc.text(wrappedNotes, margin + 4, y);
+      y += wrappedNotes.length * 4.5 + 6;
+
+      if ((workflow.witnesses || []).length && step.number === 5) {
+        const witnessText = (workflow.witnesses || []).map((w) => `- ${w.name || 'Testemunha'}: ${w.statement || 'Sem depoimento'}`).join('\n');
+        const lines = doc.splitTextToSize(witnessText, pageWidth - margin * 2);
+        doc.text(lines, margin + 4, y);
+        y += lines.length * 4.5 + 6;
+      }
+
+      if ((workflow.diligences || []).length && step.number === 6) {
+        const diligenceText = (workflow.diligences || []).map((d) => `- ${d.title || 'Diligência'}: ${d.plan || 'Sem plano registrado'}`).join('\n');
+        const lines = doc.splitTextToSize(diligenceText, pageWidth - margin * 2);
+        doc.text(lines, margin + 4, y);
+        y += lines.length * 4.5 + 6;
+      }
+    });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Conclusão final', margin, y);
+    y += 8;
+    doc.setFont('helvetica', 'normal');
+    const conclusion = (workflow.steps || []).find((step) => step.number === 10)?.notes || 'Conclusão final não registrada.';
+    const conclusionLines = doc.splitTextToSize(conclusion, pageWidth - margin * 2);
+    doc.text(conclusionLines, margin, y);
+
+    doc.save(`processo_bo_${bo.id}.pdf`);
+    return true;
+  } catch (error) {
+    console.error('Erro ao gerar PDF do processo do BO:', error);
+    return false;
+  }
 };
 
 export const ensureWorkflowForBo = async (boId, bo = {}) => {
@@ -436,7 +524,7 @@ export const advanceWorkflowStep = (boId, workflow) => {
   const nextNumber = Math.min(workflow.etapaAtual + 1, workflow.steps.length);
   const nextWorkflow = {
     ...workflow,
-    status: nextNumber >= workflow.steps.length ? 'concluido' : 'em_andamento',
+    status: 'em_processo',
     etapaAtual: nextNumber,
     steps: nextSteps,
     auditTrail: [

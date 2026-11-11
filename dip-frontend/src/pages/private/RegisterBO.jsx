@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { supabase } from '../../lib/supabase';
 import { useSettingsContext } from '../../context/SettingsContext';
 import { usePermissions } from '../../hooks/usePermissions';
+import { useAuth } from '../../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import NotificationBanner from '../../components/feedback/NotificationBanner';
 import { ensureWorkflowForBo } from '../../utils/boInvestigationWorkflow';
@@ -73,6 +74,7 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
   const { id } = useParams();
   const { logAction, discordConfig } = useSettingsContext();
   const { can } = usePermissions();
+  const { user } = useAuth();
   const [reformulating, setReformulating] = useState(false);
   const isInternal = variant === 'internal';
   const storageTable = isInternal ? 'boletins_internos' : 'boletins';
@@ -162,10 +164,14 @@ const RegisterBO = ({ variant = 'default', embedded = false }) => {
   useEffect(() => {
     if (id) return;
     const now = new Date();
-    // Format as YYYY-MM-DDTHH:MM for datetime-local input
     const formattedDate = now.toISOString().slice(0, 16);
-    setFormData(prev => ({ ...prev, date: formattedDate }));
-  }, [id]);
+    setFormData(prev => ({
+      ...prev,
+      date: formattedDate,
+      officer: prev.officer || user?.full_name || user?.nome || user?.username || '',
+      arrestOfficerId: prev.arrestOfficerId || user?.badge || ''
+    }));
+  }, [id, user]);
 
   useEffect(() => {
     if (!id) return;

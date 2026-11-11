@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS public.bo_processos (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   bo_id UUID REFERENCES public.boletins(id) ON DELETE CASCADE,
   titulo TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'em_andamento',
+  status TEXT NOT NULL DEFAULT 'em_processo',
   etapa_atual INTEGER NOT NULL DEFAULT 1,
   created_by UUID REFERENCES auth.users(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -192,7 +192,7 @@ BEGIN
     VALUES (
       NEW.id,
       COALESCE(NEW.descricao, 'Pasta Digital Investigativa'),
-      'em_andamento',
+      'em_processo',
       1,
       NEW.created_by
     );

@@ -14,9 +14,11 @@ import {
   advanceWorkflowStep,
   appendWorkflowEntry,
   ensureWorkflowForBo,
+  generateBoInvestigationProcessPDF,
   isStepUnlocked,
   loadWorkflowForBo,
   loadWorkflowFromSupabase,
+  saveWorkflowForBo,
   updateWorkflowNote,
   updateWorkflowStepDocument
 } from '../../utils/boInvestigationWorkflow';
@@ -37,9 +39,13 @@ const BODetail = ({ variant = 'default' }) => {
   const [notification, setNotification] = useState(null);
   const [showDescription, setShowDescription] = useState(true);
   const [workflow, setWorkflow] = useState(null);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [newWitness, setNewWitness] = useState('');
+  const [newWitnessStatement, setNewWitnessStatement] = useState('');
   const [newInvolved, setNewInvolved] = useState('');
+  const [newInvolvedRole, setNewInvolvedRole] = useState('');
   const [newDiligence, setNewDiligence] = useState('');
+  const [newDiligencePlan, setNewDiligencePlan] = useState('');
 
   const canManage = can('bo_manage');
 
@@ -93,6 +99,14 @@ const BODetail = ({ variant = 'default' }) => {
   }, [bo?.id, bo?.descricao]);
 
   useEffect(() => {
+    if (!workflow?.steps?.length) return;
+    const nextIndex = Math.min(currentStepIndex, workflow.steps.length - 1);
+    if (nextIndex !== currentStepIndex) {
+      setCurrentStepIndex(nextIndex);
+    }
+  }, [workflow, currentStepIndex]);
+
+  useEffect(() => {
     if (!notification) return undefined;
     const timer = window.setTimeout(() => setNotification(null), 3500);
     return () => window.clearTimeout(timer);
@@ -128,10 +142,36 @@ const BODetail = ({ variant = 'default' }) => {
     }
   };
 
-  const handleAdvanceWorkflow = () => {
+  const updateWorkflowState = (updater) => {
     if (!bo?.id || !workflow) return;
+
+    const nextWorkflow = typeof updater === 'function' ? updater(workflow) : updater;
+    if (!nextWorkflow) return;
+
+    const saved = saveWorkflowForBo(bo.id, nextWorkflow);
+    setWorkflow(saved || nextWorkflow);
+  };
+
+  const currentStep = workflow?.steps?.[currentStepIndex] || null;
+
+  const normalizeWorkflowStatus = (status) => {
+    const normalized = String(status || '').trim().toLowerCase();
+    if (normalized.includes('resol')) return 'Resolvido';
+    if (normalized.includes('process') || normalized.includes('andamento') || normalized.includes('aberto')) return 'Em processo';
+    return 'Em processo';
+  };
+
+  const isWorkflowResolved = () => {
+    const normalized = String(workflow?.status || '').trim().toLowerCase();
+    return normalized.includes('resol') || normalized.includes('conclu');
+  };
+
+  const handleAdvanceWorkflow = () => {
+    if (!bo?.id || !workflow || !currentStep || isWorkflowResolved()) return;
+
     const nextWorkflow = advanceWorkflowStep(bo.id, workflow);
     setWorkflow(nextWorkflow);
+    setCurrentStepIndex((prev) => Math.min(prev + 1, (workflow.steps?.length || 1) - 1));
   };
 
   const handleToggleDocument = (stepNumber, documentId) => {
@@ -148,23 +188,126 @@ const BODetail = ({ variant = 'default' }) => {
 
   const handleAddWitness = () => {
     if (!bo?.id || !workflow || !newWitness.trim()) return;
-    const nextWorkflow = appendWorkflowEntry(bo.id, workflow, 'witness', { name: newWitness.trim() });
+    const nextWorkflow = appendWorkflowEntry(bo.id, workflow, 'witness', {
+      name: newWitness.trim(),
+      statement: newWitnessStatement.trim(),
+      document: ''
+    });
     setWorkflow(nextWorkflow);
     setNewWitness('');
+    setNewWitnessStatement('');
   };
 
   const handleAddInvolved = () => {
     if (!bo?.id || !workflow || !newInvolved.trim()) return;
-    const nextWorkflow = appendWorkflowEntry(bo.id, workflow, 'involved', { name: newInvolved.trim() });
+    const nextWorkflow = appendWorkflowEntry(bo.id, workflow, 'involved', {
+      name: newInvolved.trim(),
+      papel: newInvolvedRole.trim(),
+      observacoes: ''
+    });
     setWorkflow(nextWorkflow);
     setNewInvolved('');
+    setNewInvolvedRole('');
   };
 
   const handleAddDiligence = () => {
     if (!bo?.id || !workflow || !newDiligence.trim()) return;
-    const nextWorkflow = appendWorkflowEntry(bo.id, workflow, 'diligence', { title: newDiligence.trim() });
+    const nextWorkflow = appendWorkflowEntry(bo.id, workflow, 'diligence', {
+      title: newDiligence.trim(),
+      plan: newDiligencePlan.trim(),
+      status: 'pendente'
+    });
     setWorkflow(nextWorkflow);
     setNewDiligence('');
+    setNewDiligencePlan('');
+  };
+
+  const handleFinalizeWorkflow = async () => {
+    if (!bo || !workflow) return;
+
+    const lastStep = workflow.steps?.[workflow.steps.length - 1];
+    const hasFinalConclusion = Boolean(lastStep?.notes?.trim());
+    if (!hasFinalConclusion) {
+      setNotification({ type: 'warning', message: 'Inclua uma conclusão final antes de encerrar o processo.' });
+      setCurrentStepIndex(workflow.steps.length - 1);
+      return;
+    }
+
+    const finalWorkflow = {
+      ...workflow,
+      status: 'resolvido',
+      etapaAtual: workflow.steps.length,
+      steps: (workflow.steps || []).map((step) => ({
+        ...step,
+        status: 'concluida',
+        completedAt: step.completedAt || new Date().toISOString()
+      })),
+      updatedAt: new Date().toISOString()
+    };
+
+    const saved = saveWorkflowForBo(bo.id, finalWorkflow);
+    setWorkflow(saved || finalWorkflow);
+    setBo((previous) => (previous ? { ...previous, status: 'Resolvido' } : previous));
+
+    try {
+      await supabase.from(storageTable).update({ status: 'Resolvido', updated_at: new Date().toISOString() }).eq('id', bo.id);
+    } catch (error) {
+      console.error('Erro ao atualizar status do BO para resolvido:', error);
+    }
+
+    const generated = generateBoInvestigationProcessPDF(bo, saved || finalWorkflow, user);
+    if (generated) {
+      setNotification({ type: 'success', message: 'Processo finalizado e PDF gerado com sucesso.' });
+    } else {
+      setNotification({ type: 'error', message: 'Processo registrado, mas não foi possível gerar o PDF final.' });
+    }
+  };
+
+  const handleReopenWorkflow = async () => {
+    if (!bo || !workflow) return;
+
+    const reopenedWorkflow = {
+      ...workflow,
+      status: 'em_processo',
+      etapaAtual: Math.max(1, workflow.steps?.length || 1),
+      steps: (workflow.steps || []).map((step, index) => ({
+        ...step,
+        status: index === (workflow.steps.length || 1) - 1 ? 'ativa' : index < (workflow.steps.length || 1) - 1 ? 'concluida' : 'bloqueada',
+        completedAt: step.completedAt || (index < (workflow.steps.length || 1) - 1 ? new Date().toISOString() : null)
+      })),
+      updatedAt: new Date().toISOString()
+    };
+
+    const saved = saveWorkflowForBo(bo.id, reopenedWorkflow);
+    setWorkflow(saved || reopenedWorkflow);
+    setCurrentStepIndex((workflow.steps?.length || 1) - 1);
+    setBo((previous) => (previous ? { ...previous, status: 'Em processo' } : previous));
+
+    try {
+      await supabase.from(storageTable).update({ status: 'Em processo', updated_at: new Date().toISOString() }).eq('id', bo.id);
+    } catch (error) {
+      console.error('Erro ao reabrir o processo do BO:', error);
+    }
+
+    setNotification({ type: 'success', message: 'Pasta reaberta com sucesso. O processo voltou para andamento.' });
+  };
+
+  const canAdvanceCurrentStep = () => {
+    if (!currentStep) return false;
+
+    if (currentStep.number === 5) {
+      return (workflow?.witnesses || []).some((w) => w.name?.trim() && w.statement?.trim());
+    }
+
+    if (currentStep.number === 6) {
+      return (workflow?.diligences || []).some((d) => d.title?.trim() && (d.plan || '').trim());
+    }
+
+    if (currentStep.number === 9 || currentStep.number === 10) {
+      return Boolean(currentStep.notes?.trim());
+    }
+
+    return Boolean(currentStep.notes?.trim()) || (currentStep.documents || []).some((document) => document.uploaded || document.url);
   };
 
   return (
@@ -310,14 +453,39 @@ const BODetail = ({ variant = 'default' }) => {
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Pasta Digital Investigativa</p>
                   <h4 className="text-lg font-bold text-white mt-1">Fluxo do BO por etapas</h4>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleAdvanceWorkflow}
-                  disabled={!workflow || workflow.status === 'concluido'}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold transition-colors"
-                >
-                  Avançar etapa
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStepIndex((prev) => Math.max(0, prev - 1))}
+                    disabled={!workflow || currentStepIndex === 0}
+                    className="px-3 py-2 rounded-xl border border-slate-700 bg-slate-950 text-slate-300 disabled:opacity-40"
+                  >
+                    Etapa anterior
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (currentStep?.number === workflow?.steps?.length) {
+                        handleFinalizeWorkflow();
+                        return;
+                      }
+                      handleAdvanceWorkflow();
+                    }}
+                    disabled={!workflow || !canAdvanceCurrentStep() || isWorkflowResolved()}
+                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold transition-colors"
+                  >
+                    {currentStep?.number === workflow?.steps?.length ? 'Concluir processo' : 'Avançar etapa'}
+                  </button>
+                  {workflow && isWorkflowResolved() && (
+                    <button
+                      type="button"
+                      onClick={handleReopenWorkflow}
+                      className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold transition-colors"
+                    >
+                      Abrir novamente
+                    </button>
+                  )}
+                </div>
               </div>
 
               {workflow ? (
@@ -325,131 +493,303 @@ const BODetail = ({ variant = 'default' }) => {
                   <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/70 px-4 py-3">
                     <div>
                       <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Status</p>
-                      <p className="text-white font-bold">{workflow.status === 'concluido' ? 'Concluído' : 'Em andamento'}</p>
+                      <p className="text-white font-bold">{normalizeWorkflowStatus(workflow.status)}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Etapa atual</p>
-                      <p className="text-white font-bold">{workflow.etapaAtual || 1}/10</p>
+                      <p className="text-white font-bold">{(currentStep?.number || workflow.etapaAtual || 1)}/{workflow.steps.length || 10}</p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {workflow.steps.map((step) => {
-                      const unlocked = isStepUnlocked(step, workflow);
-                      const isCurrent = workflow.etapaAtual === step.number;
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                    {currentStep && (
+                      <>
+                        <div className="flex items-center justify-between gap-3 mb-4">
+                          <div className="flex items-center gap-3">
+                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-federal-500/15 text-federal-300 font-bold border border-federal-500/30">
+                              {String(currentStep.number).padStart(2, '0')}
+                            </span>
+                            <div>
+                              <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Etapa ativa</p>
+                              <h5 className="text-lg font-bold text-white">{currentStep.title}</h5>
+                            </div>
+                          </div>
+                          <span className="rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-3 py-1 text-[10px] font-bold uppercase">
+                            {currentStep.status === 'concluida' ? 'Concluída' : 'Em andamento'}
+                          </span>
+                        </div>
 
-                      return (
-                        <div
-                          key={step.id}
-                          className={`rounded-xl border p-3 ${
-                            step.status === 'concluida'
-                              ? 'border-emerald-500/30 bg-emerald-500/5'
-                              : unlocked
-                                ? 'border-federal-500/30 bg-federal-500/5'
-                                : 'border-slate-800 bg-slate-950/60'
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-center gap-2">
-                              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white border border-slate-700">
-                                {String(step.number).padStart(2, '0')}
-                              </span>
-                              <div>
-                                <h5 className="text-sm font-bold text-white">{step.title}</h5>
-                                <p className="text-[11px] text-slate-400">{step.requiredDocs.join(' • ')}</p>
+                        <p className="text-sm text-slate-300 mb-4">{currentStep.description}</p>
+
+                        {currentStep.number === 1 && (
+                          <div className="space-y-3">
+                            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+                              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">Abertura da pasta</p>
+                              <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-sm text-slate-200">
+                                  <input type="checkbox" checked readOnly className="h-4 w-4 accent-emerald-500" />
+                                  BO cadastrado
+                                </label>
+                                <label className="flex items-center gap-2 text-sm text-slate-200">
+                                  <input type="checkbox" checked readOnly className="h-4 w-4 accent-emerald-500" />
+                                  Identificação e coleta inicial da ocorrência incluidas
+                                </label>
                               </div>
                             </div>
-                            <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${
-                              step.status === 'concluida'
-                                ? 'bg-emerald-500/15 text-emerald-300'
-                                : unlocked || isCurrent
-                                  ? 'bg-federal-500/15 text-federal-300'
-                                  : 'bg-slate-800 text-slate-400'
-                            }`}>
-                              {step.status === 'concluida' ? 'Concluída' : unlocked || isCurrent ? 'Liberada' : 'Bloqueada'}
-                            </span>
+                            <textarea
+                              value={currentStep.notes || ''}
+                              onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
+                              placeholder="Descreva a abertura da pasta, o contexto e a identificação inicial do caso..."
+                              className="w-full min-h-[110px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
+                            />
                           </div>
-                          <p className="mt-2 text-xs text-slate-300">{step.description}</p>
+                        )}
 
-                          <div className="mt-3 space-y-2">
-                            {step.documents?.map((document) => (
-                              <label key={document.id} className="flex items-center justify-between gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-2 py-1.5 text-[11px] text-slate-300">
-                                <span>{document.label}</span>
-                                <input
-                                  type="checkbox"
-                                  checked={Boolean(document.uploaded)}
-                                  onChange={() => handleToggleDocument(step.number, document.id)}
-                                  className="h-4 w-4 accent-emerald-500"
-                                />
+                        {currentStep.number === 2 && (
+                          <div className="space-y-3">
+                            <textarea
+                              value={currentStep.notes || ''}
+                              onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
+                              placeholder="Descreva a coleta inicial, dados da vítima, local, horário, partes envolvidas e informações preliminares..."
+                              className="w-full min-h-[120px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
+                            />
+                            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+                              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">Documentos de apoio</p>
+                              <div className="space-y-2">
+                                {(currentStep.documents || []).map((document) => (
+                                  <label key={document.id} className="flex items-center justify-between gap-2 rounded-lg border border-slate-700 bg-slate-950 px-2 py-2 text-xs text-slate-300">
+                                    <span>{document.label}</span>
+                                    <input
+                                      type="checkbox"
+                                      checked={Boolean(document.uploaded)}
+                                      onChange={() => handleToggleDocument(currentStep.number, document.id)}
+                                      className="h-4 w-4 accent-emerald-500"
+                                    />
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {currentStep.number === 3 && (
+                          <div className="space-y-3">
+                            <textarea
+                              value={currentStep.notes || ''}
+                              onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
+                              placeholder="Descreva o cenário, perícia inicialmente necessária, vestígios, ambiente e elementos físicos relevantes..."
+                              className="w-full min-h-[120px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
+                            />
+                            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+                              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">Necessidade de perícia</p>
+                              <label className="flex items-center gap-2 text-sm text-slate-200">
+                                <input type="checkbox" checked={Boolean(currentStep.documents?.some((item) => item.uploaded))} onChange={() => handleToggleDocument(currentStep.number, currentStep.documents?.[0]?.id || 'scenario-check')} className="h-4 w-4 accent-emerald-500" />
+                                Cenário e perícia foram avaliados para este caso
                               </label>
-                            ))}
+                            </div>
                           </div>
+                        )}
 
-                          <textarea
-                            value={step.notes || ''}
-                            onChange={(event) => handleWorkflowNote(step.number, event.target.value)}
-                            placeholder="Registrar observações da etapa..."
-                            className="mt-3 w-full min-h-[64px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
+                        {currentStep.number === 4 && (
+                          <div className="space-y-3">
+                            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+                              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-3">Catalogar provas digitais</p>
+                              <div className="space-y-2">
+                                {(currentStep.documents || []).map((document) => (
+                                  <label key={document.id} className="flex items-center justify-between gap-2 rounded-lg border border-slate-700 bg-slate-950 px-2 py-2 text-xs text-slate-300">
+                                    <span>{document.label}</span>
+                                    <input
+                                      type="checkbox"
+                                      checked={Boolean(document.uploaded)}
+                                      onChange={() => handleToggleDocument(currentStep.number, document.id)}
+                                      className="h-4 w-4 accent-emerald-500"
+                                    />
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                            <textarea
+                              value={currentStep.notes || ''}
+                              onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
+                              placeholder="Liste fotos, vídeos, áudios, links ou referências digitais da prova. Descreva origem, data e observação..."
+                              className="w-full min-h-[120px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
+                            />
+                          </div>
+                        )}
 
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">Testemunhas</p>
-                      <div className="flex gap-2">
-                        <input
-                          value={newWitness}
-                          onChange={(event) => setNewWitness(event.target.value)}
-                          placeholder="Nome"
-                          className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
-                        />
-                        <button type="button" onClick={handleAddWitness} className="rounded-lg bg-federal-600 px-2 py-2 text-[10px] font-bold text-white">Add</button>
-                      </div>
-                      <div className="mt-2 space-y-1">
-                        {(workflow.witnesses || []).length ? workflow.witnesses.map((item) => (
-                          <div key={item.id} className="rounded-lg bg-slate-900 px-2 py-1 text-[11px] text-slate-300">{item.name}</div>
-                        )) : <p className="text-[11px] text-slate-500">Nenhuma testemunha registrada.</p>}
-                      </div>
-                    </div>
+                        {currentStep.number === 5 && (
+                          <div className="space-y-4">
+                            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+                              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-3">Registrar testemunhas</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input
+                                  value={newWitness}
+                                  onChange={(event) => setNewWitness(event.target.value)}
+                                  placeholder="Nome da testemunha"
+                                  className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
+                                />
+                                <input
+                                  value={newWitnessStatement}
+                                  onChange={(event) => setNewWitnessStatement(event.target.value)}
+                                  placeholder="Depoimento da testemunha"
+                                  className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
+                                />
+                              </div>
+                              <button type="button" onClick={handleAddWitness} className="mt-3 rounded-lg bg-federal-600 hover:bg-federal-500 px-3 py-2 text-xs font-bold text-white">Adicionar testemunha</button>
+                            </div>
 
-                    <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">Investigados</p>
-                      <div className="flex gap-2">
-                        <input
-                          value={newInvolved}
-                          onChange={(event) => setNewInvolved(event.target.value)}
-                          placeholder="Nome"
-                          className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
-                        />
-                        <button type="button" onClick={handleAddInvolved} className="rounded-lg bg-federal-600 px-2 py-2 text-[10px] font-bold text-white">Add</button>
-                      </div>
-                      <div className="mt-2 space-y-1">
-                        {(workflow.involved || []).length ? workflow.involved.map((item) => (
-                          <div key={item.id} className="rounded-lg bg-slate-900 px-2 py-1 text-[11px] text-slate-300">{item.name}</div>
-                        )) : <p className="text-[11px] text-slate-500">Nenhum investigado registrado.</p>}
-                      </div>
-                    </div>
+                            <div className="space-y-3">
+                              {(workflow.witnesses || []).length ? (
+                                workflow.witnesses.map((item) => (
+                                  <div key={item.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+                                    <div className="font-bold text-white mb-1">{item.name || 'Testemunha sem nome'}</div>
+                                    <textarea
+                                      value={item.statement || ''}
+                                      onChange={(event) => updateWorkflowState((prev) => ({
+                                        ...prev,
+                                        witnesses: prev.witnesses.map((w) => w.id === item.id ? { ...w, statement: event.target.value } : w)
+                                      }))}
+                                      placeholder="Depoimento da testemunha..."
+                                      className="w-full min-h-[80px] rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
+                                    />
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-sm text-slate-500">Nenhuma testemunha registrada.</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
 
-                    <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-2">Diligências</p>
-                      <div className="flex gap-2">
-                        <input
-                          value={newDiligence}
-                          onChange={(event) => setNewDiligence(event.target.value)}
-                          placeholder="Título"
-                          className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
-                        />
-                        <button type="button" onClick={handleAddDiligence} className="rounded-lg bg-federal-600 px-2 py-2 text-[10px] font-bold text-white">Add</button>
-                      </div>
-                      <div className="mt-2 space-y-1">
-                        {(workflow.diligences || []).length ? workflow.diligences.map((item) => (
-                          <div key={item.id} className="rounded-lg bg-slate-900 px-2 py-1 text-[11px] text-slate-300">{item.title || item.name}</div>
-                        )) : <p className="text-[11px] text-slate-500">Nenhuma diligência registrada.</p>}
-                      </div>
-                    </div>
+                        {currentStep.number === 6 && (
+                          <div className="space-y-4">
+                            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+                              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-3">Registrar diligências</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input
+                                  value={newDiligence}
+                                  onChange={(event) => setNewDiligence(event.target.value)}
+                                  placeholder="Título da diligência"
+                                  className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
+                                />
+                                <input
+                                  value={newDiligencePlan}
+                                  onChange={(event) => setNewDiligencePlan(event.target.value)}
+                                  placeholder="Responsável / plano"
+                                  className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
+                                />
+                              </div>
+                              <button type="button" onClick={handleAddDiligence} className="mt-3 rounded-lg bg-federal-600 hover:bg-federal-500 px-3 py-2 text-xs font-bold text-white">Adicionar diligência</button>
+                            </div>
+
+                            <div className="space-y-3">
+                              {(workflow.diligences || []).length ? (
+                                workflow.diligences.map((item) => (
+                                  <div key={item.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+                                    <div className="font-bold text-white mb-2">{item.title || 'Diligência'}</div>
+                                    <textarea
+                                      value={item.plan || ''}
+                                      onChange={(event) => updateWorkflowState((prev) => ({
+                                        ...prev,
+                                        diligences: prev.diligences.map((d) => d.id === item.id ? { ...d, plan: event.target.value } : d)
+                                      }))}
+                                      placeholder="Escreva o plano, objetivo e resultado esperado da diligência..."
+                                      className="w-full min-h-[90px] rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
+                                    />
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-sm text-slate-500">Nenhuma diligência registrada.</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {currentStep.number === 7 && (
+                          <div className="space-y-4">
+                            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+                              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-3">Registrar investigados</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input
+                                  value={newInvolved}
+                                  onChange={(event) => setNewInvolved(event.target.value)}
+                                  placeholder="Nome do investigado"
+                                  className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
+                                />
+                                <input
+                                  value={newInvolvedRole}
+                                  onChange={(event) => setNewInvolvedRole(event.target.value)}
+                                  placeholder="Papel / vínculo"
+                                  className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-federal-500"
+                                />
+                              </div>
+                              <button type="button" onClick={handleAddInvolved} className="mt-3 rounded-lg bg-federal-600 hover:bg-federal-500 px-3 py-2 text-xs font-bold text-white">Adicionar investigado</button>
+                            </div>
+
+                            <div className="space-y-3">
+                              {(workflow.involved || []).length ? (
+                                workflow.involved.map((item) => (
+                                  <div key={item.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+                                    <div className="font-bold text-white mb-1">{item.name || 'Investigado sem nome'}</div>
+                                    <div className="text-xs text-slate-400 mb-2">{item.papel || 'Sem vínculo informado'}</div>
+                                    <textarea
+                                      value={item.observacoes || ''}
+                                      onChange={(event) => updateWorkflowState((prev) => ({
+                                        ...prev,
+                                        involved: prev.involved.map((i) => i.id === item.id ? { ...i, observacoes: event.target.value } : i)
+                                      }))}
+                                      placeholder="Observações sobre vínculo, contatos e contexto..."
+                                      className="w-full min-h-[80px] rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
+                                    />
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-sm text-slate-500">Nenhum investigado registrado.</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {currentStep.number === 8 && (
+                          <div className="space-y-3">
+                            <textarea
+                              value={currentStep.notes || ''}
+                              onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
+                              placeholder="Faça o confronto e o cruzamento de informações, relatos, provas e elementos objetivos..."
+                              className="w-full min-h-[140px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
+                            />
+                          </div>
+                        )}
+
+                        {currentStep.number === 9 && (
+                          <div className="space-y-3">
+                            <textarea
+                              value={currentStep.notes || ''}
+                              onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
+                              placeholder="Escreva a conclusão técnica com síntese das provas, depoimentos, diligências e fundamentos da análise..."
+                              className="w-full min-h-[150px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
+                            />
+                            <div className="rounded-xl border border-dashed border-slate-700 bg-slate-900/50 p-3 text-sm text-slate-300">
+                              Obrigatório: anexar ao menos um documento ou texto conclusivo para encerrar esta etapa.
+                            </div>
+                          </div>
+                        )}
+
+                        {currentStep.number === 10 && (
+                          <div className="space-y-3">
+                            <textarea
+                              value={currentStep.notes || ''}
+                              onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
+                              placeholder="Descreva o encerramento, a arquivação, a decisão final e os documentos que encerram o processo..."
+                              className="w-full min-h-[150px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
+                            />
+                            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-sm text-emerald-200">
+                              Ao concluir esta etapa, será gerado o PDF final do processo investigativo.
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                 </>
               ) : (
