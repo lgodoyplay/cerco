@@ -377,30 +377,32 @@ const DashboardHome = () => {
             <span className="text-xs text-slate-400 border border-slate-700 rounded-full px-2.5 py-1">{visibleProfiles.length} cards</span>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-            {visibleProfiles.map((profile) => (
-              <div key={profile.id} className="bg-slate-950/80 border border-slate-800 rounded-2xl overflow-hidden shadow-lg shadow-slate-950/30 h-full min-h-[220px]">
-                <div className="h-28 bg-gradient-to-br from-federal-900 via-slate-800 to-slate-900 relative">
-                  {profile.avatar ? (
-                    <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-3xl font-black text-slate-300 bg-gradient-to-br from-slate-700 to-slate-900">
-                      {profile.name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase() || 'U'}
+          <div className="overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-950">
+            <div className="flex gap-4 min-w-max">
+              {visibleProfiles.map((profile) => (
+                <div key={profile.id} className="w-[260px] md:w-[290px] bg-slate-950/80 border border-slate-800 rounded-2xl overflow-hidden shadow-lg shadow-slate-950/30 flex-shrink-0">
+                  <div className="h-72 bg-gradient-to-br from-federal-900 via-slate-800 to-slate-900 relative">
+                    {profile.avatar ? (
+                      <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover object-center" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-3xl font-black text-slate-300 bg-gradient-to-br from-slate-700 to-slate-900">
+                        {profile.name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase() || 'U'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4 flex flex-col gap-3">
+                    <div>
+                      <h4 className="text-base font-bold text-white leading-snug">{profile.name}</h4>
+                      <p className="text-xs uppercase tracking-[0.18em] text-slate-400 mt-1">{profile.role}</p>
                     </div>
-                  )}
-                </div>
-                <div className="p-4 flex flex-col h-[calc(100%-7rem)]">
-                  <div className="mb-3">
-                    <h4 className="text-base font-bold text-white leading-snug">{profile.name}</h4>
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400 mt-1">{profile.role}</p>
-                  </div>
-                  <div className="mt-auto bg-slate-900 border border-slate-700 rounded-xl px-3 py-2">
-                    <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">Código</p>
-                    <p className="text-sm font-mono font-semibold text-slate-100 truncate">{profile.code}</p>
+                    <div className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2">
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">Código</p>
+                      <p className="text-sm font-mono font-semibold text-slate-100 truncate">{profile.code}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}
