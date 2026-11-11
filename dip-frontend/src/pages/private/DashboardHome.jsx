@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Users, AlertTriangle, FileText, TrendingUp, Search, BadgeCheck, Sun, Moon, RefreshCw, AlertCircle, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { getAvatarPublicUrl } from '../../lib/avatar';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 
 const useCurrentDateTime = () => {
@@ -111,6 +112,7 @@ const DashboardHome = () => {
   const [functionalCode, setFunctionalCode] = useState(null);
   const [userName, setUserName] = useState('');
   const [chartData, setChartData] = useState({ boByWeek: [], crimesByType: [] });
+  const [userProfiles, setUserProfiles] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -155,7 +157,8 @@ const DashboardHome = () => {
         { count: bosCount },
         { data: boData },
         { data: crimesData },
-        { data: prisoesData }
+        { data: prisoesData },
+        { data: profilesData }
       ] = await Promise.all([
         supabase.from('prisoes').select('*', { count: 'exact', head: true }),
         supabase.from('procurados').select('*', { count: 'exact', head: true }),
@@ -163,7 +166,8 @@ const DashboardHome = () => {
         supabase.from('boletins').select('*', { count: 'exact', head: true }),
         supabase.from('boletins').select('created_at'),
         supabase.from('crimes').select('id, name, article'),
-        supabase.from('prisoes').select('artigo, created_at')
+        supabase.from('prisoes').select('artigo, created_at'),
+        supabase.from('profiles').select('id, full_name, role, avatar_url, passport_id, codigo_funcional').order('full_name', { ascending: true })
       ]);
 
       let informantesCount = 0;
@@ -227,6 +231,16 @@ const DashboardHome = () => {
       }
 
       setChartData({ boByWeek: boByWeekArray, crimesByType: crimesByTypeArray });
+      setUserProfiles((profilesData || [])
+        .filter((profile) => profile?.full_name)
+        .map((profile) => ({
+          id: profile.id,
+          name: profile.full_name,
+          role: profile.role || 'Usuário',
+          code: profile.passport_id || profile.codigo_funcional || 'Sem código',
+          avatar: getAvatarPublicUrl(profile.avatar_url) || null,
+        }))
+        .slice(0, 12));
       setError(null);
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
@@ -244,46 +258,75 @@ const DashboardHome = () => {
   const greeting = getGreeting();
 
   const hasData = stats.totalPresos > 0 || stats.totalProcurados > 0 || stats.totalInvestigacoes > 0 || stats.totalBos > 0 || stats.totalInformantes > 0;
+  const hasChartData = chartData.boByWeek.length > 0 || chartData.crimesByType.length > 0;
+  const visibleProfiles = userProfiles.slice(0, 8);
 
   return (
     <div className="space-y-6 pb-20 md:pb-6" role="main" aria-label="Painel Principal">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            {new Date().getHours() < 12 ?
-              <Sun size={24} className="text-amber-400" /> :
-              new Date().getHours() < 18 ?
-                <Sun size={24} className="text-orange-400" /> :
-                <Moon size={24} className="text-indigo-400" />
-            }
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-              {greeting}, {userName || 'Agente'}!
-            </h1>
+      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              {new Date().getHours() < 12 ?
+                <Sun size={24} className="text-amber-400" /> :
+                new Date().getHours() < 18 ?
+                  <Sun size={24} className="text-orange-400" /> :
+                  <Moon size={24} className="text-indigo-400" />
+              }
+              <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+                {greeting}, {userName || 'Agente'}!
+              </h1>
+            </div>
+            <p className="text-slate-400 text-sm md:text-base">
+              {dateTime.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} • {dateTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            </p>
           </div>
-          <p className="text-slate-400 text-sm md:text-base">
-            {dateTime.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} • {dateTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-          </p>
-          <p className="text-slate-500 text-xs md:text-sm">Visão geral das operações e estatísticas (Tempo Real).</p>
-        </div>
-        <div className="flex gap-3 items-center">
-          {lastUpdated && (
-            <span className="text-xs text-slate-500 hidden sm:block">
-              Atualizado: {lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+          <div className="flex gap-3 items-center">
+            {lastUpdated && (
+              <span className="text-xs text-slate-500 hidden sm:block">
+                Atualizado: {lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+            <button
+              onClick={() => fetchDashboardData(true)}
+              disabled={refreshing}
+              aria-label="Atualizar dados do painel"
+              className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+            >
+              <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+            </button>
+            <span className="px-4 py-2 bg-gradient-to-r from-green-500/20 via-emerald-500/10 text-green-400 border border-green-500/30 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-green-900/20">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping" />
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse absolute ml-[6px]" />
+              SISTEMA ONLINE
             </span>
-          )}
-          <button
-            onClick={() => fetchDashboardData(true)}
-            disabled={refreshing}
-            aria-label="Atualizar dados do painel"
-            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors disabled:opacity-50"
-          >
-            <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
-          </button>
-          <span className="px-4 py-2 bg-gradient-to-r from-green-500/20 via-emerald-500/10 text-green-400 border border-green-500/30 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-green-900/20">
-            <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping" />
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse absolute ml-[6px]" />
-            SISTEMA ONLINE
-          </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-6 relative overflow-hidden group shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+        <div className="absolute inset-0 bg-gradient-to-br from-federal-900/10 to-transparent pointer-events-none" />
+        <div className="absolute top-0 right-0 p-5 opacity-15 text-federal-500 transform scale-[2] group-hover:scale-[1.8] transition-transform duration-700">
+          <BadgeCheck size={120} />
+        </div>
+        <div className="relative z-10">
+          <h3 className="text-slate-400 text-xs font-bold uppercase tracking-[0.24em] mb-3">Identificação Funcional</h3>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-center gap-4">
+              <span className="text-2xl md:text-4xl font-mono font-extrabold text-white tracking-wider">
+                {functionalCode || '...'}
+              </span>
+              {functionalCode && (
+                <span className="px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  ATIVO
+                </span>
+              )}
+            </div>
+            <p className="text-slate-500 text-sm md:text-base max-w-xl">
+              Utilize este código para identificação em operações e comprovação de perfil funcional do sistema.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -324,8 +367,45 @@ const DashboardHome = () => {
         </div>
       )}
 
-      {/* Gráficos Analíticos */}
-      {!loading && !error && hasData && (
+      {visibleProfiles.length > 0 && (
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+          <div className="flex items-center justify-between gap-3 mb-5">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Perfis</p>
+              <h3 className="text-xl md:text-2xl font-extrabold text-white">Usuários cadastrados</h3>
+            </div>
+            <span className="text-xs text-slate-400 border border-slate-700 rounded-full px-2.5 py-1">{visibleProfiles.length} cards</span>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+            {visibleProfiles.map((profile) => (
+              <div key={profile.id} className="bg-slate-950/80 border border-slate-800 rounded-2xl overflow-hidden shadow-lg shadow-slate-950/30 h-full min-h-[220px]">
+                <div className="h-28 bg-gradient-to-br from-federal-900 via-slate-800 to-slate-900 relative">
+                  {profile.avatar ? (
+                    <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-3xl font-black text-slate-300 bg-gradient-to-br from-slate-700 to-slate-900">
+                      {profile.name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase() || 'U'}
+                    </div>
+                  )}
+                </div>
+                <div className="p-4 flex flex-col h-[calc(100%-7rem)]">
+                  <div className="mb-3">
+                    <h4 className="text-base font-bold text-white leading-snug">{profile.name}</h4>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400 mt-1">{profile.role}</p>
+                  </div>
+                  <div className="mt-auto bg-slate-900 border border-slate-700 rounded-xl px-3 py-2">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">Código</p>
+                    <p className="text-sm font-mono font-semibold text-slate-100 truncate">{profile.code}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!loading && !error && hasChartData && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
             <h3 className="font-bold text-lg md:text-xl text-white mb-4 flex items-center gap-2">
@@ -346,222 +426,59 @@ const DashboardHome = () => {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-            <h3 className="font-bold text-lg md:text-xl text-white mb-4 flex items-center gap-2">
-              <FileText size={20} className="text-emerald-400" />
-              Crimes por Tipo (Prisões)
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={chartData.crimesByType}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {chartData.crimesByType.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'][index % 8]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }}
-                  labelStyle={{ color: '#f1f5f9' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
-
-      {/* Bar chart for crimes by type - alternative visualization */}
-      {!loading && !error && hasData && chartData.crimesByType.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-            <h3 className="font-bold text-lg md:text-xl text-white mb-4 flex items-center gap-2">
-              <Bar size={20} className="text-amber-400" />
-              Distribuição de Crimes (Barra)
-            </h3>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={chartData.crimesByType}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="name" stroke="#94a3b8" angle={-20} textAnchor="end" height={60} />
-                <YAxis stroke="#94a3b8" />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }}
-                  labelStyle={{ color: '#f1f5f9' }}
-                />
-                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Quick Stats Summary */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-            <h3 className="font-bold text-lg md:text-xl text-white mb-4 flex items-center gap-2">
-              <BadgeCheck size={20} className="text-federal-400" />
-              Resumo Operacional
-            </h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                      <UserPlus size={18} className="text-blue-400" />
-                    </div>
-                    <div>
-                      <p className="text-white font-semibold">{stats.totalInformantes}</p>
-                      <p className="text-slate-500 text-xs">Total de Informantes</p>
-                    </div>
-                  </div>
-                  <span className="text-blue-400 text-xs font-mono">#{stats.totalInformantes}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                      <Users size={18} className="text-blue-400" />
-                    </div>
-                    <div>
-                      <p className="text-white font-semibold">{stats.totalPresos}</p>
-                      <p className="text-slate-500 text-xs">Total de Presos</p>
-                    </div>
-                  </div>
-                  <span className="text-blue-400 text-xs font-mono">#{stats.totalPresos}</span>
-                </div>
-              <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-                    <AlertTriangle size={18} className="text-red-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold">{stats.totalProcurados}</p>
-                    <p className="text-slate-500 text-xs">Total de Procurados</p>
-                  </div>
-                </div>
-                <span className="text-red-400 text-xs font-mono">#{stats.totalProcurados}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                    <Search size={18} className="text-amber-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold">{stats.totalInvestigacoes}</p>
-                    <p className="text-slate-500 text-xs">Investigações Ativas</p>
-                  </div>
-                </div>
-                <span className="text-amber-400 text-xs font-mono">#{stats.totalInvestigacoes}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                    <FileText size={18} className="text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold">{stats.totalBos}</p>
-                    <p className="text-slate-500 text-xs">Boletins de Ocorrência</p>
-                  </div>
-                </div>
-                <span className="text-emerald-400 text-xs font-mono">#{stats.totalBos}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="space-y-6">
-          {/* Functional Code Card */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 relative overflow-hidden group shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-            <div className="absolute inset-0 bg-gradient-to-br from-federal-900/10 to-transparent pointer-events-none" />
-            <div className="absolute top-0 right-0 p-5 opacity-15 text-federal-500 transform scale-[2] group-hover:scale-[1.8] transition-transform duration-700">
-              <BadgeCheck size={120} />
-            </div>
-            <div className="relative z-10">
-              <h3 className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Identificação Funcional</h3>
-              <div className="flex items-center gap-4 mb-2">
-                <span className="text-2xl md:text-4xl font-mono font-extrabold text-white tracking-wider">
-                  {functionalCode || '...'}
-                </span>
-                {functionalCode && (
-                  <span className="px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/30 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    ATIVO
-                  </span>
-                )}
-              </div>
-              <p className="text-slate-500 text-sm mt-3 leading-relaxed">
-                Utilize este código para se identificar em operações e para verificação de identidade em serviços.
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Actions Grid */}
-          <div className="bg-gradient-to-br from-federal-900/80 to-federal-800/70 border border-federal-700 rounded-2xl p-6 text-white relative overflow-hidden shadow-[0_8px_30px_rgba(30,58,138,0.2)]">
-            <div className="relative z-10">
-              <h3 className="font-bold text-xl mb-2 flex items-center gap-2">
-                Acesso Rápido
+          {chartData.crimesByType.length > 0 && (
+            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+              <h3 className="font-bold text-lg md:text-xl text-white mb-4 flex items-center gap-2">
+                <FileText size={20} className="text-emerald-400" />
+                Crimes por Tipo (Prisões)
               </h3>
-              <p className="text-federal-200 text-sm mb-6">Atalhos para as funções mais utilizadas.</p>
-
-              <div className="grid grid-cols-1 gap-3">
-                <button
-                  onClick={() => navigate('/dashboard/investigations/informantes')}
-                  aria-label="Gerenciar informantes"
-                  className="group flex items-center gap-3 w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
-                >
-                  <div className="p-2 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
-                    <UserPlus size={18} className="text-blue-300" />
-                  </div>
-                  <span>Informantes</span>
-                </button>
-                <button
-                  onClick={() => navigate('/dashboard/arrest')}
-                  aria-label="Registrar nova prisão"
-                  className="group flex items-center gap-3 w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
-                >
-                  <div className="p-2 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
-                    <Users size={18} className="text-blue-300" />
-                  </div>
-                  <span>Nova Prisão</span>
-                </button>
-                <button
-                  onClick={() => navigate('/dashboard/register-wanted')}
-                  aria-label="Registrar novo procurado"
-                  className="group flex items-center gap-3 w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
-                >
-                  <div className="p-2 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
-                    <AlertTriangle size={18} className="text-red-300" />
-                  </div>
-                  <span>Novo Procurado</span>
-                </button>
-                <button
-                  onClick={() => navigate('/dashboard/investigations/new')}
-                  aria-label="Iniciar nova investigação"
-                  className="group flex items-center gap-3 w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
-                >
-                  <div className="p-2 bg-amber-500/20 rounded-lg group-hover:bg-amber-500/30 transition-colors">
-                    <Search size={18} className="text-amber-300" />
-                  </div>
-                  <span>Iniciar Investigação</span>
-                </button>
-                <button
-                  onClick={() => navigate('/dashboard/bo')}
-                  aria-label="Registrar boletim de ocorrência"
-                  className="group flex items-center gap-3 w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
-                >
-                  <div className="p-2 bg-emerald-500/20 rounded-lg group-hover:bg-emerald-500/30 transition-colors">
-                    <FileText size={18} className="text-emerald-300" />
-                  </div>
-                  <span>Registrar B.O.</span>
-                </button>
-              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={chartData.crimesByType}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="count"
+                  >
+                    {chartData.crimesByType.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'][index % 8]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }}
+                    labelStyle={{ color: '#f1f5f9' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
-          </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {!loading && !error && hasData && chartData.crimesByType.length > 0 && (
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+          <h3 className="font-bold text-lg md:text-xl text-white mb-4 flex items-center gap-2">
+            <Bar size={20} className="text-amber-400" />
+            Distribuição de Crimes (Barra)
+          </h3>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={chartData.crimesByType}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis dataKey="name" stroke="#94a3b8" angle={-20} textAnchor="end" height={60} />
+              <YAxis stroke="#94a3b8" />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155' }}
+                labelStyle={{ color: '#f1f5f9' }}
+              />
+              <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 };
