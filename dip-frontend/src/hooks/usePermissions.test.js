@@ -41,6 +41,14 @@ test('permission groups are unique and each module exposes only one clear view/m
   assert.match(source, /Registrar \/ Gerenciar|Registrar \/ gerenciar/i);
 });
 
+test('manage implies view but view does not imply manage', async () => {
+  const source = await fs.readFile(filePath, 'utf8');
+
+  assert.ok(source.includes("permission.endsWith('_manage')"));
+  assert.ok(source.includes("permission.replace(/_manage$/, '_view')"));
+  assert.ok(source.includes('permissions.add(viewPermission)'));
+});
+
 test('role matching tolerates spacing and punctuation without falling back to legacy access', async () => {
   const source = await fs.readFile(filePath, 'utf8');
 

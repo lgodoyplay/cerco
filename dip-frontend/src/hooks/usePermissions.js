@@ -285,6 +285,27 @@ export const getRolePermissionSet = (role) => {
   return permissions;
 };
 
+export const getEffectivePermissionSet = (role) => {
+  const permissions = getRolePermissionSet(role);
+
+  for (const permission of Array.from(permissions)) {
+    if (!permission || typeof permission !== 'string') continue;
+
+    if (permission.endsWith('_manage')) {
+      const viewPermission = permission.replace(/_manage$/, '_view');
+      if (viewPermission && viewPermission !== permission) {
+        permissions.add(viewPermission);
+      }
+    }
+  }
+
+  if (permissions.has(PERMISSIONS.ADMIN_ACCESS)) {
+    ALL_PERMISSIONS.forEach((permission) => permissions.add(permission));
+  }
+
+  return permissions;
+};
+
 export const usePermissions = () => {
   const { user } = useAuth();
   const { roles = [] } = useSettingsContext();
@@ -296,9 +317,25 @@ export const usePermissions = () => {
     const normalizedPermission = permission === 'report_manage' ? PERMISSIONS.REPORTS_MANAGE : permission;
     const roleConfig = findMatchingRoleConfig(roles, user.role);
 
-    const rolePermissionSet = getRolePermissionSet(roleConfig);
+    const rolePermissionSet = getEffectivePermissionSet(roleConfig);
     const legacyRolePermissions = LEGACY_ROLE_PERMISSIONS[user.role] || LEGACY_ROLE_PERMISSIONS[Object.keys(LEGACY_ROLE_PERMISSIONS).find((roleName) => normalizeRoleName(roleName) === normalizeRoleName(user.role))] || [];
     const userPermissions = Array.isArray(user.permissions) ? user.permissions : [];
+    const effectiveUserPermissions = new Set(userPermissions);
+    const effectiveLegacyRolePermissions = new Set(legacyRolePermissions);
+
+    for (const permission of Array.from(effectiveUserPermissions)) {
+      if (permission?.endsWith('_manage')) {
+        const viewPermission = permission.replace(/_manage$/, '_view');
+        if (viewPermission) effectiveUserPermissions.add(viewPermission);
+      }
+    }
+
+    for (const permission of Array.from(effectiveLegacyRolePermissions)) {
+      if (permission?.endsWith('_manage')) {
+        const viewPermission = permission.replace(/_manage$/, '_view');
+        if (viewPermission) effectiveLegacyRolePermissions.add(viewPermission);
+      }
+    }
 
     const roleHasExplicitConfig = Boolean(roleConfig && (
       Array.isArray(roleConfig.permissions) ||
@@ -307,7 +344,7 @@ export const usePermissions = () => {
 
     const hasAdminPermission =
       rolePermissionSet.has(PERMISSIONS.ADMIN_ACCESS) ||
-      (!roleHasExplicitConfig && (userPermissions.includes(PERMISSIONS.ADMIN_ACCESS) || legacyRolePermissions.includes(PERMISSIONS.ADMIN_ACCESS)));
+      (!roleHasExplicitConfig && (effectiveUserPermissions.has(PERMISSIONS.ADMIN_ACCESS) || effectiveLegacyRolePermissions.has(PERMISSIONS.ADMIN_ACCESS)));
 
     if (hasAdminPermission) return true;
 
@@ -316,8 +353,8 @@ export const usePermissions = () => {
     }
 
     return (
-      legacyRolePermissions.includes(normalizedPermission) ||
-      userPermissions.includes(normalizedPermission)
+      effectiveLegacyRolePermissions.has(normalizedPermission) ||
+      effectiveUserPermissions.has(normalizedPermission)
     );
   }, [roles, user?.role, user?.permissions]);
 
