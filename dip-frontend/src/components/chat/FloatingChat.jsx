@@ -52,19 +52,18 @@ const FloatingChat = () => {
 
   return (
     <div className="fixed bottom-4 right-4 z-[60] flex flex-col items-end gap-2">
-      {isOpen && !isMinimized ? (
-        <div className="w-[92vw] max-w-[420px] h-[70vh] max-h-[620px] min-h-[420px]">
-          <ChatRuntimeErrorBoundary>
-            <ChatWindow
-              user={user}
-              onClose={handleClose}
-              minimized={isMinimized}
-              onToggleMinimized={handleToggleMinimized}
-              onUnreadChange={setUnreadCount}
-            />
-          </ChatRuntimeErrorBoundary>
-        </div>
-      ) : null}
+      <div className={`${isOpen && !isMinimized ? 'block' : 'hidden'} w-[92vw] max-w-[420px] h-[70vh] max-h-[620px] min-h-[420px]`}>
+        <ChatRuntimeErrorBoundary>
+          <ChatWindow
+            user={user}
+            isOpen={isOpen}
+            onClose={handleClose}
+            minimized={isMinimized}
+            onToggleMinimized={handleToggleMinimized}
+            onUnreadChange={setUnreadCount}
+          />
+        </ChatRuntimeErrorBoundary>
+      </div>
 
       <button
         type="button"

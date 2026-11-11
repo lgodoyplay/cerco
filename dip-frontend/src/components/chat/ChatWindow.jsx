@@ -15,7 +15,7 @@ const makeConversationItem = (id, name, avatarUrl, muted = false) => ({
   isGroup: false,
 });
 
-const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChange }) => {
+const ChatWindow = ({ user, isOpen, onClose, minimized, onToggleMinimized, onUnreadChange }) => {
   const [messages, setMessages] = useState([]);
   const [groupMessages, setGroupMessages] = useState({});
   const normalizedUserAvatar = getAvatarPublicUrl(user?.avatar_url || user?.avatar || null) || user?.avatar_url || user?.avatar || null;
@@ -74,6 +74,14 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
   }, [user?.id]);
 
   useEffect(() => {
+    if (isOpen) {
+      autoScrollRef.current = true;
+      setHasNewMessages(false);
+      notifyUnread(0);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     if (!user?.id) return undefined;
 
     const unsubscribeMessages = chatService.subscribeToMessages(user, (message) => {
@@ -82,7 +90,9 @@ const ChatWindow = ({ user, onClose, minimized, onToggleMinimized, onUnreadChang
         return [...prev, message];
       });
 
-      if (!autoScrollRef.current) {
+      const shouldCountUnread = !isOpen || !autoScrollRef.current;
+
+      if (shouldCountUnread) {
         setHasNewMessages(true);
         notifyUnread((prev) => prev + 1);
       } else {
