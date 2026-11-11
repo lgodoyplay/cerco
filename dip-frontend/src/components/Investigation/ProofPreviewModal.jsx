@@ -4,6 +4,8 @@ import ProofVideoPlayer from '../investigations/ProofVideoPlayer';
 import { normalizeInvestigationProofUrl } from '../../utils/investigationProofMedia';
 import clsx from 'clsx';
 
+const clampZoom = (value) => Math.min(3, Math.max(0.5, Number(value) || 1));
+
 const ProofPreviewModal = ({ 
     proof, 
     isOpen, 
@@ -15,6 +17,15 @@ const ProofPreviewModal = ({
 }) => {
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
+
+    const handleZoomChange = (nextValue) => setZoom(clampZoom(nextValue));
+
+    const handleWheelZoom = (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        const delta = event.deltaY > 0 ? -0.1 : 0.1;
+        setZoom((currentZoom) => clampZoom(currentZoom + delta));
+    };
 
     // Reset zoom/rotation quando muda de prova
     useEffect(() => {
@@ -101,14 +112,18 @@ const ProofPreviewModal = ({
                 <div className="flex-1 overflow-auto p-6">
                     {proof.type === 'image' && proof.content && (
                         <div className="flex flex-col items-center">
-                            <div className="relative max-w-full">
+                            <div
+                                className="relative max-w-full max-h-[60vh] overflow-auto rounded-lg"
+                                onWheel={handleWheelZoom}
+                            >
                                 <img
                                     src={proof.content}
                                     alt={proof.title}
-                                    className="max-w-full max-h-[60vh] object-contain rounded-lg shadow-lg"
+                                    className="max-w-none max-h-none object-contain rounded-lg shadow-lg select-none"
                                     style={{
                                         transform: `scale(${zoom}) rotate(${rotation}deg)`,
-                                        transition: 'transform 0.2s'
+                                        transformOrigin: 'center center',
+                                        transition: 'transform 0.2s ease-out'
                                     }}
                                 />
                             </div>
@@ -116,7 +131,7 @@ const ProofPreviewModal = ({
                             {/* Image Controls */}
                             <div className="flex items-center gap-4 mt-4">
                                 <button
-                                    onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
+                                    onClick={() => handleZoomChange(zoom - 0.1)}
                                     className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
                                     title="Diminuir zoom"
                                 >
@@ -126,7 +141,7 @@ const ProofPreviewModal = ({
                                     {Math.round(zoom * 100)}%
                                 </span>
                                 <button
-                                    onClick={() => setZoom(z => Math.min(3, z + 0.1))}
+                                    onClick={() => handleZoomChange(zoom + 0.1)}
                                     className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
                                     title="Aumentar zoom"
                                 >

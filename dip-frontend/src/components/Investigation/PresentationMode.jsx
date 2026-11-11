@@ -4,6 +4,8 @@ import ProofVideoPlayer from '../investigations/ProofVideoPlayer';
 import { normalizeInvestigationProofUrl } from '../../utils/investigationProofMedia';
 import clsx from 'clsx';
 
+const clampZoom = (value) => Math.min(3, Math.max(0.5, Number(value) || 1));
+
 const PresentationMode = ({ proofs = [], isOpen, onClose, startIndex = 0 }) => {
     const [currentIndex, setCurrentIndex] = useState(startIndex);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -12,6 +14,15 @@ const PresentationMode = ({ proofs = [], isOpen, onClose, startIndex = 0 }) => {
     const [autoplayInterval, setAutoplayInterval] = useState(null);
 
     const currentProof = proofs[currentIndex];
+
+    const handleZoomChange = (nextValue) => setZoom(clampZoom(nextValue));
+
+    const handleWheelZoom = (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        const delta = event.deltaY > 0 ? -0.1 : 0.1;
+        setZoom((currentZoom) => clampZoom(currentZoom + delta));
+    };
 
     // Autoplay
     useEffect(() => {
@@ -94,15 +105,16 @@ const PresentationMode = ({ proofs = [], isOpen, onClose, startIndex = 0 }) => {
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex items-center justify-center p-16">
+            <div className="flex-1 flex items-center justify-center p-16 overflow-auto" onWheel={handleWheelZoom}>
                 {currentProof.type === 'image' && currentProof.content && (
                     <img
                         src={currentProof.content}
                         alt={currentProof.title}
-                        className="max-w-full max-h-full object-contain"
+                        className="max-w-none max-h-none object-contain select-none"
                         style={{
                             transform: `scale(${zoom}) rotate(${rotation}deg)`,
-                            transition: 'transform 0.2s'
+                            transformOrigin: 'center center',
+                            transition: 'transform 0.2s ease-out'
                         }}
                     />
                 )}
@@ -148,7 +160,7 @@ const PresentationMode = ({ proofs = [], isOpen, onClose, startIndex = 0 }) => {
                 {currentProof.type === 'image' && (
                     <>
                         <button
-                            onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
+                            onClick={() => handleZoomChange(zoom - 0.1)}
                             className="p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
                         >
                             <ZoomOut size={20} />
@@ -157,7 +169,7 @@ const PresentationMode = ({ proofs = [], isOpen, onClose, startIndex = 0 }) => {
                             {Math.round(zoom * 100)}%
                         </span>
                         <button
-                            onClick={() => setZoom(z => Math.min(3, z + 0.1))}
+                            onClick={() => handleZoomChange(zoom + 0.1)}
                             className="p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
                         >
                             <ZoomIn size={20} />
