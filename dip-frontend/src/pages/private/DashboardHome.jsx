@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { getAvatarPublicUrl } from '../../lib/avatar';
 import { normalizeRoleDisplay, getRoleColorByName } from '../../utils/roleUtils';
+import { getUserStructureAssignments } from '../../utils/corporationUtils';
 import { useSettings } from '../../hooks/useSettings';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 
@@ -109,7 +110,7 @@ const DashboardHome = () => {
   const navigate = useNavigate();
   const dateTime = useCurrentDateTime();
   const [stats, setStats] = useState({ totalPresos: 0, totalProcurados: 0, totalInvestigacoes: 0, totalBos: 0, totalInformantes: 0 });
-  const { roles = [] } = useSettings();
+  const { roles = [], corporation = {} } = useSettings();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [functionalCode, setFunctionalCode] = useState(null);
@@ -417,6 +418,11 @@ const DashboardHome = () => {
             <div className="flex gap-4 min-w-max">
               {visibleProfiles.map((profile) => {
                 const roleColor = getRoleColorByName(profile.role, roles);
+                const userStructureAssignments = getUserStructureAssignments(corporation, profile.id);
+                const primaryStructure = userStructureAssignments.find((assignment) => assignment.type === 'divisions')
+                  || userStructureAssignments.find((assignment) => assignment.type === 'sectors')
+                  || userStructureAssignments.find((assignment) => assignment.type === 'departments')
+                  || null;
 
                 return (
                   <div
@@ -459,6 +465,12 @@ const DashboardHome = () => {
                           {profile.role || 'Sem cargo'}
                         </p>
                       </div>
+                      {primaryStructure && (
+                        <div className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2">
+                          <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">{primaryStructure.label}</p>
+                          <p className="text-sm font-semibold text-slate-100">{primaryStructure.name}</p>
+                        </div>
+                      )}
                       <div className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2">
                         <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">Código</p>
                         <p className="text-sm font-mono font-semibold text-slate-100 truncate">{profile.code}</p>
@@ -508,6 +520,17 @@ const DashboardHome = () => {
                       {selectedProfile.role || 'Sem cargo'}
                     </span>
                     <span className="text-xs uppercase tracking-[0.16em] text-slate-500">{selectedProfile.code}</span>
+                  </div>
+
+                  <div className="mb-5 flex flex-wrap gap-2">
+                    {getUserStructureAssignments(corporation, selectedProfile.id).map((assignment) => (
+                      <span
+                        key={`${assignment.type}-${assignment.itemId}`}
+                        className="inline-flex items-center rounded-full border border-slate-700 bg-slate-950/60 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200"
+                      >
+                        {assignment.label}: {assignment.name} ({assignment.role})
+                      </span>
+                    ))}
                   </div>
 
                   {loadingProfileCourses ? (

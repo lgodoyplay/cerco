@@ -95,7 +95,15 @@ const ChatWindow = ({ user, isOpen, onClose, minimized, onToggleMinimized, onUnr
   useEffect(() => {
     if (!user?.id) return undefined;
 
-    const unsubscribeMessages = chatService.subscribeToMessages(user, (message) => {
+    const unsubscribeMessages = chatService.subscribeToMessages(user, (event) => {
+      if (!event) return;
+
+      if (event.type === 'delete') {
+        setMessages((prev) => prev.filter((message) => message.id !== event.messageId));
+        return;
+      }
+
+      const message = event.message;
       setMessages((prev) => {
         if (prev.some((item) => item.id === message.id)) return prev;
         return [...prev, message];

@@ -37,8 +37,20 @@ const CorporationStructureDetail = () => {
       .sort((a, b) => (a.name || a.username || '').localeCompare(b.name || b.username || ''));
   }, [users]);
 
+  const handleChiefSelect = (userId) => {
+    setForm((prev) => ({
+      ...prev,
+      chiefId: userId,
+      members: prev.members.filter((memberId) => memberId !== userId),
+    }));
+  };
+
   const handleMemberToggle = (userId) => {
     setForm((prev) => {
+      if (userId === prev.chiefId) {
+        return prev;
+      }
+
       const members = prev.members.includes(userId)
         ? prev.members.filter((memberId) => memberId !== userId)
         : [...prev.members, userId];
@@ -206,7 +218,19 @@ const CorporationStructureDetail = () => {
                     <button
                       key={user.id}
                       type="button"
-                      onClick={() => handleMemberToggle(user.id)}
+                      onClick={() => {
+                        if (!form.chiefId) {
+                          handleChiefSelect(user.id);
+                          return;
+                        }
+
+                        if (form.chiefId === user.id) {
+                          setForm((prev) => ({ ...prev, chiefId: '' }));
+                          return;
+                        }
+
+                        handleMemberToggle(user.id);
+                      }}
                       className={`flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left transition ${
                         isSelected
                           ? 'border-federal-500/50 bg-federal-500/10 text-white'

@@ -34,14 +34,23 @@ const FloatingChat = () => {
 
   const canUseChat = Boolean(user?.id);
 
+  const handleUnreadChange = (nextValue) => {
+    setUnreadCount((prev) => (typeof nextValue === 'function' ? nextValue(prev) : nextValue));
+  };
+
   const toggleChat = () => {
-    setIsOpen((prev) => !prev);
+    const nextState = !isOpen;
+    setIsOpen(nextState);
     setIsMinimized(false);
+    if (nextState) {
+      setUnreadCount(0);
+    }
   };
 
   const handleClose = () => {
     setIsOpen(false);
     setIsMinimized(false);
+    setUnreadCount(0);
   };
 
   const handleToggleMinimized = () => {
@@ -60,7 +69,7 @@ const FloatingChat = () => {
             onClose={handleClose}
             minimized={isMinimized}
             onToggleMinimized={handleToggleMinimized}
-            onUnreadChange={setUnreadCount}
+            onUnreadChange={handleUnreadChange}
           />
         </ChatRuntimeErrorBoundary>
       </div>

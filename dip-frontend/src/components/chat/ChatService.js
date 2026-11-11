@@ -177,7 +177,15 @@ export const chatService = {
           }
 
           const message = normalizeMessage(payload.new, currentUser, profileMap);
-          onMessage(message);
+          onMessage({ type: 'insert', message });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: CHAT_TABLE },
+        (payload) => {
+          if (typeof onMessage !== 'function') return;
+          onMessage({ type: 'delete', messageId: payload?.old?.id });
         }
       )
       .subscribe();

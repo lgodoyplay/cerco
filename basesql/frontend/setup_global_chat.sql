@@ -37,4 +37,19 @@ CREATE POLICY "Global chat delete for authenticated users"
   ON public.global_chat_messages
   FOR DELETE
   TO authenticated
-  USING (auth.uid() = user_id);
+  USING (
+    auth.uid() = user_id
+    OR EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.id = auth.uid()
+        AND (
+          lower(COALESCE(p.role, '')) LIKE '%admin%'
+          OR EXISTS (
+            SELECT 1
+            FROM jsonb_array_elements_text(COALESCE(p.permissions, '[]'::jsonb)) AS permission(value)
+            WHERE permission.value = 'admin_access'
+          )
+        )
+    )
+  );

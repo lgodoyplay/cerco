@@ -279,6 +279,53 @@ const RolesSettings = () => {
     await updateRoles(updatedRoles);
   };
 
+  const [draggedRoleId, setDraggedRoleId] = useState(null);
+
+  const reorderRolesByDrop = async (targetRoleId) => {
+    if (!draggedRoleId || draggedRoleId === targetRoleId) {
+      setDraggedRoleId(null);
+      return;
+    }
+
+    const orderedRoles = sortRoles(roles);
+    const sameTypeRoles = orderedRoles.filter((role) => getRoleType(role) === activeRoleType);
+    const draggedIndex = sameTypeRoles.findIndex((role) => role.id === draggedRoleId);
+    const targetIndex = sameTypeRoles.findIndex((role) => role.id === targetRoleId);
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedRoleId(null);
+      return;
+    }
+
+    const reorderedSameType = [...sameTypeRoles];
+    const [draggedRole] = reorderedSameType.splice(draggedIndex, 1);
+    reorderedSameType.splice(targetIndex, 0, draggedRole);
+
+    const rebuiltRoles = [];
+    const sameTypeQueue = [...reorderedSameType];
+
+    orderedRoles.forEach((role) => {
+      if (getRoleType(role) !== activeRoleType) {
+        rebuiltRoles.push(role);
+        return;
+      }
+
+      if (sameTypeQueue.length > 0) {
+        rebuiltRoles.push(sameTypeQueue.shift());
+      }
+    });
+
+    const updatedRoles = rebuiltRoles.map((role, idx) => ({
+      ...role,
+      hierarchy: idx + 1,
+      kind: getRoleType(role),
+      isThirdParty: getRoleType(role) === 'third_party'
+    }));
+
+    await updateRoles(updatedRoles);
+    setDraggedRoleId(null);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -381,7 +428,12 @@ const RolesSettings = () => {
             return (
               <div
                 key={role.id}
-                className="rounded-xl border bg-slate-900/80 p-4"
+                draggable
+                onDragStart={() => setDraggedRoleId(role.id)}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={() => reorderRolesByDrop(role.id)}
+                onDragEnd={() => setDraggedRoleId(null)}
+                className="rounded-xl border bg-slate-900/80 p-4 cursor-grab active:cursor-grabbing"
                 style={{ borderColor: role.color || '#334155', boxShadow: role.color ? `0 0 0 1px ${role.color}33` : undefined }}
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-center">
