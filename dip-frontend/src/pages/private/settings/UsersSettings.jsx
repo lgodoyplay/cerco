@@ -24,9 +24,11 @@ const UsersSettings = () => {
     avatar_url: null
   });
 
-  // Novo Email
+  // Novo Email / Nova Senha
   const [newEmail, setNewEmail] = useState('');
   const [updatingEmail, setUpdatingEmail] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
 
   // Dados de cursos
   const [userCourses, setUserCourses] = useState([]);
@@ -110,10 +112,12 @@ const UsersSettings = () => {
         role: user.role,
         avatar_url: user.avatar_url
       });
-      setNewEmail(''); // Reset email field
+      setNewEmail('');
+      setNewPassword('');
       fetchProfileDetails(user.id);
     } else {
       setEditingUser(null);
+      setNewPassword('');
       setFormData({
         name: '',
         username: '',
@@ -166,6 +170,36 @@ const UsersSettings = () => {
       alert('Erro ao atualizar email: ' + error.message);
     } finally {
       setUpdatingEmail(false);
+    }
+  };
+
+  const handlePasswordUpdate = async () => {
+    if (!newPassword || !editingUser) return;
+
+    if (newPassword.length < 6) {
+      alert('A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+
+    if (!window.confirm(`Deseja redefinir a senha do usuário ${editingUser.name || editingUser.username || 'selecionado'}?`)) return;
+
+    try {
+      setUpdatingPassword(true);
+      const { error } = await supabase.rpc('admin_update_user_password', {
+        target_user_id: editingUser.id,
+        new_password: newPassword
+      });
+
+      if (error) throw error;
+
+      alert('Senha atualizada com sucesso!');
+      setNewPassword('');
+      refreshUsers();
+    } catch (error) {
+      console.error('Error updating password:', error);
+      alert('Erro ao atualizar senha: ' + error.message);
+    } finally {
+      setUpdatingPassword(false);
     }
   };
 
@@ -458,29 +492,55 @@ const UsersSettings = () => {
 
                     {/* Email Change Section for Admins */}
                     {editingUser && (
-                      <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700">
-                        <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2 mb-2">
-                          <Mail size={12} /> Alterar Email (Avançado)
-                        </label>
-                        <div className="flex gap-2">
-                          <input 
-                            type="email" 
-                            value={newEmail}
-                            onChange={e => setNewEmail(e.target.value)}
-                            placeholder="Novo email..."
-                            className="flex-1 px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white focus:border-federal-500 outline-none"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleEmailUpdate}
-                            disabled={!newEmail || updatingEmail}
-                            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-3 py-2 rounded-lg text-sm font-bold whitespace-nowrap"
-                          >
-                            {updatingEmail ? '...' : 'Alterar'}
-                          </button>
+                      <>
+                        <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700">
+                          <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2 mb-2">
+                            <Mail size={12} /> Alterar Email (Avançado)
+                          </label>
+                          <div className="flex gap-2">
+                            <input 
+                              type="email" 
+                              value={newEmail}
+                              onChange={e => setNewEmail(e.target.value)}
+                              placeholder="Novo email..."
+                              className="flex-1 px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white focus:border-federal-500 outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleEmailUpdate}
+                              disabled={!newEmail || updatingEmail}
+                              className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-3 py-2 rounded-lg text-sm font-bold whitespace-nowrap"
+                            >
+                              {updatingEmail ? '...' : 'Alterar'}
+                            </button>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">Atenção: Isso alterará o login de acesso do usuário.</p>
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">Atenção: Isso alterará o login de acesso do usuário.</p>
-                      </div>
+
+                        <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700">
+                          <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2 mb-2">
+                            <Shield size={12} /> Redefinir Senha do Usuário
+                          </label>
+                          <div className="flex gap-2">
+                            <input 
+                              type="password" 
+                              value={newPassword}
+                              onChange={e => setNewPassword(e.target.value)}
+                              placeholder="Nova senha (mínimo 6 caracteres)"
+                              className="flex-1 px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white focus:border-federal-500 outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={handlePasswordUpdate}
+                              disabled={!newPassword || updatingPassword}
+                              className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white px-3 py-2 rounded-lg text-sm font-bold whitespace-nowrap"
+                            >
+                              {updatingPassword ? '...' : 'Alterar'}
+                            </button>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">Essa senha será aplicada imediatamente no login do usuário.</p>
+                        </div>
+                      </>
                     )}
 
                     <div>
