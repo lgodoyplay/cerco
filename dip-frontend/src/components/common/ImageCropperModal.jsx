@@ -163,9 +163,17 @@ const ImageCropperModal = ({
                         rotation={rotation}
                         aspect={aspect}
                         cropSize={freeCrop ? freeCropSize : undefined}
+                        minZoom={1}
+                        maxZoom={3}
+                        zoomSpeed={0.1}
                         onCropChange={setCrop}
                         onCropComplete={setCroppedAreaPixels}
-                        onZoomChange={setZoom}
+                        onZoomChange={(nextZoom) => setZoom(Math.max(1, Number(nextZoom) || 1))}
+                        onMediaLoaded={() => {
+                            setCrop({ x: 0, y: 0 });
+                            setZoom(1);
+                            setRotation(0);
+                        }}
                         objectFit="contain"
                     />
                     
