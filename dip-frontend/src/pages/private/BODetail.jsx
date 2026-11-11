@@ -833,12 +833,12 @@ const BODetail = ({ variant = 'default' }) => {
                           </div>
                         )}
 
-                        {currentStep.number === 3 && (
+                        {currentStep.number === 2 && (
                           <div className="space-y-3">
                             <textarea
                               value={currentStep.notes || ''}
                               onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
-                              placeholder="Descreva o cenário, perícia inicialmente necessária, vestígios, ambiente e elementos físicos relevantes..."
+                              placeholder="Descreva o cenário, a necessidade de perícia, vestígios, ambiente e elementos físicos relevantes para o caso..."
                               className="w-full min-h-[120px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
                             />
                             <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
@@ -851,34 +851,7 @@ const BODetail = ({ variant = 'default' }) => {
                           </div>
                         )}
 
-                        {currentStep.number === 4 && (
-                          <div className="space-y-3">
-                            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
-                              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-3">Catalogar provas digitais</p>
-                              <div className="space-y-2">
-                                {(currentStep.documents || []).map((document) => (
-                                  <label key={document.id} className="flex items-center justify-between gap-2 rounded-lg border border-slate-700 bg-slate-950 px-2 py-2 text-xs text-slate-300">
-                                    <span>{document.label}</span>
-                                    <input
-                                      type="checkbox"
-                                      checked={Boolean(document.uploaded)}
-                                      onChange={() => handleToggleDocument(currentStep.number, document.id)}
-                                      className="h-4 w-4 accent-emerald-500"
-                                    />
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                            <textarea
-                              value={currentStep.notes || ''}
-                              onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
-                              placeholder="Liste fotos, vídeos, áudios, links ou referências digitais da prova. Descreva origem, data e observação..."
-                              className="w-full min-h-[120px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
-                            />
-                          </div>
-                        )}
-
-                        {currentStep.number === 5 && (
+                        {currentStep.number === 3 && (
                           <div className="space-y-4">
                             <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
                               <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-3">Registrar testemunhas</p>
@@ -922,7 +895,7 @@ const BODetail = ({ variant = 'default' }) => {
                           </div>
                         )}
 
-                        {currentStep.number === 6 && (
+                        {currentStep.number === 4 && (
                           <div className="space-y-4">
                             <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
                               <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-3">Registrar diligências</p>
@@ -966,7 +939,7 @@ const BODetail = ({ variant = 'default' }) => {
                           </div>
                         )}
 
-                        {currentStep.number === 7 && (
+                        {currentStep.number === 5 && (
                           <div className="space-y-4">
                             <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
                               <p className="text-xs uppercase tracking-[0.18em] text-slate-500 mb-3">Registrar investigados</p>
@@ -1011,37 +984,12 @@ const BODetail = ({ variant = 'default' }) => {
                           </div>
                         )}
 
-                        {currentStep.number === 8 && (
+                        {currentStep.number === 6 && (
                           <div className="space-y-3">
                             <textarea
                               value={currentStep.notes || ''}
                               onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
-                              placeholder="Faça o confronto e o cruzamento de informações, relatos, provas e elementos objetivos..."
-                              className="w-full min-h-[140px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
-                            />
-                          </div>
-                        )}
-
-                        {currentStep.number === 9 && (
-                          <div className="space-y-3">
-                            <textarea
-                              value={currentStep.notes || ''}
-                              onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
-                              placeholder="Escreva a conclusão técnica com síntese das provas, depoimentos, diligências e fundamentos da análise..."
-                              className="w-full min-h-[150px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
-                            />
-                            <div className="rounded-xl border border-dashed border-slate-700 bg-slate-900/50 p-3 text-sm text-slate-300">
-                              Obrigatório: anexar ao menos um documento ou texto conclusivo para encerrar esta etapa.
-                            </div>
-                          </div>
-                        )}
-
-                        {currentStep.number === 10 && (
-                          <div className="space-y-3">
-                            <textarea
-                              value={currentStep.notes || ''}
-                              onChange={(event) => handleWorkflowNote(currentStep.number, event.target.value)}
-                              placeholder="Descreva o encerramento, a arquivação, a decisão final e os documentos que encerram o processo..."
+                              placeholder="Descreva o encerramento, a decisão final, a justificativa e o arquivamento do processo..."
                               className="w-full min-h-[150px] rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-federal-500"
                             />
                             <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-sm text-emerald-200">

@@ -1,84 +1,56 @@
 import { jsPDF } from 'jspdf';
-import { supabase } from '../lib/supabase';
+
+const getSupabaseClient = async () => {
+  const module = await import('../lib/supabase.js');
+  return module.supabase;
+};
 
 export const BO_PROCESS_STEPS = [
   {
     id: 'etapa_01',
     number: 1,
-    title: 'Abertura da pasta',
-    description: 'Registrar BO, dados iniciais e identificação do caso.',
-    requiredDocs: ['BO cadastrado', 'Resumo da ocorrência'],
+    title: 'Abertura da pasta e identificação inicial',
+    description: 'Registrar BO, identificar o caso e reunir a coleta inicial das informações essenciais.',
+    requiredDocs: ['BO cadastrado', 'Identificação inicial', 'Coleta inicial'],
     status: 'ativa'
   },
   {
     id: 'etapa_02',
     number: 2,
-    title: 'Coleta inicial',
-    description: 'Reunir dados essenciais do fato e partes envolvidas.',
-    requiredDocs: ['Identificação de comunicantes', 'Local e hora do fato'],
+    title: 'Cenário e perícia',
+    description: 'Mapear o ambiente, os elementos do fato e definir a necessidade de perícia, quando houver.',
+    requiredDocs: ['Mapa do local', 'Avaliação do cenário', 'Necessidade de perícia'],
     status: 'bloqueada'
   },
   {
     id: 'etapa_03',
     number: 3,
-    title: 'Cenário e perícia',
-    description: 'Mapear cenário do crime e preservar elementos físicos.',
-    requiredDocs: ['Mapa do local', 'Relevância de provas'],
+    title: 'Testemunhas',
+    description: 'Registrar versões dos fatos e depoimentos relevantes para a apuração.',
+    requiredDocs: ['Lista de testemunhas', 'Depoimentos'],
     status: 'bloqueada'
   },
   {
     id: 'etapa_04',
     number: 4,
-    title: 'Provas digitais',
-    description: 'Analisar fotos, vídeos, mídias e material de apoio.',
-    requiredDocs: ['Mídias anexadas', 'Registro de origem da prova'],
+    title: 'Diligências',
+    description: 'Executar verificações complementares, buscas e diligências necessárias.',
+    requiredDocs: ['Plano de diligência', 'Resultado da diligência'],
     status: 'bloqueada'
   },
   {
     id: 'etapa_05',
     number: 5,
-    title: 'Testemunhas',
-    description: 'Registrar depoimentos e confirmar versões dos fatos.',
-    requiredDocs: ['Lista de testemunhas', 'Depoimentos'],
+    title: 'Investigados',
+    description: 'Estruturar envolvidos, vínculos e informações relevantes para a investigação.',
+    requiredDocs: ['Lista de investigados', 'Vínculos e observações'],
     status: 'bloqueada'
   },
   {
     id: 'etapa_06',
     number: 6,
-    title: 'Diligências',
-    description: 'Executar investigações complementares e buscas relevantes.',
-    requiredDocs: ['Plano de diligência', 'Resultado da diligência'],
-    status: 'bloqueada'
-  },
-  {
-    id: 'etapa_07',
-    number: 7,
-    title: 'Investigados',
-    description: 'Estruturar envolvidos e vínculos com o fato.',
-    requiredDocs: ['Lista de investigados', 'Pontos de contato'],
-    status: 'bloqueada'
-  },
-  {
-    id: 'etapa_08',
-    number: 8,
-    title: 'Confronto e cruzamento',
-    description: 'Comparar depoimentos, provas e elementos objetivos.',
-    requiredDocs: ['Cronologia', 'Confronto documental'],
-    status: 'bloqueada'
-  },
-  {
-    id: 'etapa_09',
-    number: 9,
-    title: 'Conclusão técnica',
-    description: 'Formalizar síntese e evidências que sustentam a conclusão.',
-    requiredDocs: ['Relatório final', 'Resumo de evidências'],
-    status: 'bloqueada'
-  },
-  {
-    id: 'etapa_10',
-    number: 10,
-    title: 'Encerramento e arquivamento',
-    description: 'Encerrar o processo e preservar o histórico para auditoria.',
+    title: 'Encerramento e conclusão final',
+    description: 'Formalizar a conclusão, preservar o histórico e encerrar o processo de forma definitiva.',
     requiredDocs: ['Conclusão final', 'Arquivamento'],
     status: 'bloqueada'
   }
@@ -139,13 +111,17 @@ export const loadWorkflowForBo = (boId) => {
 };
 
 const hasSupabaseConfig = () => Boolean(
-  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+  typeof import.meta !== 'undefined' &&
+  import.meta.env &&
+  import.meta.env.VITE_SUPABASE_URL &&
+  import.meta.env.VITE_SUPABASE_ANON_KEY
 );
 
 export const loadWorkflowFromSupabase = async (boId) => {
   if (!boId || !hasSupabaseConfig()) return null;
 
   try {
+    const supabase = await getSupabaseClient();
     const { data: processoRows, error: processoError } = await supabase
       .from('bo_processos')
       .select('*')
@@ -206,6 +182,7 @@ export const syncWorkflowToSupabase = async (boId, workflow) => {
   if (!boId || !workflow || !hasSupabaseConfig()) return workflow;
 
   try {
+    const supabase = await getSupabaseClient();
     const { data: userData } = await supabase.auth.getUser();
     const { data: processoRows, error: processoError } = await supabase
       .from('bo_processos')
@@ -440,7 +417,8 @@ export const generateBoInvestigationProcessPDF = (bo, workflow, user) => {
     doc.text('Conclusão final', margin, y);
     y += 8;
     doc.setFont('helvetica', 'normal');
-    const conclusion = (workflow.steps || []).find((step) => step.number === 10)?.notes || 'Conclusão final não registrada.';
+    const finalStepNumber = workflow.steps?.length ? workflow.steps[workflow.steps.length - 1].number : 1;
+    const conclusion = (workflow.steps || []).find((step) => step.number === finalStepNumber)?.notes || 'Conclusão final não registrada.';
     const conclusionLines = doc.splitTextToSize(conclusion, pageWidth - margin * 2);
     doc.text(conclusionLines, margin, y);
 
