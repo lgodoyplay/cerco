@@ -3,7 +3,8 @@ import { Users, AlertTriangle, FileText, TrendingUp, Search, BadgeCheck, Sun, Mo
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { getAvatarPublicUrl } from '../../lib/avatar';
-import { normalizeRoleDisplay } from '../../utils/roleUtils';
+import { normalizeRoleDisplay, getRoleColorByName } from '../../utils/roleUtils';
+import { useSettings } from '../../hooks/useSettings';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 
 const useCurrentDateTime = () => {
@@ -108,12 +109,16 @@ const DashboardHome = () => {
   const navigate = useNavigate();
   const dateTime = useCurrentDateTime();
   const [stats, setStats] = useState({ totalPresos: 0, totalProcurados: 0, totalInvestigacoes: 0, totalBos: 0, totalInformantes: 0 });
+  const { roles = [] } = useSettings();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [functionalCode, setFunctionalCode] = useState(null);
   const [userName, setUserName] = useState('');
   const [chartData, setChartData] = useState({ boByWeek: [], crimesByType: [] });
   const [userProfiles, setUserProfiles] = useState([]);
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [selectedProfileCourses, setSelectedProfileCourses] = useState([]);
+  const [loadingProfileCourses, setLoadingProfileCourses] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -258,6 +263,36 @@ const DashboardHome = () => {
 
   const greeting = getGreeting();
 
+  const handleProfileClick = async (profile) => {
+    if (!profile?.id) return;
+
+    if (selectedProfile?.id === profile.id) {
+      setSelectedProfile(null);
+      setSelectedProfileCourses([]);
+      return;
+    }
+
+    setSelectedProfile(profile);
+    setLoadingProfileCourses(true);
+    setSelectedProfileCourses([]);
+
+    try {
+      const { data, error } = await supabase
+        .from('cursos_policiais')
+        .select('id, certificado_url, cursos(id, nome, descricao)')
+        .eq('policial_id', profile.id)
+        .order('id', { ascending: false });
+
+      if (error) throw error;
+      setSelectedProfileCourses(data || []);
+    } catch (err) {
+      console.error('Erro ao buscar cursos do perfil:', err);
+      setSelectedProfileCourses([]);
+    } finally {
+      setLoadingProfileCourses(false);
+    }
+  };
+
   const hasData = stats.totalPresos > 0 || stats.totalProcurados > 0 || stats.totalInvestigacoes > 0 || stats.totalBos > 0 || stats.totalInformantes > 0;
   const hasChartData = chartData.boByWeek.length > 0 || chartData.crimesByType.length > 0;
   const visibleProfiles = userProfiles.slice(0, 8);
@@ -380,31 +415,141 @@ const DashboardHome = () => {
 
           <div className="overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-950">
             <div className="flex gap-4 min-w-max">
-              {visibleProfiles.map((profile) => (
-                <div key={profile.id} className="w-[260px] md:w-[290px] bg-slate-950/80 border border-slate-800 rounded-2xl overflow-hidden shadow-lg shadow-slate-950/30 flex-shrink-0">
-                  <div className="h-72 bg-gradient-to-br from-federal-900 via-slate-800 to-slate-900 relative">
-                    {profile.avatar ? (
-                      <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover object-center" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-3xl font-black text-slate-300 bg-gradient-to-br from-slate-700 to-slate-900">
-                        {profile.name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase() || 'U'}
+              {visibleProfiles.map((profile) => {
+                const roleColor = getRoleColorByName(profile.role, roles);
+
+                return (
+                  <div
+                    key={profile.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleProfileClick(profile)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        handleProfileClick(profile);
+                      }
+                    }}
+                    className="w-[260px] md:w-[290px] bg-slate-950/80 border rounded-2xl overflow-hidden shadow-lg shadow-slate-950/30 flex-shrink-0 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:border-opacity-100"
+                    style={{
+                      borderColor: roleColor || '#334155',
+                      boxShadow: roleColor ? `0 0 0 1px ${roleColor}44, 0 12px 30px rgba(15, 23, 42, 0.4)` : undefined
+                    }}
+                  >
+                    <div className="h-72 bg-gradient-to-br from-federal-900 via-slate-800 to-slate-900 relative">
+                      {profile.avatar ? (
+                        <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover object-center" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-3xl font-black text-slate-300 bg-gradient-to-br from-slate-700 to-slate-900">
+                          {profile.name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase() || 'U'}
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4 flex flex-col gap-3">
+                      <div>
+                        <h4 className="text-base font-bold text-white leading-snug">{profile.name}</h4>
+                        <p
+                          className="mt-1 inline-flex items-center rounded-full border px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em]"
+                          style={{
+                            color: roleColor || '#cbd5e1',
+                            borderColor: roleColor ? `${roleColor}66` : '#475569',
+                            backgroundColor: roleColor ? `${roleColor}22` : 'rgba(15, 23, 42, 0.8)'
+                          }}
+                        >
+                          {profile.role || 'Sem cargo'}
+                        </p>
                       </div>
-                    )}
-                  </div>
-                  <div className="p-4 flex flex-col gap-3">
-                    <div>
-                      <h4 className="text-base font-bold text-white leading-snug">{profile.name}</h4>
-                      <p className="text-xs uppercase tracking-[0.18em] text-slate-400 mt-1">{profile.role}</p>
-                    </div>
-                    <div className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2">
-                      <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">Código</p>
-                      <p className="text-sm font-mono font-semibold text-slate-100 truncate">{profile.code}</p>
+                      <div className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">Código</p>
+                        <p className="text-sm font-mono font-semibold text-slate-100 truncate">{profile.code}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
+
+          {selectedProfile && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4"
+              onClick={(event) => {
+                if (event.target === event.currentTarget) setSelectedProfile(null);
+              }}
+            >
+              <div
+                className="w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-2xl border bg-slate-900 shadow-2xl"
+                style={{ borderColor: getRoleColorByName(selectedProfile.role, roles) || '#334155' }}
+              >
+                <div className="flex items-center justify-between gap-3 border-b border-slate-800 px-5 py-4 sticky top-0 bg-slate-900/95 backdrop-blur">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Perfil</p>
+                    <h4 className="text-xl font-bold text-white">{selectedProfile.name}</h4>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProfile(null)}
+                    className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm font-semibold text-slate-300 hover:border-slate-500 hover:text-white"
+                  >
+                    Fechar
+                  </button>
+                </div>
+
+                <div className="p-5">
+                  <div className="mb-5 flex items-center gap-3">
+                    <span
+                      className="inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em]"
+                      style={{
+                        color: getRoleColorByName(selectedProfile.role, roles) || '#cbd5e1',
+                        borderColor: getRoleColorByName(selectedProfile.role, roles) ? `${getRoleColorByName(selectedProfile.role, roles)}66` : '#475569',
+                        backgroundColor: getRoleColorByName(selectedProfile.role, roles) ? `${getRoleColorByName(selectedProfile.role, roles)}22` : 'rgba(15, 23, 42, 0.8)'
+                      }}
+                    >
+                      {selectedProfile.role || 'Sem cargo'}
+                    </span>
+                    <span className="text-xs uppercase tracking-[0.16em] text-slate-500">{selectedProfile.code}</span>
+                  </div>
+
+                  {loadingProfileCourses ? (
+                    <div className="flex items-center justify-center py-8 text-slate-400">
+                      <div className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-slate-600 border-t-federal-500" />
+                      Carregando cursos...
+                    </div>
+                  ) : selectedProfileCourses.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-slate-700 bg-slate-950/40 p-8 text-center text-slate-400">
+                      Nenhum curso catalogado para este perfil.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {selectedProfileCourses.map((item) => (
+                        <div
+                          key={item.id}
+                          className="rounded-xl border border-slate-800 bg-slate-950/60 p-4"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <h5 className="text-base font-bold text-white">{item.cursos?.nome || 'Curso sem nome'}</h5>
+                              <p className="mt-1 text-sm text-slate-400">{item.cursos?.descricao || 'Descrição não disponível.'}</p>
+                            </div>
+                            {item.certificado_url && (
+                              <a
+                                href={item.certificado_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-300 hover:border-federal-500 hover:text-white"
+                              >
+                                Certificado
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
