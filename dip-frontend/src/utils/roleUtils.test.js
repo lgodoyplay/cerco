@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { normalizeRoleAssignment, normalizeRoleDisplay, getRoleColorByName } from './roleUtils.js';
+import { mergeRoleConfigurations, normalizeRoleAssignment, normalizeRoleDisplay, getRoleColorByName } from './roleUtils.js';
 
 const roles = [
   { title: 'Diretor Geral' },
@@ -36,4 +36,13 @@ test('should resolve the stored role color for the active role label', () => {
   assert.equal(getRoleColorByName('Agente', roleList), '#10b981');
   assert.equal(getRoleColorByName('  diretor geral  ', roleList), '#f59e0b');
   assert.equal(getRoleColorByName('', roleList), null);
+});
+
+test('should merge role permissions from persisted and database configurations', () => {
+  const persisted = [{ id: 3, title: 'Escrivão', permissions: ['bo_manage', 'settings_view'] }];
+  const database = [{ id: 3, title: 'Escrivão', permissions: [] }];
+
+  const merged = mergeRoleConfigurations(persisted, database);
+
+  assert.deepEqual(merged[0].permissions, ['bo_manage', 'settings_view']);
 });

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { buildDefaultCorporation, normalizeCorporationData } from '../utils/corporationUtils';
-import { getRoleTitles, normalizeRoleAssignment, normalizeRoleDisplay } from '../utils/roleUtils';
+import { getRoleTitles, mergeRoleConfigurations, normalizeRoleAssignment, normalizeRoleDisplay } from '../utils/roleUtils';
 
 const SettingsContext = createContext();
 
@@ -112,7 +112,9 @@ export const SettingsProvider = ({ children }) => {
         const rolesSetting = data.find(s => s.key === 'roles');
         const persistedRoles = getPersistedRoles();
         if (rolesSetting && Array.isArray(rolesSetting.value)) {
-          setRoles(rolesSetting.value);
+          const mergedRoles = mergeRoleConfigurations(persistedRoles, rolesSetting.value);
+          setRoles(mergedRoles);
+          localStorage.setItem(ROLE_STORAGE_KEY, JSON.stringify(mergedRoles));
         } else if (Array.isArray(persistedRoles)) {
           setRoles(persistedRoles);
         }

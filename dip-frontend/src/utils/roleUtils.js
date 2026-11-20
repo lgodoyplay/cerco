@@ -40,3 +40,49 @@ export const getRoleColorByName = (roleValue, roleList = []) => {
 
   return matchingRole?.color || null;
 };
+
+export const mergeRoleConfigurations = (...roleSources) => {
+  const merged = [];
+
+  roleSources.forEach((source) => {
+    if (!Array.isArray(source)) return;
+
+    source.forEach((incomingRole) => {
+      const title = normalizeRoleDisplay(incomingRole?.title || incomingRole?.name);
+      if (!title) return;
+
+      const normalizedTitle = normalizeRoleName(title);
+      const existingIndex = merged.findIndex((role) => normalizeRoleName(role.title) === normalizedTitle);
+
+      if (existingIndex === -1) {
+        merged.push({
+          ...incomingRole,
+          title,
+          kind: incomingRole?.kind || incomingRole?.category || 'main',
+          category: incomingRole?.category || incomingRole?.kind || 'main',
+          isThirdParty: incomingRole?.isThirdParty === true || incomingRole?.kind === 'third_party' || incomingRole?.category === 'third_party',
+          permissions: Array.isArray(incomingRole?.permissions) ? [...new Set(incomingRole.permissions)] : [],
+        });
+        return;
+      }
+
+      const existing = merged[existingIndex];
+      const permissions = new Set([
+        ...(Array.isArray(existing.permissions) ? existing.permissions : []),
+        ...(Array.isArray(incomingRole?.permissions) ? incomingRole.permissions : []),
+      ]);
+
+      merged[existingIndex] = {
+        ...existing,
+        ...incomingRole,
+        title,
+        kind: existing.kind || incomingRole?.kind || incomingRole?.category || 'main',
+        category: existing.category || incomingRole?.category || incomingRole?.kind || 'main',
+        isThirdParty: existing.isThirdParty === true || incomingRole?.isThirdParty === true,
+        permissions: Array.from(permissions),
+      };
+    });
+  });
+
+  return merged;
+};
