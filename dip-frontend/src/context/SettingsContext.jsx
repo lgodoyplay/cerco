@@ -1,18 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { buildDefaultCorporation, normalizeCorporationData } from '../utils/corporationUtils';
-import { getRoleTitles, mergeRoleConfigurations, normalizeRoleAssignment, normalizeRoleDisplay } from '../utils/roleUtils';
+import { getRoleTitles, mergeRoleConfigurations, normalizeRoleAssignment, normalizeRoleDisplay, normalizeRoleName } from '../utils/roleUtils';
 
 const SettingsContext = createContext();
 
 const DEFAULT_CORPORATION = buildDefaultCorporation();
 
 const DEFAULT_ROLES = [
-  { id: 1, title: 'Diretor Geral', hierarchy: 1, kind: 'main', category: 'main', isThirdParty: false, color: '#f59e0b', permissions: [] },
-  { id: 2, title: 'Coordenador', hierarchy: 2, kind: 'main', category: 'main', isThirdParty: false, color: '#8b5cf6', permissions: [] },
-  { id: 3, title: 'Escrivão', hierarchy: 3, kind: 'main', category: 'main', isThirdParty: false, color: '#3b82f6', permissions: [] },
-  { id: 4, title: 'Agente', hierarchy: 4, kind: 'main', category: 'main', isThirdParty: false, color: '#10b981', permissions: [] },
-  { id: 5, title: 'Aluno', hierarchy: 5, kind: 'main', category: 'main', isThirdParty: false, color: '#f97316', permissions: [] },
+  { id: 1, title: 'Delegado Geral', hierarchy: 1, kind: 'main', category: 'main', isThirdParty: false, color: '#f59e0b', permissions: ['admin_access'] },
 ];
 
 const ROLE_STORAGE_KEY = 'cerco_roles_settings';
@@ -24,7 +20,7 @@ const getPersistedRoles = () => {
 
     const parsed = JSON.parse(rawValue);
     if (Array.isArray(parsed)) {
-      return parsed;
+      return ensureOnlyDelegadoGeral(parsed);
     }
   } catch (error) {
     console.warn('Não foi possível ler cargos persistidos no navegador:', error);
@@ -112,7 +108,9 @@ export const SettingsProvider = ({ children }) => {
         const rolesSetting = data.find(s => s.key === 'roles');
         const persistedRoles = getPersistedRoles();
         if (rolesSetting && Array.isArray(rolesSetting.value)) {
-          const mergedRoles = mergeRoleConfigurations(persistedRoles, rolesSetting.value);
+          const mergedRoles = ensureOnlyDelegadoGeral([
+            ...mergeRoleConfigurations(persistedRoles, rolesSetting.value),
+          ]);
           setRoles(mergedRoles);
           localStorage.setItem(ROLE_STORAGE_KEY, JSON.stringify(mergedRoles));
         } else if (Array.isArray(persistedRoles)) {
@@ -336,6 +334,29 @@ export const SettingsProvider = ({ children }) => {
         }
       }
 
+      const removedTitles = (Array.isArray(previousRoles) ? previousRoles : [])
+        .map((role) => normalizeRoleDisplay(role.title))
+        .filter((title) => normalizeRoleName(title) !== 'delegado geral');
+
+      for (const oldTitle of removedTitles) {
+        const { data: profiles, error } = await supabase
+          .from('profiles')
+          .select('id, role')
+          .eq('role', oldTitle);
+
+        if (error) throw error;
+
+        if (profiles?.length) {
+          const ids = profiles.map((profile) => profile.id);
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ role: 'Delegado Geral' })
+            .in('id', ids);
+
+          if (updateError) throw updateError;
+        }
+      }
+
       await fetchUsers();
     } catch (error) {
       console.error('Error migrating profile roles:', error);
@@ -516,9 +537,10 @@ export const SettingsProvider = ({ children }) => {
 
   const updateRoles = async (newRoles) => {
     const previousRoles = roles;
-    const saved = await saveSetting('roles', newRoles);
+    const delegadoGeralRoles = ensureOnlyDelegadoGeral(newRoles);
+    const saved = await saveSetting('roles', delegadoGeralRoles);
     if (saved) {
-      await syncProfilesWithRoles(previousRoles, newRoles);
+      await syncProfilesWithRoles(previousRoles, delegadoGeralRoles);
     }
   };
   const updateTemplates = (newTemplates) => saveSetting('templates', newTemplates);
@@ -570,4 +592,25 @@ export const useSettingsContext = () => {
     throw new Error('useSettingsContext must be used within a SettingsProvider');
   }
   return context;
+};
+
+const DELEGADO_GERAL_ROLE = DEFAULT_ROLES[0];
+
+const ensureOnlyDelegadoGeral = (roleList) => {
+  const isDelegadoGeral = (role) => normalizeRoleName(role?.title || role?.name);
+  const configured = (Array.isArray(roleList) ? roleList : []).find((role) =>
+    isDelegadoGeral(role) === 'delegado geral'
+  );
+
+  return [{
+    ...DELEGADO_GERAL_ROLE,
+    ...(configured || {}),
+    id: 1,
+    title: 'Delegado Geral',
+    hierarchy: 1,
+    kind: 'main',
+    category: 'main',
+    isThirdParty: false,
+    permissions: ['admin_access'],
+  }];
 };

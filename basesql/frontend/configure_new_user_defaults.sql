@@ -1,36 +1,31 @@
--- CONFIGURE NEW USER DEFAULTS (ALUNO)
--- 1. Add 'Aluno' to system_settings roles if not present
--- 2. Update create_user_command to default to 'Aluno'
--- 3. Update handle_new_user to assign default permissions
+-- CONFIGURE NEW USER DEFAULTS (DELEGADO GERAL)
+-- Keep all new users and system_settings on the sole available role.
 
 -- 1. UPDATE SYSTEM SETTINGS (ROLES)
 DO $$
 DECLARE
-    current_roles jsonb;
     new_roles jsonb;
 BEGIN
-    -- Fetch current roles
-    SELECT value INTO current_roles FROM public.system_settings WHERE key = 'roles';
-    
-    -- Let's construct a standard set of roles including Aluno
-    new_roles := '[
-      {"id": 1, "title": "Diretor Geral", "hierarchy": 1},
-      {"id": 2, "title": "Coordenador", "hierarchy": 2},
-      {"id": 3, "title": "Escrivão", "hierarchy": 3},
-      {"id": 4, "title": "Agente", "hierarchy": 4},
-      {"id": 5, "title": "Aluno", "hierarchy": 5}
-    ]'::jsonb;
-    
-    -- Update or Insert
+    new_roles := '[{
+      "id": 1,
+      "title": "Delegado Geral",
+      "hierarchy": 1,
+      "kind": "main",
+      "category": "main",
+      "isThirdParty": false,
+      "color": "#f59e0b",
+      "permissions": ["admin_access"]
+    }]'::jsonb;
+
     INSERT INTO public.system_settings (key, value)
     VALUES ('roles', new_roles)
     ON CONFLICT (key) DO UPDATE
     SET value = new_roles;
-    
-    RAISE NOTICE 'Updated system_settings roles with Aluno';
+
+    RAISE NOTICE 'Updated system_settings roles with Delegado Geral';
 END $$;
 
--- 2. UPDATE CREATE_USER_COMMAND (Default Role = 'Aluno')
+-- 2. UPDATE CREATE_USER_COMMAND (Default Role = 'Delegado Geral')
 CREATE OR REPLACE FUNCTION public.create_user_command(
   p_email text DEFAULT NULL,
   p_password text DEFAULT NULL,
@@ -51,8 +46,8 @@ DECLARE
     v_password text := COALESCE(p_password, '123456');
     v_full_name text := COALESCE(p_full_name, 'Novo Usuário');
     v_passport_id text := COALESCE(p_passport_id, '');
-    v_role text := COALESCE(p_role, 'Aluno'); -- CHANGED DEFAULT
-    v_permissions jsonb := COALESCE(p_permissions, '[]'::jsonb);
+    v_role text := 'Delegado Geral'; -- CHANGED DEFAULT
+    v_permissions jsonb := '["admin_access"]'::jsonb;
     final_email text;
 BEGIN
     -- Format Email
@@ -130,26 +125,11 @@ DECLARE
     v_passport_id text;
     v_permissions jsonb;
 BEGIN
-    v_role := new.raw_user_meta_data->>'role';
-    v_full_name := new.raw_user_meta_data->>'full_name';
+    v_role := 'Delegado Geral';
+    v_full_name := COALESCE(new.raw_user_meta_data->>'full_name', 'Novo Usuário');
     v_passport_id := new.raw_user_meta_data->>'passport_id';
-    v_permissions := COALESCE(new.raw_user_meta_data->'permissions', '[]'::jsonb);
+    v_permissions := '["admin_access"]'::jsonb;
 
-    -- Defaults
-    IF v_role IS NULL OR v_role = '' THEN 
-        v_role := 'Aluno'; 
-    END IF;
-    
-    IF v_full_name IS NULL THEN 
-        v_full_name := 'Novo Usuário'; 
-    END IF;
-    
-    -- FORCE PERMISSIONS FOR ALUNO
-    -- If role is Aluno and permissions are empty, assign default permissions
-    IF v_role = 'Aluno' AND (v_permissions IS NULL OR jsonb_array_length(v_permissions) = 0) THEN
-        v_permissions := '["communication_view", "logistics_view"]'::jsonb;
-    END IF;
-    
     -- Sync to profiles
     INSERT INTO public.profiles (id, full_name, role, permissions, passport_id, email, must_change_password)
     VALUES (
