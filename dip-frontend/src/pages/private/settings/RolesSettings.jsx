@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSettings } from '../../../hooks/useSettings';
-import { BadgeCheck, Trash2, ArrowUp, ArrowDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { BadgeCheck, Plus, Trash2, ArrowUp, ArrowDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { PERMISSION_GROUPS, PERMISSIONS } from '../../../hooks/usePermissions';
 
 const createEmptyPermissionState = () => (
@@ -172,6 +172,46 @@ const RolesSettings = () => {
     logAction('Permissão do cargo alterada');
   };
 
+  const handleAddRole = async (e) => {
+    e.preventDefault();
+    if (!newRole.trim()) return;
+
+    setLoading(true);
+    try {
+      const roleType = activeRoleType === 'third_party' ? 'third_party' : 'main';
+      const nextHierarchy = roles.length > 0 ? Math.max(...roles.map((role) => role.hierarchy || 0)) + 1 : 1;
+      const selectedPermissions = Object.entries(newRolePermissions).flatMap(([groupId, permissionsById]) => {
+        const group = PERMISSION_GROUPS.find((item) => item.id === groupId);
+        if (!group) return [];
+        return group.permissions
+          .filter((permission) => permissionsById?.[permission.id])
+          .map((permission) => permission.id);
+      });
+
+      const newRoleObj = {
+        id: Date.now(),
+        title: newRole.trim(),
+        hierarchy: nextHierarchy,
+        kind: roleType,
+        category: roleType,
+        isThirdParty: roleType === 'third_party',
+        color: newRoleColor || '#f59e0b',
+        permissions: [...new Set(selectedPermissions)]
+      };
+
+      const updatedRoles = [...roles, newRoleObj];
+      await updateRoles(updatedRoles);
+
+      logAction(`Novo cargo criado: ${newRole.trim()}`);
+      setNewRole('');
+      setNewRolePermissions(createEmptyPermissionState());
+    } catch (error) {
+      console.error('Erro ao adicionar cargo:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRemoveRole = async (id) => {
     if (!window.confirm('Tem certeza que deseja remover este cargo?')) return;
     const updatedRoles = roles.filter((role) => role.id !== id);
@@ -308,11 +348,87 @@ const RolesSettings = () => {
       </div>
 
       <div className="bg-slate-950 border border-slate-800 rounded-xl p-6">
-        <div className="mb-6 rounded-lg border border-slate-800 bg-slate-900/70 px-4 py-3 text-sm text-slate-300">
-          Somente o cargo <strong className="text-white">Delegado Geral</strong> está disponível nesta aba.
+        <div className="mb-6 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveRoleType('main')}
+            className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${activeRoleType === 'main' ? 'bg-federal-600 text-white' : 'bg-slate-900 text-slate-300 border border-slate-700 hover:border-slate-500'}`}
+          >
+            Cargos da corporação
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveRoleType('third_party')}
+            className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${activeRoleType === 'third_party' ? 'bg-amber-600 text-white' : 'bg-slate-900 text-slate-300 border border-slate-700 hover:border-slate-500'}`}
+          >
+            Cargos terceiros
+          </button>
         </div>
 
-        {/* O fluxo de criação foi desativado para manter apenas Delegado Geral. */}
+        <form onSubmit={handleAddRole} className="space-y-5 mb-8">
+          <div className="flex flex-col gap-4 md:flex-row">
+            <input
+              type="text"
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value)}
+              className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-600 focus:border-federal-500 outline-none"
+              placeholder={activeRoleType === 'third_party' ? 'Nome do cargo de terceiros (ex: Agente de outra guarnição)' : 'Nome do Cargo / Patente (ex: Agente Especial)'}
+            />
+            <div className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-slate-300">
+              <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">Cor</span>
+              <input
+                type="color"
+                value={newRoleColor}
+                onChange={(e) => setNewRoleColor(e.target.value)}
+                className="h-10 w-12 cursor-pointer rounded-lg border border-slate-600 bg-transparent p-0"
+                aria-label="Selecionar cor do cargo"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading || !newRole.trim()}
+              className="bg-federal-600 hover:bg-federal-500 text-white px-6 rounded-xl font-bold flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Plus size={20} />
+              )}
+              {loading ? 'Salvando...' : 'Adicionar'}
+            </button>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-slate-300">Permissões do cargo</h3>
+              <button
+                type="button"
+                onClick={() => setNewRolePermissions(createEmptyPermissionState())}
+                className="text-xs text-slate-400 hover:text-white"
+              >
+                Limpar
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {PERMISSION_GROUPS.map((group) => {
+                const groupState = newRolePermissions[group.id] || {};
+
+                return (
+                  <PermissionGroupAccordion
+                    key={group.id}
+                    group={group}
+                    groupState={groupState}
+                    onToggleGroup={(checked) => setNewRolePermissions((prev) => updateGroupSelection(prev, group.id, checked))}
+                    onTogglePermission={(permissionId) => toggleNewRolePermission(group.id, permissionId)}
+                    defaultOpen={true}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </form>
+
         <div className="space-y-3">
           {displayedRoles.map((role, index) => {
             const rolePermissionState = getRolePermissionState(role);
@@ -333,6 +449,23 @@ const RolesSettings = () => {
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-center">
                   <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() => moveRole(role.id, -1)}
+                        disabled={index === 0}
+                        className="text-slate-500 hover:text-white disabled:opacity-30 transition-colors"
+                      >
+                        <ArrowUp size={16} />
+                      </button>
+                      <button
+                        onClick={() => moveRole(role.id, 1)}
+                        disabled={index === displayedRoles.length - 1}
+                        className="text-slate-500 hover:text-white disabled:opacity-30 transition-colors"
+                      >
+                        <ArrowDown size={16} />
+                      </button>
+                    </div>
+
                     <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-xs text-slate-400 border border-slate-700">
                       {role.hierarchy || index + 1}
                     </div>
