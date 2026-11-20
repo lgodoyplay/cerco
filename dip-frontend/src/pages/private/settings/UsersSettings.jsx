@@ -551,6 +551,9 @@ const UsersSettings = () => {
                           className="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white focus:border-federal-500 outline-none"
                         >
                           {roles.map(r => <option key={r.id} value={r.title}>{r.title}</option>)}
+                          {formData.role && !roles.some(r => r.title === formData.role) && (
+                            <option value={formData.role}>{formData.role} (cargo atual)</option>
+                          )}
                         </select>
                       </div>
                     </div>

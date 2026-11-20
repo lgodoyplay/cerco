@@ -297,35 +297,46 @@ export const SettingsProvider = ({ children }) => {
     }
   }, []);
 
-  const syncProfilesWithRoles = useCallback(async (nextRoles) => {
-    const validRoleTitles = getRoleTitles(nextRoles);
+  const syncProfilesWithRoles = useCallback(async (previousRoles, nextRoles) => {
+    const previousById = new Map(
+      (Array.isArray(previousRoles) ? previousRoles : []).map((role) => [String(role.id), normalizeRoleDisplay(role.title)])
+    );
 
     try {
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('id, role');
-
-      if (error) throw error;
-
-      const staleProfileIds = (profiles || [])
-        .filter((profile) => {
-          const currentRole = normalizeRoleDisplay(profile?.role);
-          return Boolean(currentRole) && !validRoleTitles.has(currentRole);
+      const roleRenames = (Array.isArray(nextRoles) ? nextRoles : [])
+        .map((role) => {
+          const previousTitle = previousById.get(String(role.id));
+          const nextTitle = normalizeRoleDisplay(role.title);
+          return previousTitle && nextTitle && previousTitle !== nextTitle
+            ? { from: previousTitle, to: nextTitle }
+            : null;
         })
-        .map((profile) => profile.id);
+        .filter(Boolean);
 
-      if (staleProfileIds.length > 0) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ role: '' })
-          .in('id', staleProfileIds);
+      if (roleRenames.length > 0) {
+        for (const rename of roleRenames) {
+          const { data: profiles, error } = await supabase
+            .from('profiles')
+            .select('id, role')
+            .eq('role', rename.from);
 
-        if (updateError) throw updateError;
+          if (error) throw error;
+
+          if (profiles?.length) {
+            const ids = profiles.map((profile) => profile.id);
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ role: rename.to })
+              .in('id', ids);
+
+            if (updateError) throw updateError;
+          }
+        }
       }
 
       await fetchUsers();
     } catch (error) {
-      console.error('Error syncing roles with profiles:', error);
+      console.error('Error migrating profile roles:', error);
     }
   }, [fetchUsers]);
 
@@ -459,16 +470,13 @@ export const SettingsProvider = ({ children }) => {
     try {
       const safeRole = normalizeRoleAssignment(userData.role, roles);
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-            full_name: userData.name,
-            role: safeRole,
-            permissions: [],
-            avatar_url: userData.avatar_url,
-            passport_id: userData.passport_id
-        })
-        .eq('id', id);
+      const { error } = await supabase.rpc('admin_update_user_profile', {
+        target_user_id: id,
+        new_full_name: userData.name || null,
+        new_role: safeRole || null,
+        new_avatar_url: userData.avatar_url || null,
+        new_passport_id: userData.passport_id || null
+      });
 
       if (error) throw error;
 
@@ -505,8 +513,11 @@ export const SettingsProvider = ({ children }) => {
   };
 
   const updateRoles = async (newRoles) => {
-    await saveSetting('roles', newRoles);
-    await syncProfilesWithRoles(newRoles);
+    const previousRoles = roles;
+    const saved = await saveSetting('roles', newRoles);
+    if (saved) {
+      await syncProfilesWithRoles(previousRoles, newRoles);
+    }
   };
   const updateTemplates = (newTemplates) => saveSetting('templates', newTemplates);
   const updateAppearance = (newAppearance) => saveSetting('appearance', newAppearance);
